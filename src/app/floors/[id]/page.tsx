@@ -58,9 +58,18 @@ import { ArrowLeft, PlusCircle, Loader2, UploadCloud, Filter } from 'lucide-reac
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
-import { FloorPlanViewer } from '@/components/floor-plan-viewer';
+import dynamic from 'next/dynamic';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+
+const FloorPlanViewer = dynamic(
+  () => import('@/components/floor-plan-viewer').then(mod => mod.FloorPlanViewer),
+  {
+    ssr: false,
+    loading: () => <div className="flex justify-center items-center h-96"><Loader2 className="h-12 w-12 animate-spin text-muted-foreground" /></div>
+  }
+);
+
 
 const unitSchema = z.object({
   identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
@@ -357,7 +366,7 @@ export default function FloorDetailsPage() {
   
   const uniqueUnitTypes = useMemo(() => {
     const types = new Set(units.map(u => u.type).filter(Boolean));
-    return Array.from(types);
+    return Array.from(types) as string[];
   }, [units]);
 
   const filteredUnits = useMemo(() => {
@@ -618,5 +627,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
