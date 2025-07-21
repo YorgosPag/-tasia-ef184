@@ -11,6 +11,7 @@ import {
   addDoc,
   serverTimestamp,
   Timestamp,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -65,9 +66,12 @@ interface Project {
   status: string;
 }
 
-interface Building extends BuildingFormValues {
-  id: string;
+interface Building {
+  id: string; // This will be the ID from the subcollection
+  address: string;
+  type: string;
   createdAt: any;
+  topLevelId: string; // This will be the ID from the top-level collection
 }
 
 export default function ProjectDetailsPage() {
@@ -120,10 +124,14 @@ export default function ProjectDetailsPage() {
     const unsubscribe = onSnapshot(
       buildingsColRef,
       (snapshot) => {
-        const buildingsData: Building[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Building));
+        const buildingsData: Building[] = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                topLevelId: data.topLevelId, // Assuming topLevelId is stored
+                ...data,
+            } as Building
+        });
         setBuildings(buildingsData);
         setIsLoadingBuildings(false);
       },
@@ -144,18 +152,24 @@ export default function ProjectDetailsPage() {
   const onSubmitBuilding = async (data: BuildingFormValues) => {
     setIsSubmitting(true);
     try {
-      // We add the new building to the subcollection of the current project
-      const buildingRef = await addDoc(collection(db, 'projects', projectId, 'buildings'), {
+      const topLevelBuildingRef = doc(collection(db, 'buildings'));
+      const subCollectionBuildingRef = doc(collection(db, 'projects', projectId, 'buildings'));
+
+      // Set the top-level building document
+      await setDoc(topLevelBuildingRef, {
         ...data,
+        projectId: projectId,
+        originalId: subCollectionBuildingRef.id,
         createdAt: serverTimestamp(),
       });
-      // We also add it to the top-level buildings collection for the main /buildings page
-      await addDoc(collection(db, 'buildings'), {
+      
+      // Set the sub-collection building document
+      await setDoc(subCollectionBuildingRef, {
         ...data,
-        projectId: projectId, // Link back to the project
-        originalId: buildingRef.id, // Keep track of the original doc id in the subcollection
+        topLevelId: topLevelBuildingRef.id, // Link to top-level doc
         createdAt: serverTimestamp(),
       });
+
       toast({
         title: 'Επιτυχία',
         description: 'Το κτίριο προστέθηκε με επιτυχία.',
@@ -179,11 +193,8 @@ export default function ProjectDetailsPage() {
     return format(timestamp.toDate(), 'dd/MM/yyyy');
   };
 
-  const handleBuildingRowClick = (buildingId: string) => {
-    // Note: We are navigating to the detail page of the building using its ID.
-    // The building detail page will need to know which project it belongs to if we want to navigate back.
-    // For now, we assume a generic building detail page.
-    router.push(`/buildings/${buildingId}`);
+  const handleBuildingRowClick = (building: Building) => {
+    router.push(`/buildings/${building.topLevelId}`);
   };
 
 
@@ -298,7 +309,7 @@ export default function ProjectDetailsPage() {
               </TableHeader>
               <TableBody>
                 {buildings.map((building) => (
-                  <TableRow key={building.id} onClick={() => handleBuildingRowClick(building.id)} className="cursor-pointer">
+                  <TableRow key={building.id} onClick={() => handleBuildingRowClick(building)} className="cursor-pointer">
                     <TableCell className="font-medium">{building.address}</TableCell>
                     <TableCell className="text-muted-foreground">{building.type}</TableCell>
                     <TableCell>{formatDate(building.createdAt)}</TableCell>

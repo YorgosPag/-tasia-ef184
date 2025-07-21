@@ -11,6 +11,7 @@ import {
   addDoc,
   serverTimestamp,
   Timestamp,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -61,6 +62,7 @@ interface Building {
   address: string;
   type: string;
   projectId?: string;
+  originalId?: string;
   createdAt: Timestamp;
 }
 
@@ -114,8 +116,8 @@ export default function BuildingDetailsPage() {
 
   // Listen for floors in the subcollection
   useEffect(() => {
-    if (!buildingId) return;
-    const floorsColRef = collection(db, 'buildings', buildingId, 'floors');
+    if (!building || !building.projectId || !building.originalId) return;
+    const floorsColRef = collection(db, 'projects', building.projectId, 'buildings', building.originalId, 'floors');
     const unsubscribe = onSnapshot(
       floorsColRef,
       (snapshot) => {
@@ -138,22 +140,27 @@ export default function BuildingDetailsPage() {
     );
 
     return () => unsubscribe();
-  }, [buildingId, toast]);
+  }, [building, toast]);
 
   const onSubmitFloor = async (data: FloorFormValues) => {
+    if (!building || !building.projectId || !building.originalId) {
+        toast({variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το γονικό κτίριο.'});
+        return;
+    }
     setIsSubmitting(true);
     try {
       // Add to subcollection
-      const floorRef = await addDoc(collection(db, 'buildings', buildingId, 'floors'), {
+      const floorSubRef = doc(collection(db, 'projects', building.projectId, 'buildings', building.originalId, 'floors'));
+      await setDoc(floorSubRef, {
         ...data,
         createdAt: serverTimestamp(),
       });
       
-      // Also add to a top-level 'floors' collection for the main /floors page
-      await addDoc(collection(db, 'floors'), {
+      // Also add to a top-level 'floors' collection
+      await setDoc(doc(db, 'floors', floorSubRef.id), {
           ...data,
-          buildingId: buildingId,
-          originalId: floorRef.id,
+          buildingId: building.id,
+          originalId: floorSubRef.id,
           createdAt: serverTimestamp(),
       });
       toast({
