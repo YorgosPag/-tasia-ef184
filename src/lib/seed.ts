@@ -165,7 +165,7 @@ export async function seedDatabase() {
            createdAt: serverTimestamp(),
        });
        
-      batch.set(topLevelBuildingRef, {
+       batch.set(floorTopRef, {
           level: floor.level,
           description: floor.description,
           buildingId: parentBuildingMeta.id,
