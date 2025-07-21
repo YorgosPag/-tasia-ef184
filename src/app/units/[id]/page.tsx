@@ -49,6 +49,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 const attachmentSchema = z.object({
   type: z.enum(['parking', 'storage'], {
@@ -64,6 +65,7 @@ interface Unit {
   identifier: string;
   name: string;
   type?: string;
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο';
   buildingId: string;
   floorId: string;
   originalId: string; // The ID in the subcollection
@@ -180,6 +182,15 @@ export default function UnitDetailsPage() {
     return type === 'parking' ? 'Θέση Στάθμευσης' : 'Αποθήκη';
   };
 
+  const getStatusVariant = (status: Unit['status'] | undefined): 'default' | 'secondary' | 'outline' => {
+    switch(status) {
+        case 'Πωλημένο': return 'destructive';
+        case 'Κρατημένο': return 'secondary';
+        case 'Διαθέσιμο': return 'default';
+        default: return 'outline';
+    }
+  }
+
   if (isLoadingUnit) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
   }
@@ -197,6 +208,14 @@ export default function UnitDetailsPage() {
           <CardTitle>Ακίνητο: {unit.name} ({unit.identifier})</CardTitle>
           <CardDescription>Τύπος: {unit.type || 'N/A'} | ID Ορόφου: {unit.floorId}</CardDescription>
         </CardHeader>
+        <CardContent>
+            <Badge variant={getStatusVariant(unit.status)} 
+                    className={unit.status === 'Διαθέσιμο' ? 'bg-green-500 hover:bg-green-600 text-white' : 
+                                unit.status === 'Κρατημένο' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
+                                unit.status === 'Πωλημένο' ? 'bg-red-500 hover:bg-red-600 text-white' : ''}>
+                {unit.status}
+            </Badge>
+        </CardContent>
       </Card>
       
       <div className="flex items-center justify-between">
