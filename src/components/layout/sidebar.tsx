@@ -15,8 +15,12 @@ import {
   SidebarMenuButton
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/logo';
+import { usePathname } from 'next/navigation';
+
 
 export function AppSidebar() {
+  const pathname = usePathname();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -30,13 +34,13 @@ export function AppSidebar() {
           <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#" isActive>
+              <SidebarMenuButton href="/" isActive={pathname === '/'}>
                 <Home />
                 Home
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#">
+              <SidebarMenuButton href="/properties" isActive={pathname.startsWith('/properties')}>
                 <Building />
                 Properties
               </SidebarMenuButton>
