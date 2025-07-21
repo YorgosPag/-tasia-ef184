@@ -41,15 +41,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const companySchema = z.object({
   name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
-  address: z.string().min(1, { message: "Η διεύθυνση είναι υποχρεωτική." }),
-  afm: z.string().min(9, { message: "Το ΑΦΜ πρέπει να έχει 9 ψηφία." }).max(9, { message: "Το ΑΦΜ πρέπει να έχει 9 ψηφία." }),
-  phone: z.string().min(10, { message: "Το τηλέφωνο πρέπει να έχει 10 ψηφία." }).max(10, { message: "Το τηλέφωνο πρέπει να έχει 10 ψηφία." }),
+  contactInfo: z.object({
+      email: z.string().email({ message: "Το email δεν είναι έγκυρο." }),
+      phone: z.string().min(10, { message: "Το τηλέφωνο πρέπει να έχει 10 ψηφία." }).max(10, { message: "Το τηλέφωνο πρέπει να έχει 10 ψηφία." }),
+      address: z.string().min(1, { message: "Η διεύθυνση είναι υποχρεωτική." }),
+      afm: z.string().min(9, { message: "Το ΑΦΜ πρέπει να έχει 9 ψηφία." }).max(9, { message: "Το ΑΦΜ πρέπει να έχει 9 ψηφία." }),
+  })
 });
 
 type CompanyFormValues = z.infer<typeof companySchema>;
 
-interface Company extends CompanyFormValues {
+interface Company extends Omit<CompanyFormValues, 'contactInfo'> {
   id: string;
+  contactInfo: {
+    email: string;
+    phone: string;
+    address: string;
+    afm: string;
+  };
   createdAt: any;
 }
 
@@ -64,9 +73,12 @@ export default function CompaniesPage() {
     resolver: zodResolver(companySchema),
     defaultValues: {
       name: '',
-      address: '',
-      afm: '',
-      phone: '',
+      contactInfo: {
+          email: '',
+          phone: '',
+          address: '',
+          afm: '',
+      }
     },
   });
 
@@ -153,7 +165,7 @@ export default function CompaniesPage() {
                 />
                  <FormField
                   control={form.control}
-                  name="address"
+                  name="contactInfo.address"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Διεύθυνση</FormLabel>
@@ -166,7 +178,7 @@ export default function CompaniesPage() {
                 />
                  <FormField
                   control={form.control}
-                  name="afm"
+                  name="contactInfo.afm"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>ΑΦΜ</FormLabel>
@@ -179,12 +191,25 @@ export default function CompaniesPage() {
                 />
                  <FormField
                   control={form.control}
-                  name="phone"
+                  name="contactInfo.phone"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Τηλέφωνο</FormLabel>
                       <FormControl>
                         <Input placeholder="π.χ. 2101234567" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="contactInfo.email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="π.χ. contact@papadopoulos.gr" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -224,15 +249,17 @@ export default function CompaniesPage() {
                   <TableHead>Διεύθυνση</TableHead>
                   <TableHead>ΑΦΜ</TableHead>
                   <TableHead>Τηλέφωνο</TableHead>
+                  <TableHead>Email</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {companies.map((company) => (
                   <TableRow key={company.id}>
                     <TableCell className="font-medium">{company.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{company.address}</TableCell>
-                    <TableCell className="text-muted-foreground">{company.afm}</TableCell>
-                    <TableCell className="text-muted-foreground">{company.phone}</TableCell>
+                    <TableCell className="text-muted-foreground">{company.contactInfo?.address}</TableCell>
+                    <TableCell className="text-muted-foreground">{company.contactInfo?.afm}</TableCell>
+                    <TableCell className="text-muted-foreground">{company.contactInfo?.phone}</TableCell>
+                    <TableCell className="text-muted-foreground">{company.contactInfo?.email}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -245,3 +272,4 @@ export default function CompaniesPage() {
     </div>
   );
 }
+
