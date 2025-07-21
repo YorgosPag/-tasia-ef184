@@ -62,7 +62,7 @@ export default function RegisterPage() {
         duration: 5000,
       });
 
-      router.push('/login');
+      router.push('/');
 
     } catch (error: any) {
       console.error("Registration Error:", error);
