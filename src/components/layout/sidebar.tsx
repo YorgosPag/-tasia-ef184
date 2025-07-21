@@ -4,6 +4,7 @@ import {
   Home,
   Building,
   Briefcase,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -63,3 +64,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+    
