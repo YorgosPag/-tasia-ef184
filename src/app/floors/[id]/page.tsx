@@ -302,11 +302,11 @@ export default function FloorDetailsPage() {
 
     setIsUploading(true);
     
-    try {
-      // Simplified file path
-      const filePath = `floor-plans/${floor.id}/${selectedFile.name}`;
-      const fileRef = ref(storage, filePath);
+    // Simplified file path for reliability
+    const filePath = `floor-plans/${floor.id}/${selectedFile.name}`;
+    const fileRef = ref(storage, filePath);
 
+    try {
       // Upload file
       await uploadBytes(fileRef, selectedFile);
       const url = await getDownloadURL(fileRef);
@@ -315,14 +315,18 @@ export default function FloorDetailsPage() {
       const floorTopRef = doc(db, 'floors', floor.id);
       await updateDoc(floorTopRef, { floorPlanUrl: url });
 
-      // Attempt to update the sub-collection document as well
+      // Attempt to update the sub-collection document as well, but don't fail if it doesn't exist
       try {
         const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
         if (buildingDoc.exists()) {
             const { projectId, originalId: originalBuildingId } = buildingDoc.data();
             if (projectId && originalBuildingId && floor.originalId) {
                 const floorSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId);
-                await updateDoc(floorSubRef, { floorPlanUrl: url });
+                // Check if doc exists before updating
+                const floorSubSnap = await getDoc(floorSubRef);
+                if (floorSubSnap.exists()) {
+                    await updateDoc(floorSubRef, { floorPlanUrl: url });
+                }
             }
         }
       } catch (subError) {
@@ -342,7 +346,7 @@ export default function FloorDetailsPage() {
       toast({
         variant: 'destructive',
         title: 'Σφάλμα',
-        description: 'Δεν ήταν δυνατή η μεταφόρτωση του αρχείου. Ελέγξτε τους κανόνες ασφαλείας του Storage.',
+        description: 'Δεν ήταν δυνατή η μεταφόρτωση του αρχείου. Ελέγξτε τους κανόνες ασφαλείας του Storage και τη ρύθμιση CORS.',
       });
     } finally {
       setIsUploading(false);
