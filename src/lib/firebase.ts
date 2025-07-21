@@ -7,13 +7,13 @@ import { getAnalytics } from "firebase/analytics";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "***REMOVED***",
-  authDomain: "tasia-ef184.firebaseapp.com",
-  projectId: "tasia-ef184",
-  storageBucket: "tasia-ef184.appspot.com",
-  messagingSenderId: "530948962171",
-  appId: "1:530948962171:web:e73defedb6202a2cb06fde",
-  measurementId: "G-BJ0TBMVSS1"
+  apiKey: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process***REMOVED***.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
