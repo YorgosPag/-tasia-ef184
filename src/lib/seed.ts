@@ -13,6 +13,8 @@ import { db } from './firebase';
 // A simple map to hold the generated document references for use within the seeding script.
 const refs: { [key: string]: any } = {};
 
+type UnitStatus = 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
+
 export async function seedDatabase() {
   const batch = writeBatch(db);
 
@@ -173,10 +175,20 @@ export async function seedDatabase() {
   }
 
   // --- Units & Attachments ---
-  const unitsData = [
+  const unitsData: {
+    _id: string;
+    floorId: string;
+    identifier: string;
+    name: string;
+    type: string;
+    status: UnitStatus;
+    polygonPoints: number[][];
+    attachments: { type: 'parking' | 'storage'; details: string }[];
+  }[] = [
     { _id: 'unit-a1', floorId: 'flr-alpha-1', identifier: 'A1', name: 'Διαμέρισμα', type: 'Δυάρι', status: 'Διαθέσιμο', polygonPoints: [[50,50], [150,50], [150,150], [50,150]], attachments: [{type: 'parking', details: 'P-1'}, {type: 'storage', details: 'S-A1'}] },
     { _id: 'unit-a2', floorId: 'flr-alpha-1', identifier: 'A2', name: 'Διαμέρισμα', type: 'Τριάρι', status: 'Κρατημένο', polygonPoints: [[200,50], [300,50], [300,150], [200,150]], attachments: [{type: 'parking', details: 'P-2'}] },
     { _id: 'unit-b1', floorId: 'flr-alpha-2', identifier: 'B1', name: 'Ρετιρέ', type: 'Μεγάλο', status: 'Πωλημένο', polygonPoints: [[50,200], [300,200], [300,300], [50,300]], attachments: [{type: 'storage', details: 'S-B1'}] },
+    { _id: 'unit-b2', floorId: 'flr-alpha-2', identifier: 'B2', name: 'Διαμέρισμα Οικοπεδούχου', type: 'Δυάρι', status: 'Οικοπεδούχος', polygonPoints: [[350,200], [450,200], [450,300], [350,300]], attachments: [] },
     { _id: 'unit-c1', floorId: 'flr-beta-1', identifier: 'C1', name: 'Γραφείο Open-Space', type: 'Γραφείο', status: 'Διαθέσιμο', polygonPoints: [[100,100], [400,100], [400,400], [100,400]], attachments: [] },
   ];
   

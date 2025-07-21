@@ -66,7 +66,7 @@ const unitSchema = z.object({
   identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
   name: z.string().min(1, { message: 'Το όνομα είναι υποχρεωτικό.' }),
   type: z.string().optional(),
-  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο']),
+  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
   polygonPoints: z.string().optional(), // Storing as JSON string from textarea
 });
 
@@ -86,6 +86,7 @@ interface Unit extends Omit<UnitFormValues, 'polygonPoints'> {
   id: string;
   createdAt: any;
   polygonPoints?: { x: number; y: number }[];
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
 }
 
 export default function FloorDetailsPage() {
@@ -335,6 +336,7 @@ export default function FloorDetailsPage() {
           case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600';
           case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600';
           case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600';
+          case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600';
           default: return 'bg-gray-500 hover:bg-gray-600';
       }
   }
@@ -470,6 +472,7 @@ export default function FloorDetailsPage() {
                           <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
                           <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
                           <SelectItem value="Πωλημένο">Πωλημένο</SelectItem>
+                          <SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

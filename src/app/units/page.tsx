@@ -24,7 +24,7 @@ interface Unit {
   identifier: string;
   name: string;
   type?: string;
-  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο';
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
   floorId: string;
   buildingId: string;
   createdAt: any;
@@ -70,6 +70,7 @@ export default function UnitsPage() {
           case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600';
           case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600';
           case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600';
+          case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600';
           default: return 'bg-gray-500 hover:bg-gray-600';
       }
   }
