@@ -3,8 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -51,10 +50,12 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useDataStore } from '@/hooks/use-data-store';
+
 
 const projectSchema = z.object({
   title: z.string().min(1, { message: "Ο τίτλος είναι υποχρεωτικός." }),
-  companyId: z.string().min(1, { message: "Το αναγνωριστικό εταιρείας είναι υποχρεωτικό." }),
+  companyId: z.string().min(1, { message: "Η εταιρεία είναι υποχρεωτική." }),
   deadline: z.date({
     required_error: "Η προθεσμία είναι υποχρεωτική.",
   }),
@@ -63,15 +64,8 @@ const projectSchema = z.object({
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
-interface Project extends Omit<ProjectFormValues, 'deadline'> {
-  id: string;
-  createdAt: any;
-  deadline: Timestamp;
-}
-
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { projects, companies, isLoading, addProject } = useDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -86,35 +80,11 @@ export default function ProjectsPage() {
     },
   });
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'projects'), (snapshot) => {
-      const projectsData: Project[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      } as Project));
-      setProjects(projectsData);
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Error fetching projects: ", error);
-      toast({
-        variant: "destructive",
-        title: "Σφάλμα",
-        description: "Δεν ήταν δυνατή η φόρτωση των έργων.",
-      });
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [toast]);
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'projects'), {
-        ...data,
-        deadline: Timestamp.fromDate(data.deadline),
-        createdAt: serverTimestamp(),
-      });
+      await addProject(data);
       toast({
         title: "Επιτυχία",
         description: "Το έργο προστέθηκε με επιτυχία.",
@@ -153,6 +123,10 @@ export default function ProjectsPage() {
   
   const handleRowClick = (projectId: string) => {
     router.push(`/projects/${projectId}`);
+  };
+
+  const getCompanyName = (companyId: string) => {
+    return companies.find(c => c.id === companyId)?.name || companyId;
   };
 
   return (
@@ -195,11 +169,20 @@ export default function ProjectsPage() {
                   name="companyId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Αναγνωριστικό Εταιρείας</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. COMP-123" {...field} />
-                      </FormControl>
-                      <FormMessage />
+                        <FormLabel>Εταιρεία</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Επιλέξτε εταιρεία..." />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {companies.map(company => (
+                                    <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -297,7 +280,7 @@ export default function ProjectsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Τίτλος</TableHead>
-                  <TableHead>Αναγνωριστικό Εταιρείας</TableHead>
+                  <TableHead>Εταιρεία</TableHead>
                   <TableHead>Προθεσμία</TableHead>
                   <TableHead>Κατάσταση</TableHead>
                 </TableRow>
@@ -306,7 +289,7 @@ export default function ProjectsPage() {
                 {projects.map((project) => (
                   <TableRow key={project.id} onClick={() => handleRowClick(project.id)} className="cursor-pointer">
                     <TableCell className="font-medium">{project.title}</TableCell>
-                    <TableCell className="text-muted-foreground">{project.companyId}</TableCell>
+                    <TableCell className="text-muted-foreground">{getCompanyName(project.companyId)}</TableCell>
                     <TableCell>{formatDate(project.deadline)}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusVariant(project.status)}>
