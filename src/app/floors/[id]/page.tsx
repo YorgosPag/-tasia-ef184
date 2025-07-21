@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   doc,
@@ -54,7 +54,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, UploadCloud } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, UploadCloud, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
@@ -106,6 +106,11 @@ export default function FloorDetailsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [floorPlanUrl, setFloorPlanUrl] = useState<string | null>(null);
 
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+
+
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: {
@@ -145,20 +150,17 @@ export default function FloorDetailsPage() {
   useEffect(() => {
     if (!floor || !floor.buildingId || !floor.originalId) return;
     
-    // To listen to the correct subcollection, we need the project ID first.
     const findUnits = async () => {
         try {
             const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
             if (!buildingDoc.exists() || !buildingDoc.data()?.projectId || !buildingDoc.data()?.originalId) {
-                // If we can't find the project or original ID, we can't continue.
-                // This might happen with older data structures or if a building is not linked to a project.
                 setIsLoadingUnits(false);
                 toast({
                     variant: 'default',
                     title: 'Ενημέρωση',
                     description: 'Αυτό το κτίριο δεν ανήκει σε έργο. Τα ακίνητα δεν είναι διαθέσιμα.',
                 });
-                return; // Stop execution
+                return;
             }
 
             const projectId = buildingDoc.data().projectId;
@@ -186,7 +188,7 @@ export default function FloorDetailsPage() {
                 setIsLoadingUnits(false);
               }
             );
-            return unsubscribe; // Return the unsubscribe function for cleanup
+            return unsubscribe;
         } catch (error) {
             console.error("Error setting up unit listener:", error);
             toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η παρακολούθηση των ακινήτων.' });
@@ -248,13 +250,11 @@ export default function FloorDetailsPage() {
        
        const unitSubRef = doc(collection(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId, 'units'));
 
-       // Create sub-collection document
        await setDoc(unitSubRef, {
          ...unitData,
          createdAt: serverTimestamp(),
        });
 
-       // Create top-level document
        await setDoc(doc(db, 'units', unitSubRef.id), {
           ...unitData,
           originalId: unitSubRef.id,
@@ -309,7 +309,6 @@ export default function FloorDetailsPage() {
       const floorTopRef = doc(db, 'floors', floor.id);
       await updateDoc(floorTopRef, { floorPlanUrl: url });
 
-      // Update the sub-collection document as well
       const originalBuildingId = buildingDoc.data()?.originalId;
       if (originalBuildingId && floor.originalId) {
           const floorSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId);
@@ -335,7 +334,6 @@ export default function FloorDetailsPage() {
   };
   
   const handleRowClick = (unitId: string) => {
-    // Find the original ID from the top-level collection to navigate
     const unitDoc = units.find(u => u.id === unitId);
     if(unitDoc){
       router.push(`/units/${unitDoc.id}`);
@@ -356,6 +354,19 @@ export default function FloorDetailsPage() {
           default: return 'bg-gray-500 hover:bg-gray-600 text-white';
       }
   }
+  
+  const uniqueUnitTypes = useMemo(() => {
+    const types = new Set(units.map(u => u.type).filter(Boolean));
+    return Array.from(types);
+  }, [units]);
+
+  const filteredUnits = useMemo(() => {
+    return units.filter(unit => {
+      const statusMatch = statusFilter === 'all' || unit.status === statusFilter;
+      const typeMatch = typeFilter === 'all' || unit.type === typeFilter;
+      return statusMatch && typeMatch;
+    });
+  }, [units, statusFilter, typeFilter]);
 
 
   if (isLoadingFloor) {
@@ -394,7 +405,46 @@ export default function FloorDetailsPage() {
               {isLoadingUnits ? (
                  <div className="flex justify-center items-center h-96"><Loader2 className="h-12 w-12 animate-spin text-muted-foreground" /></div>
               ) : floorPlanUrl ? (
-                <FloorPlanViewer pdfUrl={floorPlanUrl} units={units} onUnitClick={(unitId) => handleRowClick(unitId)} />
+                <>
+                    <div className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-2">
+                           <Filter className="h-5 w-5 text-muted-foreground"/>
+                           <h3 className="text-md font-semibold">Φίλτρα</h3>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                            <FormItem>
+                                <FormLabel>Κατάσταση</FormLabel>
+                                <Select onValueChange={setStatusFilter} value={statusFilter}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Επιλογή κατάστασης..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Όλα</SelectItem>
+                                        <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
+                                        <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
+                                        <SelectItem value="Πωλημένο">Πωλημένο</SelectItem>
+                                        <SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FormItem>
+                             <FormItem>
+                                <FormLabel>Τύπος Ακινήτου</FormLabel>
+                                <Select onValueChange={setTypeFilter} value={typeFilter} disabled={uniqueUnitTypes.length === 0}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Επιλογή τύπου..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Όλοι</SelectItem>
+                                        {uniqueUnitTypes.map(type => (
+                                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormItem>
+                        </div>
+                    </div>
+                    <FloorPlanViewer pdfUrl={floorPlanUrl} units={filteredUnits} onUnitClick={(unitId) => handleRowClick(unitId)} />
+                </>
               ) : (
                   <p className="text-sm text-muted-foreground text-center py-8">Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.</p>
               )}
@@ -568,3 +618,5 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
+
+    
