@@ -13,7 +13,7 @@ interface Unit {
   id: string;
   identifier: string;
   name: string;
-  svgPath?: string;
+  polygonPoints?: { x: number; y: number }[];
 }
 
 interface FloorPlanViewerProps {
@@ -29,6 +29,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   const [rotation, setRotation] = useState(0);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [pageDimensions, setPageDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
@@ -48,6 +49,11 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   function onDocumentLoadError(error: Error) {
     console.error('Error while loading document!', error);
     setPdfError(`Απέτυχε η φόρτωση του PDF: ${error.message}. Βεβαιωθείτε ότι το URL είναι σωστό και επιτρέπει την πρόσβαση (CORS).`);
+  }
+  
+  function onPageLoadSuccess(page: any) {
+    const { width, height } = page.getViewport({ scale: 1 });
+    setPageDimensions({ width, height });
   }
 
   const handleUnitClick = (unitId: string) => {
@@ -85,26 +91,30 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                   rotate={rotation}
                   renderTextLayer={false}
                   renderAnnotationLayer={false}
+                  onLoadSuccess={onPageLoadSuccess}
                 />
-                <svg
-                  className="absolute top-0 left-0 w-full h-full"
-                  style={{ transformOrigin: 'top left', transform: `scale(${scale})` }}
-                  viewBox={`0 0 ${pdfjs.DEFAULT_VIEWPORT.width} ${pdfjs.DEFAULT_VIEWPORT.height}`} // Adjust based on actual PDF dimensions if needed
-                >
-                  {units.map((unit) =>
-                    unit.svgPath ? (
-                      <path
-                        key={unit.id}
-                        d={unit.svgPath}
-                        className={
-                          `fill-primary/20 stroke-primary hover:fill-primary/40 cursor-pointer transition-all ` +
-                          (selectedUnitId === unit.id ? 'fill-primary/60 stroke-2' : 'stroke-1')
-                        }
-                        onClick={() => handleUnitClick(unit.id)}
-                      />
-                    ) : null
-                  )}
-                </svg>
+                {pageDimensions.width > 0 && (
+                   <svg
+                      className="absolute top-0 left-0"
+                      width={pageDimensions.width * scale}
+                      height={pageDimensions.height * scale}
+                      viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
+                    >
+                      {units.map((unit) =>
+                        unit.polygonPoints ? (
+                          <polygon
+                            key={unit.id}
+                            points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
+                            className={
+                              `fill-primary/20 stroke-primary hover:fill-primary/40 cursor-pointer transition-all ` +
+                              (selectedUnitId === unit.id ? 'fill-primary/60 stroke-2' : 'stroke-1')
+                            }
+                            onClick={() => handleUnitClick(unit.id)}
+                          />
+                        ) : null
+                      )}
+                    </svg>
+                )}
               </div>
             </Document>
           )}
