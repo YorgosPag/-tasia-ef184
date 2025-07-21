@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
@@ -539,6 +540,8 @@ const SidebarMenuButton = React.forwardRef<
     asChild?: boolean
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
+    href?: string
+    children?: React.ReactNode;
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
@@ -549,26 +552,44 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
+      href,
+      children,
       ...props
     },
     ref
   ) => {
-    const Comp = asChild ? Slot : "button"
     const { isMobile, state } = useSidebar()
+    const isLink = !!href
+    const Comp = asChild ? Slot : 'button';
 
-    const button = (
-      <Comp
-        ref={ref}
-        data-sidebar="menu-button"
-        data-size={size}
-        data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-        {...props}
-      />
-    )
+    const buttonContent =
+      isLink && href ? (
+        <Link
+          href={href}
+          ref={ref as React.Ref<HTMLAnchorElement>}
+          data-sidebar="menu-button"
+          data-size={size}
+          data-active={isActive}
+          className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+          {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+        >
+          {children}
+        </Link>
+      ) : (
+        <Comp
+          ref={ref}
+          data-sidebar="menu-button"
+          data-size={size}
+          data-active={isActive}
+          className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+          {...props}
+        >
+          {children}
+        </Comp>
+      );
 
     if (!tooltip) {
-      return button
+      return buttonContent;
     }
 
     if (typeof tooltip === "string") {
@@ -579,7 +600,7 @@ const SidebarMenuButton = React.forwardRef<
 
     return (
       <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
         <TooltipContent
           side="right"
           align="center"
