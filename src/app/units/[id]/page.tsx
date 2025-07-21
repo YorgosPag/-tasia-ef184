@@ -222,13 +222,13 @@ export default function UnitDetailsPage() {
     return type === 'parking' ? 'Θέση Στάθμευσης' : 'Αποθήκη';
   };
 
-  const getStatusVariant = (status: Unit['status'] | undefined): 'default' | 'secondary' | 'outline' => {
-    switch(status) {
-        case 'Πωλημένο': return 'destructive';
-        case 'Κρατημένο': return 'secondary';
-        case 'Διαθέσιμο': return 'default';
-        default: return 'outline';
-    }
+  const getStatusClass = (status: Unit['status'] | undefined) => {
+      switch(status) {
+          case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600 text-white';
+          case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600 text-white';
+          case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600 text-white';
+          default: return 'bg-gray-500 hover:bg-gray-600 text-white';
+      }
   }
 
   if (isLoadingUnit) {
@@ -249,10 +249,7 @@ export default function UnitDetailsPage() {
           <CardDescription>Τύπος: {unit.type || 'N/A'} | ID Ορόφου: {unit.floorId}</CardDescription>
         </CardHeader>
         <CardContent>
-            <Badge variant={getStatusVariant(unit.status)} 
-                    className={unit.status === 'Διαθέσιμο' ? 'bg-green-500 hover:bg-green-600 text-white' : 
-                                unit.status === 'Κρατημένο' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
-                                unit.status === 'Πωλημένο' ? 'bg-red-500 hover:bg-red-600 text-white' : ''}>
+            <Badge variant="default" className={getStatusClass(unit.status)}>
                 {unit.status}
             </Badge>
         </CardContent>
