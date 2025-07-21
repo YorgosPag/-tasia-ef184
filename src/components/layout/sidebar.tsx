@@ -4,6 +4,7 @@ import {
   Home,
   Building,
   Briefcase,
+  Building2,
   Calendar as CalendarIcon,
 } from 'lucide-react';
 import {
@@ -45,6 +46,12 @@ export function AppSidebar() {
               <SidebarMenuButton href="/projects" isActive={pathname.startsWith('/projects')}>
                 <Briefcase />
                 Έργα
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton href="/companies" isActive={pathname.startsWith('/companies')}>
+                <Building2 />
+                Εταιρείες
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
