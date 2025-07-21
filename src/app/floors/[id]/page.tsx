@@ -49,133 +49,124 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 
-const floorSchema = z.object({
-  level: z.string().min(1, { message: 'Το επίπεδο είναι υποχρεωτικό.' }),
-  description: z.string().optional(),
+const unitSchema = z.object({
+  name: z.string().min(1, { message: 'Το όνομα είναι υποχρεωτικό.' }),
+  type: z.string().optional(),
 });
 
-type FloorFormValues = z.infer<typeof floorSchema>;
+type UnitFormValues = z.infer<typeof unitSchema>;
 
-interface Building {
+interface Floor {
   id: string;
-  address: string;
-  type: string;
-  projectId?: string;
+  level: string;
+  description?: string;
+  buildingId: string;
   createdAt: Timestamp;
 }
 
-interface Floor extends FloorFormValues {
+interface Unit extends UnitFormValues {
   id: string;
   createdAt: any;
 }
 
-export default function BuildingDetailsPage() {
+export default function FloorDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const buildingId = params.id as string;
+  const floorId = params.id as string;
 
-  const [building, setBuilding] = useState<Building | null>(null);
-  const [floors, setFloors] = useState<Floor[]>([]);
-  const [isLoadingBuilding, setIsLoadingBuilding] = useState(true);
-  const [isLoadingFloors, setIsLoadingFloors] = useState(true);
+  const [floor, setFloor] = useState<Floor | null>(null);
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [isLoadingFloor, setIsLoadingFloor] = useState(true);
+  const [isLoadingUnits, setIsLoadingUnits] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<FloorFormValues>({
-    resolver: zodResolver(floorSchema),
+  const form = useForm<UnitFormValues>({
+    resolver: zodResolver(unitSchema),
     defaultValues: {
-      level: '',
-      description: '',
+      name: '',
+      type: '',
     },
   });
 
-  // Fetch building details
+  // Fetch floor details from top-level collection
   useEffect(() => {
-    if (!buildingId) return;
-    const docRef = doc(db, 'buildings', buildingId);
-    const getBuildingData = async () => {
-      setIsLoadingBuilding(true);
+    if (!floorId) return;
+    const docRef = doc(db, 'floors', floorId);
+    const getFloorData = async () => {
+      setIsLoadingFloor(true);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setBuilding({ id: docSnap.id, ...docSnap.data() } as Building);
+        setFloor({ id: docSnap.id, ...docSnap.data() } as Floor);
       } else {
         toast({
           variant: 'destructive',
           title: 'Σφάλμα',
-          description: 'Το κτίριο δεν βρέθηκε.',
+          description: 'Ο όροφος δεν βρέθηκε.',
         });
-        router.push('/buildings');
+        router.push('/floors');
       }
-      setIsLoadingBuilding(false);
+      setIsLoadingFloor(false);
     };
-    getBuildingData();
-  }, [buildingId, router, toast]);
+    getFloorData();
+  }, [floorId, router, toast]);
 
-  // Listen for floors in the subcollection
+  // Listen for units in the subcollection
   useEffect(() => {
-    if (!buildingId) return;
-    const floorsColRef = collection(db, 'buildings', buildingId, 'floors');
+    if (!floor || !floor.buildingId) return;
+    const { buildingId, originalId } = floor as any; // originalId is the id in the subcollection
+    const unitsColRef = collection(db, 'buildings', buildingId, 'floors', originalId, 'units');
+    
     const unsubscribe = onSnapshot(
-      floorsColRef,
+      unitsColRef,
       (snapshot) => {
-        const floorsData: Floor[] = snapshot.docs.map((doc) => ({
+        const unitsData: Unit[] = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        } as Floor));
-        setFloors(floorsData);
-        setIsLoadingFloors(false);
+        } as Unit));
+        setUnits(unitsData);
+        setIsLoadingUnits(false);
       },
       (error) => {
-        console.error('Error fetching floors: ', error);
+        console.error('Error fetching units: ', error);
         toast({
           variant: 'destructive',
           title: 'Σφάλμα',
-          description: 'Δεν ήταν δυνατή η φόρτωση των ορόφων.',
+          description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων.',
         });
-        setIsLoadingFloors(false);
+        setIsLoadingUnits(false);
       }
     );
 
     return () => unsubscribe();
-  }, [buildingId, toast]);
-
-  const onSubmitFloor = async (data: FloorFormValues) => {
-    setIsSubmitting(true);
-    try {
-      // Add to subcollection
-      const floorRef = await addDoc(collection(db, 'buildings', buildingId, 'floors'), {
-        ...data,
-        createdAt: serverTimestamp(),
-      });
-      
-      // Also add to a top-level 'floors' collection for the main /floors page
-      await addDoc(collection(db, 'floors'), {
-          ...data,
-          buildingId: buildingId,
-          originalId: floorRef.id,
-          createdAt: serverTimestamp(),
-      });
-      toast({
-        title: 'Επιτυχία',
-        description: 'Ο όροφος προστέθηκε με επιτυχία.',
-      });
-      form.reset();
-      setIsDialogOpen(false);
-    } catch (error) {
-      console.error('Error adding floor: ', error);
-      toast({
-        variant: 'destructive',
-        title: 'Σφάλμα',
-        description: 'Δεν ήταν δυνατή η προσθήκη του ορόφου.',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleRowClick = (floorId: string) => {
-    router.push(`/floors/${floorId}`);
+  }, [floor, toast]);
+  
+  const onSubmitUnit = async (data: UnitFormValues) => {
+     if (!floor || !floor.buildingId) return;
+     const { buildingId, originalId } = floor as any;
+     setIsSubmitting(true);
+     try {
+       await addDoc(collection(db, 'buildings', buildingId, 'floors', originalId, 'units'), {
+         ...data,
+         createdAt: serverTimestamp(),
+       });
+       toast({
+         title: 'Επιτυχία',
+         description: 'Το ακίνητο προστέθηκε με επιτυχία.',
+       });
+       form.reset();
+       setIsDialogOpen(false);
+     } catch (error) {
+       console.error('Error adding unit: ', error);
+       toast({
+         variant: 'destructive',
+         title: 'Σφάλμα',
+         description: 'Δεν ήταν δυνατή η προσθήκη του ακινήτου.',
+       });
+     } finally {
+       setIsSubmitting(false);
+     }
   };
 
   const formatDate = (timestamp: Timestamp | undefined) => {
@@ -183,7 +174,7 @@ export default function BuildingDetailsPage() {
     return format(timestamp.toDate(), 'dd/MM/yyyy');
   };
 
-  if (isLoadingBuilding) {
+  if (isLoadingFloor) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
@@ -191,7 +182,7 @@ export default function BuildingDetailsPage() {
     );
   }
 
-  if (!building) {
+  if (!floor) {
     return null;
   }
 
@@ -204,41 +195,41 @@ export default function BuildingDetailsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Κτίριο: {building.address}</CardTitle>
+          <CardTitle>Όροφος: {floor.level}</CardTitle>
           <CardDescription>
-            Τύπος: {building.type} | Ημερομηνία Δημιουργίας: {formatDate(building.createdAt)}
+            Περιγραφή: {floor.description || 'N/A'} | ID Κτιρίου: {floor.buildingId}
           </CardDescription>
         </CardHeader>
       </Card>
       
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          Όροφοι του Κτιρίου
+          Ακίνητα του Ορόφου
         </h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2" />
-              Νέος Όροφος
+              Νέο Ακίνητο
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Προσθήκη Νέου Ορόφου</DialogTitle>
+              <DialogTitle>Προσθήκη Νέου Ακινήτου</DialogTitle>
               <DialogDescription>
-                Συμπληρώστε τις πληροφορίες για να προσθέσετε έναν νέο όροφο στο κτίριο.
+                Συμπληρώστε τις πληροφορίες για να προσθέσετε ένα νέο ακίνητο (unit) στον όροφο.
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitFloor)} className="grid gap-4 py-4">
+              <form onSubmit={form.handleSubmit(onSubmitUnit)} className="grid gap-4 py-4">
                 <FormField
                   control={form.control}
-                  name="level"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Επίπεδο Ορόφου</FormLabel>
+                      <FormLabel>Όνομα/Αναγνωριστικό Ακινήτου</FormLabel>
                       <FormControl>
-                        <Input placeholder="π.χ. 1, 0, -1, Ισόγειο" {...field} />
+                        <Input placeholder="π.χ. Διαμέρισμα Α1, Κατάστημα 2" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -246,12 +237,12 @@ export default function BuildingDetailsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="description"
+                  name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
+                      <FormLabel>Τύπος (Προαιρετικό)</FormLabel>
                       <FormControl>
-                        <Input placeholder="π.χ. Γραφεία εταιρείας" {...field} />
+                        <Input placeholder="π.χ. Γκαρσονιέρα" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -265,7 +256,7 @@ export default function BuildingDetailsPage() {
                   </DialogClose>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Προσθήκη Ορόφου
+                    Προσθήκη Ακινήτου
                   </Button>
                 </DialogFooter>
               </form>
@@ -276,34 +267,34 @@ export default function BuildingDetailsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Λίστα Ορόφων</CardTitle>
+          <CardTitle>Λίστα Ακινήτων</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoadingFloors ? (
+          {isLoadingUnits ? (
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : floors.length > 0 ? (
+          ) : units.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Επίπεδο</TableHead>
-                  <TableHead>Περιγραφή</TableHead>
+                  <TableHead>Όνομα/ID</TableHead>
+                  <TableHead>Τύπος</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {floors.map((floor) => (
-                  <TableRow key={floor.id} onClick={() => handleRowClick(floor.id)} className="cursor-pointer">
-                    <TableCell className="font-medium">{floor.level}</TableCell>
-                    <TableCell className="text-muted-foreground">{floor.description || 'N/A'}</TableCell>
-                    <TableCell>{formatDate(floor.createdAt)}</TableCell>
+                {units.map((unit) => (
+                  <TableRow key={unit.id}>
+                    <TableCell className="font-medium">{unit.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
+                    <TableCell>{formatDate(unit.createdAt)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           ) : (
-            <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν όροφοι για αυτό το κτίριο.</p>
+            <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν ακίνητα για αυτόν τον όροφο.</p>
           )}
         </CardContent>
       </Card>

@@ -2,8 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { collection, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collectionGroup, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
   Table,
@@ -16,31 +15,32 @@ import {
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
-interface Floor {
+interface Unit {
   id: string;
-  level: string;
-  description?: string;
-  buildingId: string;
+  name: string;
+  type?: string;
   createdAt: any;
 }
 
-export default function FloorsPage() {
-  const [floors, setFloors] = useState<Floor[]>([]);
+export default function UnitsPage() {
+  const [units, setUnits] = useState<Unit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'floors'), (snapshot) => {
-      const floorsData: Floor[] = snapshot.docs.map((doc) => ({
+    // This will listen to all 'units' subcollections across all documents
+    const unitsQuery = collectionGroup(db, 'units');
+    const unsubscribe = onSnapshot(unitsQuery, (snapshot) => {
+      const unitsData: Unit[] = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      } as Floor));
-      setFloors(floorsData);
+      } as Unit));
+      setUnits(unitsData);
       setIsLoading(false);
     }, (error) => {
-      console.error("Error fetching floors: ", error);
+      console.error("Error fetching units: ", error);
       setIsLoading(false);
     });
 
@@ -55,50 +55,44 @@ export default function FloorsPage() {
     return 'Άγνωστη ημερομηνία';
   };
 
-  const handleRowClick = (floorId: string) => {
-    router.push(`/floors/${floorId}`);
-  };
-
   return (
     <div className="flex flex-col gap-8">
        <div className="flex items-center justify-between">
          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Όροφοι
+          Ακίνητα (Units)
         </h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Λίστα Όλων των Ορόφων</CardTitle>
+          <CardTitle>Λίστα Όλων των Ακινήτων</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : floors.length > 0 ? (
+          ) : units.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Επίπεδο</TableHead>
-                  <TableHead>Περιγραφή</TableHead>
-                  <TableHead>Αναγνωριστικό Κτιρίου</TableHead>
+                  <TableHead>Όνομα/ID</TableHead>
+                  <TableHead>Τύπος</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {floors.map((floor) => (
-                  <TableRow key={floor.id} onClick={() => handleRowClick(floor.id)} className="cursor-pointer">
-                    <TableCell className="font-medium">{floor.level}</TableCell>
-                    <TableCell className="text-muted-foreground">{floor.description || 'N/A'}</TableCell>
-                    <TableCell className="text-muted-foreground">{floor.buildingId}</TableCell>
-                    <TableCell className="text-muted-foreground">{formatDate(floor.createdAt)}</TableCell>
+                {units.map((unit) => (
+                  <TableRow key={unit.id}>
+                    <TableCell className="font-medium">{unit.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(unit.createdAt)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           ) : (
-             <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν όροφοι.</p>
+             <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν ακίνητα.</p>
           )}
         </CardContent>
       </Card>
