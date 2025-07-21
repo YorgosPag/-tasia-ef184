@@ -301,39 +301,29 @@ export default function FloorDetailsPage() {
     if (!selectedFile || !floor) return;
 
     setIsUploading(true);
-    
-    // Simplified file path for reliability
     const filePath = `floor-plans/${floor.id}/${selectedFile.name}`;
     const fileRef = ref(storage, filePath);
 
     try {
-      // Upload file
-      await uploadBytes(fileRef, selectedFile);
+      const metadata = {
+        contentType: selectedFile.type,
+      };
+      await uploadBytes(fileRef, selectedFile, metadata);
       const url = await getDownloadURL(fileRef);
 
-      // Update the top-level floor document
-      const floorTopRef = doc(db, 'floors', floor.id);
-      await updateDoc(floorTopRef, { floorPlanUrl: url });
+      const floorDocRef = doc(db, 'floors', floor.id);
+      await updateDoc(floorDocRef, { floorPlanUrl: url });
 
-      // Attempt to update the sub-collection document as well, but don't fail if it doesn't exist
       try {
         const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-        if (buildingDoc.exists()) {
-            const { projectId, originalId: originalBuildingId } = buildingDoc.data();
-            if (projectId && originalBuildingId && floor.originalId) {
-                const floorSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId);
-                // Check if doc exists before updating
-                const floorSubSnap = await getDoc(floorSubRef);
-                if (floorSubSnap.exists()) {
-                    await updateDoc(floorSubRef, { floorPlanUrl: url });
-                }
-            }
+        const { projectId, originalId: buildingOriginalId } = buildingDoc.data() || {};
+        if (projectId && buildingOriginalId && floor.originalId) {
+          const floorSubDocRef = doc(db, 'projects', projectId, 'buildings', buildingOriginalId, 'floors', floor.originalId);
+          await updateDoc(floorSubDocRef, { floorPlanUrl: url }).catch(e => console.warn("Could not update subcollection floor plan URL, may not exist:", e));
         }
       } catch (subError) {
-          console.warn("Could not update floor plan URL in subcollection:", subError);
-          // Don't block the main success for this, just log it.
+        console.warn("Could not find/update floor plan URL in subcollection:", subError);
       }
-
 
       setFloorPlanUrl(url);
       setSelectedFile(null);
@@ -345,8 +335,8 @@ export default function FloorDetailsPage() {
       console.error("Error uploading file: ", error);
       toast({
         variant: 'destructive',
-        title: 'Σφάλμα',
-        description: 'Δεν ήταν δυνατή η μεταφόρτωση του αρχείου. Ελέγξτε τους κανόνες ασφαλείας του Storage και τη ρύθμιση CORS.',
+        title: 'Σφάλμα Μεταφόρτωσης',
+        description: 'Δεν ήταν δυνατή η μεταφόρτωση του αρχείου. Ελέγξτε τις ρυθμίσεις CORS και τους κανόνες ασφαλείας του Storage.',
       });
     } finally {
       setIsUploading(false);
@@ -638,3 +628,5 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
+
+    
