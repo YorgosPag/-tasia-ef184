@@ -144,13 +144,26 @@ export default function FloorDetailsPage() {
   
   const onSubmitUnit = async (data: UnitFormValues) => {
      if (!floor || !floor.buildingId) return;
-     const { buildingId, originalId } = floor as any;
+     const { buildingId, id: floorId, originalId } = floor as any;
      setIsSubmitting(true);
      try {
-       await addDoc(collection(db, 'buildings', buildingId, 'floors', originalId, 'units'), {
+       // Add to subcollection
+       const unitSubRef = await addDoc(collection(db, 'buildings', buildingId, 'floors', originalId, 'units'), {
          ...data,
+         buildingId: buildingId,
+         floorId: floorId, // Storing the top-level floor ID
          createdAt: serverTimestamp(),
        });
+
+       // Also add to a top-level 'units' collection for the main /units page
+       await addDoc(collection(db, 'units'), {
+          ...data,
+          originalId: unitSubRef.id,
+          buildingId: buildingId,
+          floorId: floorId,
+          createdAt: serverTimestamp(),
+       });
+
        toast({
          title: 'Επιτυχία',
          description: 'Το ακίνητο προστέθηκε με επιτυχία.',
@@ -167,6 +180,10 @@ export default function FloorDetailsPage() {
      } finally {
        setIsSubmitting(false);
      }
+  };
+  
+  const handleRowClick = (unitId: string) => {
+    router.push(`/units/${unitId}`);
   };
 
   const formatDate = (timestamp: Timestamp | undefined) => {
@@ -285,7 +302,7 @@ export default function FloorDetailsPage() {
               </TableHeader>
               <TableBody>
                 {units.map((unit) => (
-                  <TableRow key={unit.id}>
+                  <TableRow key={unit.id} onClick={() => handleRowClick(unit.id)} className="cursor-pointer">
                     <TableCell className="font-medium">{unit.name}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
                     <TableCell>{formatDate(unit.createdAt)}</TableCell>
@@ -301,3 +318,5 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
+
+    

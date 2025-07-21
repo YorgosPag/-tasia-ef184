@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collectionGroup, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
   Table,
@@ -21,6 +21,8 @@ interface Unit {
   id: string;
   name: string;
   type?: string;
+  floorId: string;
+  buildingId: string;
   createdAt: any;
 }
 
@@ -30,9 +32,8 @@ export default function UnitsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // This will listen to all 'units' subcollections across all documents
-    const unitsQuery = collectionGroup(db, 'units');
-    const unsubscribe = onSnapshot(unitsQuery, (snapshot) => {
+    // This will listen to the top-level 'units' collection
+    const unsubscribe = onSnapshot(collection(db, 'units'), (snapshot) => {
       const unitsData: Unit[] = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -46,6 +47,10 @@ export default function UnitsPage() {
 
     return () => unsubscribe();
   }, []);
+  
+  const handleRowClick = (unitId: string) => {
+    router.push(`/units/${unitId}`);
+  };
 
   const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return 'N/A';
@@ -78,14 +83,18 @@ export default function UnitsPage() {
                 <TableRow>
                   <TableHead>Όνομα/ID</TableHead>
                   <TableHead>Τύπος</TableHead>
+                  <TableHead>ID Ορόφου</TableHead>
+                  <TableHead>ID Κτιρίου</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {units.map((unit) => (
-                  <TableRow key={unit.id}>
+                  <TableRow key={unit.id} onClick={() => handleRowClick(unit.id)} className="cursor-pointer">
                     <TableCell className="font-medium">{unit.name}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{unit.floorId}</TableCell>
+                    <TableCell className="text-muted-foreground">{unit.buildingId}</TableCell>
                     <TableCell className="text-muted-foreground">{formatDate(unit.createdAt)}</TableCell>
                   </TableRow>
                 ))}
@@ -99,3 +108,5 @@ export default function UnitsPage() {
     </div>
   );
 }
+
+    
