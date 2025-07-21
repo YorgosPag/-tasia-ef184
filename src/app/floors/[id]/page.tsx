@@ -303,26 +303,33 @@ export default function FloorDetailsPage() {
     setIsUploading(true);
     
     try {
-      const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-      if (!buildingDoc.exists() || !buildingDoc.data()?.projectId) {
-        throw new Error("Building or Project ID not found for file upload");
-      }
-      const projectId = buildingDoc.data().projectId;
-      
-      const filePath = `projects/${projectId}/floor-plans/${floor.id}-${selectedFile.name}`;
+      // Simplified file path
+      const filePath = `floor-plans/${floor.id}/${selectedFile.name}`;
       const fileRef = ref(storage, filePath);
 
+      // Upload file
       await uploadBytes(fileRef, selectedFile);
       const url = await getDownloadURL(fileRef);
 
+      // Update the top-level floor document
       const floorTopRef = doc(db, 'floors', floor.id);
       await updateDoc(floorTopRef, { floorPlanUrl: url });
 
-      const originalBuildingId = buildingDoc.data()?.originalId;
-      if (originalBuildingId && floor.originalId) {
-          const floorSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId);
-          await updateDoc(floorSubRef, { floorPlanUrl: url });
+      // Attempt to update the sub-collection document as well
+      try {
+        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+        if (buildingDoc.exists()) {
+            const { projectId, originalId: originalBuildingId } = buildingDoc.data();
+            if (projectId && originalBuildingId && floor.originalId) {
+                const floorSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId);
+                await updateDoc(floorSubRef, { floorPlanUrl: url });
+            }
+        }
+      } catch (subError) {
+          console.warn("Could not update floor plan URL in subcollection:", subError);
+          // Don't block the main success for this, just log it.
       }
+
 
       setFloorPlanUrl(url);
       setSelectedFile(null);
@@ -335,7 +342,7 @@ export default function FloorDetailsPage() {
       toast({
         variant: 'destructive',
         title: 'Σφάλμα',
-        description: 'Δεν ήταν δυνατή η μεταφόρτωση του αρχείου.',
+        description: 'Δεν ήταν δυνατή η μεταφόρτωση του αρχείου. Ελέγξτε τους κανόνες ασφαλείας του Storage.',
       });
     } finally {
       setIsUploading(false);
