@@ -51,11 +51,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { FloorPlanViewer } from '@/components/floor-plan-viewer';
+import { Textarea } from '@/components/ui/textarea';
 
 const unitSchema = z.object({
   identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
   name: z.string().min(1, { message: 'Το όνομα είναι υποχρεωτικό.' }),
   type: z.string().optional(),
+  polygonPoints: z.string().optional(), // Storing as JSON string from textarea
 });
 
 type UnitFormValues = z.infer<typeof unitSchema>;
@@ -69,10 +71,10 @@ interface Floor {
   floorPlanUrl?: string;
 }
 
-interface Unit extends UnitFormValues {
+interface Unit extends Omit<UnitFormValues, 'polygonPoints'> {
   id: string;
   createdAt: any;
-  svgPath?: string;
+  polygonPoints?: { x: number; y: number }[];
 }
 
 export default function FloorDetailsPage() {
@@ -98,6 +100,7 @@ export default function FloorDetailsPage() {
       identifier: '',
       name: '',
       type: '',
+      polygonPoints: '',
     },
   });
 
@@ -159,10 +162,38 @@ export default function FloorDetailsPage() {
      if (!floor || !floor.buildingId) return;
      const { buildingId, id: floorId, originalId } = floor as any;
      setIsSubmitting(true);
+     
+     let parsedPolygonPoints: {x: number, y: number}[] | undefined;
+     if (data.polygonPoints) {
+       try {
+         const pointsArray = JSON.parse(data.polygonPoints);
+         if (Array.isArray(pointsArray)) {
+           parsedPolygonPoints = pointsArray.map(p => ({ x: p[0], y: p[1]}));
+         } else {
+            throw new Error('Invalid format');
+         }
+       } catch (e) {
+         toast({
+           variant: 'destructive',
+           title: 'Σφάλμα στις συντεταγμένες',
+           description: 'Οι συντεταγμένες πολυγώνου δεν είναι έγκυρο JSON. π.χ. [[10,10], [100,10]]'
+         });
+         setIsSubmitting(false);
+         return;
+       }
+     }
+
+     const unitData = {
+       identifier: data.identifier,
+       name: data.name,
+       type: data.type,
+       ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
+     };
+
      try {
        // Add to subcollection
        const unitSubRef = await addDoc(collection(db, 'buildings', buildingId, 'floors', originalId, 'units'), {
-         ...data,
+         ...unitData,
          buildingId: buildingId,
          floorId: floorId, // Storing the top-level floor ID
          createdAt: serverTimestamp(),
@@ -170,7 +201,7 @@ export default function FloorDetailsPage() {
 
        // Also add to a top-level 'units' collection for the main /units page
        await addDoc(collection(db, 'units'), {
-          ...data,
+          ...unitData,
           originalId: unitSubRef.id,
           buildingId: buildingId,
           floorId: floorId,
@@ -350,6 +381,19 @@ export default function FloorDetailsPage() {
                       <FormLabel>Τύπος (Προαιρετικό)</FormLabel>
                       <FormControl>
                         <Input placeholder="π.χ. Γκαρσονιέρα" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="polygonPoints"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Συντεταγμένες Πολυγώνου (JSON)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder='π.χ. [[10,10], [100,10], [100,100], [10,100]]' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
