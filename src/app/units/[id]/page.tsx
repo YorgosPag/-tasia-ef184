@@ -61,6 +61,7 @@ type AttachmentFormValues = z.infer<typeof attachmentSchema>;
 
 interface Unit {
   id: string;
+  identifier: string;
   name: string;
   type?: string;
   buildingId: string;
@@ -193,7 +194,7 @@ export default function UnitDetailsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Ακίνητο: {unit.name}</CardTitle>
+          <CardTitle>Ακίνητο: {unit.name} ({unit.identifier})</CardTitle>
           <CardDescription>Τύπος: {unit.type || 'N/A'} | ID Ορόφου: {unit.floorId}</CardDescription>
         </CardHeader>
       </Card>
@@ -279,5 +280,3 @@ export default function UnitDetailsPage() {
     </div>
   );
 }
-
-    
