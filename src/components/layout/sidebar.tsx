@@ -6,7 +6,7 @@ import {
   Building,
   Briefcase,
   Building2,
-  Calendar as CalendarIcon,
+  Layers,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -60,16 +60,16 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton href="/properties" isActive={pathname.startsWith('/properties')}>
-                <Building />
-                Properties
-              </SidebarMenuButton>
-            </SidebarMenuItem>
              <SidebarMenuItem>
               <SidebarMenuButton href="/buildings" isActive={pathname.startsWith('/buildings')}>
                 <Building />
                 Κτίρια
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="/floors" isActive={pathname.startsWith('/floors')}>
+                <Layers />
+                Όροφοι
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

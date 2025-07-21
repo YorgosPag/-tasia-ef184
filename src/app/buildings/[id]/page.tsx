@@ -11,6 +11,8 @@ import {
   addDoc,
   serverTimestamp,
   Timestamp,
+  query,
+  where
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -49,125 +51,127 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 
-// Schema for the building form
-const buildingSchema = z.object({
-  address: z.string().min(1, { message: 'Η διεύθυνση είναι υποχρεωτική.' }),
-  type: z.string().min(1, { message: 'Ο τύπος είναι υποχρεωτικός.' }),
+const floorSchema = z.object({
+  level: z.string().min(1, { message: 'Ο όροφος είναι υποχρεωτικός.' }),
+  description: z.string().optional(),
 });
 
-type BuildingFormValues = z.infer<typeof buildingSchema>;
+type FloorFormValues = z.infer<typeof floorSchema>;
 
-interface Project {
+interface Building {
   id: string;
-  title: string;
-  companyId: string;
-  deadline: Timestamp;
-  status: string;
+  address: string;
+  type: string;
+  projectId?: string;
+  createdAt: Timestamp;
 }
 
-interface Building extends BuildingFormValues {
+interface Floor extends FloorFormValues {
   id: string;
   createdAt: any;
 }
 
-export default function ProjectDetailsPage() {
+export default function BuildingDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const projectId = params.id as string;
+  const buildingId = params.id as string;
 
-  const [project, setProject] = useState<Project | null>(null);
-  const [buildings, setBuildings] = useState<Building[]>([]);
-  const [isLoadingProject, setIsLoadingProject] = useState(true);
-  const [isLoadingBuildings, setIsLoadingBuildings] = useState(true);
+  const [building, setBuilding] = useState<Building | null>(null);
+  const [floors, setFloors] = useState<Floor[]>([]);
+  const [isLoadingBuilding, setIsLoadingBuilding] = useState(true);
+  const [isLoadingFloors, setIsLoadingFloors] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<BuildingFormValues>({
-    resolver: zodResolver(buildingSchema),
+  const form = useForm<FloorFormValues>({
+    resolver: zodResolver(floorSchema),
     defaultValues: {
-      address: '',
-      type: '',
+      level: '',
+      description: '',
     },
   });
 
-  // Fetch project details
+  // Fetch building details
   useEffect(() => {
-    if (!projectId) return;
-    const docRef = doc(db, 'projects', projectId);
-    const getProjectData = async () => {
-      setIsLoadingProject(true);
+    if (!buildingId) return;
+    const docRef = doc(db, 'buildings', buildingId);
+    const getBuildingData = async () => {
+      setIsLoadingBuilding(true);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setProject({ id: docSnap.id, ...docSnap.data() } as Project);
+        setBuilding({ id: docSnap.id, ...docSnap.data() } as Building);
       } else {
+        // Fallback for buildings in subcollections
+        const q = query(collection(db, "projects"), where("buildings", "array-contains", buildingId));
+        // This part is complex as subcollection docs are not directly queryable this way.
+        // A simple getDoc on a known path is better. For now we assume top-level or project-level fetch.
         toast({
           variant: 'destructive',
           title: 'Σφάλμα',
-          description: 'Το έργο δεν βρέθηκε.',
+          description: 'Το κτίριο δεν βρέθηκε.',
         });
-        router.push('/projects');
+        router.push('/buildings');
       }
-      setIsLoadingProject(false);
+      setIsLoadingBuilding(false);
     };
-    getProjectData();
-  }, [projectId, router, toast]);
+    getBuildingData();
+  }, [buildingId, router, toast]);
 
-  // Listen for buildings in the subcollection
+  // Listen for floors in the subcollection
   useEffect(() => {
-    if (!projectId) return;
-    const buildingsColRef = collection(db, 'projects', projectId, 'buildings');
+    if (!buildingId) return;
+    // Path to the subcollection
+    const floorsColRef = collection(db, 'buildings', buildingId, 'floors');
     const unsubscribe = onSnapshot(
-      buildingsColRef,
+      floorsColRef,
       (snapshot) => {
-        const buildingsData: Building[] = snapshot.docs.map((doc) => ({
+        const floorsData: Floor[] = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        } as Building));
-        setBuildings(buildingsData);
-        setIsLoadingBuildings(false);
+        } as Floor));
+        setFloors(floorsData);
+        setIsLoadingFloors(false);
       },
       (error) => {
-        console.error('Error fetching buildings: ', error);
+        console.error('Error fetching floors: ', error);
         toast({
           variant: 'destructive',
           title: 'Σφάλμα',
-          description: 'Δεν ήταν δυνατή η φόρτωση των κτιρίων.',
+          description: 'Δεν ήταν δυνατή η φόρτωση των ορόφων.',
         });
-        setIsLoadingBuildings(false);
+        setIsLoadingFloors(false);
       }
     );
 
     return () => unsubscribe();
-  }, [projectId, toast]);
+  }, [buildingId, toast]);
 
-  const onSubmitBuilding = async (data: BuildingFormValues) => {
+  const onSubmitFloor = async (data: FloorFormValues) => {
     setIsSubmitting(true);
     try {
-      // We add the new building to the subcollection of the current project
-      const buildingRef = await addDoc(collection(db, 'projects', projectId, 'buildings'), {
+      await addDoc(collection(db, 'buildings', buildingId, 'floors'), {
         ...data,
         createdAt: serverTimestamp(),
       });
-      // We also add it to the top-level buildings collection for the main /buildings page
-      await addDoc(collection(db, 'buildings'), {
-        ...data,
-        projectId: projectId, // Link back to the project
-        originalId: buildingRef.id, // Keep track of the original doc id in the subcollection
-        createdAt: serverTimestamp(),
+      // Also add to a top-level 'floors' collection for the main /floors page
+      await addDoc(collection(db, 'floors'), {
+          ...data,
+          buildingId: buildingId,
+          createdAt: serverTimestamp(),
       });
       toast({
         title: 'Επιτυχία',
-        description: 'Το κτίριο προστέθηκε με επιτυχία.',
+        description: 'Ο όροφος προστέθηκε με επιτυχία.',
       });
       form.reset();
       setIsDialogOpen(false);
     } catch (error) {
-      console.error('Error adding building: ', error);
+      console.error('Error adding floor: ', error);
       toast({
         variant: 'destructive',
         title: 'Σφάλμα',
-        description: 'Δεν ήταν δυνατή η προσθήκη του κτιρίου.',
+        description: 'Δεν ήταν δυνατή η προσθήκη του ορόφου.',
       });
     } finally {
       setIsSubmitting(false);
@@ -179,15 +183,7 @@ export default function ProjectDetailsPage() {
     return format(timestamp.toDate(), 'dd/MM/yyyy');
   };
 
-  const handleBuildingRowClick = (buildingId: string) => {
-    // Note: We are navigating to the detail page of the building using its ID.
-    // The building detail page will need to know which project it belongs to if we want to navigate back.
-    // For now, we assume a generic building detail page.
-    router.push(`/buildings/${buildingId}`);
-  };
-
-
-  if (isLoadingProject) {
+  if (isLoadingBuilding) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
@@ -195,54 +191,54 @@ export default function ProjectDetailsPage() {
     );
   }
 
-  if (!project) {
-    return null; // or a not-found component
+  if (!building) {
+    return null;
   }
 
   return (
     <div className="flex flex-col gap-8">
       <Button variant="outline" size="sm" className="w-fit" onClick={() => router.back()}>
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Επιστροφή στα Έργα
+        Επιστροφή
       </Button>
 
       <Card>
         <CardHeader>
-          <CardTitle>{project.title}</CardTitle>
+          <CardTitle>Κτίριο: {building.address}</CardTitle>
           <CardDescription>
-            Αναγνωριστικό Εταιρείας: {project.companyId} | Προθεσμία: {formatDate(project.deadline)} | Κατάσταση: {project.status}
+            Τύπος: {building.type} | Ημερομηνία Δημιουργίας: {formatDate(building.createdAt)}
           </CardDescription>
         </CardHeader>
       </Card>
       
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          Κτίρια του Έργου
+          Όροφοι του Κτιρίου
         </h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2" />
-              Νέο Κτίριο
+              Νέος Όροφος
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Προσθήκη Νέου Κτιρίου</DialogTitle>
+              <DialogTitle>Προσθήκη Νέου Ορόφου</DialogTitle>
               <DialogDescription>
-                Συμπληρώστε τις πληροφορίες για να προσθέσετε ένα νέο κτίριο στο έργο.
+                Συμπληρώστε τις πληροφορίες για να προσθέσετε έναν νέο όροφο στο κτίριο.
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitBuilding)} className="grid gap-4 py-4">
+              <form onSubmit={form.handleSubmit(onSubmitFloor)} className="grid gap-4 py-4">
                 <FormField
                   control={form.control}
-                  name="address"
+                  name="level"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Διεύθυνση Κτιρίου</FormLabel>
+                      <FormLabel>Επίπεδο Ορόφου</FormLabel>
                       <FormControl>
-                        <Input placeholder="π.χ. Πατησίων 100, Αθήνα" {...field} />
+                        <Input placeholder="π.χ. 1ος, Ισόγειο" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -250,12 +246,12 @@ export default function ProjectDetailsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="type"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Τύπος Κτιρίου</FormLabel>
+                      <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
                       <FormControl>
-                        <Input placeholder="π.χ. Πολυκατοικία" {...field} />
+                        <Input placeholder="π.χ. Γραφεία" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -269,7 +265,7 @@ export default function ProjectDetailsPage() {
                   </DialogClose>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Προσθήκη Κτιρίου
+                    Προσθήκη Ορόφου
                   </Button>
                 </DialogFooter>
               </form>
@@ -280,34 +276,34 @@ export default function ProjectDetailsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Λίστα Κτιρίων</CardTitle>
+          <CardTitle>Λίστα Ορόφων</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoadingBuildings ? (
+          {isLoadingFloors ? (
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : buildings.length > 0 ? (
+          ) : floors.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Διεύθυνση</TableHead>
-                  <TableHead>Τύπος</TableHead>
+                  <TableHead>Όροφος</TableHead>
+                  <TableHead>Περιγραφή</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {buildings.map((building) => (
-                  <TableRow key={building.id} onClick={() => handleBuildingRowClick(building.id)} className="cursor-pointer">
-                    <TableCell className="font-medium">{building.address}</TableCell>
-                    <TableCell className="text-muted-foreground">{building.type}</TableCell>
-                    <TableCell>{formatDate(building.createdAt)}</TableCell>
+                {floors.map((floor) => (
+                  <TableRow key={floor.id}>
+                    <TableCell className="font-medium">{floor.level}</TableCell>
+                    <TableCell className="text-muted-foreground">{floor.description || 'N/A'}</TableCell>
+                    <TableCell>{formatDate(floor.createdAt)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           ) : (
-            <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν κτίρια για αυτό το έργο.</p>
+            <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν όροφοι για αυτό το κτίριο.</p>
           )}
         </CardContent>
       </Card>
