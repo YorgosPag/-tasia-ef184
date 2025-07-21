@@ -31,10 +31,18 @@ interface Unit {
   createdAt: any;
 }
 
-const fetchUnits = async (): Promise<Unit[]> => {
-    const unitsCollection = collection(db, 'units');
-    const snapshot = await getDocs(unitsCollection);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit));
+async function fetchUnits(): Promise<Unit[]> {
+  const unitsCollection = collection(db, 'units');
+  const snapshot = await getDocs(unitsCollection);
+  const units = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit));
+  return units;
+}
+
+export function useUnits() {
+  return useQuery({
+      queryKey: ['units'],
+      queryFn: fetchUnits,
+  });
 }
 
 
@@ -42,10 +50,7 @@ export default function UnitsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
-  const { data: units = [], isLoading, isError } = useQuery<Unit[]>({
-      queryKey: ['units'],
-      queryFn: fetchUnits,
-  });
+  const { data: units = [], isLoading, isError } = useUnits();
 
   const handleRowClick = (unitId: string) => {
     router.push(`/units/${unitId}`);
