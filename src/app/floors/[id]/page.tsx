@@ -11,8 +11,10 @@ import {
   addDoc,
   serverTimestamp,
   Timestamp,
+  updateDoc,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL, getMetadata } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -44,10 +46,11 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, UploadCloud, File, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 const unitSchema = z.object({
   identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
@@ -63,6 +66,7 @@ interface Floor {
   description?: string;
   buildingId: string;
   createdAt: Timestamp;
+  floorPlanUrl?: string;
 }
 
 interface Unit extends UnitFormValues {
@@ -83,6 +87,10 @@ export default function FloorDetailsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [floorPlanUrl, setFloorPlanUrl] = useState<string | null>(null);
+
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: {
@@ -92,15 +100,15 @@ export default function FloorDetailsPage() {
     },
   });
 
-  // Fetch floor details from top-level collection
-  useEffect(() => {
-    if (!floorId) return;
-    const docRef = doc(db, 'floors', floorId);
-    const getFloorData = async () => {
+  const fetchFloorData = async () => {
+      if (!floorId) return;
+      const docRef = doc(db, 'floors', floorId);
       setIsLoadingFloor(true);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setFloor({ id: docSnap.id, ...docSnap.data() } as Floor);
+        const floorData = { id: docSnap.id, ...docSnap.data() } as Floor;
+        setFloor(floorData);
+        setFloorPlanUrl(floorData.floorPlanUrl || null);
       } else {
         toast({
           variant: 'destructive',
@@ -110,8 +118,12 @@ export default function FloorDetailsPage() {
         router.push('/floors');
       }
       setIsLoadingFloor(false);
-    };
-    getFloorData();
+  };
+
+  // Fetch floor details from top-level collection
+  useEffect(() => {
+    fetchFloorData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [floorId, router, toast]);
 
   // Listen for units in the subcollection
@@ -183,6 +195,45 @@ export default function FloorDetailsPage() {
        setIsSubmitting(false);
      }
   };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile || !floor) return;
+
+    setIsUploading(true);
+    const filePath = `buildings/${floor.buildingId}/floors/${(floor as any).originalId}/floorPlan.pdf`;
+    const fileRef = ref(storage, filePath);
+
+    try {
+      await uploadBytes(fileRef, selectedFile);
+      const url = await getDownloadURL(fileRef);
+
+      // Save URL to Firestore
+      const floorDocRef = doc(db, 'floors', floor.id);
+      await updateDoc(floorDocRef, { floorPlanUrl: url });
+
+      setFloorPlanUrl(url);
+      setSelectedFile(null);
+      toast({
+        title: 'Επιτυχία',
+        description: 'Η κάτοψη ανέβηκε με επιτυχία.',
+      });
+    } catch (error) {
+      console.error("Error uploading file: ", error);
+      toast({
+        variant: 'destructive',
+        title: 'Σφάλμα',
+        description: 'Δεν ήταν δυνατή η μεταφόρτωση του αρχείου.',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
   
   const handleRowClick = (unitId: string) => {
     router.push(`/units/${unitId}`);
@@ -212,15 +263,44 @@ export default function FloorDetailsPage() {
         Επιστροφή
       </Button>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Όροφος: {floor.level}</CardTitle>
-          <CardDescription>
-            Περιγραφή: {floor.description || 'N/A'} | ID Κτιρίου: {floor.buildingId}
-          </CardDescription>
-        </CardHeader>
-      </Card>
-      
+      <div className="grid gap-8 md:grid-cols-2">
+        <Card>
+            <CardHeader>
+            <CardTitle>Όροφος: {floor.level}</CardTitle>
+            <CardDescription>
+                Περιγραφή: {floor.description || 'N/A'} | ID Κτιρίου: {floor.buildingId}
+            </CardDescription>
+            </CardHeader>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Κάτοψη Ορόφου</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {floorPlanUrl ? (
+                    <Button asChild>
+                        <Link href={floorPlanUrl} target="_blank" rel="noopener noreferrer">
+                            <File className="mr-2" /> Προβολή Κάτοψης
+                        </Link>
+                    </Button>
+                ) : (
+                    <p className="text-sm text-muted-foreground">Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.</p>
+                )}
+                 <div className="space-y-2">
+                     <FormLabel htmlFor="floor-plan-upload">Ανέβασμα νέας/ανανεωμένης κάτοψης (PDF)</FormLabel>
+                     <div className="flex items-center gap-2">
+                        <Input id="floor-plan-upload" type="file" accept="application/pdf" onChange={handleFileChange} className="max-w-xs"/>
+                        <Button onClick={handleFileUpload} disabled={!selectedFile || isUploading}>
+                            {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <UploadCloud className="mr-2" />}
+                            Ανέβασμα
+                        </Button>
+                     </div>
+                     {selectedFile && <p className="text-sm text-muted-foreground">Επιλεγμένο αρχείο: {selectedFile.name}</p>}
+                 </div>
+            </CardContent>
+        </Card>
+      </div>
+
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Ακίνητα του Ορόφου
