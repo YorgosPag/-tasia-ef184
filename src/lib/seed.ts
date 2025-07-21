@@ -43,7 +43,9 @@ export async function seedDatabase() {
   companiesData.forEach((company) => {
     const docRef = doc(collection(db, 'companies'));
     refs[company._id] = { id: docRef.id, ref: docRef };
-    batch.set(docRef, { ...company, createdAt: serverTimestamp() });
+    // Remove the _id before setting the document
+    const { _id, ...companyData } = company;
+    batch.set(docRef, { ...companyData, createdAt: serverTimestamp() });
   });
 
   // --- Projects ---
@@ -65,11 +67,18 @@ export async function seedDatabase() {
   ];
 
   projectsData.forEach((project) => {
+    const parentCompanyMeta = refs[project.companyId];
+    if (!parentCompanyMeta) {
+      console.warn(`Company with _id "${project.companyId}" not found for project "${project.title}". Skipping.`);
+      return;
+    }
+
     const docRef = doc(collection(db, 'projects'));
     refs[project._id] = { id: docRef.id, ref: docRef };
+    
     batch.set(docRef, {
         title: project.title,
-        companyId: refs[project.companyId].id,
+        companyId: parentCompanyMeta.id, // Use the generated document ID
         deadline: project.deadline,
         status: project.status,
         createdAt: serverTimestamp(),
@@ -93,17 +102,17 @@ export async function seedDatabase() {
   ];
 
   for(const building of buildingsData) {
-      const parentProjectRef = refs[building.projectId].ref;
-      if (!parentProjectRef) continue;
+      const parentProjectMeta = refs[building.projectId];
+      if (!parentProjectMeta) continue;
 
-      const subCollectionBuildingRef = doc(collection(parentProjectRef, 'buildings'));
+      const subCollectionBuildingRef = doc(collection(parentProjectMeta.ref, 'buildings'));
       
       const topLevelBuildingRef = doc(collection(db, 'buildings'));
       refs[building._id] = { 
           id: topLevelBuildingRef.id, 
           ref: topLevelBuildingRef,
           originalId: subCollectionBuildingRef.id,
-          projectId: parentProjectRef.id,
+          projectId: parentProjectMeta.id,
       };
 
       batch.set(subCollectionBuildingRef, {
@@ -116,7 +125,7 @@ export async function seedDatabase() {
       batch.set(topLevelBuildingRef, {
           address: building.address,
           type: building.type,
-          projectId: parentProjectRef.id,
+          projectId: parentProjectMeta.id,
           originalId: subCollectionBuildingRef.id,
           createdAt: serverTimestamp(),
       })
@@ -133,10 +142,10 @@ export async function seedDatabase() {
       const parentBuildingMeta = refs[floor.buildingId];
       if (!parentBuildingMeta) continue;
 
-      const parentProjectRef = refs[parentBuildingMeta.projectId].ref;
-      if (!parentProjectRef) continue;
+      const parentProjectMeta = refs[buildingsData.find(b => b._id === floor.buildingId)!.projectId];
+      if (!parentProjectMeta) continue;
 
-      const floorSubRef = doc(collection(parentProjectRef, 'buildings', parentBuildingMeta.originalId, 'floors'));
+      const floorSubRef = doc(collection(parentProjectMeta.ref, 'buildings', parentBuildingMeta.originalId, 'floors'));
        
       const floorTopRef = doc(collection(db, 'floors'));
       refs[floor._id] = {
@@ -145,7 +154,7 @@ export async function seedDatabase() {
           originalId: floorSubRef.id,
           buildingId: parentBuildingMeta.id,
           buildingOriginalId: parentBuildingMeta.originalId,
-          projectId: parentBuildingMeta.projectId,
+          projectId: parentProjectMeta.id,
       };
 
        batch.set(floorSubRef, {
@@ -175,8 +184,8 @@ export async function seedDatabase() {
       const parentFloorMeta = refs[unit.floorId];
       if (!parentFloorMeta) continue;
       
-      const parentProjectRef = refs[parentFloorMeta.projectId].ref;
-      if (!parentProjectRef) continue;
+      const parentProjectMeta = refs[parentFloorMeta.projectId];
+      if (!parentProjectMeta) continue;
 
       const unitData = {
           identifier: unit.identifier,
@@ -186,7 +195,7 @@ export async function seedDatabase() {
           polygonPoints: unit.polygonPoints.map(p => ({x: p[0], y: p[1]})),
       };
 
-      const unitSubRef = doc(collection(parentProjectRef, 'buildings', parentFloorMeta.buildingOriginalId, 'floors', parentFloorMeta.originalId, 'units'));
+      const unitSubRef = doc(collection(parentProjectMeta.ref, 'buildings', parentFloorMeta.buildingOriginalId, 'floors', parentFloorMeta.originalId, 'units'));
 
       batch.set(unitSubRef, {
           ...unitData,
