@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -22,7 +23,16 @@ import { useAuth } from '@/hooks/use-auth';
 export function AppHeader() {
   const isMobile = useIsMobile();
   const router = useRouter();
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // The useAuth hook doesn't provide a loading state,
+    // so we manage it locally to prevent UI flicker on initial load.
+    // Once the user object is determined (either a user or null), loading is complete.
+    setIsLoading(false);
+  }, [user]);
+
 
   const handleLogout = async () => {
     await signOut(auth);
