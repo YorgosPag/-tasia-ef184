@@ -76,6 +76,7 @@ interface Floor {
   level: string;
   description?: string;
   buildingId: string;
+  originalId: string; // The ID in the subcollection
   createdAt: Timestamp;
   floorPlanUrl?: string;
 }
@@ -140,8 +141,8 @@ export default function FloorDetailsPage() {
 
   // Listen for units in the subcollection
   useEffect(() => {
-    if (!floor || !floor.buildingId) return;
-    const { buildingId, originalId } = floor as any; // originalId is the id in the subcollection
+    if (!floor || !floor.buildingId || !floor.originalId) return;
+    const { buildingId, originalId } = floor;
     const unitsColRef = collection(db, 'buildings', buildingId, 'floors', originalId, 'units');
     
     const unsubscribe = onSnapshot(
@@ -169,8 +170,8 @@ export default function FloorDetailsPage() {
   }, [floor, toast]);
   
   const onSubmitUnit = async (data: UnitFormValues) => {
-     if (!floor || !floor.buildingId) return;
-     const { buildingId, id: floorId, originalId } = floor as any;
+     if (!floor || !floor.buildingId || !floor.originalId) return;
+     const { buildingId, id: topLevelFloorId, originalId: subCollectionFloorId } = floor;
      setIsSubmitting(true);
      
      let parsedPolygonPoints: {x: number, y: number}[] | undefined;
@@ -202,22 +203,26 @@ export default function FloorDetailsPage() {
      };
 
      try {
-       // Add to subcollection
-       const unitSubRef = await addDoc(collection(db, 'buildings', buildingId, 'floors', originalId, 'units'), {
+       // Add to subcollection, using the same ID for top-level unit
+       const unitSubRef = doc(collection(db, 'buildings', buildingId, 'floors', subCollectionFloorId, 'units'));
+
+       await addDoc(collection(db, 'units'), {
+          ...unitData,
+          id: unitSubRef.id, // Explicitly set top-level ID to match sub-collection
+          originalId: unitSubRef.id,
+          buildingId: buildingId,
+          floorId: topLevelFloorId,
+          createdAt: serverTimestamp(),
+       });
+       
+       // Add to subcollection with the same ID
+       await addDoc(unitSubRef, {
          ...unitData,
          buildingId: buildingId,
-         floorId: floorId, // Storing the top-level floor ID
+         floorId: topLevelFloorId, 
          createdAt: serverTimestamp(),
        });
 
-       // Also add to a top-level 'units' collection for the main /units page
-       await addDoc(collection(db, 'units'), {
-          ...unitData,
-          originalId: unitSubRef.id,
-          buildingId: buildingId,
-          floorId: floorId,
-          createdAt: serverTimestamp(),
-       });
 
        toast({
          title: 'Επιτυχία',
@@ -247,16 +252,25 @@ export default function FloorDetailsPage() {
     if (!selectedFile || !floor) return;
 
     setIsUploading(true);
-    const filePath = `buildings/${floor.buildingId}/floors/${(floor as any).originalId}/floorPlan.pdf`;
+    const filePath = `buildings/${floor.buildingId}/floors/${floor.originalId}/floorPlan.pdf`;
     const fileRef = ref(storage, filePath);
 
     try {
       await uploadBytes(fileRef, selectedFile);
       const url = await getDownloadURL(fileRef);
 
-      // Save URL to Firestore
-      const floorDocRef = doc(db, 'floors', floor.id);
-      await updateDoc(floorDocRef, { floorPlanUrl: url });
+      // Save URL to Firestore top-level and subcollection docs
+      const floorTopRef = doc(db, 'floors', floor.id);
+      await updateDoc(floorTopRef, { floorPlanUrl: url });
+      
+      const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+      if(buildingDoc.exists()) {
+          const buildingData = buildingDoc.data();
+          const projectRef = doc(db, 'projects', buildingData.projectId);
+          const floorSubRef = doc(projectRef, 'buildings', buildingData.originalId, 'floors', floor.originalId);
+          await updateDoc(floorSubRef, { floorPlanUrl: url });
+      }
+
 
       setFloorPlanUrl(url);
       setSelectedFile(null);
@@ -285,7 +299,7 @@ export default function FloorDetailsPage() {
     return format(timestamp.toDate(), 'dd/MM/yyyy');
   };
 
-  const getStatusVariant = (status: Unit['status'] | undefined): 'default' | 'secondary' | 'outline' => {
+  const getStatusVariant = (status: Unit['status'] | undefined): 'default' | 'secondary' | 'outline' | 'destructive' => {
       switch(status) {
           case 'Πωλημένο': return 'destructive';
           case 'Κρατημένο': return 'secondary';
