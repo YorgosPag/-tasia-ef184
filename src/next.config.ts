@@ -18,13 +18,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // The development environment uses a proxy, so we need to allow requests
-  // from its domains to avoid cross-origin errors.
-  devIndicators: {
-    allowedDevOrigins: [
-      '*.cluster-jbb3mjctu5cbgsi6hwq6u4btwe.cloudworkstations.dev',
-    ],
-  },
 };
 
 export default nextConfig;
