@@ -126,35 +126,24 @@ export default function UnitDetailsPage() {
     // We need to find the full path to the unit in the subcollection
     const findAndListenToAttachments = async () => {
         try {
-            // This is a simplified approach. A more robust solution might involve
-            // searching across collections or having more denormalized data.
-            const projectsSnapshot = await getDocs(query(collection(db, 'projects')));
-            let attachmentsColRef = null;
+            const unitDoc = await getDoc(doc(db, 'units', unit.id));
+            if (!unitDoc.exists()) throw new Error('Unit not found');
+            const unitData = unitDoc.data() as Unit;
 
-            for (const projectDoc of projectsSnapshot.docs) {
-                const buildingsSnapshot = await getDocs(query(collection(projectDoc.ref, 'buildings')));
-                for (const buildingDoc of buildingsSnapshot.docs) {
-                    const floorsSnapshot = await getDocs(query(collection(buildingDoc.ref, 'floors')));
-                    for (const floorDoc of floorsSnapshot.docs) {
-                         // The unit in the subcollection has the same ID as the top-level unit.
-                         const unitSubDocRef = doc(floorDoc.ref, 'units', unit.id);
-                         const unitSubDocSnap = await getDoc(unitSubDocRef);
-                         if (unitSubDocSnap.exists()){
-                             attachmentsColRef = collection(unitSubDocRef, 'attachments');
-                             break;
-                         }
-                    }
-                    if (attachmentsColRef) break;
-                }
-                if (attachmentsColRef) break;
+            const buildingDoc = await getDoc(doc(db, 'buildings', unitData.buildingId));
+            if (!buildingDoc.exists()) throw new Error('Building not found');
+            const buildingData = buildingDoc.data();
+
+            const floorDoc = await getDoc(doc(db, 'floors', unitData.floorId));
+            if (!floorDoc.exists()) throw new Error('Floor not found');
+            const floorData = floorDoc.data();
+
+            if (!buildingData.projectId || !buildingData.originalId || !floorData.originalId || !unitData.originalId) {
+                 throw new Error('Could not construct path to attachments');
             }
 
-            if (!attachmentsColRef) {
-                console.warn('Could not find attachment subcollection for unit:', unit.id);
-                setIsLoadingAttachments(false);
-                return;
-            }
-
+            const attachmentsColRef = collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floorData.originalId, 'units', unitData.originalId, 'attachments');
+            
             const unsubscribe = onSnapshot(
                 attachmentsColRef,
                 (snapshot) => {
@@ -177,46 +166,42 @@ export default function UnitDetailsPage() {
         }
     };
     
-    const unsubscribePromise = findAndListenToAttachments();
+    let unsubscribe: (() => void) | undefined;
+    findAndListenToAttachments().then(unsub => { if(unsub) unsubscribe = unsub; });
 
     return () => {
-        unsubscribePromise.then(unsubscribe => unsubscribe && unsubscribe());
+        if(unsubscribe) unsubscribe();
     };
   }, [unit, toast]);
   
   const onSubmitAttachment = async (data: AttachmentFormValues) => {
      if (!unit) return;
-     // Re-finding the path on submit. In a real app, this path could be stored in the unit doc.
-      const projectsSnapshot = await getDocs(query(collection(db, 'projects')));
-      let attachmentsColRef = null;
-       for (const projectDoc of projectsSnapshot.docs) {
-          const buildingsSnapshot = await getDocs(query(collection(projectDoc.ref, 'buildings')));
-          for (const buildingDoc of buildingsSnapshot.docs) {
-              const floorsSnapshot = await getDocs(query(collection(buildingDoc.ref, 'floors')));
-              for (const floorDoc of floorsSnapshot.docs) {
-                    const unitSubDocRef = doc(floorDoc.ref, 'units', unit.id);
-                    const unitSubDocSnap = await getDoc(unitSubDocRef);
-                    if (unitSubDocSnap.exists()){
-                        attachmentsColRef = collection(unitSubDocRef, 'attachments');
-                        break;
-                    }
-              }
-              if (attachmentsColRef) break;
-          }
-          if (attachmentsColRef) break;
-      }
-      
-      if (!attachmentsColRef) {
-           toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε η συλλογή για να προστεθεί το παρακολούθημα.' });
-           return;
-      }
-
+     
      setIsSubmitting(true);
      try {
-       await addDoc(attachmentsColRef, {
+        const unitDoc = await getDoc(doc(db, 'units', unit.id));
+        if (!unitDoc.exists()) throw new Error('Unit not found');
+        const unitData = unitDoc.data() as Unit;
+
+        const buildingDoc = await getDoc(doc(db, 'buildings', unitData.buildingId));
+        if (!buildingDoc.exists()) throw new Error('Building not found');
+        const buildingData = buildingDoc.data();
+
+        const floorDoc = await getDoc(doc(db, 'floors', unitData.floorId));
+        if (!floorDoc.exists()) throw new Error('Floor not found');
+        const floorData = floorDoc.data();
+
+        if (!buildingData.projectId || !buildingData.originalId || !floorData.originalId || !unitData.originalId) {
+             throw new Error('Could not construct path to attachments');
+        }
+
+        const attachmentsColRef = collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floorData.originalId, 'units', unitData.originalId, 'attachments');
+
+        await addDoc(attachmentsColRef, {
          ...data,
          createdAt: serverTimestamp(),
-       });
+        });
+
        toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα προστέθηκε.' });
        form.reset();
        setIsDialogOpen(false);
