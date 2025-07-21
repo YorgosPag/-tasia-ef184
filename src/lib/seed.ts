@@ -165,7 +165,7 @@ export async function seedDatabase() {
            createdAt: serverTimestamp(),
        });
        
-      batch.set(floorTopRef, {
+      batch.set(topLevelBuildingRef, {
           level: floor.level,
           description: floor.description,
           buildingId: parentBuildingMeta.id,
@@ -182,14 +182,14 @@ export async function seedDatabase() {
     name: string;
     type: string;
     status: UnitStatus;
-    polygonPoints: number[][];
+    polygonPoints?: { x: number, y: number }[];
     attachments: { type: 'parking' | 'storage'; details: string }[];
   }[] = [
-    { _id: 'unit-a1', floorId: 'flr-alpha-1', identifier: 'A1', name: 'Διαμέρισμα', type: 'Δυάρι', status: 'Διαθέσιμο', polygonPoints: [[50,50], [150,50], [150,150], [50,150]], attachments: [{type: 'parking', details: 'P-1'}, {type: 'storage', details: 'S-A1'}] },
-    { _id: 'unit-a2', floorId: 'flr-alpha-1', identifier: 'A2', name: 'Διαμέρισμα', type: 'Τριάρι', status: 'Κρατημένο', polygonPoints: [[200,50], [300,50], [300,150], [200,150]], attachments: [{type: 'parking', details: 'P-2'}] },
-    { _id: 'unit-b1', floorId: 'flr-alpha-2', identifier: 'B1', name: 'Ρετιρέ', type: 'Μεγάλο', status: 'Πωλημένο', polygonPoints: [[50,200], [300,200], [300,300], [50,300]], attachments: [{type: 'storage', details: 'S-B1'}] },
-    { _id: 'unit-b2', floorId: 'flr-alpha-2', identifier: 'B2', name: 'Διαμέρισμα Οικοπεδούχου', type: 'Δυάρι', status: 'Οικοπεδούχος', polygonPoints: [[350,200], [450,200], [450,300], [350,300]], attachments: [] },
-    { _id: 'unit-c1', floorId: 'flr-beta-1', identifier: 'C1', name: 'Γραφείο Open-Space', type: 'Γραφείο', status: 'Διαθέσιμο', polygonPoints: [[100,100], [400,100], [400,400], [100,400]], attachments: [] },
+    { _id: 'unit-a1', floorId: 'flr-alpha-1', identifier: 'A1', name: 'Διαμέρισμα', type: 'Δυάρι', status: 'Διαθέσιμο', polygonPoints: [{x:50,y:50}, {x:150,y:50}, {x:150,y:150}, {x:50,y:150}], attachments: [{type: 'parking', details: 'P-1'}, {type: 'storage', details: 'S-A1'}] },
+    { _id: 'unit-a2', floorId: 'flr-alpha-1', identifier: 'A2', name: 'Διαμέρισμα', type: 'Τριάρι', status: 'Κρατημένο', polygonPoints: [{x:200,y:50}, {x:300,y:50}, {x:300,y:150}, {x:200,y:150}], attachments: [{type: 'parking', details: 'P-2'}] },
+    { _id: 'unit-b1', floorId: 'flr-alpha-2', identifier: 'B1', name: 'Ρετιρέ', type: 'Μεγάλο', status: 'Πωλημένο', polygonPoints: [{x:50,y:200}, {x:300,y:200}, {x:300,y:300}, {x:50,y:300}], attachments: [{type: 'storage', details: 'S-B1'}] },
+    { _id: 'unit-b2', floorId: 'flr-alpha-2', identifier: 'B2', name: 'Διαμέρισμα Οικοπεδούχου', type: 'Δυάρι', status: 'Οικοπεδούχος', polygonPoints: [{x:350,y:200}, {x:450,y:200}, {x:450,y:300}, {x:350,y:300}], attachments: [] },
+    { _id: 'unit-c1', floorId: 'flr-beta-1', identifier: 'C1', name: 'Γραφείο Open-Space', type: 'Γραφείο', status: 'Διαθέσιμο', polygonPoints: [{x:100,y:100}, {x:400,y:100}, {x:400,y:400}, {x:100,y:400}], attachments: [] },
   ];
   
   for (const unit of unitsData) {
@@ -204,7 +204,7 @@ export async function seedDatabase() {
           name: unit.name,
           type: unit.type,
           status: unit.status,
-          polygonPoints: unit.polygonPoints.map(p => ({x: p[0], y: p[1]})),
+          ...(unit.polygonPoints && { polygonPoints: unit.polygonPoints }),
       };
 
       const unitSubRef = doc(collection(parentProjectMeta.ref, 'buildings', parentFloorMeta.buildingOriginalId, 'floors', parentFloorMeta.originalId, 'units'));

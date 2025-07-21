@@ -134,7 +134,7 @@ export default function FloorDetailsPage() {
           title: 'Σφάλμα',
           description: 'Ο όροφος δεν βρέθηκε.',
         });
-        router.push('/floors');
+        router.push('/buildings'); // Redirect if floor not found
       }
       setIsLoadingFloor(false);
     };
@@ -204,7 +204,7 @@ export default function FloorDetailsPage() {
      if (data.polygonPoints) {
        try {
          const pointsArray = JSON.parse(data.polygonPoints);
-         if (Array.isArray(pointsArray)) {
+         if (Array.isArray(pointsArray) && pointsArray.every(p => Array.isArray(p) && p.length === 2 && typeof p[0] === 'number' && typeof p[1] === 'number')) {
            parsedPolygonPoints = pointsArray.map(p => ({ x: p[0], y: p[1]}));
          } else {
             throw new Error('Invalid format');
@@ -238,7 +238,15 @@ export default function FloorDetailsPage() {
        
        const unitSubRef = doc(collection(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId, 'units'));
 
-       // Create top-level document first
+       // Create sub-collection document
+       await setDoc(unitSubRef, {
+         ...unitData,
+         buildingId: floor.buildingId,
+         floorId: floor.id, 
+         createdAt: serverTimestamp(),
+       });
+
+       // Create top-level document
        await setDoc(doc(db, 'units', unitSubRef.id), {
           ...unitData,
           originalId: unitSubRef.id,
@@ -247,13 +255,6 @@ export default function FloorDetailsPage() {
           createdAt: serverTimestamp(),
        });
        
-       // Create sub-collection document
-       await setDoc(unitSubRef, {
-         ...unitData,
-         buildingId: floor.buildingId,
-         floorId: floor.id, 
-         createdAt: serverTimestamp(),
-       });
 
        toast({
          title: 'Επιτυχία',
@@ -323,7 +324,8 @@ export default function FloorDetailsPage() {
   };
   
   const handleRowClick = (unitId: string) => {
-    router.push(`/units/${unitId}`);
+    const unitInSubCollectionId = units.find(u => u.id === unitId)?.id ?? unitId;
+    router.push(`/units/${unitInSubCollectionId}`);
   };
 
   const formatDate = (timestamp: Timestamp | undefined) => {
