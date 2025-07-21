@@ -42,6 +42,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -52,11 +59,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { format } from 'date-fns';
 import { FloorPlanViewer } from '@/components/floor-plan-viewer';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 
 const unitSchema = z.object({
   identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
   name: z.string().min(1, { message: 'Το όνομα είναι υποχρεωτικό.' }),
   type: z.string().optional(),
+  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο']),
   polygonPoints: z.string().optional(), // Storing as JSON string from textarea
 });
 
@@ -100,6 +109,7 @@ export default function FloorDetailsPage() {
       identifier: '',
       name: '',
       type: '',
+      status: 'Διαθέσιμο',
       polygonPoints: '',
     },
   });
@@ -187,6 +197,7 @@ export default function FloorDetailsPage() {
        identifier: data.identifier,
        name: data.name,
        type: data.type,
+       status: data.status,
        ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
      };
 
@@ -274,6 +285,16 @@ export default function FloorDetailsPage() {
     return format(timestamp.toDate(), 'dd/MM/yyyy');
   };
 
+  const getStatusVariant = (status: Unit['status'] | undefined): 'default' | 'secondary' | 'outline' => {
+      switch(status) {
+          case 'Πωλημένο': return 'destructive';
+          case 'Κρατημένο': return 'secondary';
+          case 'Διαθέσιμο': return 'default';
+          default: return 'outline';
+      }
+  }
+
+
   if (isLoadingFloor) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -307,7 +328,9 @@ export default function FloorDetailsPage() {
               <CardTitle>Κάτοψη Ορόφου & Ακίνητα</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-              {floorPlanUrl ? (
+              {isLoadingUnits ? (
+                 <div className="flex justify-center items-center h-96"><Loader2 className="h-12 w-12 animate-spin text-muted-foreground" /></div>
+              ) : floorPlanUrl ? (
                 <FloorPlanViewer pdfUrl={floorPlanUrl} units={units} onUnitClick={(unitId) => handleRowClick(unitId)} />
               ) : (
                   <p className="text-sm text-muted-foreground text-center py-8">Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.</p>
@@ -388,6 +411,28 @@ export default function FloorDetailsPage() {
                 />
                  <FormField
                   control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Κατάσταση</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Επιλέξτε κατάσταση" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
+                          <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
+                          <SelectItem value="Πωλημένο">Πωλημένο</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
                   name="polygonPoints"
                   render={({ field }) => (
                     <FormItem>
@@ -429,6 +474,7 @@ export default function FloorDetailsPage() {
                   <TableHead>Κωδικός</TableHead>
                   <TableHead>Όνομα/ID</TableHead>
                   <TableHead>Τύπος</TableHead>
+                  <TableHead>Κατάσταση</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
                 </TableRow>
               </TableHeader>
@@ -438,6 +484,14 @@ export default function FloorDetailsPage() {
                     <TableCell className="font-medium">{unit.identifier}</TableCell>
                     <TableCell className="font-medium">{unit.name}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
+                    <TableCell>
+                        <Badge variant={getStatusVariant(unit.status)} 
+                                className={unit.status === 'Διαθέσιμο' ? 'bg-green-500 hover:bg-green-600' : 
+                                           unit.status === 'Κρατημένο' ? 'bg-yellow-500 hover:bg-yellow-600' :
+                                           unit.status === 'Πωλημένο' ? 'bg-red-500 hover:bg-red-600' : ''}>
+                            {unit.status}
+                        </Badge>
+                    </TableCell>
                     <TableCell>{formatDate(unit.createdAt)}</TableCell>
                   </TableRow>
                 ))}

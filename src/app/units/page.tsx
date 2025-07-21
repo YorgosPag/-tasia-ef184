@@ -16,12 +16,14 @@ import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
 
 interface Unit {
   id: string;
   identifier: string;
   name: string;
   type?: string;
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο';
   floorId: string;
   buildingId: string;
   createdAt: any;
@@ -61,6 +63,16 @@ export default function UnitsPage() {
     return 'Άγνωστη ημερομηνία';
   };
 
+  const getStatusVariant = (status: Unit['status'] | undefined): 'default' | 'secondary' | 'outline' => {
+    switch(status) {
+        case 'Πωλημένο': return 'destructive';
+        case 'Κρατημένο': return 'secondary';
+        case 'Διαθέσιμο': return 'default';
+        default: return 'outline';
+    }
+  }
+
+
   return (
     <div className="flex flex-col gap-8">
        <div className="flex items-center justify-between">
@@ -85,6 +97,7 @@ export default function UnitsPage() {
                   <TableHead>Κωδικός</TableHead>
                   <TableHead>Όνομα/ID</TableHead>
                   <TableHead>Τύπος</TableHead>
+                  <TableHead>Κατάσταση</TableHead>
                   <TableHead>ID Ορόφου</TableHead>
                   <TableHead>ID Κτιρίου</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
@@ -96,6 +109,14 @@ export default function UnitsPage() {
                     <TableCell className="font-medium">{unit.identifier}</TableCell>
                     <TableCell className="font-medium">{unit.name}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
+                    <TableCell>
+                        <Badge variant={getStatusVariant(unit.status)} 
+                                className={unit.status === 'Διαθέσιμο' ? 'bg-green-500 hover:bg-green-600' : 
+                                           unit.status === 'Κρατημένο' ? 'bg-yellow-500 hover:bg-yellow-600' :
+                                           unit.status === 'Πωλημένο' ? 'bg-red-500 hover:bg-red-600' : ''}>
+                            {unit.status}
+                        </Badge>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{unit.floorId}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.buildingId}</TableCell>
                     <TableCell className="text-muted-foreground">{formatDate(unit.createdAt)}</TableCell>

@@ -8,11 +8,13 @@ import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Loader2, Minus, Plus, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface Unit {
   id: string;
   identifier: string;
   name: string;
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο';
   polygonPoints?: { x: number; y: number }[];
 }
 
@@ -20,6 +22,15 @@ interface FloorPlanViewerProps {
   pdfUrl: string;
   units: Unit[];
   onUnitClick: (unitId: string) => void;
+}
+
+const getStatusColor = (status: Unit['status'] | undefined) => {
+    switch(status) {
+        case 'Πωλημένο': return '#ef4444'; // red-500
+        case 'Κρατημένο': return '#f59e0b'; // yellow-500
+        case 'Διαθέσιμο': return '#22c55e'; // green-500
+        default: return '#6b7280'; // gray-500
+    }
 }
 
 export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerProps) {
@@ -69,69 +80,83 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   );
 
   return (
-    <div className="flex flex-col gap-4 items-center">
-      <Card className="w-full">
-        <CardContent className="p-2 relative overflow-auto">
-          {pdfError ? (
-             <div className="flex items-center justify-center h-96 text-destructive text-center p-4">
-               {pdfError}
-             </div>
-          ) : (
-            <Document
-              file={pdfUrl}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={onDocumentLoadError}
-              loading={loadingElement}
-              className="flex justify-center"
-            >
-              <div className="relative">
-                <Page 
-                  pageNumber={pageNumber} 
-                  scale={scale} 
-                  rotate={rotation}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                  onLoadSuccess={onPageLoadSuccess}
-                />
-                {pageDimensions.width > 0 && (
-                   <svg
-                      className="absolute top-0 left-0"
-                      width={pageDimensions.width * scale}
-                      height={pageDimensions.height * scale}
-                      viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
+    <TooltipProvider>
+        <div className="flex flex-col gap-4 items-center">
+        <Card className="w-full">
+            <CardContent className="p-2 relative overflow-auto">
+            {pdfError ? (
+                <div className="flex items-center justify-center h-96 text-destructive text-center p-4">
+                {pdfError}
+                </div>
+            ) : (
+                <Document
+                file={pdfUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
+                loading={loadingElement}
+                className="flex justify-center"
+                >
+                <div className="relative">
+                    <Page 
+                    pageNumber={pageNumber} 
+                    scale={scale} 
+                    rotate={rotation}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                    onLoadSuccess={onPageLoadSuccess}
+                    />
+                    {pageDimensions.width > 0 && (
+                    <svg
+                        className="absolute top-0 left-0"
+                        width={pageDimensions.width * scale}
+                        height={pageDimensions.height * scale}
+                        viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
                     >
-                      {units.map((unit) =>
+                        {units.map((unit) =>
                         unit.polygonPoints ? (
-                          <polygon
-                            key={unit.id}
-                            points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
-                            className={
-                              `fill-primary/20 stroke-primary hover:fill-primary/40 cursor-pointer transition-all ` +
-                              (selectedUnitId === unit.id ? 'fill-primary/60 stroke-2' : 'stroke-1')
-                            }
-                            onClick={() => handleUnitClick(unit.id)}
-                          />
+                            <Tooltip key={unit.id} delayDuration={100}>
+                                <TooltipTrigger asChild>
+                                    <g onClick={() => handleUnitClick(unit.id)}>
+                                        <polygon
+                                            points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
+                                            className={
+                                            `stroke-2 hover:opacity-100 cursor-pointer transition-opacity ` +
+                                            (selectedUnitId === unit.id ? 'opacity-70' : 'opacity-40')
+                                            }
+                                            style={{
+                                                fill: getStatusColor(unit.status),
+                                                stroke: getStatusColor(unit.status)
+                                            }}
+                                        />
+                                    </g>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="font-bold">{unit.name} ({unit.identifier})</p>
+                                    <p>Κατάσταση: {unit.status}</p>
+                                </TooltipContent>
+                            </Tooltip>
                         ) : null
-                      )}
+                        )}
                     </svg>
-                )}
-              </div>
-            </Document>
-          )}
-        </CardContent>
-      </Card>
-      <div className="flex items-center justify-center gap-2 p-2 rounded-md bg-muted">
-        <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.5, s - 0.2))} disabled={!numPages}>
-          <Minus />
-        </Button>
-        <span className="text-sm font-medium w-16 text-center">{(scale * 100).toFixed(0)}%</span>
-         <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(3, s + 0.2))} disabled={!numPages}>
-          <Plus />
-        </Button>
-         <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages}>
-          <RefreshCw />
-        </Button>
-      </div>
-    </div>
+                    )}
+                </div>
+                </Document>
+            )}
+            </CardContent>
+        </Card>
+        <div className="flex items-center justify-center gap-2 p-2 rounded-md bg-muted">
+            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.5, s - 0.2))} disabled={!numPages}>
+            <Minus />
+            </Button>
+            <span className="text-sm font-medium w-16 text-center">{(scale * 100).toFixed(0)}%</span>
+            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(3, s + 0.2))} disabled={!numPages}>
+            <Plus />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages}>
+            <RefreshCw />
+            </Button>
+        </div>
+        </div>
+    </TooltipProvider>
   );
 }
