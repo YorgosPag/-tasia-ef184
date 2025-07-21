@@ -196,8 +196,8 @@ export async function seedDatabase() {
       const parentFloorMeta = refs[unit.floorId];
       if (!parentFloorMeta) continue;
       
-      const parentProjectMeta = refs[parentFloorMeta.projectId];
-      if (!parentProjectMeta) continue;
+      const parentBuildingMeta = refs[floorsData.find(f => f._id === unit.floorId)!.buildingId];
+      const projectMeta = refs[buildingsData.find(b => b._id === parentBuildingMeta)!.projectId];
 
       const unitData = {
           identifier: unit.identifier,
@@ -207,12 +207,10 @@ export async function seedDatabase() {
           ...(unit.polygonPoints && { polygonPoints: unit.polygonPoints }),
       };
 
-      const unitSubRef = doc(collection(parentProjectMeta.ref, 'buildings', parentFloorMeta.buildingOriginalId, 'floors', parentFloorMeta.originalId, 'units'));
+      const unitSubRef = doc(collection(projectMeta.ref, 'buildings', refs[parentBuildingMeta].originalId, 'floors', parentFloorMeta.originalId, 'units'));
 
       batch.set(unitSubRef, {
           ...unitData,
-          buildingId: parentFloorMeta.buildingId,
-          floorId: parentFloorMeta.id,
           createdAt: serverTimestamp(),
       });
       
