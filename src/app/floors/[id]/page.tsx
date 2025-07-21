@@ -12,6 +12,7 @@ import {
   serverTimestamp,
   Timestamp,
   updateDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
@@ -142,36 +143,60 @@ export default function FloorDetailsPage() {
   // Listen for units in the subcollection
   useEffect(() => {
     if (!floor || !floor.buildingId || !floor.originalId) return;
-    const { buildingId, originalId } = floor;
-    const unitsColRef = collection(db, 'buildings', buildingId, 'floors', originalId, 'units');
     
-    const unsubscribe = onSnapshot(
-      unitsColRef,
-      (snapshot) => {
-        const unitsData: Unit[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Unit));
-        setUnits(unitsData);
-        setIsLoadingUnits(false);
-      },
-      (error) => {
-        console.error('Error fetching units: ', error);
-        toast({
-          variant: 'destructive',
-          title: 'Σφάλμα',
-          description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων.',
-        });
-        setIsLoadingUnits(false);
-      }
-    );
+    // To listen to the correct subcollection, we need the project ID first.
+    const findUnits = async () => {
+        try {
+            const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+            if (!buildingDoc.exists() || !buildingDoc.data().projectId) {
+                throw new Error("Building or project ID not found");
+            }
+            const projectId = buildingDoc.data().projectId;
+            const originalBuildingId = buildingDoc.data().originalId;
 
-    return () => unsubscribe();
+            const unitsColRef = collection(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId, 'units');
+            
+            const unsubscribe = onSnapshot(
+              unitsColRef,
+              (snapshot) => {
+                const unitsData: Unit[] = snapshot.docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data(),
+                } as Unit));
+                setUnits(unitsData);
+                setIsLoadingUnits(false);
+              },
+              (error) => {
+                console.error('Error fetching units: ', error);
+                toast({
+                  variant: 'destructive',
+                  title: 'Σφάλμα',
+                  description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων.',
+                });
+                setIsLoadingUnits(false);
+              }
+            );
+            return unsubscribe;
+        } catch (error) {
+            console.error("Error setting up unit listener:", error);
+            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η παρακολούθηση των ακινήτων.' });
+            setIsLoadingUnits(false);
+        }
+    }
+    
+    let unsubscribe: (() => void) | undefined;
+    findUnits().then(unsub => { unsubscribe = unsub });
+
+    return () => {
+        if (unsubscribe) {
+            unsubscribe();
+        }
+    };
   }, [floor, toast]);
   
   const onSubmitUnit = async (data: UnitFormValues) => {
      if (!floor || !floor.buildingId || !floor.originalId) return;
-     const { buildingId, id: topLevelFloorId, originalId: subCollectionFloorId } = floor;
+
      setIsSubmitting(true);
      
      let parsedPolygonPoints: {x: number, y: number}[] | undefined;
@@ -203,26 +228,31 @@ export default function FloorDetailsPage() {
      };
 
      try {
-       // Add to subcollection, using the same ID for top-level unit
-       const unitSubRef = doc(collection(db, 'buildings', buildingId, 'floors', subCollectionFloorId, 'units'));
+       const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+       if (!buildingDoc.exists() || !buildingDoc.data().projectId) {
+           throw new Error("Building or project ID not found for unit creation");
+       }
+       const projectId = buildingDoc.data().projectId;
+       const originalBuildingId = buildingDoc.data().originalId;
+       
+       const unitSubRef = doc(collection(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId, 'units'));
 
-       await addDoc(collection(db, 'units'), {
+       // Create top-level document first
+       await setDoc(doc(db, 'units', unitSubRef.id), {
           ...unitData,
-          id: unitSubRef.id, // Explicitly set top-level ID to match sub-collection
           originalId: unitSubRef.id,
-          buildingId: buildingId,
-          floorId: topLevelFloorId,
+          buildingId: floor.buildingId,
+          floorId: floor.id,
           createdAt: serverTimestamp(),
        });
        
-       // Add to subcollection with the same ID
-       await addDoc(unitSubRef, {
+       // Create sub-collection document
+       await setDoc(unitSubRef, {
          ...unitData,
-         buildingId: buildingId,
-         floorId: topLevelFloorId, 
+         buildingId: floor.buildingId,
+         floorId: floor.id, 
          createdAt: serverTimestamp(),
        });
-
 
        toast({
          title: 'Επιτυχία',
@@ -252,25 +282,26 @@ export default function FloorDetailsPage() {
     if (!selectedFile || !floor) return;
 
     setIsUploading(true);
-    const filePath = `buildings/${floor.buildingId}/floors/${floor.originalId}/floorPlan.pdf`;
-    const fileRef = ref(storage, filePath);
-
+    
     try {
+      const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+      if (!buildingDoc.exists() || !buildingDoc.data().projectId) {
+        throw new Error("Building or Project ID not found for file upload");
+      }
+      const projectId = buildingDoc.data().projectId;
+      
+      const filePath = `projects/${projectId}/buildings/${floor.buildingId}/floors/${floor.id}/floorPlan.pdf`;
+      const fileRef = ref(storage, filePath);
+
       await uploadBytes(fileRef, selectedFile);
       const url = await getDownloadURL(fileRef);
 
-      // Save URL to Firestore top-level and subcollection docs
       const floorTopRef = doc(db, 'floors', floor.id);
       await updateDoc(floorTopRef, { floorPlanUrl: url });
-      
-      const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-      if(buildingDoc.exists()) {
-          const buildingData = buildingDoc.data();
-          const projectRef = doc(db, 'projects', buildingData.projectId);
-          const floorSubRef = doc(projectRef, 'buildings', buildingData.originalId, 'floors', floor.originalId);
-          await updateDoc(floorSubRef, { floorPlanUrl: url });
-      }
 
+      const originalBuildingId = buildingDoc.data().originalId;
+      const floorSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId);
+      await updateDoc(floorSubRef, { floorPlanUrl: url });
 
       setFloorPlanUrl(url);
       setSelectedFile(null);
