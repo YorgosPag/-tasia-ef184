@@ -50,6 +50,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { format } from 'date-fns';
 
 const unitSchema = z.object({
+  identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
   name: z.string().min(1, { message: 'Το όνομα είναι υποχρεωτικό.' }),
   type: z.string().optional(),
 });
@@ -85,6 +86,7 @@ export default function FloorDetailsPage() {
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: {
+      identifier: '',
       name: '',
       type: '',
     },
@@ -239,6 +241,19 @@ export default function FloorDetailsPage() {
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmitUnit)} className="grid gap-4 py-4">
+                 <FormField
+                  control={form.control}
+                  name="identifier"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Κωδικός</FormLabel>
+                      <FormControl>
+                        <Input placeholder="π.χ. A1, B2" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="name"
@@ -246,7 +261,7 @@ export default function FloorDetailsPage() {
                     <FormItem>
                       <FormLabel>Όνομα/Αναγνωριστικό Ακινήτου</FormLabel>
                       <FormControl>
-                        <Input placeholder="π.χ. Διαμέρισμα Α1, Κατάστημα 2" {...field} />
+                        <Input placeholder="π.χ. Διαμέρισμα, Κατάστημα" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -295,6 +310,7 @@ export default function FloorDetailsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Κωδικός</TableHead>
                   <TableHead>Όνομα/ID</TableHead>
                   <TableHead>Τύπος</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
@@ -303,6 +319,7 @@ export default function FloorDetailsPage() {
               <TableBody>
                 {units.map((unit) => (
                   <TableRow key={unit.id} onClick={() => handleRowClick(unit.id)} className="cursor-pointer">
+                    <TableCell className="font-medium">{unit.identifier}</TableCell>
                     <TableCell className="font-medium">{unit.name}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
                     <TableCell>{formatDate(unit.createdAt)}</TableCell>
@@ -318,5 +335,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    

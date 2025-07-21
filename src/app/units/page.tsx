@@ -19,6 +19,7 @@ import { useRouter } from 'next/navigation';
 
 interface Unit {
   id: string;
+  identifier: string;
   name: string;
   type?: string;
   floorId: string;
@@ -81,6 +82,7 @@ export default function UnitsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Κωδικός</TableHead>
                   <TableHead>Όνομα/ID</TableHead>
                   <TableHead>Τύπος</TableHead>
                   <TableHead>ID Ορόφου</TableHead>
@@ -91,6 +93,7 @@ export default function UnitsPage() {
               <TableBody>
                 {units.map((unit) => (
                   <TableRow key={unit.id} onClick={() => handleRowClick(unit.id)} className="cursor-pointer">
+                    <TableCell className="font-medium">{unit.identifier}</TableCell>
                     <TableCell className="font-medium">{unit.name}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.floorId}</TableCell>
@@ -108,5 +111,3 @@ export default function UnitsPage() {
     </div>
   );
 }
-
-    
