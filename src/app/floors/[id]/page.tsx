@@ -292,7 +292,7 @@ export default function FloorDetailsPage() {
       }
       const projectId = buildingDoc.data().projectId;
       
-      const filePath = `projects/${projectId}/buildings/${floor.buildingId}/floors/${floor.id}/floorPlan.pdf`;
+      const filePath = `projects/${projectId}/floor-plans/${floor.id}-${selectedFile.name}`;
       const fileRef = ref(storage, filePath);
 
       await uploadBytes(fileRef, selectedFile);
@@ -554,3 +554,5 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
+
+    
