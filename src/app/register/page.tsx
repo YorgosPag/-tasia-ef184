@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import {
@@ -30,37 +30,41 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-const loginSchema = z.object({
+const registerSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      await createUserWithEmailAndPassword(auth, data.email, data.password);
       router.push('/');
-    } catch (error) {
-      console.error("Authentication Error:", error);
+    } catch (error: any) {
+      console.error("Registration Error:", error);
+      let description = "An unexpected error occurred. Please try again.";
+      if (error.code === 'auth/email-already-in-use') {
+        description = "This email address is already in use.";
+      }
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
+        title: "Registration Failed",
+        description,
       });
       setIsLoading(false);
     }
@@ -70,9 +74,9 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen -m-8">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Sign Up</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account.
+            Enter your information to create an account.
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -108,12 +112,12 @@ export default function LoginPage() {
             <CardFooter className="flex-col gap-4">
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign in
+                Sign Up
               </Button>
-               <div className="text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="underline underline-offset-4 hover:text-primary">
-                  Sign up
+              <div className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link href="/login" className="underline underline-offset-4 hover:text-primary">
+                  Login
                 </Link>
               </div>
             </CardFooter>
