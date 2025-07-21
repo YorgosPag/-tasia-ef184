@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import {
@@ -53,14 +53,30 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      
+      if (!userCredential.user.emailVerified) {
+        await signOut(auth);
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: "Παρακαλώ επιβεβαιώστε το email σας.",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
       router.push('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Authentication Error:", error);
+      let description = "Invalid email or password. Please try again.";
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        description = "Invalid email or password. Please try again.";
+      }
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Invalid email or password. Please try again.",
+        description: description,
       });
       setIsLoading(false);
     }

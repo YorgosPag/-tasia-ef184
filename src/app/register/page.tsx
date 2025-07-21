@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import {
@@ -53,15 +53,19 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      await sendEmailVerification(userCredential.user);
+
       toast({
         title: "Registration Successful",
-        description: "Your account has been created. Redirecting...",
-        duration: 3000,
+        description: "Ένα email επιβεβαίωσης στάλθηκε. Ελέγξτε τα εισερχόμενά σας.",
+        duration: 5000,
       });
+
       setTimeout(() => {
-        router.push('/');
-      }, 3000);
+        router.push('/login');
+      }, 5000);
+
     } catch (error: any) {
       console.error("Registration Error:", error);
       let description = "An unexpected error occurred. Please try again.";
