@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -74,6 +75,7 @@ export default function ProjectsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -147,6 +149,10 @@ export default function ProjectsPage() {
   const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return 'N/A';
     return format(timestamp.toDate(), 'dd/MM/yyyy');
+  };
+  
+  const handleRowClick = (projectId: string) => {
+    router.push(`/projects/${projectId}`);
   };
 
   return (
@@ -298,7 +304,7 @@ export default function ProjectsPage() {
               </TableHeader>
               <TableBody>
                 {projects.map((project) => (
-                  <TableRow key={project.id}>
+                  <TableRow key={project.id} onClick={() => handleRowClick(project.id)} className="cursor-pointer">
                     <TableCell className="font-medium">{project.title}</TableCell>
                     <TableCell className="text-muted-foreground">{project.companyId}</TableCell>
                     <TableCell>{formatDate(project.deadline)}</TableCell>
@@ -319,5 +325,3 @@ export default function ProjectsPage() {
     </div>
   );
 }
-
-    

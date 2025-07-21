@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -65,11 +66,15 @@ export function AppSidebar() {
                 Properties
               </SidebarMenuButton>
             </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton href="/buildings" isActive={pathname.startsWith('/buildings')}>
+                <Building />
+                Κτίρια
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
 }
-
-    
