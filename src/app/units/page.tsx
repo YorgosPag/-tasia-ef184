@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, onSnapshot, Timestamp } from 'firebase/firestore';
+import { useState, useEffect, useMemo } from 'react';
+import { collection, onSnapshot, Timestamp, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
   Table,
@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { useQuery } from '@tanstack/react-query';
 
 interface Unit {
   id: string;
@@ -30,29 +31,22 @@ interface Unit {
   createdAt: any;
 }
 
+const fetchUnits = async (): Promise<Unit[]> => {
+    const unitsCollection = collection(db, 'units');
+    const snapshot = await getDocs(unitsCollection);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit));
+}
+
+
 export default function UnitsPage() {
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
-  useEffect(() => {
-    // This will listen to the top-level 'units' collection
-    const unsubscribe = onSnapshot(collection(db, 'units'), (snapshot) => {
-      const unitsData: Unit[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      } as Unit));
-      setUnits(unitsData);
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Error fetching units: ", error);
-      setIsLoading(false);
-    });
+  const { data: units = [], isLoading, isError } = useQuery<Unit[]>({
+      queryKey: ['units'],
+      queryFn: fetchUnits,
+  });
 
-    return () => unsubscribe();
-  }, []);
-  
   const handleRowClick = (unitId: string) => {
     router.push(`/units/${unitId}`);
   };
@@ -75,15 +69,18 @@ export default function UnitsPage() {
       }
   }
   
-  const filteredUnits = units.filter((unit) => {
-      const query = searchQuery.toLowerCase();
-      return (
-          unit.name.toLowerCase().includes(query) ||
-          (unit.type && unit.type.toLowerCase().includes(query)) ||
-          unit.status.toLowerCase().includes(query) ||
-          unit.identifier.toLowerCase().includes(query)
-      );
-  });
+  const filteredUnits = useMemo(() => {
+    if (!units) return [];
+    return units.filter((unit) => {
+        const query = searchQuery.toLowerCase();
+        return (
+            unit.name.toLowerCase().includes(query) ||
+            (unit.type && unit.type.toLowerCase().includes(query)) ||
+            unit.status.toLowerCase().includes(query) ||
+            unit.identifier.toLowerCase().includes(query)
+        );
+    });
+  }, [units, searchQuery]);
 
 
   return (
@@ -114,6 +111,8 @@ export default function UnitsPage() {
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
+          ) : isError ? (
+             <p className="text-center text-destructive py-8">Σφάλμα κατά τη φόρτωση των δεδομένων.</p>
           ) : filteredUnits.length > 0 ? (
             <Table>
               <TableHeader>

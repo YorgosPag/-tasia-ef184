@@ -8,6 +8,7 @@ import { AppHeader } from '@/components/layout/header';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
 import { DataProvider } from '@/hooks/use-data-store';
+import { QueryProvider } from '@/hooks/use-query-provider';
 import { useEffect } from 'react';
 
 export default function RootLayout({
@@ -27,18 +28,20 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <DataProvider>
-            <SidebarProvider defaultOpen>
-              <AppSidebar />
-              <div className="flex flex-1 flex-col">
-                <AppHeader />
-                <main className="flex-1 p-4 md:p-6 lg:p-8">
-                  {children}
-                </main>
-              </div>
-            </SidebarProvider>
-            <Toaster />
-          </DataProvider>
+          <QueryProvider>
+            <DataProvider>
+              <SidebarProvider defaultOpen>
+                <AppSidebar />
+                <div className="flex flex-1 flex-col">
+                  <AppHeader />
+                  <main className="flex-1 p-4 md:p-6 lg:p-8">
+                    {children}
+                  </main>
+                </div>
+              </SidebarProvider>
+              <Toaster />
+            </DataProvider>
+          </QueryProvider>
         </AuthProvider>
       </body>
     </html>
