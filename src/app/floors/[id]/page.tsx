@@ -13,7 +13,7 @@ import {
   Timestamp,
   updateDoc,
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, getMetadata } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
@@ -46,11 +46,11 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, UploadCloud, File, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, UploadCloud } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
-import Link from 'next/link';
+import { FloorPlanViewer } from '@/components/floor-plan-viewer';
 
 const unitSchema = z.object({
   identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
@@ -72,6 +72,7 @@ interface Floor {
 interface Unit extends UnitFormValues {
   id: string;
   createdAt: any;
+  svgPath?: string;
 }
 
 export default function FloorDetailsPage() {
@@ -100,8 +101,10 @@ export default function FloorDetailsPage() {
     },
   });
 
-  const fetchFloorData = async () => {
-      if (!floorId) return;
+  // Fetch floor details from top-level collection
+  useEffect(() => {
+    if (!floorId) return;
+    const fetchFloorData = async () => {
       const docRef = doc(db, 'floors', floorId);
       setIsLoadingFloor(true);
       const docSnap = await getDoc(docRef);
@@ -118,12 +121,8 @@ export default function FloorDetailsPage() {
         router.push('/floors');
       }
       setIsLoadingFloor(false);
-  };
-
-  // Fetch floor details from top-level collection
-  useEffect(() => {
+    };
     fetchFloorData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [floorId, router, toast]);
 
   // Listen for units in the subcollection
@@ -263,7 +262,6 @@ export default function FloorDetailsPage() {
         Επιστροφή
       </Button>
 
-      <div className="grid gap-8 md:grid-cols-2">
         <Card>
             <CardHeader>
             <CardTitle>Όροφος: {floor.level}</CardTitle>
@@ -272,38 +270,35 @@ export default function FloorDetailsPage() {
             </CardDescription>
             </CardHeader>
         </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle>Κάτοψη Ορόφου</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {floorPlanUrl ? (
-                    <Button asChild>
-                        <Link href={floorPlanUrl} target="_blank" rel="noopener noreferrer">
-                            <File className="mr-2" /> Προβολή Κάτοψης
-                        </Link>
-                    </Button>
-                ) : (
-                    <p className="text-sm text-muted-foreground">Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.</p>
-                )}
-                 <div className="space-y-2">
-                     <FormLabel htmlFor="floor-plan-upload">Ανέβασμα νέας/ανανεωμένης κάτοψης (PDF)</FormLabel>
-                     <div className="flex items-center gap-2">
-                        <Input id="floor-plan-upload" type="file" accept="application/pdf" onChange={handleFileChange} className="max-w-xs"/>
-                        <Button onClick={handleFileUpload} disabled={!selectedFile || isUploading}>
-                            {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <UploadCloud className="mr-2" />}
-                            Ανέβασμα
-                        </Button>
-                     </div>
-                     {selectedFile && <p className="text-sm text-muted-foreground">Επιλεγμένο αρχείο: {selectedFile.name}</p>}
-                 </div>
-            </CardContent>
-        </Card>
-      </div>
+      
+      <Card>
+          <CardHeader>
+              <CardTitle>Κάτοψη Ορόφου & Ακίνητα</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+              {floorPlanUrl ? (
+                <FloorPlanViewer pdfUrl={floorPlanUrl} units={units} onUnitClick={(unitId) => handleRowClick(unitId)} />
+              ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.</p>
+              )}
+               <div className="space-y-2 pt-4">
+                   <FormLabel htmlFor="floor-plan-upload">Ανέβασμα νέας/ανανεωμένης κάτοψης (PDF)</FormLabel>
+                   <div className="flex items-center gap-2">
+                      <Input id="floor-plan-upload" type="file" accept="application/pdf" onChange={handleFileChange} className="max-w-xs"/>
+                      <Button onClick={handleFileUpload} disabled={!selectedFile || isUploading}>
+                          {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <UploadCloud className="mr-2" />}
+                          Ανέβασμα
+                      </Button>
+                   </div>
+                   {selectedFile && <p className="text-sm text-muted-foreground">Επιλεγμένο αρχείο: {selectedFile.name}</p>}
+               </div>
+          </CardContent>
+      </Card>
+
 
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          Ακίνητα του Ορόφου
+          Λίστα Ακινήτων του Ορόφου
         </h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -378,10 +373,7 @@ export default function FloorDetailsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Λίστα Ακινήτων</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {isLoadingUnits ? (
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
