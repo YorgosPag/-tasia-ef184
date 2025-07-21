@@ -65,13 +65,13 @@ export default function UnitsPage() {
     return 'Άγνωστη ημερομηνία';
   };
 
-  const getStatusVariant = (status: Unit['status'] | undefined): 'default' | 'secondary' | 'outline' => {
-    switch(status) {
-        case 'Πωλημένο': return 'destructive';
-        case 'Κρατημένο': return 'secondary';
-        case 'Διαθέσιμο': return 'default';
-        default: return 'outline';
-    }
+  const getStatusClass = (status: Unit['status'] | undefined) => {
+      switch(status) {
+          case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600';
+          case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600';
+          case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600';
+          default: return 'bg-gray-500 hover:bg-gray-600';
+      }
   }
   
   const filteredUnits = units.filter((unit) => {
@@ -133,10 +133,9 @@ export default function UnitsPage() {
                     <TableCell className="font-medium">{unit.name}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
                     <TableCell>
-                        <Badge variant={getStatusVariant(unit.status)} 
-                                className={unit.status === 'Διαθέσιμο' ? 'bg-green-500 hover:bg-green-600' : 
-                                           unit.status === 'Κρατημένο' ? 'bg-yellow-500 hover:bg-yellow-600' :
-                                           unit.status === 'Πωλημένο' ? 'bg-red-500 hover:bg-red-600' : ''}>
+                        <Badge
+                            variant="default" 
+                            className={`text-white ${getStatusClass(unit.status)}`}>
                             {unit.status}
                         </Badge>
                     </TableCell>
