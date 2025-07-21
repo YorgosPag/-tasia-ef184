@@ -1,0 +1,101 @@
+
+'use client';
+
+import { useState, useEffect } from 'react';
+import { collection, onSnapshot, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { format } from 'date-fns';
+
+interface Floor {
+  id: string;
+  level: string;
+  description?: string;
+  buildingId: string;
+  createdAt: any;
+}
+
+export default function FloorsPage() {
+  const [floors, setFloors] = useState<Floor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // This will listen to the top-level 'floors' collection
+    const unsubscribe = onSnapshot(collection(db, 'floors'), (snapshot) => {
+      const floorsData: Floor[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      } as Floor));
+      setFloors(floorsData);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error fetching floors: ", error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const formatDate = (timestamp: Timestamp | undefined) => {
+    if (!timestamp) return 'N/A';
+    if (timestamp.toDate) {
+      return format(timestamp.toDate(), 'dd/MM/yyyy');
+    }
+    return 'Άγνωστη ημερομηνία';
+  };
+
+  return (
+    <div className="flex flex-col gap-8">
+       <div className="flex items-center justify-between">
+         <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Όροφοι
+        </h1>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Λίστα Όλων των Ορόφων</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-40">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : floors.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Όροφος</TableHead>
+                  <TableHead>Περιγραφή</TableHead>
+                  <TableHead>Αναγνωριστικό Κτιρίου</TableHead>
+                  <TableHead>Ημ/νία Δημιουργίας</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {floors.map((floor) => (
+                  <TableRow key={floor.id}>
+                    <TableCell className="font-medium">{floor.level}</TableCell>
+                    <TableCell className="text-muted-foreground">{floor.description || 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{floor.buildingId}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(floor.createdAt)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+             <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν όροφοι.</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

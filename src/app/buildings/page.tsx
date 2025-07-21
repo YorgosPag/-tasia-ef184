@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,7 @@ export default function BuildingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<BuildingFormValues>({
     resolver: zodResolver(buildingSchema),
@@ -128,6 +130,10 @@ export default function BuildingsPage() {
         return format(timestamp, 'dd/MM/yyyy');
     }
     return 'Άγνωστη ημερομηνία';
+  };
+
+  const handleRowClick = (buildingId: string) => {
+    router.push(`/buildings/${buildingId}`);
   };
 
 
@@ -230,7 +236,7 @@ export default function BuildingsPage() {
               </TableHeader>
               <TableBody>
                 {buildings.map((building) => (
-                  <TableRow key={building.id}>
+                  <TableRow key={building.id} onClick={() => handleRowClick(building.id)} className="cursor-pointer">
                     <TableCell className="font-medium">{building.address}</TableCell>
                     <TableCell className="text-muted-foreground">{building.type}</TableCell>
                     <TableCell className="text-muted-foreground">{building.projectId || 'N/A'}</TableCell>
@@ -247,5 +253,3 @@ export default function BuildingsPage() {
     </div>
   );
 }
-
-    
