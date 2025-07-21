@@ -14,7 +14,7 @@ interface Unit {
   id: string;
   identifier: string;
   name: string;
-  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο';
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
   polygonPoints?: { x: number; y: number }[];
 }
 
@@ -29,6 +29,7 @@ const getStatusColor = (status: Unit['status'] | undefined) => {
         case 'Πωλημένο': return '#ef4444'; // red-500
         case 'Κρατημένο': return '#f59e0b'; // yellow-500
         case 'Διαθέσιμο': return '#22c55e'; // green-500
+        case 'Οικοπεδούχος': return '#f97316'; // orange-500
         default: return '#6b7280'; // gray-500
     }
 }
