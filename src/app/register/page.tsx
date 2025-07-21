@@ -54,6 +54,10 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, data.email, data.password);
+      toast({
+        title: "Registration Successful",
+        description: "Your account has been created.",
+      });
       router.push('/');
     } catch (error: any) {
       console.error("Registration Error:", error);
