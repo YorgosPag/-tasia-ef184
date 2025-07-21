@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,33 +38,22 @@ import { z } from 'zod';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useDataStore, Company } from '@/hooks/use-data-store';
 
 const companySchema = z.object({
   name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
   contactInfo: z.object({
-      email: z.string().email({ message: "Το email δεν είναι έγκυρο." }),
-      phone: z.string().min(10, { message: "Το τηλέφωνο πρέπει να έχει 10 ψηφία." }).max(10, { message: "Το τηλέφωνο πρέπει να έχει 10 ψηφία." }),
-      address: z.string().min(1, { message: "Η διεύθυνση είναι υποχρεωτική." }),
-      afm: z.string().min(9, { message: "Το ΑΦΜ πρέπει να έχει 9 ψηφία." }).max(9, { message: "Το ΑΦΜ πρέπει να έχει 9 ψηφία." }),
+      email: z.string().email({ message: "Το email δεν είναι έγκυρο." }).or(z.literal('')),
+      phone: z.string().optional(),
+      address: z.string().optional(),
+      afm: z.string().optional(),
   })
 });
 
 type CompanyFormValues = z.infer<typeof companySchema>;
 
-interface Company extends Omit<CompanyFormValues, 'contactInfo'> {
-  id: string;
-  contactInfo: {
-    email: string;
-    phone: string;
-    address: string;
-    afm: string;
-  };
-  createdAt: any;
-}
-
 export default function CompaniesPage() {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { companies, isLoading, addCompany } = useDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -82,34 +71,10 @@ export default function CompaniesPage() {
     },
   });
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'companies'), (snapshot) => {
-      const companiesData: Company[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      } as Company));
-      setCompanies(companiesData);
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Error fetching companies: ", error);
-      toast({
-        variant: "destructive",
-        title: "Σφάλμα",
-        description: "Δεν ήταν δυνατή η φόρτωση των εταιρειών.",
-      });
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [toast]);
-
   const onSubmit = async (data: CompanyFormValues) => {
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'companies'), {
-        ...data,
-        createdAt: serverTimestamp(),
-      });
+      await addCompany(data);
       toast({
         title: "Επιτυχία",
         description: "Η εταιρεία προστέθηκε με επιτυχία.",
@@ -272,4 +237,3 @@ export default function CompaniesPage() {
     </div>
   );
 }
-
