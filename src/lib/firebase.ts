@@ -26,7 +26,11 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 let analytics;
 if (typeof window !== 'undefined') {
-  analytics = getAnalytics(app);
+    try {
+        analytics = getAnalytics(app);
+    } catch (error) {
+        console.log('Firebase Analytics not available in this environment.');
+    }
 }
 
 
