@@ -3,6 +3,7 @@
 import {
   Home,
   Building,
+  Briefcase,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -31,14 +32,25 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
+          <SidebarGroupLabel>Μενού</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton href="/" isActive={pathname === '/'}>
                 <Home />
-                Home
+                Αρχική
               </SidebarMenuButton>
             </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton href="/projects" isActive={pathname.startsWith('/projects')}>
+                <Briefcase />
+                Έργα
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
+          <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton href="/properties" isActive={pathname.startsWith('/properties')}>
                 <Building />
