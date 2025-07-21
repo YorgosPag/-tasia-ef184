@@ -7,6 +7,7 @@ import {
   Briefcase,
   Building2,
   Layers,
+  LayoutTemplate
 } from 'lucide-react';
 import {
   Sidebar,
@@ -70,6 +71,12 @@ export function AppSidebar() {
               <SidebarMenuButton href="/floors" isActive={pathname.startsWith('/floors')}>
                 <Layers />
                 Όροφοι
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton href="/units" isActive={pathname.startsWith('/units')}>
+                <LayoutTemplate />
+                Ακίνητα
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
