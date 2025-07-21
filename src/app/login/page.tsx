@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import {
@@ -53,19 +53,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
-      
-      if (!userCredential.user.emailVerified) {
-        await signOut(auth);
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: "Παρακαλώ επιβεβαιώστε το email σας.",
-        });
-        setIsLoading(false);
-        return;
-      }
-      
+      await signInWithEmailAndPassword(auth, data.email, data.password);
       router.push('/');
     } catch (error: any) {
       console.error("Authentication Error:", error);
