@@ -149,9 +149,18 @@ export default function FloorDetailsPage() {
     const findUnits = async () => {
         try {
             const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-            if (!buildingDoc.exists() || !buildingDoc.data().projectId) {
-                throw new Error("Building or project ID not found");
+            if (!buildingDoc.exists() || !buildingDoc.data()?.projectId || !buildingDoc.data()?.originalId) {
+                // If we can't find the project or original ID, we can't continue.
+                // This might happen with older data structures or if a building is not linked to a project.
+                setIsLoadingUnits(false);
+                toast({
+                    variant: 'default',
+                    title: 'Ενημέρωση',
+                    description: 'Αυτό το κτίριο δεν ανήκει σε έργο. Τα ακίνητα δεν είναι διαθέσιμα.',
+                });
+                return; // Stop execution
             }
+
             const projectId = buildingDoc.data().projectId;
             const originalBuildingId = buildingDoc.data().originalId;
 
@@ -177,7 +186,7 @@ export default function FloorDetailsPage() {
                 setIsLoadingUnits(false);
               }
             );
-            return unsubscribe;
+            return unsubscribe; // Return the unsubscribe function for cleanup
         } catch (error) {
             console.error("Error setting up unit listener:", error);
             toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η παρακολούθηση των ακινήτων.' });
@@ -185,13 +194,14 @@ export default function FloorDetailsPage() {
         }
     }
     
-    let unsubscribe: (() => void) | undefined;
-    findUnits().then(unsub => { unsubscribe = unsub });
+    let unsubscribePromise = findUnits();
 
     return () => {
-        if (unsubscribe) {
-            unsubscribe();
-        }
+        unsubscribePromise.then(unsubscribe => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        });
     };
   }, [floor, toast]);
   
@@ -230,7 +240,7 @@ export default function FloorDetailsPage() {
 
      try {
        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-       if (!buildingDoc.exists() || !buildingDoc.data().projectId) {
+       if (!buildingDoc.exists() || !buildingDoc.data()?.projectId || !buildingDoc.data()?.originalId) {
            throw new Error("Building or project ID not found for unit creation");
        }
        const projectId = buildingDoc.data().projectId;
@@ -241,8 +251,6 @@ export default function FloorDetailsPage() {
        // Create sub-collection document
        await setDoc(unitSubRef, {
          ...unitData,
-         buildingId: floor.buildingId,
-         floorId: floor.id, 
          createdAt: serverTimestamp(),
        });
 
@@ -287,7 +295,7 @@ export default function FloorDetailsPage() {
     
     try {
       const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-      if (!buildingDoc.exists() || !buildingDoc.data().projectId) {
+      if (!buildingDoc.exists() || !buildingDoc.data()?.projectId) {
         throw new Error("Building or Project ID not found for file upload");
       }
       const projectId = buildingDoc.data().projectId;
@@ -301,9 +309,12 @@ export default function FloorDetailsPage() {
       const floorTopRef = doc(db, 'floors', floor.id);
       await updateDoc(floorTopRef, { floorPlanUrl: url });
 
-      const originalBuildingId = buildingDoc.data().originalId;
-      const floorSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId);
-      await updateDoc(floorSubRef, { floorPlanUrl: url });
+      // Update the sub-collection document as well
+      const originalBuildingId = buildingDoc.data()?.originalId;
+      if (originalBuildingId && floor.originalId) {
+          const floorSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId);
+          await updateDoc(floorSubRef, { floorPlanUrl: url });
+      }
 
       setFloorPlanUrl(url);
       setSelectedFile(null);
@@ -324,8 +335,11 @@ export default function FloorDetailsPage() {
   };
   
   const handleRowClick = (unitId: string) => {
-    const unitInSubCollectionId = units.find(u => u.id === unitId)?.id ?? unitId;
-    router.push(`/units/${unitInSubCollectionId}`);
+    // Find the original ID from the top-level collection to navigate
+    const unitDoc = units.find(u => u.id === unitId);
+    if(unitDoc){
+      router.push(`/units/${unitDoc.id}`);
+    }
   };
 
   const formatDate = (timestamp: Timestamp | undefined) => {
@@ -335,11 +349,11 @@ export default function FloorDetailsPage() {
 
   const getStatusClass = (status: Unit['status'] | undefined) => {
       switch(status) {
-          case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600';
-          case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600';
-          case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600';
-          case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600';
-          default: return 'bg-gray-500 hover:bg-gray-600';
+          case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600 text-white';
+          case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600 text-white';
+          case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600 text-white';
+          case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600 text-white';
+          default: return 'bg-gray-500 hover:bg-gray-600 text-white';
       }
   }
 
@@ -537,7 +551,7 @@ export default function FloorDetailsPage() {
                     <TableCell>
                         <Badge 
                             variant="default"
-                            className={`text-white ${getStatusClass(unit.status)}`}>
+                            className={getStatusClass(unit.status)}>
                             {unit.status}
                         </Badge>
                     </TableCell>
@@ -554,5 +568,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
