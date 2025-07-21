@@ -62,9 +62,7 @@ export default function RegisterPage() {
         duration: 5000,
       });
 
-      setTimeout(() => {
-        router.push('/login');
-      }, 5000);
+      router.push('/login');
 
     } catch (error: any) {
       console.error("Registration Error:", error);
@@ -77,6 +75,7 @@ export default function RegisterPage() {
         title: "Registration Failed",
         description,
       });
+    } finally {
       setIsLoading(false);
     }
   };
