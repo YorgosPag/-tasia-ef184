@@ -58,7 +58,9 @@ export default function RegisterPage() {
         title: "Registration Successful",
         description: "Your account has been created.",
       });
-      router.push('/');
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
     } catch (error: any) {
       console.error("Registration Error:", error);
       let description = "An unexpected error occurred. Please try again.";
