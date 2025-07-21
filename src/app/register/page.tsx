@@ -56,11 +56,12 @@ export default function RegisterPage() {
       await createUserWithEmailAndPassword(auth, data.email, data.password);
       toast({
         title: "Registration Successful",
-        description: "Your account has been created.",
+        description: "Your account has been created. Redirecting...",
+        duration: 3000,
       });
       setTimeout(() => {
         router.push('/');
-      }, 1000);
+      }, 3000);
     } catch (error: any) {
       console.error("Registration Error:", error);
       let description = "An unexpected error occurred. Please try again.";
