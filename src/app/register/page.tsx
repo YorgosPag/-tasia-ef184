@@ -89,11 +89,13 @@ export default function RegisterPage() {
       await signInWithPopup(auth, provider);
       router.push('/');
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Google Sign-Up Failed",
-        description: error.message,
-      });
+      if (error.code !== 'auth/popup-closed-by-user') {
+          toast({
+            variant: "destructive",
+            title: "Google Sign-Up Failed",
+            description: error.message,
+          });
+      }
     } finally {
       setIsGoogleLoading(false);
     }
