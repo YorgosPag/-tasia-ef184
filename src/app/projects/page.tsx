@@ -85,6 +85,20 @@ export default function ProjectsPage() {
     },
   });
 
+  // Effect to reset form when dialog is closed
+  useEffect(() => {
+    if (!isDialogOpen) {
+      form.reset({
+        title: '',
+        companyId: '',
+        location: '',
+        description: '',
+        status: 'Ενεργό',
+        deadline: undefined,
+      });
+    }
+  }, [isDialogOpen, form]);
+
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
@@ -94,7 +108,6 @@ export default function ProjectsPage() {
         title: "Επιτυχία",
         description: "Το έργο προστέθηκε με επιτυχία.",
       });
-      form.reset();
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Error adding project: ", error);
@@ -286,7 +299,7 @@ export default function ProjectsPage() {
                       Ακύρωση
                     </Button>
                   </DialogClose>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button type="submit" disabled={isSubmitting || isLoading}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Δημιουργία
                   </Button>
@@ -341,5 +354,3 @@ export default function ProjectsPage() {
     </div>
   );
 }
-
-    
