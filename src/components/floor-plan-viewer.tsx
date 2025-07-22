@@ -112,10 +112,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   
   const [localUnits, setLocalUnits] = useState<Unit[]>(units);
   useEffect(() => {
-    if (JSON.stringify(units) !== JSON.stringify(localUnits)) {
-        setLocalUnits(units);
-    }
-  }, [units, localUnits]);
+    setLocalUnits(units);
+  }, [units]);
 
   
   // Undo/Redo state
@@ -550,6 +548,18 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
       setStatusVisibility(prev => ({ ...prev, [status]: checked }));
   }
 
+  // Effect to center content whenever scale changes
+  useEffect(() => {
+    const container = pdfContainerRef.current;
+    if (container) {
+        // We use a small timeout to ensure the DOM has updated with the new scale
+        setTimeout(() => {
+            container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+            container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
+        }, 0);
+    }
+  }, [scale, pageDimensions]); // Rerun when scale or pageDimensions change
+
   const handleFitToView = () => {
     const container = pdfContainerRef.current;
     if (!container || !pageDimensions || pageDimensions.cropBox.width === 0) return;
@@ -562,18 +572,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     const scaleY = (clientHeight / cropHeight) * PADDING;
   
     const newScale = Math.min(scaleX, scaleY);
-  
     setScale(newScale);
-  
-    // After the scale is set, we need to center the content.
-    // We use a timeout to allow React to re-render with the new scale first.
-    setTimeout(() => {
-      const el = pdfContainerRef.current;
-      if (el) {
-        el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
-        el.scrollTop = (el.scrollHeight - el.clientHeight) / 2;
-      }
-    }, 0);
   };
 
   const visibleUnits = localUnits.filter(unit => statusVisibility[unit.status]);
@@ -616,7 +615,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                       onLoadSuccess={onDocumentLoadSuccess}
                       onLoadError={onDocumentLoadError}
                       loading={loadingElement}
-                      className="flex justify-center items-start" // Align to top-left for scroll
+                      className="flex justify-center items-center" 
                       >
                       <div className="relative">
                           <Page 
