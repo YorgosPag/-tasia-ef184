@@ -119,7 +119,8 @@
 - **orientation**: `string` (optional) - Προσανατολισμός.
 - **amenities**: `array` of `string` (optional) - Λίστα με παροχές.
 - **polygonPoints**: `array` of `map` - Οι συντεταγμένες `{x, y}` του πολυγώνου.
-- **floorId**: `string` - Αναφορά στην `floors` collection.
+- **floorIds**: `array` of `string` - Αναφορά στην `floors` collection. Υποστηρίζει πολλαπλούς ορόφους (π.χ. για μεζονέτες).
+- **levelSpan**: `string` (optional) - Περιγραφικό string για μονάδες πολλαπλών ορόφων (π.χ. "Ισόγειο-1ος").
 - **buildingId**: `string` - Αναφορά στην `buildings` collection.
 - **originalId**: `string` - Το ID του εγγράφου στη subcollection.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.

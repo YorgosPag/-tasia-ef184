@@ -26,7 +26,8 @@ interface Unit {
   name: string;
   type?: string;
   status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
-  floorId: string;
+  floorIds: string[];
+  levelSpan?: string;
   buildingId: string;
   createdAt: any;
 }
@@ -126,7 +127,7 @@ export default function UnitsPage() {
                   <TableHead>Όνομα/ID</TableHead>
                   <TableHead>Τύπος</TableHead>
                   <TableHead>Κατάσταση</TableHead>
-                  <TableHead>ID Ορόφου</TableHead>
+                  <TableHead>Όροφοι</TableHead>
                   <TableHead>ID Κτιρίου</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
                 </TableRow>
@@ -144,7 +145,7 @@ export default function UnitsPage() {
                             {unit.status}
                         </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{unit.floorId}</TableCell>
+                    <TableCell className="text-muted-foreground">{unit.levelSpan || unit.floorIds?.join(', ')}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.buildingId}</TableCell>
                     <TableCell className="text-muted-foreground">{formatDate(unit.createdAt)}</TableCell>
                   </TableRow>

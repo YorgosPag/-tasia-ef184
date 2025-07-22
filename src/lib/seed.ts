@@ -204,23 +204,25 @@ export async function seedDatabase() {
 
   // --- Units and Attachments ---
   const unitsData: {
-    _id: string; floorId: string; identifier: string; name: string; type: string; status: UnitStatus;
+    _id: string; floorIds: string[]; levelSpan?: string; identifier: string; name: string; type: string; status: UnitStatus;
     area: number; price?: number; bedrooms?: number; bathrooms?: number; orientation?: string; amenities?: string[];
     polygonPoints?: { x: number; y: number }[];
     attachments: { type: 'parking' | 'storage'; details: string; area?: number; price?: number; photoUrl?: string }[];
   }[] = [
-    { _id: 'unit-a1', floorId: 'flr-alpha-1', identifier: 'A1', name: 'Διαμέρισμα', type: 'Δυάρι', status: 'Διαθέσιμο', area: 75.5, price: 280000, bedrooms: 2, bathrooms: 1, orientation: 'Νότιο', amenities: ['Μπαλκόνι', 'Τζάκι'], polygonPoints: [{x:50,y:50}, {x:150,y:50}, {x:150,y:150}, {x:50,y:150}], attachments: [{type: 'parking', details: 'P-1', area: 12.5, price: 15000, photoUrl: 'https://placehold.co/100x100.png'}, {type: 'storage', details: 'S-A1', area: 5, price: 5000}] },
-    { _id: 'unit-a2', floorId: 'flr-alpha-1', identifier: 'A2', name: 'Διαμέρισμα', type: 'Τριάρι', status: 'Κρατημένο', area: 102, price: 350000, bedrooms: 3, bathrooms: 2, orientation: 'Νότιο-Δυτικό', amenities: ['Μεγάλο Μπαλκόνι'], polygonPoints: [{x:200,y:50}, {x:300,y:50}, {x:300,y:150}, {x:200,y:150}], attachments: [{type: 'parking', details: 'P-2', area: 12.5, price: 15000}] },
-    { _id: 'unit-b1', floorId: 'flr-alpha-2', identifier: 'B1', name: 'Ρετιρέ', type: 'Μεγάλο', status: 'Πωλημένο', area: 150, price: 550000, bedrooms: 4, bathrooms: 3, orientation: 'Πανοραμικός', amenities: ['Ταράτσα', 'BBQ', 'Jacuzzi'], polygonPoints: [{x:50,y:200}, {x:300,y:200}, {x:300,y:300}, {x:50,y:300}], attachments: [{type: 'storage', details: 'S-B1', area: 15, price: 20000}] },
-    { _id: 'unit-b2', floorId: 'flr-alpha-2', identifier: 'B2', name: 'Διαμέρισμα Οικοπεδούχου', type: 'Δυάρι', status: 'Οικοπεδούχος', area: 80, bedrooms: 2, bathrooms: 1, amenities: [], polygonPoints: [{x:350,y:200}, {x:450,y:200}, {x:450,y:300}, {x:350,y:300}], attachments: [] },
-    { _id: 'unit-c1', floorId: 'flr-beta-1', identifier: 'C1', name: 'Γραφείο Open-Space', type: 'Γραφείο', status: 'Διαθέσιμο', area: 250, price: 1200000, amenities: ['Κουζίνα', 'Server Room'], polygonPoints: [{x:100,y:100}, {x:400,y:100}, {x:400,y:400}, {x:100,y:400}], attachments: [] },
+    { _id: 'unit-a1', floorIds: ['flr-alpha-1'], identifier: 'A1', name: 'Διαμέρισμα', type: 'Δυάρι', status: 'Διαθέσιμο', area: 75.5, price: 280000, bedrooms: 2, bathrooms: 1, orientation: 'Νότιο', amenities: ['Μπαλκόνι', 'Τζάκι'], polygonPoints: [{x:50,y:50}, {x:150,y:50}, {x:150,y:150}, {x:50,y:150}], attachments: [{type: 'parking', details: 'P-1', area: 12.5, price: 15000, photoUrl: 'https://placehold.co/100x100.png'}, {type: 'storage', details: 'S-A1', area: 5, price: 5000}] },
+    { _id: 'unit-a2', floorIds: ['flr-alpha-1'], identifier: 'A2', name: 'Διαμέρισμα', type: 'Τριάρι', status: 'Κρατημένο', area: 102, price: 350000, bedrooms: 3, bathrooms: 2, orientation: 'Νότιο-Δυτικό', amenities: ['Μεγάλο Μπαλκόνι'], polygonPoints: [{x:200,y:50}, {x:300,y:50}, {x:300,y:150}, {x:200,y:150}], attachments: [{type: 'parking', details: 'P-2', area: 12.5, price: 15000}] },
+    { _id: 'unit-b1', floorIds: ['flr-alpha-2'], identifier: 'B1', name: 'Ρετιρέ', type: 'Μεγάλο', status: 'Πωλημένο', area: 150, price: 550000, bedrooms: 4, bathrooms: 3, orientation: 'Πανοραμικός', amenities: ['Ταράτσα', 'BBQ', 'Jacuzzi'], polygonPoints: [{x:50,y:200}, {x:300,y:200}, {x:300,y:300}, {x:50,y:300}], attachments: [{type: 'storage', details: 'S-B1', area: 15, price: 20000}] },
+    { _id: 'unit-b2', floorIds: ['flr-alpha-2'], identifier: 'B2', name: 'Διαμέρισμα Οικοπεδούχου', type: 'Δυάρι', status: 'Οικοπεδούχος', area: 80, bedrooms: 2, bathrooms: 1, amenities: [], polygonPoints: [{x:350,y:200}, {x:450,y:200}, {x:450,y:300}, {x:350,y:300}], attachments: [] },
+    { _id: 'unit-c1', floorIds: ['flr-beta-1'], identifier: 'C1', name: 'Γραφείο Open-Space', type: 'Γραφείο', status: 'Διαθέσιμο', area: 250, price: 1200000, amenities: ['Κουζίνα', 'Server Room'], polygonPoints: [{x:100,y:100}, {x:400,y:100}, {x:400,y:400}, {x:100,y:400}], attachments: [] },
   ];
 
   for (const unit of unitsData) {
-      const parentFloorTopLevelRef = refs[unit.floorId];
+      if (!unit.floorIds || unit.floorIds.length === 0) continue;
+      
+      const parentFloorTopLevelRef = refs[unit.floorIds[0]];
       if (!parentFloorTopLevelRef) continue;
 
-      const parentFloorData = floorsData.find(f => f._id === unit.floorId);
+      const parentFloorData = floorsData.find(f => f._id === unit.floorIds[0]);
       if (!parentFloorData) continue;
       
       const parentBuildingData = buildingsData.find(b => b._id === parentFloorData.buildingId);
@@ -228,21 +230,23 @@ export async function seedDatabase() {
 
       const parentProjectRef = refs[parentBuildingData.projectId];
       const parentBuildingTopLevelRef = refs[parentFloorData.buildingId];
-      const buildingOriginalId = originalIds[parentFloorData.buildingId]?.building;
-      const floorOriginalId = originalIds[unit.floorId]?.floor;
-
-      if (!parentProjectRef || !parentBuildingTopLevelRef || !buildingOriginalId || !floorOriginalId) continue;
+      
+      if (!parentProjectRef || !parentBuildingTopLevelRef) continue;
       
       const { _id, attachments, ...unitCoreData } = unit;
       const unitData = {
         ...unitCoreData,
+        floorIds: unit.floorIds.map(fid => refs[fid]?.id).filter(Boolean),
         polygonPoints: unit.polygonPoints || [],
-        floorId: parentFloorTopLevelRef.id,
         buildingId: parentBuildingTopLevelRef.id,
         createdAt: serverTimestamp(),
       };
       
-      // Correct Dual-Write for Units
+      // Dual-Write for Units - simplified to one subcollection entry for simplicity
+      const buildingOriginalId = originalIds[parentFloorData.buildingId]?.building;
+      const floorOriginalId = originalIds[unit.floorIds[0]]?.floor;
+      if (!buildingOriginalId || !floorOriginalId) continue;
+      
       const subCollectionUnitRef = doc(collection(db, 'projects', parentProjectRef.id, 'buildings', buildingOriginalId, 'floors', floorOriginalId, 'units'));
       const topLevelUnitRef = doc(collection(db, 'units'));
       
