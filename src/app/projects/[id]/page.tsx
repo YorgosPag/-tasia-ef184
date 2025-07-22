@@ -75,6 +75,9 @@ const buildingSchema = z.object({
   type: z.string().min(1, { message: 'Ο τύπος είναι υποχρεωτικός.' }),
   description: z.string().optional(),
   photoUrl: z.string().url({ message: "Το URL της φωτογραφίας δεν είναι έγκυρο." }).or(z.literal('')),
+  floorsCount: z.coerce.number().int().positive().optional(),
+  constructionYear: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 5).optional(),
+  tags: z.string().optional(),
 });
 
 type BuildingFormValues = z.infer<typeof buildingSchema>;
@@ -122,6 +125,9 @@ export default function ProjectDetailsPage() {
       type: '',
       description: '',
       photoUrl: '',
+      floorsCount: undefined,
+      constructionYear: undefined,
+      tags: '',
     },
   });
 
@@ -195,6 +201,9 @@ export default function ProjectDetailsPage() {
         type: data.type,
         description: data.description || '',
         photoUrl: data.photoUrl?.trim() || undefined,
+        floorsCount: data.floorsCount || undefined,
+        constructionYear: data.constructionYear || undefined,
+        tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
     }
 
     try {
@@ -275,8 +284,11 @@ export default function ProjectDetailsPage() {
                 id: building.id,
                 address: data.address,
                 type: data.type,
-                description: data.description,
-                photoUrl: data.photoUrl,
+                description: data.description || '',
+                photoUrl: data.photoUrl || '',
+                floorsCount: data.floorsCount || undefined,
+                constructionYear: data.constructionYear || undefined,
+                tags: (data.tags || []).join(', '),
             });
             setEditingBuildingId(building.id);
             setIsDialogOpen(true);
@@ -359,7 +371,7 @@ export default function ProjectDetailsPage() {
               Νέο Κτίριο
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>{editingBuildingId ? 'Επεξεργασία' : 'Προσθήκη Νέου'} Κτιρίου</DialogTitle>
               <DialogDescription>
@@ -367,7 +379,7 @@ export default function ProjectDetailsPage() {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitBuilding)} className="grid gap-4 py-4">
+              <form onSubmit={form.handleSubmit(onSubmitBuilding)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
                 <FormField
                   control={form.control}
                   name="address"
@@ -394,6 +406,34 @@ export default function ProjectDetailsPage() {
                     </FormItem>
                   )}
                 />
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="floorsCount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Αριθμός Ορόφων</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="π.χ. 5" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="constructionYear"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Έτος Κατασκευής</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="π.χ. 2023" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
                 <FormField
                   control={form.control}
                   name="photoUrl"
@@ -402,6 +442,19 @@ export default function ProjectDetailsPage() {
                       <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
                       <FormControl>
                         <Input placeholder="https://example.com/photo.jpg" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags (χωρισμένα με κόμμα)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="π.χ. νεόδμητο, γωνιακό" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

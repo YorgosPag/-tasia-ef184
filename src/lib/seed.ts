@@ -113,7 +113,10 @@ export async function seedDatabase() {
         type: 'Πολυκατοικία', 
         projectId: 'proj-athens-revival', 
         description: 'Ιστορικό κτίριο του 1960 με πλήρη ανακαίνιση.',
-        photoUrl: 'https://placehold.co/600x400.png'
+        photoUrl: 'https://placehold.co/600x400.png',
+        floorsCount: 5,
+        constructionYear: 1960,
+        tags: ['ιστορικό', 'ανακαίνιση'],
     },
     { 
         _id: 'bld-beta', 
@@ -121,7 +124,10 @@ export async function seedDatabase() {
         type: 'Κτίριο Γραφείων', 
         projectId: 'proj-thess-towers',
         description: 'Μοντέρνο κτίριο με γυάλινη πρόσοψη.',
-        photoUrl: 'https://placehold.co/600x400.png'
+        photoUrl: 'https://placehold.co/600x400.png',
+        floorsCount: 12,
+        constructionYear: 2024,
+        tags: ['νεόδμητο', 'γωνιακό'],
     },
   ];
 
@@ -135,11 +141,9 @@ export async function seedDatabase() {
       refs[building._id] = topLevelBuildingRef; 
       originalIds[building._id] = { building: subCollectionBuildingRef.id };
 
+      const { _id, projectId, ...buildingCoreData } = building;
       const buildingData = {
-        address: building.address,
-        type: building.type,
-        description: building.description,
-        photoUrl: building.photoUrl,
+        ...buildingCoreData,
         createdAt: serverTimestamp(),
       };
 
