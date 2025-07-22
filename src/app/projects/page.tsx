@@ -109,12 +109,12 @@ export default function ProjectsPage() {
         description: "Το έργο προστέθηκε με επιτυχία.",
       });
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding project: ", error);
       toast({
         variant: "destructive",
         title: "Σφάλμα",
-        description: "Δεν ήταν δυνατή η προσθήκη του έργου.",
+        description: `Δεν ήταν δυνατή η προσθήκη του έργου: ${error.message}`,
       });
     } finally {
       setIsSubmitting(false);
@@ -136,7 +136,9 @@ export default function ProjectsPage() {
 
   const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return 'N/A';
-    return format(timestamp.toDate(), 'dd/MM/yyyy');
+    // Handle both Timestamp and Date objects
+    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
+    return format(date, 'dd/MM/yyyy');
   };
   
   const handleRowClick = (projectId: string) => {
