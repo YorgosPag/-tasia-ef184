@@ -2,15 +2,14 @@
 'use client';
 
 import React, { useRef, MutableRefObject } from 'react';
-import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Loader2 } from 'lucide-react';
 import { PolygonPopover } from './PolygonPopover';
 import { Unit } from './FloorPlanViewer';
 import { usePdfHandlers } from './hooks/usePdfHandlers';
-import { getStatusColor } from './utils';
-import { cn } from '@/lib/utils';
+import { getStatusClass } from './utils';
 
 // Set worker path for react-pdf
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
@@ -58,7 +57,6 @@ export function PdfCanvas({
   isEditMode,
   drawingPolygon,
   draggingPoint,
-  isPrecisionZooming,
   lastMouseEvent,
   pageDimensions,
   pdfContainerRef,
@@ -251,7 +249,7 @@ function UnitLayers({
               cx={point.x}
               cy={point.y}
               r={5 / scale}
-              fill={getStatusColor(unit.status)}
+              fill={`hsl(var(--${getStatusClass(unit.status, 'color')}))`}
               stroke="#fff"
               strokeWidth={1.5 / scale}
               onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
