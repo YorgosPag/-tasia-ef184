@@ -187,7 +187,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   useEffect(() => {
     setPageNumber(1);
     resetDrawingState(); // Reset drawing on new PDF
-  }, [pdfUrl]);
+  }, [pdfUrl, resetDrawingState]);
 
   const resetDrawingState = useCallback(() => {
     setCurrentPolygonPoints([]);
@@ -377,7 +377,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
           unit.polygonPoints?.forEach(point => {
               const distance = Math.sqrt(Math.pow(point.x - svgPoint.x, 2) + Math.pow(point.y - svgPoint.y, 2));
               if (distance < minDistance) {
-                  minDistance = d;
+                  minDistance = distance;
                   bestSnapPoint = point;
               }
           });
@@ -592,7 +592,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const canRedo = historyIndex < history.length - 1;
 
   const { cropBox } = pageDimensions;
-  const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropHeight : 1;
+  const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropBox.height : 1;
   
   return (
         <div className="flex flex-col gap-2 items-center">
@@ -612,7 +612,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={loadingElement}
-                  className="flex justify-center"
+                  className="flex justify-start"
                   >
                   <div className="relative" style={{ aspectRatio: croppedAspectRatio }}>
                       <Page 
@@ -838,8 +838,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
-                <Card className="w-full bg-secondary/60 border-secondary/40">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
+                <Card className="w-full">
                         <CardContent className="p-2 text-center">
                             {isPrecisionZooming ? (
                                 <p className="text-sm text-blue-700 font-medium flex items-center justify-center gap-2">
