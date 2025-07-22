@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import type { Unit } from './FloorPlanViewer';
-import { ALL_STATUSES, STATUS_COLOR_MAP } from './utils';
+import { ALL_STATUSES } from './utils';
 
 /**
  * StatusFilter
@@ -16,11 +16,15 @@ import { ALL_STATUSES, STATUS_COLOR_MAP } from './utils';
 interface StatusFilterProps {
   statusVisibility: Record<Unit['status'], boolean>;
   onVisibilityChange: (status: Unit['status'], checked: boolean) => void;
+  statusColors: Record<Unit['status'], string>;
+  onColorChange: (status: Unit['status'], color: string) => void;
 }
 
 export function StatusFilter({
   statusVisibility,
   onVisibilityChange,
+  statusColors,
+  onColorChange,
 }: StatusFilterProps) {
   return (
     <Card className="w-full">
@@ -30,9 +34,15 @@ export function StatusFilter({
             Εμφάνιση Layers:
           </h4>
           {ALL_STATUSES.map((status) => {
-            const color = STATUS_COLOR_MAP[status] ?? '#6b7280';
+            const color = statusColors[status] ?? '#6b7280';
             return (
               <div key={status} className="flex items-center space-x-2">
+                 <input
+                  type="color"
+                  value={color}
+                  onChange={(e) => onColorChange(status, e.target.value)}
+                  className="h-5 w-6 cursor-pointer rounded border-none bg-transparent p-0"
+                />
                 <Checkbox
                   id={`status-${status}`}
                   checked={statusVisibility[status] ?? true}

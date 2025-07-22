@@ -40,6 +40,8 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
     setPageDimensions,
     statusVisibility,
     handleStatusVisibilityChange,
+    statusColors,
+    handleColorChange,
     isLocked,
     setIsLocked,
     isEditMode,
@@ -64,6 +66,7 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
         pdfUrl={pdfUrl}
         units={localUnits}
         statusVisibility={statusVisibility}
+        statusColors={statusColors}
         isLocked={isLocked}
         isEditMode={isEditMode}
         drawingPolygon={drawingPolygon}
@@ -113,6 +116,8 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
           <StatusFilter
             statusVisibility={statusVisibility}
             onVisibilityChange={handleStatusVisibilityChange}
+            statusColors={statusColors}
+            onColorChange={handleColorChange}
           />
         </div>
       </div>
