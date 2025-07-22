@@ -18,13 +18,13 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Badge } from './ui/badge';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from './ui/input';
 
 // Set worker path to a specific, compatible version from a CDN
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
@@ -112,8 +112,10 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   
   const [localUnits, setLocalUnits] = useState<Unit[]>(units);
   useEffect(() => {
-    setLocalUnits(units);
-  }, [units]);
+    if (JSON.stringify(units) !== JSON.stringify(localUnits)) {
+        setLocalUnits(units);
+    }
+  }, [units, localUnits]);
 
   
   // Undo/Redo state
@@ -136,6 +138,34 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
       'Πωλημένο': true,
       'Οικοπεδούχος': true,
   }));
+  const [zoomInput, setZoomInput] = useState(`${(scale * 100).toFixed(0)}%`);
+
+   useEffect(() => {
+     setZoomInput(`${(scale * 100).toFixed(0)}%`);
+   }, [scale]);
+
+   const handleZoomInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+     setZoomInput(e.target.value);
+   };
+ 
+   const handleZoomInputBlur = () => {
+     const newScale = parseFloat(zoomInput) / 100;
+     if (!isNaN(newScale) && newScale > 0) {
+       setScale(Math.max(0.05, Math.min(newScale, 10))); // clamp between 5% and 1000%
+     } else {
+       setZoomInput(`${(scale * 100).toFixed(0)}%`); // revert if invalid
+     }
+   };
+ 
+   const handleZoomInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+     if (e.key === 'Enter') {
+       handleZoomInputBlur();
+       (e.target as HTMLInputElement).blur();
+     } else if (e.key === 'Escape') {
+        setZoomInput(`${(scale * 100).toFixed(0)}%`);
+       (e.target as HTMLInputElement).blur();
+     }
+   };
 
 
   // Save state to localStorage whenever it changes
@@ -167,7 +197,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     setSnapPoint(null);
     setHistory([[]]); // Start with a single empty state
     setHistoryIndex(0);
-  }, []);
+    onPolygonDrawn([]); // Also clear the parent's drawing polygon state
+  }, [onPolygonDrawn]);
 
   const toggleEditMode = () => {
     setIsEditMode(prev => {
@@ -349,7 +380,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
           unit.polygonPoints?.forEach(point => {
               const distance = Math.sqrt(Math.pow(point.x - svgPoint.x, 2) + Math.pow(point.y - svgPoint.y, 2));
               if (distance < minDistance) {
-                  minDistance = d;
+                  minDistance = distance;
                   bestSnapPoint = point;
               }
           });
@@ -405,6 +436,11 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     const handleKeyDown = (e: KeyboardEvent) => {
         if (!isEditMode) return;
         
+        // Ignore keydowns if an input is focused
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            return;
+        }
+        
         if (e.key === 'Escape') {
             e.preventDefault();
             resetDrawingState();
@@ -434,7 +470,11 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     if (!pdfContainer) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Shift' && isEditMode && !isPrecisionZooming && lastMouseEvent.current) {
+      // Ignore if an input is focused or not in edit mode
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || !isEditMode) {
+          return;
+      }
+      if (e.key === 'Shift' && !isPrecisionZooming && lastMouseEvent.current) {
         e.preventDefault();
         setIsPrecisionZooming(true);
 
@@ -458,10 +498,12 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
 
         // After re-render with new scale, adjust scroll to center the point
         setTimeout(() => {
-            const newScrollLeft = (pointX * newScale) - (pdfContainer.clientWidth / 2);
-            const newScrollTop = (pointY * newScale) - (pdfContainer.clientHeight / 2);
-            pdfContainer.scrollLeft = newScrollLeft;
-            pdfContainer.scrollTop = newScrollTop;
+            if(pdfContainerRef.current){
+                const newScrollLeft = (pointX * newScale) - (pdfContainerRef.current.clientWidth / 2);
+                const newScrollTop = (pointY * newScale) - (pdfContainerRef.current.clientHeight / 2);
+                pdfContainerRef.current.scrollLeft = newScrollLeft;
+                pdfContainerRef.current.scrollTop = newScrollTop;
+            }
         }, 0);
       }
     };
@@ -519,17 +561,19 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     const scaleY = (container.clientHeight / pdf.cropBox.height) * PADDING;
 
     const newScale = Math.min(scaleX, scaleY);
-
+    
     setScale(newScale);
 
-    // Center the content after fitting
+    // Center the content after fitting. The scroll position must be relative to the full page, not just the cropbox
     setTimeout(() => {
-      if (pdfContainerRef.current) {
-        const newScrollLeft = (pdf.cropBox.width * newScale - container.clientWidth) / 2;
-        const newScrollTop = (pdf.cropBox.height * newScale - container.clientHeight) / 2;
-        pdfContainerRef.current.scrollLeft = newScrollLeft > 0 ? newScrollLeft : 0;
-        pdfContainerRef.current.scrollTop = newScrollTop > 0 ? newScrollTop : 0;
-      }
+        const pageContainer = pdfContainerRef.current;
+        if (pageContainer) {
+            const scaledContentWidth = pageDimensions.width * newScale;
+            const scaledContentHeight = pageDimensions.height * newScale;
+
+            pageContainer.scrollLeft = (scaledContentWidth - pageContainer.clientWidth) / 2;
+            pageContainer.scrollTop = (scaledContentHeight - pageContainer.clientHeight) / 2;
+        }
     }, 0);
   };
 
@@ -550,7 +594,6 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
 
-  const pageViewbox = `${pageDimensions.cropBox.x} ${pageDimensions.cropBox.y} ${pageDimensions.cropBox.width} ${pageDimensions.cropBox.height}`;
   
   return (
         <div className="flex flex-col gap-4 items-center">
@@ -585,6 +628,14 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                           renderAnnotationLayer={false}
                           onLoadSuccess={onPageLoadSuccess}
                           customTextRenderer={() => false}
+                          viewBox={pageDimensions.cropBox.width > 0 ? (page) => {
+                            return {
+                                x: pageDimensions.cropBox.x,
+                                y: pageDimensions.cropBox.y,
+                                width: pageDimensions.cropBox.width,
+                                height: pageDimensions.cropBox.height,
+                            }
+                          } : undefined}
                           />
                           {pageDimensions.width > 0 && (
                           <svg
@@ -736,7 +787,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                               )}
                               
                               {/* Layer for a finalized but unsaved polygon */}
-                              {drawingPolygon && (
+                              {drawingPolygon && drawingPolygon.length > 0 && (
                                    <g className="pointer-events-none">
                                       <polygon
                                           points={drawingPolygon.map(p => `${p.x},${p.y}`).join(' ')}
@@ -766,8 +817,15 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
             <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.1, s - 0.1))} disabled={!numPages || isLocked}>
                 <Minus />
             </Button>
-            <span className="text-sm font-medium w-16 text-center">{(scale * 100).toFixed(0)}%</span>
-            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(5, s + 0.1))} disabled={!numPages || isLocked}>
+            <Input
+                value={zoomInput}
+                onChange={handleZoomInputChange}
+                onBlur={handleZoomInputBlur}
+                onKeyDown={handleZoomInputKeyDown}
+                className="w-20 text-center h-8"
+                disabled={!numPages || isLocked}
+            />
+            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(10, s + 0.1))} disabled={!numPages || isLocked}>
                 <Plus />
             </Button>
             <Button variant="ghost" size="icon" onClick={handleFitToView} disabled={!numPages || isLocked} title="Προσαρμογή στην οθόνη">
@@ -871,3 +929,5 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   );
 
 }
+
+  
