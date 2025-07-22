@@ -18,6 +18,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Badge } from './ui/badge';
 import { Checkbox } from './ui/checkbox';
@@ -124,7 +125,6 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
   }));
   const [zoomInput, setZoomInput] = useState(`${(scale * 100).toFixed(0)}%`);
 
-
   const completeAndResetDrawing = useCallback(() => {
     if (drawingPolygon.length > 2) {
         onPolygonDrawn(drawingPolygon);
@@ -180,11 +180,15 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
   useEffect(() => {
     localStorage.setItem('floorPlanStatusVisibility', JSON.stringify(statusVisibility));
   }, [statusVisibility]);
+  
+  const resetDrawingState = useCallback(() => {
+    setDrawingPolygon([]);
+  }, []);
 
   useEffect(() => {
     setPageNumber(1);
-    setDrawingPolygon([]); // Reset drawing on new PDF
-  }, [pdfUrl]);
+    resetDrawingState(); // Reset drawing on new PDF
+  }, [pdfUrl, resetDrawingState]);
 
 
   const toggleEditMode = () => {
@@ -276,31 +280,29 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
     // Don't call onUnitClick here, it will be called from the popover buttons
   };
   
-  const getSvgPoint = (event: React.MouseEvent<SVGSVGElement | SVGCircleElement>) => {
-    if (!svgRef.current) return null;
-    const svg = svgRef.current;
-    const pt = svg.createSVGPoint();
-    pt.x = event.clientX;
-    pt.y = event.clientY;
-    const transformedPoint = pt.matrixTransform(svg.getScreenCTM()?.inverse());
-    
-    return transformedPoint;
-  };
-
   const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!isEditMode || isLocked) return;
   
-    const point = getSvgPoint(e);
-    if (!point) return;
+    if (!svgRef.current) return;
+    const svg = svgRef.current;
+    const point = svg.createSVGPoint();
+    point.x = e.clientX;
+    point.y = e.clientY;
+    const cursorpt = point.matrixTransform(svg.getScreenCTM()?.inverse());
     
-    setDrawingPolygon(prev => [...prev, { x: point.x, y: point.y }]);
+    setDrawingPolygon(prev => [...prev, { x: cursorpt.x, y: cursorpt.y }]);
   };
   
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
     lastMouseEvent.current = event.nativeEvent;
     if (isLocked) return;
-    const svgPoint = getSvgPoint(event);
-    if (!svgPoint) return;
+
+    if (!svgRef.current) return;
+    const svg = svgRef.current;
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    const svgPoint = point.matrixTransform(svg.getScreenCTM()?.inverse());
 
     // Handle dragging a point
     if (draggingPoint) {
