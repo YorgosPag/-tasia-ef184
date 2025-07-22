@@ -551,14 +551,14 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   // Effect to center content whenever scale changes or page dimensions are calculated
   useEffect(() => {
     const container = pdfContainerRef.current;
-    if (container) {
+    if (container && !isPrecisionZooming) {
         // We use a small timeout to ensure the DOM has updated with the new scale
         setTimeout(() => {
             container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
             container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
         }, 50);
     }
-  }, [scale, pageDimensions]); 
+  }, [scale, pageDimensions, isPrecisionZooming]); 
 
   const handleFitToView = () => {
     const container = pdfContainerRef.current;
@@ -601,7 +601,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
         <div className="flex flex-col gap-2 items-center">
             <div 
                 ref={pdfContainerRef} 
-                className="w-full bg-muted/20 border rounded-lg overflow-auto"
+                className="w-full bg-muted/20 border rounded-lg overflow-auto flex items-start justify-center"
                 style={{ height: '40vh' }}
                 onMouseUp={handleMouseUp}
             >
@@ -615,7 +615,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={loadingElement}
-                  className="flex justify-center items-center min-h-full"
+                  className="flex justify-center"
                   >
                   <div className="relative" style={{ aspectRatio: croppedAspectRatio }}>
                       <Page 
@@ -841,71 +841,52 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                 )}
             </div>
 
-            {isPrecisionZooming ? (
-                 <Card className="w-full max-w-md bg-blue-500/10 border-blue-500/40">
-                    <CardContent className="p-3 text-center">
-                        <p className="text-sm text-blue-700 font-medium flex items-center justify-center gap-2">
-                            <ZoomIn size={16} />
-                            Λειτουργία Ακρίβειας
-                        </p>
-                        <p className="text-xs text-blue-700/80">
-                            Αφήστε το πλήκτρο Shift για επαναφορά.
-                        </p>
-                    </CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
+                <Card className="w-full bg-secondary/60 border-secondary/40">
+                        <CardContent className="p-2 text-center">
+                            {isPrecisionZooming ? (
+                                <p className="text-sm text-blue-700 font-medium flex items-center justify-center gap-2">
+                                    <ZoomIn size={16} />
+                                    Λειτουργία Ακρίβειας <span className="text-xs text-blue-700/80">(Αφήστε το Shift)</span>
+                                </p>
+                            ) : isLocked ? (
+                                <p className="text-sm text-yellow-700 font-medium flex items-center justify-center gap-2">
+                                    Κλειδωμένη <Unlock size={12} className="inline-block" />
+                                </p>
+                            ) : isEditMode ? (
+                                <p className="text-sm text-primary font-medium flex items-center justify-center gap-2">
+                                    Λειτουργία Σχεδίασης <span className="text-xs text-primary/80">(Esc για ακύρωση)</span>
+                                </p>
+                            ) : (
+                                <p className="text-sm text-secondary-foreground font-medium">
+                                    Λειτουργία Επεξεργασίας: Σύρετε τα σημεία για να αλλάξετε το σχήμα.
+                                </p>
+                            )}
+                        </CardContent>
                 </Card>
-            ) : isLocked ? (
-                 <Card className="w-full max-w-md bg-yellow-500/10 border-yellow-500/40">
-                    <CardContent className="p-3 text-center">
-                        <p className="text-sm text-yellow-700 font-medium">
-                            Η επεξεργασία είναι κλειδωμένη.
-                        </p>
-                        <p className="text-xs text-yellow-700/80">
-                            Πατήστε το εικονίδιο <Unlock size={12} className="inline-block -mt-px" /> για να την ενεργοποιήσετε.
-                        </p>
-                    </CardContent>
-                </Card>
-            ) : isEditMode ? (
-                <Card className="w-full max-w-md bg-primary/10 border-primary/40">
-                    <CardContent className="p-3 text-center">
-                        <p className="text-sm text-primary font-medium">
-                            Λειτουργία Σχεδίασης: Κάντε κλικ στην κάτοψη για να προσθέσετε σημεία.
-                        </p>
-                        <p className="text-xs text-primary/80">
-                            Κρατήστε πατημένο το Shift για zoom. (Ctrl+Z για αναίρεση, Esc για ακύρωση)
-                        </p>
-                    </CardContent>
-                </Card>
-            ) : (
-                <Card className="w-full max-w-md bg-secondary/60 border-secondary/40">
-                    <CardContent className="p-3 text-center">
-                        <p className="text-sm text-secondary-foreground font-medium">
-                            Λειτουργία Επεξεργασίας: Σύρετε τα σημεία για να αλλάξετε το σχήμα.
-                        </p>
-                    </CardContent>
-                </Card>
-            )}
 
-            <Card className="w-full max-w-md">
-                <CardContent className="p-4">
-                    <h4 className="mb-4 text-sm font-medium leading-none">Εμφάνιση Layers</h4>
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                        {ALL_STATUSES.map(status => (
-                            <div key={status} className="flex items-center space-x-2">
-                                <Checkbox
-                                    id={`status-${status}`}
-                                    checked={statusVisibility[status]}
-                                    onCheckedChange={(checked) => handleStatusVisibilityChange(status, checked as boolean)}
-                                    className="data-[state=checked]:bg-transparent"
-                                    style={{ borderColor: getStatusColor(status), color: getStatusColor(status) }}
-                                />
-                                <Label htmlFor={`status-${status}`} className="text-sm font-medium">
-                                    {status}
-                                </Label>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+                <Card className="w-full">
+                    <CardContent className="p-2">
+                        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                            <h4 className="text-sm font-medium leading-none">Εμφάνιση Layers:</h4>
+                            {ALL_STATUSES.map(status => (
+                                <div key={status} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={`status-${status}`}
+                                        checked={statusVisibility[status]}
+                                        onCheckedChange={(checked) => handleStatusVisibilityChange(status, checked as boolean)}
+                                        className="data-[state=checked]:bg-transparent"
+                                        style={{ borderColor: getStatusColor(status), color: getStatusColor(status) }}
+                                    />
+                                    <Label htmlFor={`status-${status}`} className="text-sm font-medium">
+                                        {status}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
         </div>
   );
