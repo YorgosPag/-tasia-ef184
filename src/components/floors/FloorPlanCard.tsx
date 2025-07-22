@@ -10,7 +10,6 @@ import type { Unit } from '@/components/floor-plan/FloorPlanViewer';
 interface FloorPlanCardProps {
   floorPlanUrl?: string;
   units: Unit[];
-  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   onUnitClick: (unitId: string) => void;
   onUnitDelete: (unitId: string) => void;
   onPolygonDrawn: (points: { x: number; y: number }[]) => void;
@@ -24,7 +23,6 @@ interface FloorPlanCardProps {
 export function FloorPlanCard({
   floorPlanUrl,
   units,
-  setUnits,
   onUnitClick,
   onUnitDelete,
   onPolygonDrawn,
@@ -37,7 +35,6 @@ export function FloorPlanCard({
           <FloorPlanViewer
             pdfUrl={floorPlanUrl}
             units={units}
-            setUnits={setUnits}
             onUnitClick={onUnitClick}
             onUnitDelete={onUnitDelete}
             onPolygonDrawn={onPolygonDrawn}

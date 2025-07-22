@@ -4,10 +4,10 @@
 import React from 'react';
 import { Unit } from './FloorPlanViewer';
 import { PolygonPopover } from './PolygonPopover';
+import { STATUS_COLOR_MAP } from './utils';
 
 interface UnitLayersProps {
   units: Unit[];
-  statusColors: Record<Unit['status'], string>;
   isEditMode: boolean;
   isLocked: boolean;
   scale: number;
@@ -23,7 +23,6 @@ interface UnitLayersProps {
  */
 export function UnitLayers({
   units,
-  statusColors,
   isEditMode,
   isLocked,
   scale,
@@ -39,7 +38,6 @@ export function UnitLayers({
             <PolygonPopover
               key={unit.id}
               unit={unit}
-              statusColors={statusColors}
               isEditMode={isEditMode}
               isLocked={isLocked}
               scale={scale}
@@ -50,22 +48,21 @@ export function UnitLayers({
         )}
       </g>
       <g>
-        {!isLocked && !isEditMode && units.map((unit) => {
-          const pointColor = statusColors[unit.status] ?? '#6b7280';
-          return unit.polygonPoints?.map((point, index) => (
+        {!isEditMode && !isLocked && units.map((unit) =>
+          unit.polygonPoints?.map((point, index) => (
             <circle
               key={`${unit.id}-point-${index}`}
               cx={point.x}
               cy={point.y}
               r={5 / scale}
-              fill={pointColor}
+              fill={STATUS_COLOR_MAP[unit.status] ?? '#6b7280'}
               stroke="#fff"
               strokeWidth={1.5 / scale}
               onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
               className="cursor-move transition-all hover:r-7 hover:stroke-2"
             />
-          ));
-        })}
+          ))
+        )}
       </g>
     </>
   );

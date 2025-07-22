@@ -7,7 +7,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Loader2 } from 'lucide-react';
 import { Unit } from './FloorPlanViewer';
-import { usePdfHandlers } from '@/hooks/floor-plan/usePdfHandlers';
+import { usePdfHandlers } from './hooks/usePdfHandlers';
 import { DrawingLayers } from './DrawingLayers';
 import { UnitLayers } from './UnitLayers';
 
@@ -23,9 +23,7 @@ interface PageDimensions {
 interface PdfCanvasProps {
   pdfUrl: string;
   units: Unit[];
-  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   statusVisibility: Record<Unit['status'], boolean>;
-  statusColors: Record<Unit['status'], string>;
   isLocked: boolean;
   isEditMode: boolean;
   drawingPolygon: { x: number; y: number }[];
@@ -38,6 +36,7 @@ interface PdfCanvasProps {
   setPageDimensions: React.Dispatch<React.SetStateAction<PageDimensions>>;
   setDrawingPolygon: React.Dispatch<React.SetStateAction<{ x: number; y: number }[]>>;
   setDraggingPoint: React.Dispatch<React.SetStateAction<{ unitId: string; pointIndex: number } | null>>;
+  setLocalUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   onUnitPointsUpdate: (unitId: string, newPoints: { x: number; y: number }[]) => void;
   onUnitClick: (unitId: string) => void;
   onUnitDelete: (unitId: string) => void;
@@ -58,9 +57,7 @@ const LoadingElement = () => (
 export function PdfCanvas({
   pdfUrl,
   units,
-  setUnits,
   statusVisibility,
-  statusColors,
   isLocked,
   isEditMode,
   drawingPolygon,
@@ -73,6 +70,7 @@ export function PdfCanvas({
   setPageDimensions,
   setDrawingPolygon,
   setDraggingPoint,
+  setLocalUnits,
   onUnitPointsUpdate,
   onUnitClick,
   onUnitDelete,
@@ -93,10 +91,10 @@ export function PdfCanvas({
     isEditMode,
     isLocked,
     draggingPoint,
-    setUnits,
     lastMouseEvent,
     setDrawingPolygon,
     setDraggingPoint,
+    setLocalUnits,
     onUnitPointsUpdate,
     setPageDimensions,
   });
@@ -104,19 +102,6 @@ export function PdfCanvas({
   const visibleUnits = units.filter((unit) => statusVisibility[unit.status] ?? true);
   const { cropBox } = pageDimensions;
   const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropBox.height : 1;
-
-  // Center the view whenever the scale changes, unless precision zooming.
-  // This is better handled here than a useEffect to ensure it runs after render.
-  React.useEffect(() => {
-    const container = pdfContainerRef.current;
-    if (container && !isPrecisionZooming) {
-        // We use a small timeout to allow the DOM to update before scrolling
-        setTimeout(() => {
-            container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
-            container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
-        }, 50);
-    }
-  }, [zoom.scale, pageDimensions, pdfContainerRef, isPrecisionZooming]);
 
   return (
     <div
@@ -172,7 +157,6 @@ export function PdfCanvas({
                 />
                 <UnitLayers
                   units={visibleUnits}
-                  statusColors={statusColors}
                   isEditMode={isEditMode}
                   isLocked={isLocked}
                   scale={zoom.scale}
