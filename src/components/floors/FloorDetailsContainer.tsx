@@ -281,8 +281,7 @@ export function FloorDetailsContainer() {
     if (success) {
       toast({ title: "Το σχήμα ενημερώθηκε", description: "Οι νέες συντεταγμένες αποθηκεύτηκαν." });
     }
-    // Failure toast is handled inside updateUnitInFirestore
-  }, [units, toast]);
+  }, [units, toast, floor]);
 
 
   // --- UI Event Handlers ---
