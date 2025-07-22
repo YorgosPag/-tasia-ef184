@@ -77,6 +77,8 @@ const projectSchema = z.object({
     required_error: "Η προθεσμία είναι υποχρεωτική.",
   }),
   status: z.enum(['Ενεργό', 'Σε εξέλιξη', 'Ολοκληρωμένο']),
+  photoUrl: z.string().url({ message: "Το URL δεν είναι έγκυρο." }).or(z.literal("")).optional(),
+  tags: z.string().optional(),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -98,6 +100,8 @@ export default function ProjectsPage() {
       location: '',
       description: '',
       status: 'Ενεργό',
+      photoUrl: '',
+      tags: '',
     },
   });
 
@@ -113,6 +117,7 @@ export default function ProjectsPage() {
     setEditingProject(project);
     form.reset({
       ...project,
+      tags: project.tags?.join(', ') || '',
       deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : project.deadline,
     });
     setIsDialogOpen(true);
@@ -136,11 +141,14 @@ export default function ProjectsPage() {
       if (editingProject) {
         // Update logic
         const projectRef = doc(db, 'projects', editingProject.id);
-        const { id, ...updateData } = data;
-        await updateDoc(projectRef, {
-            ...updateData,
-            deadline: Timestamp.fromDate(updateData.deadline),
-        });
+        const { id, ...formData } = data;
+        const updateData = {
+            ...formData,
+            photoUrl: formData.photoUrl?.trim() || undefined,
+            tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+            deadline: Timestamp.fromDate(formData.deadline),
+        };
+        await updateDoc(projectRef, updateData);
         toast({ title: "Επιτυχία", description: "Το έργο ενημερώθηκε." });
       } else {
         // Create logic
@@ -221,7 +229,7 @@ export default function ProjectsPage() {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
                  <FormField
                   control={form.control}
                   name="title"
@@ -269,6 +277,32 @@ export default function ProjectsPage() {
                       <FormLabel>Τοποθεσία</FormLabel>
                       <FormControl>
                         <Input placeholder="π.χ. Αμπελόκηποι, Αθήνα" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="photoUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/project.jpg" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags (χωρισμένα με κόμμα)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="π.χ. residential, luxury" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -67,6 +67,8 @@ export async function seedDatabase() {
       description: 'Ολοκληρωμένη ανάπλαση ιστορικού κτιρίου γραφείων σε σύγχρονες κατοικίες υψηλών προδιαγραφών.',
       deadline: Timestamp.fromDate(new Date('2025-12-31')),
       status: 'Σε εξέλιξη',
+      photoUrl: 'https://placehold.co/800x600.png',
+      tags: ['residential', 'luxury', 'renovation'],
     },
     {
       _id: 'proj-thess-towers',
@@ -76,6 +78,8 @@ export async function seedDatabase() {
       description: 'Ανέγερση δύο πύργων μεικτής χρήσης (κατοικίες, καταστήματα και γραφεία) με θέα στη θάλασσα.',
       deadline: Timestamp.fromDate(new Date('2026-06-30')),
       status: 'Ενεργό',
+      photoUrl: 'https://placehold.co/800x600.png',
+      tags: ['commercial', 'residential', 'new-build'],
     },
   ];
 
@@ -94,6 +98,8 @@ export async function seedDatabase() {
         description: project.description,
         deadline: project.deadline,
         status: project.status,
+        photoUrl: project.photoUrl,
+        tags: project.tags,
         createdAt: serverTimestamp(),
     });
   });
@@ -256,5 +262,3 @@ export async function seedDatabase() {
   await batch.commit();
   console.log('Database has been successfully seeded!');
 }
-
-    

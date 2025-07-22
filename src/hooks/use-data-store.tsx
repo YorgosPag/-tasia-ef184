@@ -38,6 +38,8 @@ export interface Project {
   description?: string;
   deadline: Timestamp;
   status: 'Ενεργό' | 'Σε εξέλιξη' | 'Ολοκληρωμένο';
+  photoUrl?: string;
+  tags?: string[];
   createdAt: any;
 }
 
@@ -46,7 +48,7 @@ interface DataStoreContextType {
   projects: Project[];
   isLoading: boolean;
   addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<void>;
-  addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline'> & { deadline: Date }) => Promise<void>;
+  addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }) => Promise<void>;
 }
 
 const DataStoreContext = createContext<DataStoreContextType>({
@@ -124,10 +126,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline'> & { deadline: Date }) => {
+  const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline'| 'tags'> & { deadline: Date, tags?: string }) => {
+    const { tags, ...restOfData } = projectData;
+    const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+    
     await addDoc(collection(db, 'projects'), {
-      ...projectData,
+      ...restOfData,
       description: projectData.description || '',
+      photoUrl: projectData.photoUrl?.trim() || undefined,
+      tags: tagsArray,
       deadline: Timestamp.fromDate(projectData.deadline),
       createdAt: serverTimestamp(),
     });

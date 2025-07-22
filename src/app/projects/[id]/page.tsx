@@ -63,6 +63,7 @@ import { z } from 'zod';
 import { ArrowLeft, PlusCircle, Loader2, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import Image from 'next/image';
 
@@ -86,6 +87,8 @@ interface Project {
   description?: string;
   deadline: Timestamp;
   status: string;
+  photoUrl?: string;
+  tags?: string[];
 }
 
 interface Building {
@@ -317,11 +320,32 @@ export default function ProjectDetailsPage() {
             {project.location} | Προθεσμία: {formatDate(project.deadline)} | Κατάσταση: {project.status}
           </CardDescription>
         </CardHeader>
-        {project.description && (
-            <CardContent>
-                <p className="text-sm text-muted-foreground">{project.description}</p>
-            </CardContent>
-        )}
+        <CardContent className="flex flex-col md:flex-row gap-6">
+            {project.photoUrl && (
+                <div className="md:w-1/3">
+                    <Image
+                        src={project.photoUrl}
+                        alt={`Photo of ${project.title}`}
+                        width={400}
+                        height={300}
+                        className="rounded-lg object-cover aspect-[4/3]"
+                        loading="lazy"
+                    />
+                </div>
+            )}
+            <div className="flex-1 space-y-4">
+                {project.description && (
+                    <p className="text-sm text-muted-foreground">{project.description}</p>
+                )}
+                {project.tags && project.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                        {project.tags.map((tag) => (
+                            <Badge key={tag} variant="secondary">{tag}</Badge>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </CardContent>
       </Card>
       
       <div className="flex items-center justify-between">
