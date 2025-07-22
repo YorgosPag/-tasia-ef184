@@ -72,11 +72,13 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
     useEffect(() => {
         const pdfContainer = pdfContainerRef.current;
         const updateMousePosition = (e: MouseEvent) => {
-            lastMouseEvent.current = e;
+            if(lastMouseEvent) {
+                lastMouseEvent.current = e;
+            }
         };
         pdfContainer?.addEventListener('mousemove', updateMousePosition);
         return () => pdfContainer?.removeEventListener('mousemove', updateMousePosition);
-    }, [pdfContainerRef]);
+    }, [pdfContainerRef, lastMouseEvent]);
 
 
     const handleStatusVisibilityChange = (status: Unit['status'], checked: boolean) => {

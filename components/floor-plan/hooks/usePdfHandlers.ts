@@ -24,6 +24,12 @@ interface UsePdfHandlersProps {
   setPageDimensions: React.Dispatch<React.SetStateAction<PageDimensions>>;
 }
 
+/**
+ * usePdfHandlers
+ * A hook to encapsulate all direct event handlers for the PDF/SVG canvas.
+ * This includes logic for clicking to draw, dragging points, and handling document/page load events.
+ * It keeps the PdfCanvas component clean of complex logic.
+ */
 export function usePdfHandlers({
   svgRef,
   isEditMode,
@@ -104,6 +110,7 @@ export function usePdfHandlers({
   };
   
   const handleMouseLeave = () => {
+    // Stop dragging if the mouse leaves the canvas to prevent weird states
     if (draggingPoint) {
       handleMouseUp();
     }
@@ -111,7 +118,7 @@ export function usePdfHandlers({
 
   const handlePointMouseDown = (event: React.MouseEvent<SVGCircleElement>, unitId: string, pointIndex: number) => {
     if (isLocked || isEditMode) return;
-    event.stopPropagation();
+    event.stopPropagation(); // Prevent the main SVG click handler from firing
     setDraggingPoint({ unitId, pointIndex });
   };
 
