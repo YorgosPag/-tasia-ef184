@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -23,6 +24,17 @@ import {
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Form,
   FormControl,
@@ -45,16 +57,18 @@ import { Calendar } from '@/components/ui/calendar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2, CalendarIcon } from 'lucide-react';
+import { PlusCircle, Loader2, CalendarIcon, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { useDataStore } from '@/hooks/use-data-store';
+import { el } from 'date-fns/locale';
+import { useDataStore, Project } from '@/hooks/use-data-store';
 
 
 const projectSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(1, { message: "Ο τίτλος είναι υποχρεωτικός." }),
   companyId: z.string().min(1, { message: "Η εταιρεία είναι υποχρεωτική." }),
   location: z.string().min(1, { message: "Η τοποθεσία είναι υποχρεωτική." }),
@@ -71,12 +85,14 @@ export default function ProjectsPage() {
   const { projects, companies, isLoading, addProject } = useDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
+      id: undefined,
       title: '',
       companyId: '',
       location: '',
@@ -85,36 +101,59 @@ export default function ProjectsPage() {
     },
   });
 
-  // Effect to reset form when dialog is closed
-  useEffect(() => {
-    if (!isDialogOpen) {
-      form.reset({
-        title: '',
-        companyId: '',
-        location: '',
-        description: '',
-        status: 'Ενεργό',
-        deadline: undefined,
-      });
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      form.reset();
+      setEditingProject(null);
     }
-  }, [isDialogOpen, form]);
+  };
 
+  const handleEditClick = (project: Project) => {
+    setEditingProject(project);
+    form.reset({
+      ...project,
+      deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : project.deadline,
+    });
+    setIsDialogOpen(true);
+  };
+  
+  const handleDeleteProject = async (projectId: string) => {
+      try {
+        await deleteDoc(doc(db, 'projects', projectId));
+        // Note: This simple delete doesn't cascade to subcollections.
+        // A more robust solution would use a Cloud Function to clean up sub-collections.
+        toast({ title: "Επιτυχία", description: "Το έργο διαγράφηκε." });
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν ήταν δυνατή η διαγραφή του έργου." });
+      }
+  };
 
   const onSubmit = async (data: ProjectFormValues) => {
     setIsSubmitting(true);
     try {
-      await addProject(data);
-      toast({
-        title: "Επιτυχία",
-        description: "Το έργο προστέθηκε με επιτυχία.",
-      });
-      setIsDialogOpen(false);
+      if (editingProject) {
+        // Update logic
+        const projectRef = doc(db, 'projects', editingProject.id);
+        const { id, ...updateData } = data;
+        await updateDoc(projectRef, {
+            ...updateData,
+            deadline: Timestamp.fromDate(updateData.deadline),
+        });
+        toast({ title: "Επιτυχία", description: "Το έργο ενημερώθηκε." });
+      } else {
+        // Create logic
+        await addProject(data);
+        toast({ title: "Επιτυχία", description: "Το έργο προστέθηκε." });
+      }
+      handleDialogOpenChange(false);
     } catch (error: any) {
-      console.error("Error adding project: ", error);
+      console.error("Error submitting project: ", error);
       toast({
         variant: "destructive",
         title: "Σφάλμα",
-        description: `Δεν ήταν δυνατή η προσθήκη του έργου: ${error.message}`,
+        description: `Δεν ήταν δυνατή η υποβολή: ${error.message}`,
       });
     } finally {
       setIsSubmitting(false);
@@ -133,15 +172,27 @@ export default function ProjectsPage() {
         return 'outline';
     }
   }
+  
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Ολοκληρωμένο": return "✅ Ολοκληρωμένο";
+      case "Σε εξέλιξη": return "🚧 Σε εξέλιξη";
+      case "Ενεργό": return "🔥 Ενεργό";
+      default: return status;
+    }
+  }
 
-  const formatDate = (timestamp: Timestamp | undefined) => {
+  const formatDate = (timestamp: Timestamp | Date | undefined) => {
     if (!timestamp) return 'N/A';
-    // Handle both Timestamp and Date objects
     const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
-    return format(date, 'dd/MM/yyyy');
+    return format(date, 'dd/MM/yyyy', { locale: el });
   };
   
-  const handleRowClick = (projectId: string) => {
+  const handleRowClick = (e: React.MouseEvent, projectId: string) => {
+    // Prevent row click when clicking on action buttons
+    if ((e.target as HTMLElement).closest('[data-action-button]')) {
+      return;
+    }
     router.push(`/projects/${projectId}`);
   };
 
@@ -155,7 +206,7 @@ export default function ProjectsPage() {
          <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Έργα
         </h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2" />
@@ -164,9 +215,9 @@ export default function ProjectsPage() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>Δημιουργία Νέου Έργου</DialogTitle>
+              <DialogTitle>{editingProject ? 'Επεξεργασία' : 'Δημιουργία Νέου'} Έργου</DialogTitle>
               <DialogDescription>
-                Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε ένα νέο έργο.
+                {editingProject ? 'Ενημερώστε τις πληροφορίες του έργου.' : 'Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε ένα νέο έργο.'}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -190,16 +241,20 @@ export default function ProjectsPage() {
                   render={({ field }) => (
                     <FormItem>
                         <FormLabel>Εταιρεία</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
                             <FormControl>
                                 <SelectTrigger>
                                 <SelectValue placeholder="Επιλέξτε εταιρεία..." />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {companies.map(company => (
-                                    <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
-                                ))}
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center p-2"><Loader2 className="h-4 w-4 animate-spin" /></div>
+                                ) : (
+                                    companies.map(company => (
+                                        <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                                    ))
+                                )}
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -249,7 +304,7 @@ export default function ProjectsPage() {
                               )}
                             >
                               {field.value ? (
-                                format(field.value, "PPP")
+                                format(field.value, "PPP", { locale: el })
                               ) : (
                                 <span>Επιλέξτε ημερομηνία</span>
                               )}
@@ -303,7 +358,7 @@ export default function ProjectsPage() {
                   </DialogClose>
                   <Button type="submit" disabled={isSubmitting || isLoading}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Δημιουργία
+                    {editingProject ? 'Αποθήκευση' : 'Δημιουργία'}
                   </Button>
                 </DialogFooter>
               </form>
@@ -322,32 +377,65 @@ export default function ProjectsPage() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : projects.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Τίτλος</TableHead>
-                  <TableHead>Εταιρεία</TableHead>
-                  <TableHead>Τοποθεσία</TableHead>
-                  <TableHead>Προθεσμία</TableHead>
-                  <TableHead>Κατάσταση</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {projects.map((project) => (
-                  <TableRow key={project.id} onClick={() => handleRowClick(project.id)} className="cursor-pointer">
-                    <TableCell className="font-medium">{project.title}</TableCell>
-                    <TableCell className="text-muted-foreground">{getCompanyName(project.companyId)}</TableCell>
-                    <TableCell className="text-muted-foreground">{project.location}</TableCell>
-                    <TableCell>{formatDate(project.deadline)}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(project.status)}>
-                        {project.status}
-                      </Badge>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Τίτλος</TableHead>
+                    <TableHead>Εταιρεία</TableHead>
+                    <TableHead>Τοποθεσία</TableHead>
+                    <TableHead>Προθεσμία</TableHead>
+                    <TableHead>Κατάσταση</TableHead>
+                    <TableHead className="text-right">Ενέργειες</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {projects.map((project) => (
+                    <TableRow key={project.id} onClick={(e) => handleRowClick(e, project.id)} className="cursor-pointer group">
+                      <TableCell className="font-medium">{project.title}</TableCell>
+                      <TableCell className="text-muted-foreground">{getCompanyName(project.companyId)}</TableCell>
+                      <TableCell className="text-muted-foreground">{project.location}</TableCell>
+                      <TableCell>{formatDate(project.deadline)}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusVariant(project.status)}>
+                          {getStatusLabel(project.status)}
+                        </Badge>
+                      </TableCell>
+                       <TableCell className="text-right">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1" data-action-button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEditClick(project)}>
+                                  <Edit className="h-4 w-4" />
+                                  <span className="sr-only">Επεξεργασία</span>
+                              </Button>
+                              <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                          <Trash2 className="h-4 w-4" />
+                                          <span className="sr-only">Διαγραφή</span>
+                                      </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                          <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το έργο "{project.title}".
+                                          </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                          <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => handleDeleteProject(project.id)} className="bg-destructive hover:bg-destructive/90">
+                                              Διαγραφή
+                                          </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                  </AlertDialogContent>
+                              </AlertDialog>
+                          </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : (
              <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν έργα.</p>
           )}
