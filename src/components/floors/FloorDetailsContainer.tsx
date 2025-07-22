@@ -78,7 +78,13 @@ export function FloorDetailsContainer() {
   const [drawingPolygon, setDrawingPolygon] = useState<{ x: number; y: number }[] | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
-  const { statusColors } = useFloorPlanState({ units: [], onPolygonDrawn: () => {} });
+  const handlePolygonDrawn = useCallback((points: { x: number; y: number }[]) => {
+    setEditingUnit(null);
+    setDrawingPolygon(points);
+    setIsDialogOpen(true);
+  }, []);
+  
+  const { statusColors } = useFloorPlanState({ onPolygonDrawn: handlePolygonDrawn });
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
@@ -358,12 +364,6 @@ export function FloorDetailsContainer() {
       setIsDialogOpen(true);
     }
   };
-
-  const handlePolygonDrawn = useCallback((points: { x: number; y: number }[]) => {
-    setEditingUnit(null);
-    setDrawingPolygon(points);
-    setIsDialogOpen(true);
-  }, []);
 
   const handleAddNewUnitClick = () => {
     setEditingUnit(null);

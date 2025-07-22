@@ -96,57 +96,60 @@ export function UnitsListTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {units.map((unit) => (
-                  <TableRow key={unit.id} className="group">
-                    <TableCell className="font-medium">{unit.identifier}</TableCell>
-                    <TableCell className="font-medium">{unit.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant="default" 
-                        style={{ backgroundColor: statusColors[unit.status] }}
-                        className={getStatusClass(unit.status)}
-                      >
-                        {unit.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(unit.createdAt)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => onEditUnit(unit.id)}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Επεξεργασία</span>
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Διαγραφή</span>
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το ακίνητο
-                                "{unit.name} ({unit.identifier})".
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => onDeleteUnit(unit.id)} className="bg-destructive hover:bg-destructive/90">
-                                Διαγραφή
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                        <Button variant="outline" size="sm" onClick={() => onViewUnit(unit.id)}>
-                          Προβολή
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {units.map((unit) => {
+                  const color = statusColors[unit.status] ?? '#6b7280';
+                  return (
+                    <TableRow key={unit.id} className="group">
+                      <TableCell className="font-medium">{unit.identifier}</TableCell>
+                      <TableCell className="font-medium">{unit.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant="default" 
+                          style={{ backgroundColor: color }}
+                          className={getStatusClass(color)}
+                        >
+                          {unit.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(unit.createdAt)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => onEditUnit(unit.id)}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Επεξεργασία</span>
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Διαγραφή</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το ακίνητο
+                                  "{unit.name} ({unit.identifier})".
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => onDeleteUnit(unit.id)} className="bg-destructive hover:bg-destructive/90">
+                                  Διαγραφή
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                          <Button variant="outline" size="sm" onClick={() => onViewUnit(unit.id)}>
+                            Προβολή
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           ) : (
