@@ -34,6 +34,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '../ui/separator';
 
+const numberFromString = z.string().transform((val, ctx) => {
+  const parsed = parseFloat(val);
+  if (isNaN(parsed)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Πρέπει να είναι αριθμός.',
+    });
+    return z.NEVER;
+  }
+  return parsed;
+});
+
 export const unitSchema = z.object({
   existingUnitId: z.string().optional(),
   identifier: z.string(),
@@ -41,6 +53,12 @@ export const unitSchema = z.object({
   type: z.string().optional(),
   status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
   polygonPoints: z.string().optional(),
+  area: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Το εμβαδόν πρέπει να είναι αριθμός." }).optional(),
+  price: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Η τιμή πρέπει να είναι αριθμός." }).optional(),
+  bedrooms: z.string().refine(val => val === '' || !isNaN(parseInt(val, 10)), { message: "Πρέπει να είναι ακέραιος αριθμός." }).optional(),
+  bathrooms: z.string().refine(val => val === '' || !isNaN(parseInt(val, 10)), { message: "Πρέπει να είναι ακέραιος αριθμός." }).optional(),
+  orientation: z.string().optional(),
+  amenities: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.existingUnitId === 'new') {
     if (data.identifier.trim() === '') {
@@ -122,7 +140,7 @@ export function UnitDialogForm({
           <DialogDescription>{getDialogDescription()}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={onSubmit} className="grid gap-4 py-4">
+          <form onSubmit={onSubmit} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
             {isLinkingMode && (
               <FormField
                 control={form.control}
@@ -202,6 +220,76 @@ export function UnitDialogForm({
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="area"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Εμβαδόν (τ.μ.)</FormLabel>
+                        <FormControl><Input type="number" placeholder="π.χ. 85.5" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Τιμή (€)</FormLabel>
+                        <FormControl><Input type="number" placeholder="π.χ. 250000" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                 <FormField
+                    control={form.control}
+                    name="bedrooms"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Υπνοδωμάτια</FormLabel>
+                        <FormControl><Input type="number" placeholder="π.χ. 2" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="bathrooms"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Μπάνια</FormLabel>
+                        <FormControl><Input type="number" placeholder="π.χ. 1" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              </div>
+               <FormField
+                  control={form.control}
+                  name="orientation"
+                  render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Προσανατολισμός</FormLabel>
+                      <FormControl><Input placeholder="π.χ. Νοτιοανατολικός" {...field} /></FormControl>
+                      <FormMessage />
+                  </FormItem>
+                  )}
+              />
+              <FormField
+                  control={form.control}
+                  name="amenities"
+                  render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Παροχές (με κόμμα)</FormLabel>
+                      <FormControl><Textarea placeholder="π.χ. Τζάκι, Κήπος, Μπαλκόνι" {...field} /></FormControl>
+                      <FormMessage />
+                  </FormItem>
+                  )}
               />
             </div>
             {/* --- Always show polygon points if they exist --- */}
