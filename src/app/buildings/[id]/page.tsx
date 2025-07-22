@@ -99,6 +99,14 @@ export default function BuildingDetailsPage() {
     },
   });
 
+  // Effect to reset form when dialog is closed
+  useEffect(() => {
+    if (!isDialogOpen) {
+      form.reset();
+    }
+  }, [isDialogOpen, form]);
+
+
   // Fetch building details
   useEffect(() => {
     if (!buildingId) return;
@@ -179,7 +187,6 @@ export default function BuildingDetailsPage() {
         title: 'Επιτυχία',
         description: 'Ο όροφος προστέθηκε με επιτυχία.',
       });
-      form.reset();
       setIsDialogOpen(false);
     } catch (error) {
       console.error('Error adding floor: ', error);
