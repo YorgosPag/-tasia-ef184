@@ -53,7 +53,7 @@ export const unitSchema = z.object({
   type: z.string().optional(),
   status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
   polygonPoints: z.string().optional(),
-  area: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Το εμβαδόν πρέπει να είναι αριθμός." }).optional(),
+  area: z.string().refine(val => val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) > 0 && parseFloat(val) <= 10000), { message: "Το εμβαδόν πρέπει να είναι μεταξύ 1 και 10000 τ.μ." }).optional(),
   price: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Η τιμή πρέπει να είναι αριθμός." }).optional(),
   bedrooms: z.string().refine(val => val === '' || !isNaN(parseInt(val, 10)), { message: "Πρέπει να είναι ακέραιος αριθμός." }).optional(),
   bathrooms: z.string().refine(val => val === '' || !isNaN(parseInt(val, 10)), { message: "Πρέπει να είναι ακέραιος αριθμός." }).optional(),
@@ -299,7 +299,10 @@ export function UnitDialogForm({
                 name="polygonPoints"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Συντεταγμένες Πολυγώνου (JSON)</FormLabel>
+                    <FormLabel>
+                      Συντεταγμένες Πολυγώνου (JSON)
+                      <span className="ml-2 text-xs text-muted-foreground">(π.χ. [{"{"}x:10,"y":20{"}"},...])</span>
+                    </FormLabel>
                     <FormControl>
                       <Textarea placeholder='Σχεδιάστε στην κάτοψη ή επικολλήστε εδώ: [{"x": 10, "y": 10}, ...]' {...field} rows={3} />
                     </FormControl>
