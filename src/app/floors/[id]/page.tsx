@@ -121,6 +121,7 @@ export default function FloorDetailsPage() {
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [drawingPolygon, setDrawingPolygon] = useState<{ x: number; y: number }[] | null>(null);
 
   const { toast } = useToast();
 
@@ -470,6 +471,7 @@ export default function FloorDetailsPage() {
       const pointsJson = JSON.stringify(points, null, 2);
       form.setValue('polygonPoints', pointsJson);
       setEditingUnit(null); // Ensure we are in "create" mode
+      setDrawingPolygon(points);
       setIsDialogOpen(true);
   }
 
@@ -491,6 +493,7 @@ export default function FloorDetailsPage() {
   const handleDialogOpenChange = (open: boolean) => {
       setIsDialogOpen(open);
       if(!open) {
+          setDrawingPolygon(null); // Clear the temporary polygon on close/cancel
           form.reset({
               identifier: '',
               name: '',
@@ -529,7 +532,8 @@ export default function FloorDetailsPage() {
               {floor.floorPlanUrl ? (
                   <FloorPlanViewer 
                     pdfUrl={floor.floorPlanUrl} 
-                    units={units} 
+                    units={units}
+                    drawingPolygon={drawingPolygon}
                     onUnitClick={handleUnitSelectForEdit}
                     onUnitDelete={handleDeleteUnit}
                     onPolygonDrawn={handlePolygonDrawn}
