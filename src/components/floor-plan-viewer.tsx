@@ -290,15 +290,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
   const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!isEditMode || isLocked) return;
   
-    const svg = e.currentTarget;
-    if (!svg) return;
+    const point = getSvgPoint(e);
+    if (!point) return;
     
-    const point = svg.createSVGPoint();
-    point.x = e.clientX;
-    point.y = e.clientY;
-    const cursorpt = point.matrixTransform(svg.getScreenCTM()?.inverse());
-    
-    setDrawingPolygon(prev => [...prev, { x: cursorpt.x, y: cursorpt.y }]);
+    setDrawingPolygon(prev => [...prev, { x: point.x, y: point.y }]);
   };
   
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -521,7 +516,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={loadingElement}
-                  className="flex justify-start"
+                  className="flex justify-start items-start"
                   >
                   <div className="relative" style={{ aspectRatio: croppedAspectRatio }}>
                       <Page 
@@ -660,13 +655,23 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
 
                          {/* Layer for drawing in-progress polygon */}
                          {isEditMode && drawingPolygon.length > 0 && (
-                            <polygon 
-                                points={drawingPolygon.map(p => `${p.x},${p.y}`).join(' ')} 
-                                fill="rgba(0,0,255,0.3)" 
-                                stroke="blue" 
-                                strokeWidth={1.5 / scale}
-                                className="pointer-events-none"
-                            />
+                            <g className="pointer-events-none">
+                                <polygon 
+                                    points={drawingPolygon.map(p => `${p.x},${p.y}`).join(' ')} 
+                                    fill="hsl(var(--primary) / 0.3)" 
+                                    stroke="hsl(var(--primary))" 
+                                    strokeWidth={1.5 / scale}
+                                />
+                                {drawingPolygon.map((point, index) => (
+                                    <circle
+                                        key={`drawing-point-${index}`}
+                                        cx={point.x}
+                                        cy={point.y}
+                                        r={4 / scale}
+                                        fill="hsl(var(--primary))"
+                                    />
+                                ))}
+                            </g>
                          )}
                           
                       </svg>
