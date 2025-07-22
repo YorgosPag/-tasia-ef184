@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useFloorPlanState } from '@/hooks/floor-plan/useFloorPlanState';
+import { useFloorPlanState } from './hooks/useFloorPlanState';
 import { Toolbar } from './Toolbar';
 import { InfoPanel } from './InfoPanel';
 import { StatusFilter } from './StatusFilter';
@@ -19,7 +19,6 @@ export interface Unit {
 interface FloorPlanViewerProps {
   pdfUrl: string;
   units: Unit[];
-  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   onUnitClick: (unitId: string) => void;
   onUnitDelete: (unitId: string) => void;
   onPolygonDrawn: (points: { x: number; y: number }[]) => void;
@@ -30,7 +29,6 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
   const {
     pdfUrl,
     units,
-    setUnits,
     onPolygonDrawn,
     onUnitPointsUpdate,
     onUnitClick,
@@ -42,13 +40,12 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
     setPageDimensions,
     statusVisibility,
     handleStatusVisibilityChange,
-    statusColors,
-    handleColorChange,
-    handleReset,
     isLocked,
     setIsLocked,
     isEditMode,
     toggleEditMode,
+    localUnits,
+    setLocalUnits,
     draggingPoint,
     setDraggingPoint,
     drawingPolygon,
@@ -65,10 +62,8 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
     <div className="flex flex-col items-center gap-2">
       <PdfCanvas
         pdfUrl={pdfUrl}
-        units={units}
-        setUnits={setUnits}
+        units={localUnits}
         statusVisibility={statusVisibility}
-        statusColors={statusColors}
         isLocked={isLocked}
         isEditMode={isEditMode}
         drawingPolygon={drawingPolygon}
@@ -81,6 +76,7 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
         setPageDimensions={setPageDimensions}
         setDrawingPolygon={setDrawingPolygon}
         setDraggingPoint={setDraggingPoint}
+        setLocalUnits={setLocalUnits}
         onUnitPointsUpdate={onUnitPointsUpdate}
         onUnitClick={onUnitClick}
         onUnitDelete={onUnitDelete}
@@ -117,9 +113,6 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
           <StatusFilter
             statusVisibility={statusVisibility}
             onVisibilityChange={handleStatusVisibilityChange}
-            statusColors={statusColors}
-            onColorChange={handleColorChange}
-            onReset={handleReset}
           />
         </div>
       </div>

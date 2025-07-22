@@ -19,7 +19,7 @@ export const STATUS_COLOR_MAP: Record<Unit['status'], string> = {
 /**
  * Determines text color based on background luminance.
  * @param hexColor The background color in hex format (e.g., "#RRGGBB").
- * @returns 'black' for light backgrounds, 'white' for dark backgrounds.
+ * @returns 'text-black' for light backgrounds, 'white' for dark backgrounds.
  */
 function getTextColorForBackground(hexColor: string): 'text-black' | 'text-white' {
     if (!hexColor.startsWith('#')) {

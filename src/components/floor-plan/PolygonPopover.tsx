@@ -22,11 +22,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { Unit } from './FloorPlanViewer';
-import { getStatusClass } from './utils';
+import { STATUS_COLOR_MAP, getStatusClass } from './utils';
 
 interface PolygonPopoverProps {
   unit: Unit;
-  statusColors: Record<Unit['status'], string>;
   isEditMode: boolean;
   isLocked: boolean;
   scale: number;
@@ -36,7 +35,6 @@ interface PolygonPopoverProps {
 
 export function PolygonPopover({
   unit,
-  statusColors,
   isEditMode,
   isLocked,
   scale,
@@ -45,7 +43,7 @@ export function PolygonPopover({
 }: PolygonPopoverProps) {
   if (!unit.polygonPoints) return null;
 
-  const polygonColor = statusColors[unit.status] ?? '#6b7280';
+  const polygonColor = STATUS_COLOR_MAP[unit.status] ?? '#6b7280';
 
   return (
     <Popover>
