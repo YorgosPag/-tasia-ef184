@@ -56,8 +56,8 @@ const PRECISION_ZOOM_SCALE = 2.5;
 
 const getStatusColor = (status?: Unit['status']) => {
     switch(status) {
-        case 'Πωλημένο': return '#ef4444'; // red-500
-        case 'Κρατημένο': return '#3b82f6'; // blue-500
+        case 'Πωλημένο': return 'hsl(var(--destructive))';
+        case 'Κρατημένο': return 'hsl(var(--primary))';
         case 'Διαθέσιμο': return '#22c55e'; // green-500
         case 'Οικοπεδούχος': return '#f97316'; // orange-500
         default: return '#6b7280'; // gray-500
@@ -66,8 +66,8 @@ const getStatusColor = (status?: Unit['status']) => {
 
 const getStatusClass = (status: Unit['status'] | undefined) => {
     switch(status) {
-        case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600 text-white';
-        case 'Κρατημένο': return 'bg-blue-500 hover:bg-blue-600 text-white';
+        case 'Πωλημένο': return 'bg-destructive text-destructive-foreground';
+        case 'Κρατημένο': return 'bg-primary text-primary-foreground';
         case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600 text-white';
         case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600 text-white';
         default: return 'bg-gray-500 hover:bg-gray-600 text-white';
@@ -556,7 +556,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
         setTimeout(() => {
             container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
             container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
-        }, 0);
+        }, 50); // Increased timeout slightly
     }
   }, [scale, pageDimensions]); // Rerun when scale or pageDimensions change
 
@@ -600,7 +600,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
             <div 
                 ref={pdfContainerRef} 
                 className="w-full bg-muted/20 border rounded-lg overflow-auto"
-                style={{ height: '80vh' }}
+                style={{ height: '50vh' }}
                 onMouseUp={handleMouseUp}
             >
               {pdfError ? (
