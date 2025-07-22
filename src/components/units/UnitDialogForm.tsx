@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import {
   Dialog,
@@ -32,19 +32,41 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
+import { Separator } from '../ui/separator';
 
-const unitSchema = z.object({
-  identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
-  name: z.string().min(1, { message: 'Το όνομα είναι υποχρεωτικό.' }),
+export const unitSchema = z.object({
+  existingUnitId: z.string().optional(),
+  identifier: z.string(),
+  name: z.string(),
   type: z.string().optional(),
   status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
   polygonPoints: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.existingUnitId === 'new') {
+    if (data.identifier.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Ο κωδικός είναι υποχρεωτικός.',
+        path: ['identifier'],
+      });
+    }
+    if (data.name.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Το όνομα είναι υποχρεωτικό.',
+        path: ['name'],
+      });
+    }
+  }
 });
+
 
 export type UnitFormValues = z.infer<typeof unitSchema>;
 
 interface Unit {
   id: string;
+  identifier: string;
+  name: string;
 }
 
 interface UnitDialogFormProps {
@@ -54,6 +76,8 @@ interface UnitDialogFormProps {
   form: UseFormReturn<UnitFormValues>;
   isSubmitting: boolean;
   editingUnit: Unit | null;
+  drawingPolygon: {x:number, y:number}[] | null;
+  availableUnits: Unit[];
 }
 
 /**
@@ -68,90 +92,141 @@ export function UnitDialogForm({
   form,
   isSubmitting,
   editingUnit,
+  drawingPolygon,
+  availableUnits,
 }: UnitDialogFormProps) {
+  const isLinkingMode = drawingPolygon && !editingUnit;
+  const selectedUnitId = useWatch({
+      control: form.control,
+      name: "existingUnitId",
+  });
+  const isCreatingNew = selectedUnitId === 'new';
+  
+  const getDialogTitle = () => {
+    if (editingUnit) return 'Επεξεργασία Ακινήτου';
+    if (isLinkingMode) return 'Σύνδεση ή Δημιουργία Ακινήτου';
+    return 'Προσθήκη Νέου Ακινήτου';
+  }
+
+  const getDialogDescription = () => {
+    if (editingUnit) return 'Ενημερώστε τις πληροφορίες του ακινήτου.';
+    if (isLinkingMode) return 'Συνδέστε το σχήμα που σχεδιάσατε με ένα υπάρχον ακίνητο ή δημιουργήστε ένα νέο.';
+    return 'Συμπληρώστε τις πληροφορίες για το νέο ακίνητο.';
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editingUnit ? 'Επεξεργασία Ακινήτου' : 'Προσθήκη Νέου Ακινήτου'}</DialogTitle>
-          <DialogDescription>
-            {editingUnit ? 'Ενημερώστε τις πληροφορίες του ακινήτου.' : 'Συμπληρώστε τις πληροφορίες για το νέο ακίνητο.'}
-          </DialogDescription>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
+          <DialogDescription>{getDialogDescription()}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={onSubmit} className="grid gap-4 py-4">
-            <FormField
-              control={form.control}
-              name="identifier"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Κωδικός</FormLabel>
-                  <FormControl><Input placeholder="π.χ. A1, B2" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Όνομα/Αναγνωριστικό</FormLabel>
-                  <FormControl><Input placeholder="π.χ. Διαμέρισμα, Κατάστημα" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Τύπος (Προαιρετικό)</FormLabel>
-                  <FormControl><Input placeholder="π.χ. Γκαρσονιέρα" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Κατάσταση</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε κατάσταση" /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
-                      <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
-                      <SelectItem value="Πωλημένο">Πωλημένο</SelectItem>
-                      <SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="polygonPoints"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Συντεταγμένες Πολυγώνου (JSON)</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder='Σχεδιάστε στην κάτοψη ή επικολλήστε εδώ: [{"x": 10, "y": 10}, ...]' {...field} rows={3} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {isLinkingMode && (
+              <FormField
+                control={form.control}
+                name="existingUnitId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ενέργεια</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε ενέργεια..." /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="new">Δημιουργία Νέου Ακινήτου</SelectItem>
+                        {availableUnits.map(unit => (
+                          <SelectItem key={unit.id} value={unit.id}>
+                            Σύνδεση με: {unit.name} ({unit.identifier})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            
+            {(isCreatingNew || editingUnit) && <Separator className="my-2" />}
+
+            {/* --- Fields for creating new or editing existing --- */}
+            <div className={`grid gap-4 ${isLinkingMode && !isCreatingNew ? 'hidden' : 'block'}`}>
+              <FormField
+                control={form.control}
+                name="identifier"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Κωδικός</FormLabel>
+                    <FormControl><Input placeholder="π.χ. A1, B2" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Όνομα/Αναγνωριστικό</FormLabel>
+                    <FormControl><Input placeholder="π.χ. Διαμέρισμα, Κατάστημα" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Τύπος (Προαιρετικό)</FormLabel>
+                    <FormControl><Input placeholder="π.χ. Γκαρσονιέρα" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Κατάσταση</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε κατάσταση" /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
+                        <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
+                        <SelectItem value="Πωλημένο">Πωλημένο</SelectItem>
+                        <SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            {/* --- Always show polygon points if they exist --- */}
+            {(form.getValues('polygonPoints') || drawingPolygon) && (
+              <FormField
+                control={form.control}
+                name="polygonPoints"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Συντεταγμένες Πολυγώνου (JSON)</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder='Σχεδιάστε στην κάτοψη ή επικολλήστε εδώ: [{"x": 10, "y": 10}, ...]' {...field} rows={3} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button>
               </DialogClose>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {editingUnit ? 'Αποθήκευση Αλλαγών' : 'Προσθήκη Ακινήτου'}
+                {editingUnit ? 'Αποθήκευση' : (isLinkingMode && !isCreatingNew) ? 'Σύνδεση Σχήματος' : 'Προσθήκη Ακινήτου'}
               </Button>
             </DialogFooter>
           </form>

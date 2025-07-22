@@ -30,18 +30,11 @@ import { Loader2 } from 'lucide-react';
 import { FloorInfoHeader } from './FloorInfoHeader';
 import { FloorPlanCard } from './FloorPlanCard';
 import { UnitsListTable } from './UnitsListTable';
-import { UnitDialogForm, UnitFormValues } from '@/components/units/UnitDialogForm';
+import { UnitDialogForm, UnitFormValues, unitSchema } from '@/components/units/UnitDialogForm';
 import { useFloorPlanState } from '@/hooks/floor-plan/useFloorPlanState';
 
-// --- Interfaces & Schemas ---
-const unitSchema = z.object({
-  identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
-  name: z.string().min(1, { message: 'Το όνομα είναι υποχρεωτικό.' }),
-  type: z.string().optional(),
-  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
-  polygonPoints: z.string().optional(),
-});
 
+// --- Interfaces & Schemas ---
 interface Floor {
   id: string;
   level: string;
@@ -52,7 +45,7 @@ interface Floor {
   floorPlanUrl?: string;
 }
 
-export interface Unit extends Omit<UnitFormValues, 'polygonPoints'> {
+export interface Unit extends Omit<UnitFormValues, 'polygonPoints' | 'existingUnitId'> {
   id: string;
   createdAt: any;
   polygonPoints?: { x: number; y: number }[];
@@ -85,15 +78,17 @@ export function FloorDetailsContainer() {
   const [drawingPolygon, setDrawingPolygon] = useState<{ x: number; y: number }[] | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
-  // Get status colors from the central hook
   const { statusColors } = useFloorPlanState({ units: [], onPolygonDrawn: () => {} });
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: {
       identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '',
+      existingUnitId: 'new',
     },
   });
+
+  const unitsWithoutPolygon = units.filter(u => !u.polygonPoints || u.polygonPoints.length === 0);
 
   // --- Data Fetching Effects ---
   useEffect(() => {
@@ -139,14 +134,18 @@ export function FloorDetailsContainer() {
         type: editingUnit.type || '',
         status: editingUnit.status,
         polygonPoints: editingUnit.polygonPoints ? JSON.stringify(editingUnit.polygonPoints, null, 2) : '',
+        existingUnitId: editingUnit.id,
       });
     } else if (drawingPolygon) {
       form.reset({
-        identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: JSON.stringify(drawingPolygon, null, 2),
+        identifier: '', name: '', type: '', status: 'Διαθέσιμο', 
+        polygonPoints: JSON.stringify(drawingPolygon, null, 2),
+        existingUnitId: 'new'
       });
     } else {
       form.reset({
         identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '',
+        existingUnitId: 'new'
       });
     }
   }, [editingUnit, drawingPolygon, form]);
@@ -156,18 +155,17 @@ export function FloorDetailsContainer() {
     if (!open) {
       setDrawingPolygon(null);
       setEditingUnit(null);
-      form.reset({ identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '' });
+      form.reset({ identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '', existingUnitId: 'new' });
     }
   };
 
   // --- Firestore Logic ---
-  const getUnitDataForSave = (data: UnitFormValues) => {
-    let parsedPolygonPoints: { x: number; y: number }[] | undefined;
+  const getParsedPolygonPoints = (data: UnitFormValues) => {
     if (data.polygonPoints && data.polygonPoints.trim() !== '') {
       try {
         const pointsArray = JSON.parse(data.polygonPoints);
         if (Array.isArray(pointsArray) && pointsArray.every(p => typeof p.x === 'number' && typeof p.y === 'number')) {
-          parsedPolygonPoints = pointsArray;
+          return pointsArray;
         } else {
           throw new Error('Invalid points format.');
         }
@@ -176,23 +174,23 @@ export function FloorDetailsContainer() {
         return null;
       }
     }
-    return {
-      identifier: data.identifier, name: data.name, type: data.type, status: data.status,
-      ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
-    };
+    return undefined;
   };
 
-  const updateUnitInFirestore = async (unitId: string, unitOriginalId: string, dataToUpdate: any) => {
-    if (!floor) return false;
+  const updateUnitInFirestore = async (unitId: string, dataToUpdate: any) => {
+    const unitToUpdate = units.find(u => u.id === unitId);
+    if (!unitToUpdate || !floor) return false;
+    
     try {
       const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
       if (!buildingDoc.exists()) throw new Error("Parent building not found");
       const buildingData = buildingDoc.data();
       const batch = writeBatch(db);
+      
       batch.update(doc(db, 'units', unitId), dataToUpdate);
-      if (buildingData.projectId && buildingData.originalId && unitOriginalId) {
-        const subDocRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', unitOriginalId);
-        // It's possible the subcollection document doesn't exist if data is inconsistent. Check first.
+
+      if (buildingData.projectId && buildingData.originalId && unitToUpdate.originalId) {
+        const subDocRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', unitToUpdate.originalId);
         const subDocSnap = await getDoc(subDocRef);
         if (subDocSnap.exists()) {
           batch.update(subDocRef, dataToUpdate);
@@ -209,16 +207,30 @@ export function FloorDetailsContainer() {
 
   const onSubmitUnit = async (data: UnitFormValues) => {
     setIsSubmitting(true);
-    const unitData = getUnitDataForSave(data);
-    if (!unitData) {
-      setIsSubmitting(false);
-      return;
+    const parsedPolygonPoints = getParsedPolygonPoints(data);
+    if (data.polygonPoints && parsedPolygonPoints === null) {
+        setIsSubmitting(false);
+        return; // Invalid JSON for points
     }
 
     let success = false;
+    
+    // Case 1: Editing an existing unit's details
     if (editingUnit) {
-      success = await updateUnitInFirestore(editingUnit.id, editingUnit.originalId, unitData);
+      const unitData = {
+          identifier: data.identifier, name: data.name, type: data.type, status: data.status,
+          ...(parsedPolygonPoints !== undefined && { polygonPoints: parsedPolygonPoints }),
+      };
+      success = await updateUnitInFirestore(editingUnit.id, unitData);
       if (success) toast({ title: 'Επιτυχία', description: 'Το ακίνητο ενημερώθηκε.' });
+    
+    // Case 2: Linking a new polygon to an existing unit
+    } else if (drawingPolygon && data.existingUnitId !== 'new') {
+        const unitId = data.existingUnitId;
+        success = await updateUnitInFirestore(unitId, { polygonPoints: parsedPolygonPoints });
+        if (success) toast({ title: 'Επιτυχία', description: 'Το πολύγωνο συνδέθηκε με το ακίνητο.' });
+    
+    // Case 3: Creating a new unit (either from a polygon or from scratch)
     } else {
       if (!floor || !floor.buildingId || !floor.originalId) {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε γονικός όροφος/κτίριο.' });
@@ -227,20 +239,20 @@ export function FloorDetailsContainer() {
           const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
           if (!buildingDoc.exists()) throw new Error("Parent building not found");
           const buildingData = buildingDoc.data();
-          const topLevelUnitRef = doc(collection(db, 'units'));
-          let subCollectionUnitRef;
           
           const batch = writeBatch(db);
-
-          const finalUnitData = {
-            ...unitData,
+          const topLevelUnitRef = doc(collection(db, 'units'));
+          
+          const finalUnitData: any = {
+            identifier: data.identifier, name: data.name, type: data.type, status: data.status,
+            ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
             floorId: floor.id,
             buildingId: floor.buildingId,
             createdAt: serverTimestamp(),
           };
 
           if (buildingData.projectId && buildingData.originalId) {
-            subCollectionUnitRef = doc(collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units'));
+            const subCollectionUnitRef = doc(collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units'));
             batch.set(subCollectionUnitRef, finalUnitData);
             batch.set(topLevelUnitRef, { ...finalUnitData, originalId: subCollectionUnitRef.id });
           } else {
@@ -288,10 +300,7 @@ export function FloorDetailsContainer() {
   };
   
   const handleUnitPointsUpdate = useCallback(async (unitId: string, newPoints: { x: number; y: number }[]) => {
-    const unitToUpdate = units.find(u => u.id === unitId);
-    if (!unitToUpdate) return;
-    
-    const success = await updateUnitInFirestore(unitToUpdate.id, unitToUpdate.originalId, { polygonPoints: newPoints });
+    const success = await updateUnitInFirestore(unitId, { polygonPoints: newPoints });
     
     if (success) {
       toast({ title: "Το σχήμα ενημερώθηκε", description: "Οι νέες συντεταγμένες αποθηκεύτηκαν." });
@@ -401,6 +410,8 @@ export function FloorDetailsContainer() {
         form={form}
         isSubmitting={isSubmitting}
         editingUnit={editingUnit}
+        drawingPolygon={drawingPolygon}
+        availableUnits={unitsWithoutPolygon}
       />
     </div>
   );
