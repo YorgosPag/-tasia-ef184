@@ -244,8 +244,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     };
     
     setPageDimensions({ 
-        width: cropBox.width, 
-        height: cropBox.height,
+        width: originalViewport.width, 
+        height: originalViewport.height,
         cropBox
     });
   }
@@ -264,11 +264,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     pt.y = event.clientY;
     const transformedPoint = pt.matrixTransform(svg.getScreenCTM()?.inverse());
     
-    // Adjust for the crop
-    return {
-        x: transformedPoint.x + pageDimensions.cropBox.x,
-        y: transformedPoint.y + pageDimensions.cropBox.y
-    };
+    return transformedPoint;
   };
 
   const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -353,7 +349,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
           unit.polygonPoints?.forEach(point => {
               const distance = Math.sqrt(Math.pow(point.x - svgPoint.x, 2) + Math.pow(point.y - svgPoint.y, 2));
               if (distance < minDistance) {
-                  minDistance = distance;
+                  minDistance = d;
                   bestSnapPoint = point;
               }
           });
@@ -514,13 +510,13 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     const container = pdfContainerRef.current;
     const pdf = pageDimensions;
 
-    if (!container || !pdf || pdf.width === 0 || pdf.height === 0) return;
+    if (!container || !pdf || pdf.cropBox.width === 0 || pdf.cropBox.height === 0) return;
 
     // Add some padding to the fit
     const PADDING = 0.95;
 
-    const scaleX = (container.clientWidth / pdf.width) * PADDING;
-    const scaleY = (container.clientHeight / pdf.height) * PADDING;
+    const scaleX = (container.clientWidth / pdf.cropBox.width) * PADDING;
+    const scaleY = (container.clientHeight / pdf.cropBox.height) * PADDING;
 
     const newScale = Math.min(scaleX, scaleY);
 
@@ -529,8 +525,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     // Center the content after fitting
     setTimeout(() => {
       if (pdfContainerRef.current) {
-        const newScrollLeft = (pdf.width * newScale - container.clientWidth) / 2;
-        const newScrollTop = (pdf.height * newScale - container.clientHeight) / 2;
+        const newScrollLeft = (pdf.cropBox.width * newScale - container.clientWidth) / 2;
+        const newScrollTop = (pdf.cropBox.height * newScale - container.clientHeight) / 2;
         pdfContainerRef.current.scrollLeft = newScrollLeft > 0 ? newScrollLeft : 0;
         pdfContainerRef.current.scrollTop = newScrollTop > 0 ? newScrollTop : 0;
       }
@@ -554,216 +550,216 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
 
-  const pageViewbox = `0 0 ${pageDimensions.width} ${pageDimensions.height}`;
-  const svgViewbox = `0 0 ${pageDimensions.cropBox.width} ${pageDimensions.cropBox.height}`;
-
+  const pageViewbox = `${pageDimensions.cropBox.x} ${pageDimensions.cropBox.y} ${pageDimensions.cropBox.width} ${pageDimensions.cropBox.height}`;
+  
   return (
         <div className="flex flex-col gap-4 items-center">
         <Card className="w-full">
             <CardContent 
-                className="p-2 relative overflow-auto bg-muted/20" 
+                className="p-0 relative bg-muted/20 flex justify-center items-center" 
                 style={{ height: '70vh' }}
-                ref={pdfContainerRef} 
                 onMouseUp={handleMouseUp}
             >
-            {pdfError ? (
-                <div className="flex items-center justify-center h-full text-destructive text-center p-4">
-                {pdfError}
-                </div>
-            ) : (
-                <Document
-                file={pdfUrl}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-                loading={loadingElement}
-                className="flex justify-center items-center h-full"
-                >
-                <div className="relative">
-                    <Page 
-                    pageNumber={pageNumber} 
-                    scale={scale} 
-                    rotate={rotation}
-                    renderTextLayer={false}
-                    renderAnnotationLayer={false}
-                    onLoadSuccess={onPageLoadSuccess}
-                    customTextRenderer={() => false}
-                    viewBox={pageDimensions.width > 0 ? pageDimensions.cropBox : undefined}
-                    width={pageDimensions.width > 0 ? pageDimensions.width * scale : undefined}
-                    height={pageDimensions.height > 0 ? pageDimensions.height * scale : undefined}
-                    />
-                    {pageDimensions.width > 0 && (
-                    <svg
-                        ref={svgRef}
-                        className="absolute top-0 left-0"
-                        width={pageDimensions.width * scale}
-                        height={pageDimensions.height * scale}
-                        viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
-                        style={{ pointerEvents: 'auto', cursor: isLocked ? 'not-allowed' : isEditMode ? 'crosshair' : 'default' }}
-                        onClick={handleSvgClick}
-                        onMouseMove={handleMouseMove}
-                        onMouseLeave={handleMouseLeave}
-                    >
-                         {/* Layer for crosshair guides */}
-                        {isEditMode && mousePosition && (
-                            <g className="pointer-events-none">
-                                <line 
-                                    x1={0} y1={mousePosition.y} 
-                                    x2={pageDimensions.cropBox.x + pageDimensions.cropBox.width} y2={mousePosition.y} 
-                                    stroke="hsl(var(--destructive))" 
-                                    strokeWidth={0.5 / scale} 
-                                    strokeDasharray={`${4/scale} ${4/scale}`} 
-                                />
-                                <line 
-                                    x1={mousePosition.x} y1={0} 
-                                    x2={mousePosition.x} y2={pageDimensions.cropBox.y + pageDimensions.cropBox.height} 
-                                    stroke="hsl(var(--destructive))" 
-                                    strokeWidth={0.5 / scale} 
-                                    strokeDasharray={`${4/scale} ${4/scale}`}
-                                />
-                            </g>
-                        )}
-                        {/* Layer for existing polygons */}
-                        <g>
-                            {visibleUnits.map((unit) =>
-                            unit.polygonPoints ? (
-                                <Popover key={unit.id}>
-                                    <PopoverTrigger asChild>
-                                        <g 
-                                            onClick={() => handleUnitClick(unit.id)} 
-                                            className="group/polygon"
-                                            style={{
-                                                pointerEvents: isEditMode || isLocked ? 'none' : 'auto', 
-                                                cursor: isLocked ? 'not-allowed' : 'pointer'
-                                            }}
-                                        >
-                                            <polygon
-                                                points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
-                                                className={cn(
-                                                    'stroke-2 transition-all',
-                                                    selectedUnitId === unit.id ? 'opacity-50' : 'opacity-40 group-hover/polygon:opacity-70'
-                                                )}
-                                                style={{
-                                                    fill: getStatusColor(unit.status),
-                                                    stroke: getStatusColor(unit.status),
-                                                    strokeWidth: 2 / scale,
-                                                }}
-                                            />
-                                        </g>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto">
-                                    <div className="grid gap-4">
-                                            <div className="space-y-2">
-                                                <h4 className="font-medium leading-none">{unit.name} ({unit.identifier})</h4>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-medium">Κατάσταση:</span>
-                                                    <Badge variant="default" className={getStatusClass(unit.status)}>
-                                                        {unit.status}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <Button size="sm" variant="outline" onClick={() => onUnitClick(unit.id)}>
-                                                    <Edit className="mr-2 h-4 w-4" />
-                                                    Επεξεργασία
-                                                </Button>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button size="sm" variant="destructive_outline">
-                                                          <Trash2 className="mr-2 h-4 w-4" />
-                                                          Διαγραφή
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                        <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το ακίνητο
-                                                            "{unit.name} ({unit.identifier})".
-                                                        </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                        <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => onUnitDelete(unit.id)} className="bg-destructive hover:bg-destructive/90">
-                                                            Διαγραφή
-                                                        </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </div>
-                                    </div>
-                                    </PopoverContent>
-                                </Popover>
-                            ) : null
-                            )}
-                        </g>
-                        
-                        {/* Layer for draggable points on existing polygons */}
-                        <g>
-                            {!isEditMode && !isLocked && visibleUnits.map(unit =>
-                                unit.polygonPoints?.map((point, index) => (
-                                    <circle
-                                        key={`${unit.id}-point-${index}`}
-                                        cx={point.x}
-                                        cy={point.y}
-                                        r={5 / scale}
-                                        fill={getStatusColor(unit.status)}
-                                        stroke="#fff"
-                                        strokeWidth={1.5 / scale}
-                                        onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
-                                        className="cursor-move transition-all hover:r-7 hover:stroke-2"
-                                    />
-                                ))
-                            )}
-                        </g>
+              <div 
+                ref={pdfContainerRef} 
+                className="w-full h-full overflow-auto"
+              >
+                  {pdfError ? (
+                      <div className="flex items-center justify-center h-full text-destructive text-center p-4">
+                      {pdfError}
+                      </div>
+                  ) : (
+                      <Document
+                      file={pdfUrl}
+                      onLoadSuccess={onDocumentLoadSuccess}
+                      onLoadError={onDocumentLoadError}
+                      loading={loadingElement}
+                      className="flex justify-center items-start" // Align to top-left for scroll
+                      >
+                      <div className="relative">
+                          <Page 
+                          pageNumber={pageNumber} 
+                          scale={scale} 
+                          rotate={rotation}
+                          renderTextLayer={false}
+                          renderAnnotationLayer={false}
+                          onLoadSuccess={onPageLoadSuccess}
+                          customTextRenderer={() => false}
+                          />
+                          {pageDimensions.width > 0 && (
+                          <svg
+                              ref={svgRef}
+                              className="absolute top-0 left-0"
+                              width={pageDimensions.width * scale}
+                              height={pageDimensions.height * scale}
+                              viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
+                              style={{ pointerEvents: 'auto', cursor: isLocked ? 'not-allowed' : isEditMode ? 'crosshair' : 'default' }}
+                              onClick={handleSvgClick}
+                              onMouseMove={handleMouseMove}
+                              onMouseLeave={handleMouseLeave}
+                          >
+                               {/* Layer for crosshair guides */}
+                              {isEditMode && mousePosition && (
+                                  <g className="pointer-events-none">
+                                      <line 
+                                          x1={0} y1={mousePosition.y} 
+                                          x2={pageDimensions.width} y2={mousePosition.y} 
+                                          stroke="hsl(var(--destructive))" 
+                                          strokeWidth={0.5 / scale} 
+                                          strokeDasharray={`${4/scale} ${4/scale}`} 
+                                      />
+                                      <line 
+                                          x1={mousePosition.x} y1={0} 
+                                          x2={mousePosition.x} y2={pageDimensions.height} 
+                                          stroke="hsl(var(--destructive))" 
+                                          strokeWidth={0.5 / scale} 
+                                          strokeDasharray={`${4/scale} ${4/scale}`}
+                                      />
+                                  </g>
+                              )}
+                              {/* Layer for existing polygons */}
+                              <g>
+                                  {visibleUnits.map((unit) =>
+                                  unit.polygonPoints ? (
+                                      <Popover key={unit.id}>
+                                          <PopoverTrigger asChild>
+                                              <g 
+                                                  onClick={() => handleUnitClick(unit.id)} 
+                                                  className="group/polygon"
+                                                  style={{
+                                                      pointerEvents: isEditMode || isLocked ? 'none' : 'auto', 
+                                                      cursor: isLocked ? 'not-allowed' : 'pointer'
+                                                  }}
+                                              >
+                                                  <polygon
+                                                      points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
+                                                      className={cn(
+                                                          'stroke-2 transition-all',
+                                                          selectedUnitId === unit.id ? 'opacity-50' : 'opacity-40 group-hover/polygon:opacity-70'
+                                                      )}
+                                                      style={{
+                                                          fill: getStatusColor(unit.status),
+                                                          stroke: getStatusColor(unit.status),
+                                                          strokeWidth: 2 / scale,
+                                                      }}
+                                                  />
+                                              </g>
+                                          </PopoverTrigger>
+                                          <PopoverContent className="w-auto">
+                                          <div className="grid gap-4">
+                                                  <div className="space-y-2">
+                                                      <h4 className="font-medium leading-none">{unit.name} ({unit.identifier})</h4>
+                                                      <div className="flex items-center gap-2">
+                                                          <span className="text-sm font-medium">Κατάσταση:</span>
+                                                          <Badge variant="default" className={getStatusClass(unit.status)}>
+                                                              {unit.status}
+                                                          </Badge>
+                                                      </div>
+                                                  </div>
+                                                  <div className="flex gap-2">
+                                                      <Button size="sm" variant="outline" onClick={() => onUnitClick(unit.id)}>
+                                                          <Edit className="mr-2 h-4 w-4" />
+                                                          Επεξεργασία
+                                                      </Button>
+                                                      <AlertDialog>
+                                                          <AlertDialogTrigger asChild>
+                                                              <Button size="sm" variant="destructive_outline">
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                Διαγραφή
+                                                              </Button>
+                                                          </AlertDialogTrigger>
+                                                          <AlertDialogContent>
+                                                              <AlertDialogHeader>
+                                                              <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                                                              <AlertDialogDescription>
+                                                                  Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το ακίνητο
+                                                                  "{unit.name} ({unit.identifier})".
+                                                              </AlertDialogDescription>
+                                                              </AlertDialogHeader>
+                                                              <AlertDialogFooter>
+                                                              <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                                                              <AlertDialogAction onClick={() => onUnitDelete(unit.id)} className="bg-destructive hover:bg-destructive/90">
+                                                                  Διαγραφή
+                                                              </AlertDialogAction>
+                                                              </AlertDialogFooter>
+                                                          </AlertDialogContent>
+                                                      </AlertDialog>
+                                                  </div>
+                                          </div>
+                                          </PopoverContent>
+                                      </Popover>
+                                  ) : null
+                                  )}
+                              </g>
+                              
+                              {/* Layer for draggable points on existing polygons */}
+                              <g>
+                                  {!isEditMode && !isLocked && visibleUnits.map(unit =>
+                                      unit.polygonPoints?.map((point, index) => (
+                                          <circle
+                                              key={`${unit.id}-point-${index}`}
+                                              cx={point.x}
+                                              cy={point.y}
+                                              r={5 / scale}
+                                              fill={getStatusColor(unit.status)}
+                                              stroke="#fff"
+                                              strokeWidth={1.5 / scale}
+                                              onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
+                                              className="cursor-move transition-all hover:r-7 hover:stroke-2"
+                                          />
+                                      ))
+                                  )}
+                              </g>
 
-                        {/* Layer for drawing in-progress polyline */}
-                        {isEditMode && currentPolygonPoints.length > 0 && (
-                            <g className="pointer-events-none">
-                                <polyline
-                                    points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
-                                    fill="none"
-                                    stroke="hsl(var(--destructive))"
-                                    strokeWidth={2 / scale}
-                                    strokeDasharray={`${6/scale} ${6/scale}`}
-                                />
-                                {currentPolygonPoints.map((point, index) => (
-                                    <circle
-                                        key={index}
-                                        cx={point.x}
-                                        cy={point.y}
-                                        r={4 / scale}
-                                        fill={index === 0 ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
-                                        stroke="#fff"
-                                        strokeWidth={1.5 / scale}
-                                    />
-                                ))}
-                            </g>
-                        )}
-                        
-                        {/* Layer for a finalized but unsaved polygon */}
-                        {drawingPolygon && (
-                             <g className="pointer-events-none">
-                                <polygon
-                                    points={drawingPolygon.map(p => `${p.x},${p.y}`).join(' ')}
-                                    fill="hsla(var(--primary), 0.3)"
-                                    stroke="hsl(var(--primary))"
-                                    strokeWidth={2 / scale}
-                                />
-                             </g>
-                        )}
+                              {/* Layer for drawing in-progress polyline */}
+                              {isEditMode && currentPolygonPoints.length > 0 && (
+                                  <g className="pointer-events-none">
+                                      <polyline
+                                          points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
+                                          fill="none"
+                                          stroke="hsl(var(--destructive))"
+                                          strokeWidth={2 / scale}
+                                          strokeDasharray={`${6/scale} ${6/scale}`}
+                                      />
+                                      {currentPolygonPoints.map((point, index) => (
+                                          <circle
+                                              key={index}
+                                              cx={point.x}
+                                              cy={point.y}
+                                              r={4 / scale}
+                                              fill={index === 0 ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
+                                              stroke="#fff"
+                                              strokeWidth={1.5 / scale}
+                                          />
+                                      ))}
+                                  </g>
+                              )}
+                              
+                              {/* Layer for a finalized but unsaved polygon */}
+                              {drawingPolygon && (
+                                   <g className="pointer-events-none">
+                                      <polygon
+                                          points={drawingPolygon.map(p => `${p.x},${p.y}`).join(' ')}
+                                          fill="hsla(var(--primary), 0.3)"
+                                          stroke="hsl(var(--primary))"
+                                          strokeWidth={2 / scale}
+                                      />
+                                   </g>
+                              )}
 
-                        {/* Snap point indicator */}
-                        {snapPoint && isEditMode && (
-                            <g className="pointer-events-none">
-                                <circle cx={snapPoint.x} cy={snapPoint.y} r={SNAPPING_DISTANCE_THRESHOLD / scale} fill="none" stroke="hsl(var(--destructive))" strokeWidth={1/scale} strokeDasharray={`${2/scale} ${2/scale}`} />
-                                <circle cx={snapPoint.x} cy={snapPoint.y} r={3/scale} fill="hsl(var(--destructive))" />
-                            </g>
-                        )}
-                    </svg>
-                    )}
-                </div>
-                </Document>
-            )}
+                              {/* Snap point indicator */}
+                              {snapPoint && isEditMode && (
+                                  <g className="pointer-events-none">
+                                      <circle cx={snapPoint.x} cy={snapPoint.y} r={SNAPPING_DISTANCE_THRESHOLD / scale} fill="none" stroke="hsl(var(--destructive))" strokeWidth={1/scale} strokeDasharray={`${2/scale} ${2/scale}`} />
+                                      <circle cx={snapPoint.x} cy={snapPoint.y} r={3/scale} fill="hsl(var(--destructive))" />
+                                  </g>
+                              )}
+                          </svg>
+                          )}
+                      </div>
+                      </Document>
+                  )}
+              </div>
             </CardContent>
         </Card>
         <div className="flex flex-wrap items-center justify-center gap-2 p-2 rounded-md bg-muted">
