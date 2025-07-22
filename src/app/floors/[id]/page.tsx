@@ -211,7 +211,7 @@ export default function FloorDetailsPage() {
      let parsedPolygonPoints: {x: number, y: number}[] | undefined;
      if (data.polygonPoints) {
        try {
-         // This converts a string like "[[10,20], [30,40]]" into an array of objects
+         // This converts a string like "[[10,20], [30,40]]" or "[{x:10, y:20},...]" into an array of objects
          const pointsArray = JSON.parse(data.polygonPoints);
          if (Array.isArray(pointsArray) && pointsArray.every(p => Array.isArray(p) && p.length === 2 && typeof p[0] === 'number' && typeof p[1] === 'number')) {
             // Firestore can't store array of arrays for GeoPoint, so we convert to array of objects
@@ -351,6 +351,8 @@ export default function FloorDetailsPage() {
       // Stringify the array of objects to be easily used in the form's textarea.
       const pointsJson = JSON.stringify(points, null, 2);
       form.setValue('polygonPoints', pointsJson);
+      // Open the dialog automatically for the user
+      setIsDialogOpen(true);
   }
 
   const formatDate = (timestamp: Timestamp | undefined) => {
@@ -365,6 +367,14 @@ export default function FloorDetailsPage() {
           case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600 text-white';
           case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600 text-white';
           default: return 'bg-gray-500 hover:bg-gray-600 text-white';
+      }
+  }
+  
+  // When closing the dialog, reset the form, especially the polygon points
+  const handleDialogOpenChange = (open: boolean) => {
+      setIsDialogOpen(open);
+      if(!open) {
+          form.reset();
       }
   }
 
@@ -429,7 +439,7 @@ export default function FloorDetailsPage() {
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Λίστα Ακινήτων του Ορόφου
         </h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2" />
@@ -580,5 +590,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
