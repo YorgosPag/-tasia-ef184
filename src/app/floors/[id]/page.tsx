@@ -14,8 +14,7 @@ import {
   updateDoc,
   setDoc,
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -54,22 +53,12 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, UploadCloud, Filter } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
-import dynamic from 'next/dynamic';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-
-const FloorPlanViewer = dynamic(
-  () => import('@/components/floor-plan-viewer').then(mod => mod.FloorPlanViewer),
-  {
-    ssr: false,
-    loading: () => <div className="flex justify-center items-center h-96"><Loader2 className="h-12 w-12 animate-spin text-muted-foreground" /></div>
-  }
-);
-
 
 const unitSchema = z.object({
   identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
@@ -88,7 +77,6 @@ interface Floor {
   buildingId: string;
   originalId: string; // The ID in the subcollection
   createdAt: Timestamp;
-  floorPlanUrl?: string;
 }
 
 interface Unit extends Omit<UnitFormValues, 'polygonPoints'> {
@@ -111,15 +99,6 @@ export default function FloorDetailsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [floorPlanUrl, setFloorPlanUrl] = useState<string | null>(null);
-
-  // Filter states
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-
-
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: {
@@ -141,7 +120,6 @@ export default function FloorDetailsPage() {
       if (docSnap.exists()) {
         const floorData = { id: docSnap.id, ...docSnap.data() } as Floor;
         setFloor(floorData);
-        setFloorPlanUrl(floorData.floorPlanUrl || null);
       } else {
         toast({
           variant: 'destructive',
@@ -290,67 +268,6 @@ export default function FloorDetailsPage() {
        setIsSubmitting(false);
      }
   };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setSelectedFile(event.target.files[0]);
-    }
-  };
-
-  const handleFileUpload = async () => {
-    if (!auth.currentUser) {
-        toast({
-            variant: 'destructive',
-            title: 'Σφάλμα Αυθεντικοποίησης',
-            description: 'Πρέπει να είστε συνδεδεμένοι για να ανεβάσετε αρχεία.',
-        });
-        return;
-    }
-    
-    if (!selectedFile || !floor) return;
-
-    setIsUploading(true);
-    const filePath = `floor-plans/${floor.id}/${selectedFile.name}`;
-    const fileRef = ref(storage, filePath);
-
-    try {
-      const metadata = {
-        contentType: selectedFile.type,
-      };
-      await uploadBytes(fileRef, selectedFile, metadata);
-      const url = await getDownloadURL(fileRef);
-
-      const floorDocRef = doc(db, 'floors', floor.id);
-      await updateDoc(floorDocRef, { floorPlanUrl: url });
-
-      try {
-        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-        const { projectId, originalId: buildingOriginalId } = buildingDoc.data() || {};
-        if (projectId && buildingOriginalId && floor.originalId) {
-          const floorSubDocRef = doc(db, 'projects', projectId, 'buildings', buildingOriginalId, 'floors', floor.originalId);
-          await updateDoc(floorSubDocRef, { floorPlanUrl: url }).catch(e => console.warn("Could not update subcollection floor plan URL, may not exist:", e));
-        }
-      } catch (subError) {
-        console.warn("Could not find/update floor plan URL in subcollection:", subError);
-      }
-
-      setFloorPlanUrl(url);
-      setSelectedFile(null);
-      toast({
-        title: 'Επιτυχία',
-        description: 'Η κάτοψη ανέβηκε με επιτυχία.',
-      });
-    } catch (error) {
-      console.error("Error uploading file: ", error);
-      toast({
-        variant: 'destructive',
-        title: 'Σφάλμα Μεταφόρτωσης',
-        description: 'Δεν ήταν δυνατή η μεταφόρτωση του αρχείου. Ελέγξτε τις ρυθμίσεις CORS και τους κανόνες ασφαλείας του Storage.',
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
   
   const handleRowClick = (unitId: string) => {
     const unitDoc = units.find(u => u.id === unitId);
@@ -373,20 +290,6 @@ export default function FloorDetailsPage() {
           default: return 'bg-gray-500 hover:bg-gray-600 text-white';
       }
   }
-  
-  const uniqueUnitTypes = useMemo(() => {
-    const types = new Set(units.map(u => u.type).filter(Boolean));
-    return Array.from(types) as string[];
-  }, [units]);
-
-  const filteredUnits = useMemo(() => {
-    return units.filter(unit => {
-      const statusMatch = statusFilter === 'all' || unit.status === statusFilter;
-      const typeMatch = typeFilter === 'all' || unit.type === typeFilter;
-      return statusMatch && typeMatch;
-    });
-  }, [units, statusFilter, typeFilter]);
-
 
   if (isLoadingFloor) {
     return (
@@ -415,72 +318,6 @@ export default function FloorDetailsPage() {
             </CardDescription>
             </CardHeader>
         </Card>
-      
-      <Card>
-          <CardHeader>
-              <CardTitle>Κάτοψη Ορόφου & Ακίνητα</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-              {isLoadingUnits ? (
-                 <div className="flex justify-center items-center h-96"><Loader2 className="h-12 w-12 animate-spin text-muted-foreground" /></div>
-              ) : floorPlanUrl ? (
-                <>
-                    <div className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg bg-muted/50">
-                        <div className="flex items-center gap-2">
-                           <Filter className="h-5 w-5 text-muted-foreground"/>
-                           <h3 className="text-md font-semibold">Φίλτρα</h3>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
-                            <FormItem>
-                                <FormLabel>Κατάσταση</FormLabel>
-                                <Select onValueChange={setStatusFilter} value={statusFilter}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Επιλογή κατάστασης..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Όλα</SelectItem>
-                                        <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
-                                        <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
-                                        <SelectItem value="Πωλημένο">Πωλημένο</SelectItem>
-                                        <SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </FormItem>
-                             <FormItem>
-                                <FormLabel>Τύπος Ακινήτου</FormLabel>
-                                <Select onValueChange={setTypeFilter} value={typeFilter} disabled={uniqueUnitTypes.length === 0}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Επιλογή τύπου..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Όλοι</SelectItem>
-                                        {uniqueUnitTypes.map(type => (
-                                            <SelectItem key={type} value={type}>{type}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </FormItem>
-                        </div>
-                    </div>
-                    <FloorPlanViewer pdfUrl={floorPlanUrl} units={filteredUnits} onUnitClick={(unitId) => handleRowClick(unitId)} />
-                </>
-              ) : (
-                  <p className="text-sm text-muted-foreground text-center py-8">Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.</p>
-              )}
-               <div className="space-y-2 pt-4">
-                   <FormLabel htmlFor="floor-plan-upload">Ανέβασμα νέας/ανανεωμένης κάτοψης (PDF)</FormLabel>
-                   <div className="flex items-center gap-2">
-                      <Input id="floor-plan-upload" type="file" accept="application/pdf" onChange={handleFileChange} className="max-w-xs"/>
-                      <Button onClick={handleFileUpload} disabled={!selectedFile || isUploading}>
-                          {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <UploadCloud className="mr-2" />}
-                          Ανέβασμα
-                      </Button>
-                   </div>
-                   {selectedFile && <p className="text-sm text-muted-foreground">Επιλεγμένο αρχείο: {selectedFile.name}</p>}
-               </div>
-          </CardContent>
-      </Card>
-
 
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
