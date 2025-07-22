@@ -32,6 +32,7 @@ interface FloorPlanViewerProps {
   units: Unit[];
   onUnitClick: (unitId: string) => void;
   onPolygonDrawn: (points: { x: number; y: number }[]) => void;
+  onUnitPointsUpdate: (unitId: string, newPoints: { x: number; y: number }[]) => void;
 }
 
 const ALL_STATUSES: Unit['status'][] = ['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος'];
@@ -76,7 +77,7 @@ const getInitialState = <T,>(key: string, defaultValue: T): T => {
 };
 
 
-export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: FloorPlanViewerProps) {
+export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, onUnitPointsUpdate }: FloorPlanViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -89,15 +90,23 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
   const svgRef = useRef<SVGSVGElement>(null);
   const { toast } = useToast();
   
+  // State for dragging points
+  const [draggingPoint, setDraggingPoint] = useState<{ unitId: string; pointIndex: number } | null>(null);
+  const [localUnits, setLocalUnits] = useState<Unit[]>(units);
+  
   // Undo/Redo state
   const [history, setHistory] = useState<({ x: number; y: number }[])[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
+  // Sync local units state when the prop changes
+  useEffect(() => {
+    setLocalUnits(units);
+  }, [units]);
 
   // Initialize state from localStorage or use defaults
   const [scale, setScale] = useState(() => getInitialState('floorPlanScale', 1.0));
   const [rotation, setRotation] = useState(() => getInitialState('floorPlanRotation', 0));
-  const [isLocked, setIsLocked] = useState(() => getInitialState('floorPlanLocked', false));
+  const [isLocked, setIsLocked] = useState(() => getInitialState('floorPlanLocked', true));
   const [statusVisibility, setStatusVisibility] = useState(() => getInitialState('floorPlanStatusVisibility', {
       'Διαθέσιμο': true,
       'Κρατημένο': true,
@@ -164,12 +173,12 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
   }
 
   const handleUnitClick = (unitId: string) => {
-    if (isEditMode) return;
+    if (isEditMode || isLocked) return;
     setSelectedUnitId(unitId);
     onUnitClick(unitId);
   };
   
-  const getSvgPoint = (event: React.MouseEvent<SVGSVGElement>) => {
+  const getSvgPoint = (event: React.MouseEvent<SVGSVGElement | SVGCircleElement>) => {
     if (!svgRef.current) return null;
     const svg = svgRef.current;
     const pt = svg.createSVGPoint();
@@ -179,7 +188,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
   };
 
   const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (!isEditMode || finalizedPolygon) return;
+    if (!isEditMode || finalizedPolygon || isLocked) return;
     
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
@@ -214,12 +223,47 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
   };
   
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (!isEditMode || currentPolygonPoints.length === 0 || finalizedPolygon) return;
+    if (isLocked) return;
     const svgPoint = getSvgPoint(event);
-     if (svgPoint) {
+    if (!svgPoint) return;
+
+    // Handle dragging a point
+    if (draggingPoint) {
+      setLocalUnits(prevUnits => 
+        prevUnits.map(unit => {
+          if (unit.id === draggingPoint.unitId) {
+            const newPoints = [...(unit.polygonPoints || [])];
+            newPoints[draggingPoint.pointIndex] = { x: svgPoint.x, y: svgPoint.y };
+            return { ...unit, polygonPoints: newPoints };
+          }
+          return unit;
+        })
+      );
+      return;
+    }
+    
+    // Handle drawing new polygon
+    if (isEditMode && currentPolygonPoints.length > 0 && !finalizedPolygon) {
       setMousePosition({ x: svgPoint.x, y: svgPoint.y });
     }
   };
+
+  const handleMouseUp = () => {
+    if (draggingPoint) {
+      const unit = localUnits.find(u => u.id === draggingPoint.unitId);
+      if (unit && unit.polygonPoints) {
+        onUnitPointsUpdate(unit.id, unit.polygonPoints);
+      }
+      setDraggingPoint(null);
+    }
+  };
+
+  const handlePointMouseDown = (event: React.MouseEvent<SVGCircleElement>, unitId: string, pointIndex: number) => {
+    if (isLocked || isEditMode) return;
+    event.stopPropagation(); // Prevent SVG click from firing
+    setDraggingPoint({ unitId, pointIndex });
+  };
+
 
   const handleMouseLeave = () => {
     setMousePosition(null);
@@ -248,7 +292,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
             if (e.key === 'z') {
                 e.preventDefault();
                 handleUndo();
-            } else if (e.key === 'y') {
+            } else if (e.key === 'y' || (e.shiftKey && e.key === 'z')) {
                 e.preventDefault();
                 handleRedo();
             }
@@ -263,7 +307,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
       setStatusVisibility(prev => ({ ...prev, [status]: checked }));
   }
 
-  const visibleUnits = units.filter(unit => statusVisibility[unit.status]);
+  const visibleUnits = localUnits.filter(unit => statusVisibility[unit.status]);
   
   const loadingElement = (
     <div className="flex flex-col items-center justify-center h-96 gap-4 text-muted-foreground">
@@ -312,9 +356,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
                         width={pageDimensions.width * scale}
                         height={pageDimensions.height * scale}
                         viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
-                        style={{ pointerEvents: 'auto', cursor: isEditMode ? 'crosshair' : 'default' }}
+                        style={{ pointerEvents: 'auto', cursor: isLocked ? 'not-allowed' : isEditMode ? 'crosshair' : 'default' }}
                         onClick={handleSvgClick}
                         onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseLeave}
                     >
                         {/* Layer for existing polygons */}
@@ -323,7 +368,13 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
                             unit.polygonPoints ? (
                                 <Popover key={unit.id}>
                                     <PopoverTrigger asChild>
-                                        <g onClick={() => handleUnitClick(unit.id)} style={{pointerEvents: isEditMode ? 'none' : 'auto'}}>
+                                        <g 
+                                            onClick={() => handleUnitClick(unit.id)} 
+                                            style={{
+                                                pointerEvents: isEditMode || isLocked ? 'none' : 'auto', 
+                                                cursor: isLocked ? 'not-allowed' : 'pointer'
+                                            }}
+                                        >
                                             <polygon
                                                 points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
                                                 className={
@@ -359,6 +410,25 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
                                     </PopoverContent>
                                 </Popover>
                             ) : null
+                            )}
+                        </g>
+                        
+                        {/* Layer for draggable points on existing polygons */}
+                        <g>
+                            {!isEditMode && !isLocked && visibleUnits.map(unit =>
+                                unit.polygonPoints?.map((point, index) => (
+                                    <circle
+                                        key={`${unit.id}-point-${index}`}
+                                        cx={point.x}
+                                        cy={point.y}
+                                        r="5"
+                                        fill={getStatusColor(unit.status)}
+                                        stroke="#fff"
+                                        strokeWidth="1.5"
+                                        onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
+                                        className="cursor-move"
+                                    />
+                                ))
                             )}
                         </g>
 
@@ -418,7 +488,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
              <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
                 {isLocked ? <Lock className="text-primary" /> : <Unlock />}
             </Button>
-            <Button variant="ghost" size="icon" onClick={toggleEditMode} disabled={!numPages}>
+            <Button variant="ghost" size="icon" onClick={toggleEditMode} disabled={!numPages || isLocked}>
                 <Pencil className={cn(isEditMode && "text-primary")} />
             </Button>
             {isEditMode && (
@@ -437,7 +507,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
             <Card className="w-full max-w-md bg-primary/10 border-primary/40">
                 <CardContent className="p-3 text-center">
                     <p className="text-sm text-primary font-medium">
-                        Λειτουργία Επεξεργασίας: Κάντε κλικ στην κάτοψη για να προσθέσετε σημεία.
+                        Λειτουργία Σχεδίασης: Κάντε κλικ στην κάτοψη για να προσθέσετε σημεία.
                     </p>
                     <p className="text-xs text-primary/80">
                         Κάντε κλικ κοντά στο πρώτο σημείο (κόκκινο) για να κλείσετε το σχήμα. (Ctrl+Z για αναίρεση)
@@ -445,6 +515,17 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
                 </CardContent>
             </Card>
         )}
+        
+        {!isEditMode && !isLocked && (
+            <Card className="w-full max-w-md bg-secondary/60 border-secondary/40">
+                <CardContent className="p-3 text-center">
+                    <p className="text-sm text-secondary-foreground font-medium">
+                        Λειτουργία Επεξεργασίας: Σύρετε τα σημεία για να αλλάξετε το σχήμα.
+                    </p>
+                </CardContent>
+            </Card>
+        )}
+
 
         <Card className="w-full max-w-md">
             <CardContent className="p-4">
@@ -472,4 +553,3 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
   );
 
 }
-
