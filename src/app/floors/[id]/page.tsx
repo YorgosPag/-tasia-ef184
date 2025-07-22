@@ -300,27 +300,39 @@ export default function FloorDetailsPage() {
       return;
     }
     if (!auth.currentUser) {
-        toast({ variant: 'destructive', title: 'Σφάλμα Αυθεντικοποίησης', description: 'Πρέπει να είστε συνδεδεμένος για να ανεβάσετε αρχεία.' });
-        return;
+      toast({ variant: 'destructive', title: 'Σφάλμα Αυθεντικοποίησης', description: 'Πρέπει να είστε συνδεδεμένος για να ανεβάσετε αρχεία.' });
+      return;
     }
-
+  
     setIsUploading(true);
     const storageRef = ref(storage, `floor_plans/${floorId}/${selectedFile.name}`);
-
+    console.log("Storage Path:", storageRef.fullPath);
+  
     try {
+      const token = await auth.currentUser.getIdToken();
+      console.log("Auth Token:", token ? "Token acquired" : "No token found");
+  
       await uploadBytes(storageRef, selectedFile);
       const downloadURL = await getDownloadURL(storageRef);
-
+  
       const floorDocRef = doc(db, 'floors', floorId);
       await updateDoc(floorDocRef, {
         floorPlanUrl: downloadURL,
       });
-
+  
       toast({ title: 'Επιτυχία', description: 'Η κάτοψη ανέβηκε με επιτυχία.' });
       setSelectedFile(null);
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast({ variant: 'destructive', title: 'Σφάλμα Ανεβάσματος', description: 'Δεν ήταν δυνατή η μεταφόρτωση του αρχείου.' });
+    } catch (error: any) {
+      console.error("Upload error:", {
+        message: error.message,
+        code: error.code,
+        details: error.serverResponse,
+      });
+      toast({
+        variant: 'destructive',
+        title: 'Σφάλμα Ανεβάσματος',
+        description: `Δεν ήταν δυνατή η μεταφόρτωση του αρχείου: ${error.message}`,
+      });
     } finally {
       setIsUploading(false);
     }
@@ -555,5 +567,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
