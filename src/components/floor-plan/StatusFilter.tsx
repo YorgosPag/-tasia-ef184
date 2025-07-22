@@ -54,11 +54,8 @@ export function StatusFilter({
                   onCheckedChange={(checked) =>
                     onVisibilityChange(status, checked as boolean)
                   }
+                  style={{ borderColor: color }}
                   className="data-[state=checked]:bg-transparent"
-                  style={{
-                    borderColor: color,
-                    color: color,
-                  }}
                 />
                 <Label htmlFor={`status-${status}`} className="text-sm font-medium">
                   {status}
