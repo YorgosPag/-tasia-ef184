@@ -136,26 +136,35 @@ export default function FloorDetailsPage() {
     },
   });
 
-  // Effect to populate form when editingUnit changes
+  // Effect to populate form when editingUnit or drawingPolygon changes
   useEffect(() => {
     if (editingUnit) {
-      form.reset({
-        identifier: editingUnit.identifier,
-        name: editingUnit.name,
-        type: editingUnit.type || '',
-        status: editingUnit.status,
-        polygonPoints: editingUnit.polygonPoints ? JSON.stringify(editingUnit.polygonPoints, null, 2) : '',
-      });
+        form.reset({
+            identifier: editingUnit.identifier,
+            name: editingUnit.name,
+            type: editingUnit.type || '',
+            status: editingUnit.status,
+            polygonPoints: editingUnit.polygonPoints ? JSON.stringify(editingUnit.polygonPoints, null, 2) : '',
+        });
+    } else if (drawingPolygon) {
+         form.reset({
+            identifier: '',
+            name: '',
+            type: '',
+            status: 'Διαθέσιμο',
+            polygonPoints: JSON.stringify(drawingPolygon, null, 2),
+         });
     } else {
-      form.reset({
-        identifier: '',
-        name: '',
-        type: '',
-        status: 'Διαθέσιμο',
-        polygonPoints: form.getValues('polygonPoints') || '', // Keep polygon points if drawn for new unit
-      });
+        form.reset({
+            identifier: '',
+            name: '',
+            type: '',
+            status: 'Διαθέσιμο',
+            polygonPoints: '',
+        });
     }
-  }, [editingUnit, form]);
+  }, [editingUnit, drawingPolygon, form]);
+
 
 
   // Fetch floor details from top-level collection
@@ -459,6 +468,7 @@ export default function FloorDetailsPage() {
   const handleUnitSelectForEdit = (unitId: string) => {
     const unitToEdit = units.find(u => u.id === unitId);
     if(unitToEdit){
+      setDrawingPolygon(null);
       setEditingUnit(unitToEdit);
       setIsDialogOpen(true);
     } else {
@@ -468,10 +478,8 @@ export default function FloorDetailsPage() {
   };
   
   const handlePolygonDrawn = (points: {x: number, y: number}[]) => {
+      setEditingUnit(null); 
       setDrawingPolygon(points);
-      const pointsJson = JSON.stringify(points, null, 2);
-      form.setValue('polygonPoints', pointsJson);
-      setEditingUnit(null); // Ensure we are in "create" mode
       setIsDialogOpen(true);
   }
 
@@ -493,7 +501,9 @@ export default function FloorDetailsPage() {
   const handleDialogOpenChange = (open: boolean) => {
       setIsDialogOpen(open);
       if(!open) {
-          setDrawingPolygon(null); // Clear the temporary polygon on close/cancel
+          setDrawingPolygon(null);
+          setEditingUnit(null);
+          // Reset form to default values when dialog is closed
           form.reset({
               identifier: '',
               name: '',
@@ -501,7 +511,6 @@ export default function FloorDetailsPage() {
               status: 'Διαθέσιμο',
               polygonPoints: '',
           });
-          setEditingUnit(null);
       }
   }
 
@@ -558,7 +567,7 @@ export default function FloorDetailsPage() {
         <h2 className="text-2xl font-bold tracking-tight text-foreground">Ακίνητα του Ορόφου</h2>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditingUnit(null)}><PlusCircle className="mr-2" />Νέο Ακίνητο</Button>
+            <Button onClick={() => { setEditingUnit(null); setDrawingPolygon(null); setIsDialogOpen(true); }}><PlusCircle className="mr-2" />Νέο Ακίνητο</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -717,3 +726,5 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
+
+    
