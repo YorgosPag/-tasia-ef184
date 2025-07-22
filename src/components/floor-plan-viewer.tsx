@@ -197,7 +197,9 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     setSnapPoint(null);
     setHistory([[]]); // Start with a single empty state
     setHistoryIndex(0);
-    onPolygonDrawn([]); // Also clear the parent's drawing polygon state
+    if(onPolygonDrawn) {
+        onPolygonDrawn([]); // Also clear the parent's drawing polygon state
+    }
   }, [onPolygonDrawn]);
 
   const toggleEditMode = () => {
@@ -550,30 +552,27 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
 
   const handleFitToView = () => {
     const container = pdfContainerRef.current;
-    const pdf = pageDimensions;
-
-    if (!container || !pdf || pdf.cropBox.width === 0 || pdf.cropBox.height === 0) return;
-
-    // Add some padding to the fit
+    if (!container || !pageDimensions || pageDimensions.cropBox.width === 0) return;
+  
     const PADDING = 0.95;
-
-    const scaleX = (container.clientWidth / pdf.cropBox.width) * PADDING;
-    const scaleY = (container.clientHeight / pdf.cropBox.height) * PADDING;
-
+    const { clientWidth, clientHeight } = container;
+    const { width: cropWidth, height: cropHeight } = pageDimensions.cropBox;
+  
+    const scaleX = (clientWidth / cropWidth) * PADDING;
+    const scaleY = (clientHeight / cropHeight) * PADDING;
+  
     const newScale = Math.min(scaleX, scaleY);
-    
+  
     setScale(newScale);
-
-    // Center the content after fitting. The scroll position must be relative to the full page, not just the cropbox
+  
+    // After the scale is set, we need to center the content.
+    // We use a timeout to allow React to re-render with the new scale first.
     setTimeout(() => {
-        const pageContainer = pdfContainerRef.current;
-        if (pageContainer) {
-            const scaledContentWidth = pageDimensions.width * newScale;
-            const scaledContentHeight = pageDimensions.height * newScale;
-
-            pageContainer.scrollLeft = (scaledContentWidth - pageContainer.clientWidth) / 2;
-            pageContainer.scrollTop = (scaledContentHeight - pageContainer.clientHeight) / 2;
-        }
+      const el = pdfContainerRef.current;
+      if (el) {
+        el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+        el.scrollTop = (el.scrollHeight - el.clientHeight) / 2;
+      }
     }, 0);
   };
 
@@ -628,14 +627,6 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                           renderAnnotationLayer={false}
                           onLoadSuccess={onPageLoadSuccess}
                           customTextRenderer={() => false}
-                          viewBox={pageDimensions.cropBox.width > 0 ? (page) => {
-                            return {
-                                x: pageDimensions.cropBox.x,
-                                y: pageDimensions.cropBox.y,
-                                width: pageDimensions.cropBox.width,
-                                height: pageDimensions.cropBox.height,
-                            }
-                          } : undefined}
                           />
                           {pageDimensions.width > 0 && (
                           <svg
@@ -656,14 +647,14 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                                           x1={0} y1={mousePosition.y} 
                                           x2={pageDimensions.width} y2={mousePosition.y} 
                                           stroke="hsl(var(--destructive))" 
-                                          strokeWidth={0.5 / scale} 
+                                          strokeWidth={0.8 / scale} 
                                           strokeDasharray={`${4/scale} ${4/scale}`} 
                                       />
                                       <line 
                                           x1={mousePosition.x} y1={0} 
                                           x2={mousePosition.x} y2={pageDimensions.height} 
                                           stroke="hsl(var(--destructive))" 
-                                          strokeWidth={0.5 / scale} 
+                                          strokeWidth={0.8 / scale} 
                                           strokeDasharray={`${4/scale} ${4/scale}`}
                                       />
                                   </g>
@@ -769,7 +760,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                                           points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
                                           fill="none"
                                           stroke="hsl(var(--destructive))"
-                                          strokeWidth={2 / scale}
+                                          strokeWidth={2.5 / scale}
                                           strokeDasharray={`${6/scale} ${6/scale}`}
                                       />
                                       {currentPolygonPoints.map((point, index) => (
@@ -929,5 +920,3 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   );
 
 }
-
-  
