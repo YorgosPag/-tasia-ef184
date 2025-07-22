@@ -195,10 +195,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     setSnapPoint(null);
     setHistory([[]]); // Start with a single empty state
     setHistoryIndex(0);
-    if(onPolygonDrawn) {
-        onPolygonDrawn([]); // Also clear the parent's drawing polygon state
-    }
-  }, [onPolygonDrawn]);
+  }, []);
 
   const toggleEditMode = () => {
     setIsEditMode(prev => {
@@ -595,14 +592,14 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const canRedo = historyIndex < history.length - 1;
 
   const { cropBox } = pageDimensions;
-  const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropBox.height : 1;
+  const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropHeight : 1;
   
   return (
         <div className="flex flex-col gap-2 items-center">
             <div 
                 ref={pdfContainerRef} 
-                className="w-full bg-muted/20 border rounded-lg overflow-auto flex items-start justify-center"
-                style={{ height: '40vh' }}
+                className="w-full bg-muted/20 border rounded-lg flex items-start justify-start"
+                style={{ height: '40vh', overflow: 'auto' }}
                 onMouseUp={handleMouseUp}
             >
               {pdfError ? (

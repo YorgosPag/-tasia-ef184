@@ -541,7 +541,7 @@ export default function FloorDetailsPage() {
          </div>
       </div>
       
-      <Card>
+      <Card className="p-0">
           <CardContent className="p-0">
               {floor.floorPlanUrl ? (
                   <FloorPlanViewer 
