@@ -50,7 +50,7 @@ interface FloorPlanViewerProps {
 const ALL_STATUSES: Unit['status'][] = ['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος'];
 const CLOSING_DISTANCE_THRESHOLD = 10; // Distance in SVG units to close the polygon
 
-const getStatusColor = (status: Unit['status']) => {
+const getStatusColor = (status?: Unit['status']) => {
     switch(status) {
         case 'Πωλημένο': return '#ef4444'; // red-500
         case 'Κρατημένο': return '#f59e0b'; // yellow-500
