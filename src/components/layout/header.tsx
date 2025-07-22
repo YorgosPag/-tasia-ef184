@@ -25,12 +25,11 @@ import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 export function AppHeader() {
   const isMobile = useIsMobile();
   const router = useRouter();
-  const pathname = usePathname();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
   const breadcrumbs = useBreadcrumbs();
-  const showBreadcrumbs = breadcrumbs.length > 1 && !pathname.endsWith('/edit');
+  const showBreadcrumbs = breadcrumbs.length > 1;
 
   useEffect(() => {
     // The useAuth hook doesn't provide a loading state,
