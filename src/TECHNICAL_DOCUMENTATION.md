@@ -88,6 +88,8 @@
 ### Collection: `buildings`
 - **address**: `string` - Διεύθυνση.
 - **type**: `string` - Τύπος κτιρίου.
+- **description**: `string` (optional) - Περιγραφή / Σημειώσεις.
+- **photoUrl**: `string` (optional) - URL φωτογραφίας.
 - **projectId**: `string` - Αναφορά στην `projects` collection.
 - **originalId**: `string` - Το ID του εγγράφου στη subcollection.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.

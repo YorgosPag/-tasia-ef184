@@ -42,6 +42,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -54,6 +55,8 @@ import { format } from 'date-fns';
 const buildingSchema = z.object({
   address: z.string().min(1, { message: 'Η διεύθυνση είναι υποχρεωτική.' }),
   type: z.string().min(1, { message: 'Ο τύπος είναι υποχρεωτικός.' }),
+  description: z.string().optional(),
+  photoUrl: z.string().url({ message: "Το URL της φωτογραφίας δεν είναι έγκυρο." }).or(z.literal('')),
 });
 
 type BuildingFormValues = z.infer<typeof buildingSchema>;
@@ -94,6 +97,8 @@ export default function ProjectDetailsPage() {
     defaultValues: {
       address: '',
       type: '',
+      description: '',
+      photoUrl: '',
     },
   });
 
@@ -160,6 +165,7 @@ export default function ProjectDetailsPage() {
       // Set the top-level building document
       await setDoc(topLevelBuildingRef, {
         ...data,
+        photoUrl: data.photoUrl?.trim() || '',
         projectId: projectId,
         originalId: subCollectionBuildingRef.id,
         createdAt: serverTimestamp(),
@@ -168,6 +174,7 @@ export default function ProjectDetailsPage() {
       // Set the sub-collection building document
       await setDoc(subCollectionBuildingRef, {
         ...data,
+        photoUrl: data.photoUrl?.trim() || '',
         topLevelId: topLevelBuildingRef.id, // Link to top-level doc
         createdAt: serverTimestamp(),
       });
@@ -274,6 +281,32 @@ export default function ProjectDetailsPage() {
                       <FormLabel>Τύπος Κτιρίου</FormLabel>
                       <FormControl>
                         <Input placeholder="π.χ. Πολυκατοικία" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="photoUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/photo.jpg" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Σημειώσεις για το κτίριο..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
