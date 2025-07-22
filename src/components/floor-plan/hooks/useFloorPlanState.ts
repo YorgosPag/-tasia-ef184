@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useLocalStorageState } from '../../use-local-storage-state';
+import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 import { usePolygonDraw } from './usePolygonDraw';
 import { useZoom } from './useZoom';
 import { usePrecisionZoom } from './usePrecisionZoom';
@@ -54,7 +54,7 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         completeAndResetDrawing
     } = usePolygonDraw({ isEditMode, onPolygonDrawn });
 
-    const zoom = useZoom({ pdfContainerRef, pageDimensions });
+    const zoom = useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming: false });
     
     const isPrecisionZooming = usePrecisionZoom({
         isEditMode,
