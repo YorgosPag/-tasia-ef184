@@ -12,6 +12,7 @@ export interface Company {
   id: string;
   name: string;
   logoUrl?: string;
+  website?: string;
   contactInfo: {
     email: string;
     phone: string;

@@ -28,6 +28,7 @@ export async function seedDatabase() {
       _id: 'dev-construct',
       name: 'DevConstruct Α.Ε.',
       logoUrl: 'https://placehold.co/40x40.png',
+      website: 'https://devconstruct.example.com',
       contactInfo: {
         email: 'info@devconstruct.gr',
         phone: '2101234567',
@@ -39,6 +40,7 @@ export async function seedDatabase() {
       _id: 'city-build',
       name: 'City Builders Ο.Ε.',
       logoUrl: 'https://placehold.co/40x40.png',
+      website: 'https://citybuilders.example.com',
       contactInfo: {
         email: 'contact@citybuilders.gr',
         phone: '2310987654',
