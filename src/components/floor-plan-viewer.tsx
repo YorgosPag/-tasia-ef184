@@ -1,11 +1,11 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, Undo2 } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, Undo2, Redo2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -88,6 +88,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
   const [finalizedPolygon, setFinalizedPolygon] = useState<{ x: number; y: number }[] | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const { toast } = useToast();
+  
+  // Undo/Redo state
+  const [history, setHistory] = useState<({ x: number; y: number }[])[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
 
   // Initialize state from localStorage or use defaults
@@ -125,24 +129,23 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
     resetDrawingState(); // Reset drawing on new PDF
   }, [pdfUrl]);
 
-  const toggleEditMode = () => {
-    setIsEditMode(prev => {
-        const newMode = !prev;
-        if (!newMode) {
-            // Exiting edit mode, so clear everything
-            resetDrawingState();
-        } else {
-             // Entering edit mode, clear previous drawings
-            resetDrawingState();
-        }
-        return newMode;
-    });
-  }
-  
-  const resetDrawingState = () => {
+  const resetDrawingState = useCallback(() => {
     setCurrentPolygonPoints([]);
     setMousePosition(null);
     setFinalizedPolygon(null);
+    setHistory([[]]); // Start with a single empty state
+    setHistoryIndex(0);
+  }, []);
+
+  const toggleEditMode = () => {
+    setIsEditMode(prev => {
+        const newMode = !prev;
+        if (newMode) {
+             // Entering edit mode, reset everything
+             resetDrawingState();
+        }
+        return newMode;
+    });
   }
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
@@ -181,6 +184,8 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
     
+    const newPoints = [...currentPolygonPoints, { x: svgPoint.x, y: svgPoint.y }];
+
     // Check if user is closing the polygon
     if (currentPolygonPoints.length > 1) {
         const firstPoint = currentPolygonPoints[0];
@@ -202,7 +207,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
         }
     }
     
-    setCurrentPolygonPoints(prev => [...prev, { x: svgPoint.x, y: svgPoint.y }]);
+    const newHistory = history.slice(0, historyIndex + 1);
+    setHistory([...newHistory, newPoints]);
+    setHistoryIndex(newHistory.length);
+    setCurrentPolygonPoints(newPoints);
   };
   
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -216,6 +224,39 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
   const handleMouseLeave = () => {
     setMousePosition(null);
   };
+
+  const handleUndo = useCallback(() => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setCurrentPolygonPoints(history[newIndex]);
+    }
+  }, [history, historyIndex]);
+
+  const handleRedo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setCurrentPolygonPoints(history[newIndex]);
+    }
+  }, [history, historyIndex]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (!isEditMode) return;
+        if (e.metaKey || e.ctrlKey) {
+            if (e.key === 'z') {
+                e.preventDefault();
+                handleUndo();
+            } else if (e.key === 'y') {
+                e.preventDefault();
+                handleRedo();
+            }
+        }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isEditMode, handleUndo, handleRedo]);
 
 
   const handleStatusVisibilityChange = (status: Unit['status'], checked: boolean) => {
@@ -235,6 +276,9 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
   if (mousePosition) {
     drawingPolylinePoints.push(mousePosition);
   }
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < history.length - 1;
 
   return (
         <div className="flex flex-col gap-4 items-center">
@@ -377,10 +421,15 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
             <Button variant="ghost" size="icon" onClick={toggleEditMode} disabled={!numPages}>
                 <Pencil className={cn(isEditMode && "text-primary")} />
             </Button>
-             {isEditMode && (
-                <Button variant="destructive" size="icon" onClick={resetDrawingState}>
-                    <Undo2 />
-                </Button>
+            {isEditMode && (
+                <>
+                    <Button variant="ghost" size="icon" onClick={handleUndo} disabled={!canUndo}>
+                        <Undo2 />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleRedo} disabled={!canRedo}>
+                        <Redo2 />
+                    </Button>
+                </>
             )}
         </div>
         
@@ -391,7 +440,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: 
                         Λειτουργία Επεξεργασίας: Κάντε κλικ στην κάτοψη για να προσθέσετε σημεία.
                     </p>
                     <p className="text-xs text-primary/80">
-                        Κάντε κλικ κοντά στο πρώτο σημείο (κόκκινο) για να κλείσετε το σχήμα.
+                        Κάντε κλικ κοντά στο πρώτο σημείο (κόκκινο) για να κλείσετε το σχήμα. (Ctrl+Z για αναίρεση)
                     </p>
                 </CardContent>
             </Card>
