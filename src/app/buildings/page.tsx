@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, writeBatch, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
@@ -118,11 +118,45 @@ export default function BuildingsPage() {
   const onSubmit = async (data: BuildingFormValues) => {
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'buildings'), {
-        ...data,
-        photoUrl: data.photoUrl?.trim() || '',
-        createdAt: serverTimestamp(),
-      });
+        const batch = writeBatch(db);
+        const topLevelBuildingRef = doc(collection(db, 'buildings'));
+
+        const buildingData = {
+            address: data.address,
+            type: data.type,
+            description: data.description || '',
+            photoUrl: data.photoUrl?.trim() || undefined,
+            projectId: data.projectId || undefined,
+            createdAt: serverTimestamp(),
+        };
+
+        if (data.projectId) {
+            const subCollectionBuildingRef = doc(collection(db, 'projects', data.projectId, 'buildings'));
+            
+            // Set in top-level collection with reference to subcollection
+            batch.set(topLevelBuildingRef, {
+                ...buildingData,
+                originalId: subCollectionBuildingRef.id,
+            });
+            // Set in subcollection with reference to top-level collection
+            batch.set(subCollectionBuildingRef, {
+                address: data.address,
+                type: data.type,
+                description: data.description,
+                photoUrl: data.photoUrl,
+                createdAt: serverTimestamp(),
+                topLevelId: topLevelBuildingRef.id,
+            });
+        } else {
+             // If no project is selected, just add to the top-level collection
+            batch.set(topLevelBuildingRef, {
+                ...buildingData,
+                originalId: topLevelBuildingRef.id, // Point to self if no parent
+            });
+        }
+
+        await batch.commit();
+
       toast({
         title: "Επιτυχία",
         description: "Το κτίριο προστέθηκε με επιτυχία.",
@@ -155,6 +189,11 @@ export default function BuildingsPage() {
 
   const handleRowClick = (buildingId: string) => {
     router.push(`/buildings/${buildingId}`);
+  };
+
+  const getProjectTitle = (projectId: string | undefined) => {
+    if (!projectId) return 'N/A';
+    return projects.find(p => p.id === projectId)?.title || projectId;
   };
 
 
@@ -295,7 +334,7 @@ export default function BuildingsPage() {
                 <TableRow>
                   <TableHead>Διεύθυνση</TableHead>
                   <TableHead>Τύπος</TableHead>
-                  <TableHead>Αναγνωριστικό Έργου</TableHead>
+                  <TableHead>Έργο</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
                 </TableRow>
               </TableHeader>
@@ -304,7 +343,7 @@ export default function BuildingsPage() {
                   <TableRow key={building.id} onClick={() => handleRowClick(building.id)} className="cursor-pointer">
                     <TableCell className="font-medium">{building.address}</TableCell>
                     <TableCell className="text-muted-foreground">{building.type}</TableCell>
-                    <TableCell className="text-muted-foreground">{building.projectId || 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{getProjectTitle(building.projectId)}</TableCell>
                     <TableCell className="text-muted-foreground">{formatDate(building.createdAt)}</TableCell>
                   </TableRow>
                 ))}
@@ -318,3 +357,5 @@ export default function BuildingsPage() {
     </div>
   );
 }
+
+    
