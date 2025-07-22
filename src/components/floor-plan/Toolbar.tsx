@@ -113,6 +113,7 @@ export function Toolbar({
         size="icon"
         onClick={toggleEditMode}
         disabled={!numPages || isLocked}
+        title="Λειτουργία Σχεδίασης"
       >
         <Pencil className={cn(isEditMode && 'text-primary')} />
       </Button>
@@ -123,6 +124,7 @@ export function Toolbar({
             size="icon"
             onClick={handleUndo}
             disabled={drawingPolygon.length === 0}
+            title="Αναίρεση"
           >
             <Undo2 />
           </Button>

@@ -155,7 +155,6 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         handleUndo,
         completeAndResetDrawing,
         isPrecisionZooming,
-        setIsPrecisionZooming,
         lastMouseEvent,
         zoom,
         pdfContainerRef,
