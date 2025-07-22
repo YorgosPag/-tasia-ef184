@@ -14,6 +14,8 @@ import {
   updateDoc,
   setDoc,
   getDocs,
+  query,
+  where,
 } from 'firebase/firestore';
 import { db, storage, auth } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -89,6 +91,7 @@ interface Unit extends Omit<UnitFormValues, 'polygonPoints'> {
   polygonPoints?: { x: number; y: number }[];
   status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
   originalId: string;
+  floorId: string;
 }
 
 export default function FloorDetailsPage() {
@@ -167,69 +170,35 @@ export default function FloorDetailsPage() {
     return () => unsubscribe();
   }, [floorId, router, toast]);
 
-  // Listen for units in the subcollection
+  // Listen for units in the top-level collection that belong to this floor
   useEffect(() => {
-    if (!floor || !floor.buildingId || !floor.originalId) return;
+    if (!floorId) return;
     
-    const findUnits = async () => {
-        try {
-            const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-            if (!buildingDoc.exists() || !buildingDoc.data()?.projectId || !buildingDoc.data()?.originalId) {
-                // If there's no project, it means it's a standalone building with no subcollections to listen to.
-                // We should still check for units in the top-level collection that might be parented to this floor.
-                console.log("Building is standalone, no subcollection listener needed for units.");
-                setIsLoadingUnits(false);
-                return () => {}; // Return an empty unsubscribe function
-            }
+    setIsLoadingUnits(true);
+    const q = query(collection(db, 'units'), where('floorId', '==', floorId));
 
-            const projectId = buildingDoc.data().projectId;
-            const originalBuildingId = buildingDoc.data().originalId;
-
-            const unitsColRef = collection(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId, 'units');
-            
-            const unsubscribe = onSnapshot(
-              unitsColRef,
-              (snapshot) => {
-                 const subCollectionUnits = snapshot.docs.map(doc => doc.id);
-                 // Now, fetch all top-level units for this floor to get the complete data
-                 const topLevelUnitsColRef = collection(db, 'units');
-                 getDocs(topLevelUnitsColRef).then(topLevelSnapshot => {
-                    const allUnitsForFloor = topLevelSnapshot.docs
-                        .map(doc => ({id: doc.id, ...doc.data()}) as Unit)
-                        .filter(u => u.floorId === floor.id);
-
-                    setUnits(allUnitsForFloor);
-                 });
-                 setIsLoadingUnits(false);
-              },
-              (error) => {
-                console.error('Error fetching units: ', error);
-                toast({
-                  variant: 'destructive',
-                  title: 'Σφάλμα',
-                  description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων.',
-                });
-                setIsLoadingUnits(false);
-              }
-            );
-            return unsubscribe;
-        } catch (error) {
-            console.error("Error setting up unit listener:", error);
-            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η παρακολούθηση των ακινήτων.' });
+    const unsubscribe = onSnapshot(q, 
+        (snapshot) => {
+            const unitsData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Unit));
+            setUnits(unitsData);
+            setIsLoadingUnits(false);
+        },
+        (error) => {
+            console.error('Error fetching units in real-time: ', error);
+            toast({
+                variant: 'destructive',
+                title: 'Σφάλμα',
+                description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων σε πραγματικό χρόνο.',
+            });
             setIsLoadingUnits(false);
         }
-    }
-    
-    let unsubscribePromise = findUnits();
+    );
 
-    return () => {
-        unsubscribePromise.then(unsubscribe => {
-            if (unsubscribe) {
-                unsubscribe();
-            }
-        });
-    };
-  }, [floor, toast]);
+    return () => unsubscribe();
+  }, [floorId, toast]);
   
   const getUnitDataForSave = (data: UnitFormValues) => {
     let parsedPolygonPoints: {x: number, y: number}[] | undefined;
