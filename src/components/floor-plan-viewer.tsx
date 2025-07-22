@@ -594,327 +594,315 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
 
   
   return (
-        <div className="flex flex-col gap-4 items-center">
-        <Card className="w-full">
-            <CardContent 
-                className="p-0 relative bg-muted/20 flex justify-center items-center" 
-                style={{ height: '70vh' }}
+        <div className="flex flex-col gap-2 items-center">
+            <div 
+                ref={pdfContainerRef} 
+                className="w-full bg-muted/20 border rounded-lg overflow-auto"
+                style={{ height: '80vh' }}
                 onMouseUp={handleMouseUp}
             >
-              <div 
-                ref={pdfContainerRef} 
-                className="w-full h-full overflow-auto"
-              >
-                  {pdfError ? (
-                      <div className="flex items-center justify-center h-full text-destructive text-center p-4">
-                      {pdfError}
-                      </div>
-                  ) : (
-                      <Document
-                      file={pdfUrl}
-                      onLoadSuccess={onDocumentLoadSuccess}
-                      onLoadError={onDocumentLoadError}
-                      loading={loadingElement}
-                      className="flex justify-center items-center" 
+              {pdfError ? (
+                  <div className="flex items-center justify-center h-full text-destructive text-center p-4">
+                  {pdfError}
+                  </div>
+              ) : (
+                  <Document
+                  file={pdfUrl}
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  onLoadError={onDocumentLoadError}
+                  loading={loadingElement}
+                  className="flex justify-center items-start" 
+                  >
+                  <div className="relative">
+                      <Page 
+                      pageNumber={pageNumber} 
+                      scale={scale} 
+                      rotate={rotation}
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                      onLoadSuccess={onPageLoadSuccess}
+                      customTextRenderer={() => false}
+                      />
+                      {pageDimensions.width > 0 && (
+                      <svg
+                          ref={svgRef}
+                          className="absolute top-0 left-0"
+                          width={pageDimensions.width * scale}
+                          height={pageDimensions.height * scale}
+                          viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
+                          style={{ pointerEvents: 'auto', cursor: isLocked ? 'not-allowed' : isEditMode ? 'crosshair' : 'default' }}
+                          onClick={handleSvgClick}
+                          onMouseMove={handleMouseMove}
+                          onMouseLeave={handleMouseLeave}
                       >
-                      <div className="relative">
-                          <Page 
-                          pageNumber={pageNumber} 
-                          scale={scale} 
-                          rotate={rotation}
-                          renderTextLayer={false}
-                          renderAnnotationLayer={false}
-                          onLoadSuccess={onPageLoadSuccess}
-                          customTextRenderer={() => false}
-                          />
-                          {pageDimensions.width > 0 && (
-                          <svg
-                              ref={svgRef}
-                              className="absolute top-0 left-0"
-                              width={pageDimensions.width * scale}
-                              height={pageDimensions.height * scale}
-                              viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
-                              style={{ pointerEvents: 'auto', cursor: isLocked ? 'not-allowed' : isEditMode ? 'crosshair' : 'default' }}
-                              onClick={handleSvgClick}
-                              onMouseMove={handleMouseMove}
-                              onMouseLeave={handleMouseLeave}
-                          >
-                               {/* Layer for crosshair guides */}
-                              {isEditMode && mousePosition && (
-                                  <g className="pointer-events-none">
-                                      <line 
-                                          x1={0} y1={mousePosition.y} 
-                                          x2={pageDimensions.width} y2={mousePosition.y} 
-                                          stroke="hsl(var(--destructive))" 
-                                          strokeWidth={0.8 / scale} 
-                                          strokeDasharray={`${4/scale} ${4/scale}`} 
-                                      />
-                                      <line 
-                                          x1={mousePosition.x} y1={0} 
-                                          x2={mousePosition.x} y2={pageDimensions.height} 
-                                          stroke="hsl(var(--destructive))" 
-                                          strokeWidth={0.8 / scale} 
-                                          strokeDasharray={`${4/scale} ${4/scale}`}
-                                      />
-                                  </g>
-                              )}
-                              {/* Layer for existing polygons */}
-                              <g>
-                                  {visibleUnits.map((unit) =>
-                                  unit.polygonPoints ? (
-                                      <Popover key={unit.id}>
-                                          <PopoverTrigger asChild>
-                                              <g 
-                                                  onClick={() => handleUnitClick(unit.id)} 
-                                                  className="group/polygon"
-                                                  style={{
-                                                      pointerEvents: isEditMode || isLocked ? 'none' : 'auto', 
-                                                      cursor: isLocked ? 'not-allowed' : 'pointer'
-                                                  }}
-                                              >
-                                                  <polygon
-                                                      points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
-                                                      className={cn(
-                                                          'stroke-2 transition-all',
-                                                          selectedUnitId === unit.id ? 'opacity-50' : 'opacity-40 group-hover/polygon:opacity-70'
-                                                      )}
-                                                      style={{
-                                                          fill: getStatusColor(unit.status),
-                                                          stroke: getStatusColor(unit.status),
-                                                          strokeWidth: 2 / scale,
-                                                      }}
-                                                  />
-                                              </g>
-                                          </PopoverTrigger>
-                                          <PopoverContent className="w-auto">
-                                          <div className="grid gap-4">
-                                                  <div className="space-y-2">
-                                                      <h4 className="font-medium leading-none">{unit.name} ({unit.identifier})</h4>
-                                                      <div className="flex items-center gap-2">
-                                                          <span className="text-sm font-medium">Κατάσταση:</span>
-                                                          <Badge variant="default" className={getStatusClass(unit.status)}>
-                                                              {unit.status}
-                                                          </Badge>
-                                                      </div>
-                                                  </div>
-                                                  <div className="flex gap-2">
-                                                      <Button size="sm" variant="outline" onClick={() => onUnitClick(unit.id)}>
-                                                          <Edit className="mr-2 h-4 w-4" />
-                                                          Επεξεργασία
-                                                      </Button>
-                                                      <AlertDialog>
-                                                          <AlertDialogTrigger asChild>
-                                                              <Button size="sm" variant="destructive_outline">
-                                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                                Διαγραφή
-                                                              </Button>
-                                                          </AlertDialogTrigger>
-                                                          <AlertDialogContent>
-                                                              <AlertDialogHeader>
-                                                              <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
-                                                              <AlertDialogDescription>
-                                                                  Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το ακίνητο
-                                                                  "{unit.name} ({unit.identifier})".
-                                                              </AlertDialogDescription>
-                                                              </AlertDialogHeader>
-                                                              <AlertDialogFooter>
-                                                              <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
-                                                              <AlertDialogAction onClick={() => onUnitDelete(unit.id)} className="bg-destructive hover:bg-destructive/90">
-                                                                  Διαγραφή
-                                                              </AlertDialogAction>
-                                                              </AlertDialogFooter>
-                                                          </AlertDialogContent>
-                                                      </AlertDialog>
-                                                  </div>
-                                          </div>
-                                          </PopoverContent>
-                                      </Popover>
-                                  ) : null
-                                  )}
+                           {/* Layer for crosshair guides */}
+                          {isEditMode && mousePosition && (
+                              <g className="pointer-events-none">
+                                  <line 
+                                      x1={0} y1={mousePosition.y} 
+                                      x2={pageDimensions.width} y2={mousePosition.y} 
+                                      stroke="hsl(var(--destructive))" 
+                                      strokeWidth={0.8 / scale} 
+                                      strokeDasharray={`${4/scale} ${4/scale}`} 
+                                  />
+                                  <line 
+                                      x1={mousePosition.x} y1={0} 
+                                      x2={mousePosition.x} y2={pageDimensions.height} 
+                                      stroke="hsl(var(--destructive))" 
+                                      strokeWidth={0.8 / scale} 
+                                      strokeDasharray={`${4/scale} ${4/scale}`}
+                                  />
                               </g>
-                              
-                              {/* Layer for draggable points on existing polygons */}
-                              <g>
-                                  {!isEditMode && !isLocked && visibleUnits.map(unit =>
-                                      unit.polygonPoints?.map((point, index) => (
-                                          <circle
-                                              key={`${unit.id}-point-${index}`}
-                                              cx={point.x}
-                                              cy={point.y}
-                                              r={5 / scale}
-                                              fill={getStatusColor(unit.status)}
-                                              stroke="#fff"
-                                              strokeWidth={1.5 / scale}
-                                              onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
-                                              className="cursor-move transition-all hover:r-7 hover:stroke-2"
-                                          />
-                                      ))
-                                  )}
-                              </g>
-
-                              {/* Layer for drawing in-progress polyline */}
-                              {isEditMode && currentPolygonPoints.length > 0 && (
-                                  <g className="pointer-events-none">
-                                      <polyline
-                                          points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
-                                          fill="none"
-                                          stroke="hsl(var(--destructive))"
-                                          strokeWidth={2.5 / scale}
-                                          strokeDasharray={`${6/scale} ${6/scale}`}
-                                      />
-                                      {currentPolygonPoints.map((point, index) => (
-                                          <circle
-                                              key={index}
-                                              cx={point.x}
-                                              cy={point.y}
-                                              r={4 / scale}
-                                              fill={index === 0 ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
-                                              stroke="#fff"
-                                              strokeWidth={1.5 / scale}
-                                          />
-                                      ))}
-                                  </g>
-                              )}
-                              
-                              {/* Layer for a finalized but unsaved polygon */}
-                              {drawingPolygon && drawingPolygon.length > 0 && (
-                                   <g className="pointer-events-none">
-                                      <polygon
-                                          points={drawingPolygon.map(p => `${p.x},${p.y}`).join(' ')}
-                                          fill="hsla(var(--primary), 0.3)"
-                                          stroke="hsl(var(--primary))"
-                                          strokeWidth={2 / scale}
-                                      />
-                                   </g>
-                              )}
-
-                              {/* Snap point indicator */}
-                              {snapPoint && isEditMode && (
-                                  <g className="pointer-events-none">
-                                      <circle cx={snapPoint.x} cy={snapPoint.y} r={SNAPPING_DISTANCE_THRESHOLD / scale} fill="none" stroke="hsl(var(--destructive))" strokeWidth={1/scale} strokeDasharray={`${2/scale} ${2/scale}`} />
-                                      <circle cx={snapPoint.x} cy={snapPoint.y} r={3/scale} fill="hsl(var(--destructive))" />
-                                  </g>
-                              )}
-                          </svg>
                           )}
-                      </div>
-                      </Document>
-                  )}
-              </div>
-            </CardContent>
-        </Card>
-        <div className="flex flex-wrap items-center justify-center gap-2 p-2 rounded-md bg-muted">
-            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.1, s - 0.1))} disabled={!numPages || isLocked}>
-                <Minus />
-            </Button>
-            <Input
-                value={zoomInput}
-                onChange={handleZoomInputChange}
-                onBlur={handleZoomInputBlur}
-                onKeyDown={handleZoomInputKeyDown}
-                className="w-20 text-center h-8"
-                disabled={!numPages || isLocked}
-            />
-            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(10, s + 0.1))} disabled={!numPages || isLocked}>
-                <Plus />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={handleFitToView} disabled={!numPages || isLocked} title="Προσαρμογή στην οθόνη">
-                <Frame />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages || isLocked}>
-                <RefreshCw />
-            </Button>
-             <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
-                {isLocked ? <Lock className="text-primary" /> : <Unlock />}
-            </Button>
-            <Button variant="ghost" size="icon" onClick={toggleEditMode} disabled={!numPages || isLocked}>
-                <Pencil className={cn(isEditMode && "text-primary")} />
-            </Button>
-            {isEditMode && (
-                <>
-                    <Button variant="ghost" size="icon" onClick={handleUndo} disabled={!canUndo}>
-                        <Undo2 />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={handleRedo} disabled={!canRedo}>
-                        <Redo2 />
-                    </Button>
-                </>
+                          {/* Layer for existing polygons */}
+                          <g>
+                              {visibleUnits.map((unit) =>
+                              unit.polygonPoints ? (
+                                  <Popover key={unit.id}>
+                                      <PopoverTrigger asChild>
+                                          <g 
+                                              onClick={() => handleUnitClick(unit.id)} 
+                                              className="group/polygon"
+                                              style={{
+                                                  pointerEvents: isEditMode || isLocked ? 'none' : 'auto', 
+                                                  cursor: isLocked ? 'not-allowed' : 'pointer'
+                                              }}
+                                          >
+                                              <polygon
+                                                  points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
+                                                  className={cn(
+                                                      'stroke-2 transition-all',
+                                                      selectedUnitId === unit.id ? 'opacity-50' : 'opacity-40 group-hover/polygon:opacity-70'
+                                                  )}
+                                                  style={{
+                                                      fill: getStatusColor(unit.status),
+                                                      stroke: getStatusColor(unit.status),
+                                                      strokeWidth: 2 / scale,
+                                                  }}
+                                              />
+                                          </g>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto">
+                                      <div className="grid gap-4">
+                                              <div className="space-y-2">
+                                                  <h4 className="font-medium leading-none">{unit.name} ({unit.identifier})</h4>
+                                                  <div className="flex items-center gap-2">
+                                                      <span className="text-sm font-medium">Κατάσταση:</span>
+                                                      <Badge variant="default" className={getStatusClass(unit.status)}>
+                                                          {unit.status}
+                                                      </Badge>
+                                                  </div>
+                                              </div>
+                                              <div className="flex gap-2">
+                                                  <Button size="sm" variant="outline" onClick={() => onUnitClick(unit.id)}>
+                                                      <Edit className="mr-2 h-4 w-4" />
+                                                      Επεξεργασία
+                                                  </Button>
+                                                  <AlertDialog>
+                                                      <AlertDialogTrigger asChild>
+                                                          <Button size="sm" variant="destructive_outline">
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Διαγραφή
+                                                          </Button>
+                                                      </AlertDialogTrigger>
+                                                      <AlertDialogContent>
+                                                          <AlertDialogHeader>
+                                                          <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                                                          <AlertDialogDescription>
+                                                              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το ακίνητο
+                                                              "{unit.name} ({unit.identifier})".
+                                                          </AlertDialogDescription>
+                                                          </AlertDialogHeader>
+                                                          <AlertDialogFooter>
+                                                          <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                                                          <AlertDialogAction onClick={() => onUnitDelete(unit.id)} className="bg-destructive hover:bg-destructive/90">
+                                                              Διαγραφή
+                                                          </AlertDialogAction>
+                                                          </AlertDialogFooter>
+                                                      </AlertDialogContent>
+                                                  </AlertDialog>
+                                              </div>
+                                      </div>
+                                      </PopoverContent>
+                                  </Popover>
+                              ) : null
+                              )}
+                          </g>
+                          
+                          {/* Layer for draggable points on existing polygons */}
+                          <g>
+                              {!isEditMode && !isLocked && visibleUnits.map(unit =>
+                                  unit.polygonPoints?.map((point, index) => (
+                                      <circle
+                                          key={`${unit.id}-point-${index}`}
+                                          cx={point.x}
+                                          cy={point.y}
+                                          r={5 / scale}
+                                          fill={getStatusColor(unit.status)}
+                                          stroke="#fff"
+                                          strokeWidth={1.5 / scale}
+                                          onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
+                                          className="cursor-move transition-all hover:r-7 hover:stroke-2"
+                                      />
+                                  ))
+                              )}
+                          </g>
+
+                          {/* Layer for drawing in-progress polyline */}
+                          {isEditMode && currentPolygonPoints.length > 0 && (
+                              <g className="pointer-events-none">
+                                  <polyline
+                                      points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
+                                      fill="none"
+                                      stroke="hsl(var(--destructive))"
+                                      strokeWidth={2.5 / scale}
+                                      strokeDasharray={`${6/scale} ${6/scale}`}
+                                  />
+                                  {currentPolygonPoints.map((point, index) => (
+                                      <circle
+                                          key={index}
+                                          cx={point.x}
+                                          cy={point.y}
+                                          r={4 / scale}
+                                          fill={index === 0 ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
+                                          stroke="#fff"
+                                          strokeWidth={1.5 / scale}
+                                      />
+                                  ))}
+                              </g>
+                          )}
+                          
+                          {/* Layer for a finalized but unsaved polygon */}
+                          {drawingPolygon && drawingPolygon.length > 0 && (
+                               <g className="pointer-events-none">
+                                  <polygon
+                                      points={drawingPolygon.map(p => `${p.x},${p.y}`).join(' ')}
+                                      fill="hsla(var(--primary), 0.3)"
+                                      stroke="hsl(var(--primary))"
+                                      strokeWidth={2 / scale}
+                                  />
+                               </g>
+                          )}
+
+                          {/* Snap point indicator */}
+                          {snapPoint && isEditMode && (
+                              <g className="pointer-events-none">
+                                  <circle cx={snapPoint.x} cy={snapPoint.y} r={SNAPPING_DISTANCE_THRESHOLD / scale} fill="none" stroke="hsl(var(--destructive))" strokeWidth={1/scale} strokeDasharray={`${2/scale} ${2/scale}`} />
+                                  <circle cx={snapPoint.x} cy={snapPoint.y} r={3/scale} fill="hsl(var(--destructive))" />
+                              </g>
+                          )}
+                      </svg>
+                      )}
+                  </div>
+                  </Document>
+              )}
+          </div>
+        <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 p-2 rounded-md bg-muted">
+                <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.1, s - 0.1))} disabled={!numPages || isLocked}>
+                    <Minus />
+                </Button>
+                <Input
+                    value={zoomInput}
+                    onChange={handleZoomInputChange}
+                    onBlur={handleZoomInputBlur}
+                    onKeyDown={handleZoomInputKeyDown}
+                    className="w-20 text-center h-8"
+                    disabled={!numPages || isLocked}
+                />
+                <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(10, s + 0.1))} disabled={!numPages || isLocked}>
+                    <Plus />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={handleFitToView} disabled={!numPages || isLocked} title="Προσαρμογή στην οθόνη">
+                    <Frame />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages || isLocked}>
+                    <RefreshCw />
+                </Button>
+                 <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
+                    {isLocked ? <Lock className="text-primary" /> : <Unlock />}
+                </Button>
+                <Button variant="ghost" size="icon" onClick={toggleEditMode} disabled={!numPages || isLocked}>
+                    <Pencil className={cn(isEditMode && "text-primary")} />
+                </Button>
+                {isEditMode && (
+                    <>
+                        <Button variant="ghost" size="icon" onClick={handleUndo} disabled={!canUndo}>
+                            <Undo2 />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={handleRedo} disabled={!canRedo}>
+                            <Redo2 />
+                        </Button>
+                    </>
+                )}
+            </div>
+
+            {isPrecisionZooming ? (
+                 <Card className="w-full max-w-md bg-blue-500/10 border-blue-500/40">
+                    <CardContent className="p-3 text-center">
+                        <p className="text-sm text-blue-700 font-medium flex items-center justify-center gap-2">
+                            <ZoomIn size={16} />
+                            Λειτουργία Ακρίβειας
+                        </p>
+                        <p className="text-xs text-blue-700/80">
+                            Αφήστε το πλήκτρο Shift για επαναφορά.
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : isLocked ? (
+                 <Card className="w-full max-w-md bg-yellow-500/10 border-yellow-500/40">
+                    <CardContent className="p-3 text-center">
+                        <p className="text-sm text-yellow-700 font-medium">
+                            Η επεξεργασία είναι κλειδωμένη.
+                        </p>
+                        <p className="text-xs text-yellow-700/80">
+                            Πατήστε το εικονίδιο <Unlock size={12} className="inline-block -mt-px" /> για να την ενεργοποιήσετε.
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : isEditMode ? (
+                <Card className="w-full max-w-md bg-primary/10 border-primary/40">
+                    <CardContent className="p-3 text-center">
+                        <p className="text-sm text-primary font-medium">
+                            Λειτουργία Σχεδίασης: Κάντε κλικ στην κάτοψη για να προσθέσετε σημεία.
+                        </p>
+                        <p className="text-xs text-primary/80">
+                            Κρατήστε πατημένο το Shift για zoom. (Ctrl+Z για αναίρεση, Esc για ακύρωση)
+                        </p>
+                    </CardContent>
+                </Card>
+            ) : (
+                <Card className="w-full max-w-md bg-secondary/60 border-secondary/40">
+                    <CardContent className="p-3 text-center">
+                        <p className="text-sm text-secondary-foreground font-medium">
+                            Λειτουργία Επεξεργασίας: Σύρετε τα σημεία για να αλλάξετε το σχήμα.
+                        </p>
+                    </CardContent>
+                </Card>
             )}
+
+            <Card className="w-full max-w-md">
+                <CardContent className="p-4">
+                    <h4 className="mb-4 text-sm font-medium leading-none">Εμφάνιση Layers</h4>
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                        {ALL_STATUSES.map(status => (
+                            <div key={status} className="flex items-center space-x-2">
+                                <Checkbox
+                                    id={`status-${status}`}
+                                    checked={statusVisibility[status]}
+                                    onCheckedChange={(checked) => handleStatusVisibilityChange(status, checked as boolean)}
+                                    className="data-[state=checked]:bg-transparent"
+                                    style={{ borderColor: getStatusColor(status), color: getStatusColor(status) }}
+                                />
+                                <Label htmlFor={`status-${status}`} className="text-sm font-medium">
+                                    {status}
+                                </Label>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
         </div>
-        
-        {isPrecisionZooming && (
-             <Card className="w-full max-w-md bg-blue-500/10 border-blue-500/40">
-                <CardContent className="p-3 text-center">
-                    <p className="text-sm text-blue-700 font-medium flex items-center justify-center gap-2">
-                        <ZoomIn size={16} />
-                        Λειτουργία Ακρίβειας
-                    </p>
-                    <p className="text-xs text-blue-700/80">
-                        Αφήστε το πλήκτρο Shift για επαναφορά.
-                    </p>
-                </CardContent>
-            </Card>
-        )}
-        
-        {isLocked && !isPrecisionZooming && (
-             <Card className="w-full max-w-md bg-yellow-500/10 border-yellow-500/40">
-                <CardContent className="p-3 text-center">
-                    <p className="text-sm text-yellow-700 font-medium">
-                        Η επεξεργασία είναι κλειδωμένη.
-                    </p>
-                    <p className="text-xs text-yellow-700/80">
-                        Πατήστε το εικονίδιο <Unlock size={12} className="inline-block -mt-px" /> για να την ενεργοποιήσετε.
-                    </p>
-                </CardContent>
-            </Card>
-        )}
-        
-        {isEditMode && !isPrecisionZooming && (
-            <Card className="w-full max-w-md bg-primary/10 border-primary/40">
-                <CardContent className="p-3 text-center">
-                    <p className="text-sm text-primary font-medium">
-                        Λειτουργία Σχεδίασης: Κάντε κλικ στην κάτοψη για να προσθέσετε σημεία.
-                    </p>
-                    <p className="text-xs text-primary/80">
-                        Κρατήστε πατημένο το Shift για zoom. (Ctrl+Z για αναίρεση, Esc για ακύρωση)
-                    </p>
-                </CardContent>
-            </Card>
-        )}
-        
-        {!isEditMode && !isLocked && !isPrecisionZooming && (
-            <Card className="w-full max-w-md bg-secondary/60 border-secondary/40">
-                <CardContent className="p-3 text-center">
-                    <p className="text-sm text-secondary-foreground font-medium">
-                        Λειτουργία Επεξεργασίας: Σύρετε τα σημεία για να αλλάξετε το σχήμα.
-                    </p>
-                </CardContent>
-            </Card>
-        )}
-
-
-        <Card className="w-full max-w-md">
-            <CardContent className="p-4">
-                <h4 className="mb-4 text-sm font-medium leading-none">Εμφάνιση Layers</h4>
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                    {ALL_STATUSES.map(status => (
-                        <div key={status} className="flex items-center space-x-2">
-                            <Checkbox
-                                id={`status-${status}`}
-                                checked={statusVisibility[status]}
-                                onCheckedChange={(checked) => handleStatusVisibilityChange(status, checked as boolean)}
-                                className="data-[state=checked]:bg-transparent"
-                                style={{ borderColor: getStatusColor(status), color: getStatusColor(status) }}
-                            />
-                            <Label htmlFor={`status-${status}`} className="text-sm font-medium">
-                                {status}
-                            </Label>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-
         </div>
   );
 
