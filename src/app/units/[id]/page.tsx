@@ -52,12 +52,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
 
 const attachmentSchema = z.object({
   type: z.enum(['parking', 'storage'], {
     required_error: 'Ο τύπος είναι υποχρεωτικός.'
   }),
   details: z.string().optional(),
+  area: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Το εμβαδόν πρέπει να είναι αριθμός." }).optional(),
+  price: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Η τιμή πρέπει να είναι αριθμός." }).optional(),
+  photoUrl: z.string().url({ message: "Το URL της φωτογραφίας δεν είναι έγκυρο." }).or(z.literal('')).optional(),
 });
 
 type AttachmentFormValues = z.infer<typeof attachmentSchema>;
@@ -84,6 +88,9 @@ interface Attachment extends AttachmentFormValues {
   id: string;
   unitId: string;
   createdAt: any;
+  area?: number;
+  price?: number;
+  photoUrl?: string;
 }
 
 export default function UnitDetailsPage() {
@@ -104,6 +111,9 @@ export default function UnitDetailsPage() {
     defaultValues: {
       type: 'parking',
       details: '',
+      area: '',
+      price: '',
+      photoUrl: '',
     },
   });
 
@@ -152,6 +162,9 @@ export default function UnitDetailsPage() {
      try {
        await addDoc(collection(db, 'attachments'), {
          ...data,
+         area: data.area ? parseFloat(data.area) : undefined,
+         price: data.price ? parseFloat(data.price) : undefined,
+         photoUrl: data.photoUrl?.trim() || '',
          unitId: unitId,
          createdAt: serverTimestamp(),
        });
@@ -292,6 +305,41 @@ export default function UnitDetailsPage() {
                     </FormItem>
                   )}
                 />
+                <FormField
+                    control={form.control}
+                    name="area"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Εμβαδόν (τ.μ.)</FormLabel>
+                        <FormControl><Input type="number" placeholder="π.χ. 12.5" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Τιμή (€)</FormLabel>
+                        <FormControl><Input type="number" placeholder="π.χ. 15000" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                  control={form.control}
+                  name="photoUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL Φωτογραφίας</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/storage.jpg" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <DialogFooter>
                    <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
                    <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Προσθήκη</Button>
@@ -311,16 +359,34 @@ export default function UnitDetailsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Φωτογραφία</TableHead>
                   <TableHead>Τύπος</TableHead>
                   <TableHead>Λεπτομέρειες</TableHead>
+                  <TableHead>Εμβαδόν</TableHead>
+                  <TableHead>Τιμή</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {attachments.map((att) => (
                   <TableRow key={att.id}>
+                     <TableCell>
+                      {att.photoUrl ? (
+                        <Image
+                          src={att.photoUrl}
+                          alt={att.details || 'Attachment'}
+                          width={40}
+                          height={40}
+                          className="rounded-md object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>
+                      )}
+                    </TableCell>
                     <TableCell className="font-medium">{getAttachmentTypeLabel(att.type)}</TableCell>
                     <TableCell className="text-muted-foreground">{att.details || 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{att.area ? `${att.area} τ.μ.` : 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatPrice(att.price)}</TableCell>
                     <TableCell>{formatDate(att.createdAt)}</TableCell>
                   </TableRow>
                 ))}
@@ -334,3 +400,5 @@ export default function UnitDetailsPage() {
     </div>
   );
 }
+
+    
