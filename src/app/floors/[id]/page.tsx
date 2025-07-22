@@ -298,8 +298,6 @@ export default function FloorDetailsPage() {
   };
 
   const handleFileUpload = async () => {
-    if (!selectedFile || !floor) return;
-
     if (!auth.currentUser) {
         toast({
             variant: 'destructive',
@@ -308,6 +306,8 @@ export default function FloorDetailsPage() {
         });
         return;
     }
+    
+    if (!selectedFile || !floor) return;
 
     setIsUploading(true);
     const filePath = `floor-plans/${floor.id}/${selectedFile.name}`;
@@ -638,5 +638,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
