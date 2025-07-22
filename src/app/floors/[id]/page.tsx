@@ -271,8 +271,38 @@ export default function FloorDetailsPage() {
      }
   }
 
+  const updateUnitInFirestore = async (unitId: string, unitOriginalId: string, dataToUpdate: any) => {
+     if (!floor) return;
+
+     try {
+        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+        if (!buildingDoc.exists()) {
+            throw new Error("Parent building not found for unit update");
+        }
+        const buildingData = buildingDoc.data();
+        
+        // Update top-level document first
+        const unitTopRef = doc(db, 'units', unitId);
+        await updateDoc(unitTopRef, dataToUpdate);
+        
+        // Update sub-collection document only if it exists (part of a project)
+        if (buildingData.projectId && buildingData.originalId && unitOriginalId) {
+            const unitSubRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', unitOriginalId);
+            const subDocSnap = await getDoc(unitSubRef);
+            if(subDocSnap.exists()) {
+                await updateDoc(unitSubRef, dataToUpdate);
+            }
+        }
+        return true;
+     } catch(error) {
+        console.error('Error updating unit: ', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα Ενημέρωσης', description: 'Δεν ήταν δυνατή η ενημέρωση του ακινήτου στη βάση δεδομένων.' });
+        return false;
+     }
+  }
+
   const handleUpdateUnit = async (data: UnitFormValues) => {
-    if (!editingUnit || !floor) {
+    if (!editingUnit) {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν υπάρχει επιλεγμένο ακίνητο για επεξεργασία.' });
         return;
     }
@@ -282,33 +312,28 @@ export default function FloorDetailsPage() {
        setIsSubmitting(false);
        return;
     }
-
-    try {
-        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-        if (!buildingDoc.exists()) {
-            throw new Error("Parent building not found for unit update");
-        }
-        const buildingData = buildingDoc.data();
-        
-        // Update top-level document first
-        const unitTopRef = doc(db, 'units', editingUnit.id);
-        await updateDoc(unitTopRef, unitDataToSave);
-        
-        // Update sub-collection document only if it exists (part of a project)
-        if (buildingData.projectId && buildingData.originalId && editingUnit.originalId) {
-            const unitSubRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', editingUnit.originalId);
-            const subDocSnap = await getDoc(unitSubRef);
-            if(subDocSnap.exists()) {
-                await updateDoc(unitSubRef, unitDataToSave);
-            }
-        }
-
+    
+    const success = await updateUnitInFirestore(editingUnit.id, editingUnit.originalId, unitDataToSave);
+    if (success) {
         toast({ title: 'Επιτυχία', description: 'Το ακίνητο ενημερώθηκε.' });
-    } catch(error) {
-        console.error('Error updating unit: ', error);
-        toast({ variant: 'destructive', title: 'Σφάλμα Ενημέρωσης', description: 'Δεν ήταν δυνατή η ενημέρωση του ακινήτου στη βάση δεδομένων.' });
     }
   }
+
+  const handleUnitPointsUpdate = async (unitId: string, newPoints: {x: number, y: number}[]) => {
+      const unitToUpdate = units.find(u => u.id === unitId);
+      if (!unitToUpdate) return;
+      
+      const dataToUpdate = { polygonPoints: newPoints };
+      const success = await updateUnitInFirestore(unitToUpdate.id, unitToUpdate.originalId, dataToUpdate);
+
+      if (success) {
+          toast({
+              title: "Το σχήμα ενημερώθηκε",
+              description: "Οι νέες συντεταγμένες αποθηκεύτηκαν.",
+          });
+      }
+  }
+
 
   const onSubmitUnit = async (data: UnitFormValues) => {
      setIsSubmitting(true);
@@ -350,7 +375,7 @@ export default function FloorDetailsPage() {
       await updateDoc(floorDocRef, { floorPlanUrl: downloadURL });
 
       // Also update the subcollection document if it exists
-      if(floor.originalId && floor.buildingId) {
+      if(floor?.originalId && floor.buildingId) {
           const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
           const buildingData = buildingDoc.data();
           if (buildingData?.projectId && buildingData?.originalId) {
@@ -449,6 +474,7 @@ export default function FloorDetailsPage() {
                     units={units} 
                     onUnitClick={handleUnitSelectForEdit}
                     onPolygonDrawn={handlePolygonDrawn}
+                    onUnitPointsUpdate={handleUnitPointsUpdate}
                   />
               ) : (
                   <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
@@ -607,5 +633,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
