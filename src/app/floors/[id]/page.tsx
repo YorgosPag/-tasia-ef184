@@ -310,7 +310,6 @@ export default function FloorDetailsPage() {
       };
       await uploadBytes(fileRef, selectedFile, metadata);
       const url = await getDownloadURL(fileRef);
-
       console.log('File available at', url);
 
       const floorDocRef = doc(db, 'floors', floor.id);
@@ -630,7 +629,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
-
-    
