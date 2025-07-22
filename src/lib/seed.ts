@@ -11,10 +11,9 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 
-// A simple map to hold the generated document references for use within the seeding script.
+// Simple maps to hold the generated document references for use within the seeding script.
 const refs: { [key: string]: DocumentReference } = {};
-const buildingOriginalIds: { [key: string]: string } = {};
-
+const originalIds: { [key: string]: { building: string, floor?: string } } = {};
 
 type UnitStatus = 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
 
@@ -86,10 +85,8 @@ export async function seedDatabase() {
       console.warn(`[SEED] Company with _id "${project.companyId}" not found for project "${project.title}". Skipping.`);
       return;
     }
-
     const docRef = doc(collection(db, 'projects'));
     refs[project._id] = docRef;
-    
     batch.set(docRef, {
         title: project.title,
         companyId: parentCompanyRef.id,
@@ -102,7 +99,6 @@ export async function seedDatabase() {
   });
   console.log('Projects queued for creation.');
 
-
   // --- Buildings (Dual Write) ---
   const buildingsData = [
     { _id: 'bld-alpha', address: 'Πατησίων 100', type: 'Πολυκατοικία', projectId: 'proj-athens-revival' },
@@ -111,15 +107,13 @@ export async function seedDatabase() {
 
   for(const building of buildingsData) {
       const parentProjectRef = refs[building.projectId];
-      if (!parentProjectRef) {
-          console.warn(`[SEED] Project with _id "${building.projectId}" not found for building "${building.address}". Skipping.`);
-          continue;
-      }
+      if (!parentProjectRef) continue;
 
       const subCollectionBuildingRef = doc(collection(parentProjectRef, 'buildings'));
       const topLevelBuildingRef = doc(collection(db, 'buildings'));
+      
       refs[building._id] = topLevelBuildingRef; 
-      buildingOriginalIds[building._id] = subCollectionBuildingRef.id;
+      originalIds[building._id] = { building: subCollectionBuildingRef.id };
 
       batch.set(subCollectionBuildingRef, {
         address: building.address,
@@ -127,7 +121,6 @@ export async function seedDatabase() {
         topLevelId: topLevelBuildingRef.id, 
         createdAt: serverTimestamp(),
       });
-      
       batch.set(topLevelBuildingRef, {
           address: building.address,
           type: building.type,
@@ -138,7 +131,6 @@ export async function seedDatabase() {
   }
   console.log('Buildings queued for creation.');
 
-
   // --- Floors (Dual Write) ---
   const floorsData = [
     { _id: 'flr-alpha-1', level: '1', description: 'Πρώτος όροφος', buildingId: 'bld-alpha' },
@@ -148,24 +140,20 @@ export async function seedDatabase() {
 
   for (const floor of floorsData) {
       const parentBuildingTopLevelRef = refs[floor.buildingId];
-      if (!parentBuildingTopLevelRef) {
-          console.warn(`[SEED] Building with _id "${floor.buildingId}" not found for floor "${floor.level}". Skipping.`);
-          continue;
-      }
+      if (!parentBuildingTopLevelRef) continue;
       
       const originalBuildingData = buildingsData.find(b => b._id === floor.buildingId);
       if (!originalBuildingData) continue;
       
       const parentProjectRef = refs[originalBuildingData.projectId];
-      if (!parentProjectRef) continue;
-      
-      const buildingOriginalId = buildingOriginalIds[floor.buildingId];
-      if (!buildingOriginalId) continue;
+      const buildingOriginalId = originalIds[floor.buildingId]?.building;
+      if (!parentProjectRef || !buildingOriginalId) continue;
 
       const topLevelFloorRef = doc(collection(db, 'floors'));
       refs[floor._id] = topLevelFloorRef;
       
       const subCollectionFloorRef = doc(collection(db, 'projects', parentProjectRef.id, 'buildings', buildingOriginalId, 'floors'));
+      originalIds[floor._id] = { ...originalIds[floor._id], floor: subCollectionFloorRef.id };
 
       batch.set(subCollectionFloorRef, {
           level: floor.level,
@@ -173,7 +161,6 @@ export async function seedDatabase() {
           topLevelId: topLevelFloorRef.id,
           createdAt: serverTimestamp(),
       });
-      
       batch.set(topLevelFloorRef, {
           level: floor.level,
           description: floor.description,
@@ -183,7 +170,6 @@ export async function seedDatabase() {
       });
   }
    console.log('Floors queued for creation.');
-
 
   // --- Units and Attachments ---
   const unitsData: {
@@ -198,44 +184,49 @@ export async function seedDatabase() {
     { _id: 'unit-c1', floorId: 'flr-beta-1', identifier: 'C1', name: 'Γραφείο Open-Space', type: 'Γραφείο', status: 'Διαθέσιμο', polygonPoints: [{x:100,y:100}, {x:400,y:100}, {x:400,y:400}, {x:100,y:400}], attachments: [] },
   ];
 
-  for (const u of unitsData) {
-      const parentFloorRef = refs[u.floorId];
-      if (!parentFloorRef) {
-        console.warn(`[SEED] Floor with _id "${u.floorId}" not found for unit "${u.name}". Skipping.`);
-        continue;
-      }
-      
-      const parentFloorData = floorsData.find(f => f._id === u.floorId);
+  for (const unit of unitsData) {
+      const parentFloorTopLevelRef = refs[unit.floorId];
+      if (!parentFloorTopLevelRef) continue;
+
+      const parentFloorData = floorsData.find(f => f._id === unit.floorId);
       if (!parentFloorData) continue;
       
-      const parentBuildingRef = refs[parentFloorData.buildingId];
-      if (!parentBuildingRef) continue;
+      const parentBuildingData = buildingsData.find(b => b._id === parentFloorData.buildingId);
+      if (!parentBuildingData) continue;
 
-      const unitDocRef = doc(collection(db, 'units'));
-      refs[u._id] = unitDocRef;
+      const parentProjectRef = refs[parentBuildingData.projectId];
+      const parentBuildingTopLevelRef = refs[parentFloorData.buildingId];
+      const buildingOriginalId = originalIds[parentFloorData.buildingId]?.building;
+      const floorOriginalId = originalIds[unit.floorId]?.floor;
 
-      // This is a placeholder since we can't know the sub-collection doc id beforehand.
-      // In a real app, this linkage would happen differently, but for seeding it's okay.
-      const subCollectionUnitId = doc(collection(db, 'dummy')).id;
-
-      batch.set(unitDocRef, {
-        identifier: u.identifier,
-        name: u.name,
-        type: u.type,
-        status: u.status,
-        polygonPoints: u.polygonPoints || [],
-        floorId: parentFloorRef.id,
-        buildingId: parentBuildingRef.id,
-        originalId: subCollectionUnitId, // Placeholder
+      if (!parentProjectRef || !parentBuildingTopLevelRef || !buildingOriginalId || !floorOriginalId) continue;
+      
+      const unitData = {
+        identifier: unit.identifier,
+        name: unit.name,
+        type: unit.type,
+        status: unit.status,
+        polygonPoints: unit.polygonPoints || [],
+        floorId: parentFloorTopLevelRef.id,
+        buildingId: parentBuildingTopLevelRef.id,
         createdAt: serverTimestamp(),
-      });
+      };
+      
+      // Correct Dual-Write for Units
+      const subCollectionUnitRef = doc(collection(db, 'projects', parentProjectRef.id, 'buildings', buildingOriginalId, 'floors', floorOriginalId, 'units'));
+      const topLevelUnitRef = doc(collection(db, 'units'));
+      
+      batch.set(subCollectionUnitRef, { ...unitData, topLevelId: topLevelUnitRef.id });
+      batch.set(topLevelUnitRef, { ...unitData, originalId: subCollectionUnitRef.id });
+      
+      refs[unit._id] = topLevelUnitRef; // Store top-level ref for attachments
       
       // Seed attachments into the top-level 'attachments' collection
-      for (const att of u.attachments) {
+      for (const att of unit.attachments) {
           const attachmentRef = doc(collection(db, 'attachments'));
           batch.set(attachmentRef, {
               ...att,
-              unitId: unitDocRef.id, // Link to the top-level unit
+              unitId: topLevelUnitRef.id, // Link to the top-level unit
               createdAt: serverTimestamp(),
           });
       }
@@ -245,5 +236,3 @@ export async function seedDatabase() {
   await batch.commit();
   console.log('Database has been successfully seeded!');
 }
-
-    
