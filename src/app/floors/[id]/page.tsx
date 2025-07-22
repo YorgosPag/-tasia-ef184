@@ -468,10 +468,10 @@ export default function FloorDetailsPage() {
   };
   
   const handlePolygonDrawn = (points: {x: number, y: number}[]) => {
+      setDrawingPolygon(points);
       const pointsJson = JSON.stringify(points, null, 2);
       form.setValue('polygonPoints', pointsJson);
       setEditingUnit(null); // Ensure we are in "create" mode
-      setDrawingPolygon(points);
       setIsDialogOpen(true);
   }
 
@@ -483,7 +483,7 @@ export default function FloorDetailsPage() {
   const getStatusClass = (status: Unit['status'] | undefined) => {
       switch(status) {
           case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600 text-white';
-          case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600 text-white';
+          case 'Κρατημένο': return 'bg-blue-500 hover:bg-blue-600 text-white';
           case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600 text-white';
           case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600 text-white';
           default: return 'bg-gray-500 hover:bg-gray-600 text-white';
