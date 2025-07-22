@@ -76,7 +76,11 @@ export function PolygonPopover({
             </h4>
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Κατάσταση:</span>
-              <Badge variant="default" className={getStatusClass(unit.status, 'bg')}>
+              <Badge 
+                variant="default"
+                style={{ backgroundColor: polygonColor }}
+                className={getStatusClass(unit.status)}
+              >
                 {unit.status}
               </Badge>
             </div>
