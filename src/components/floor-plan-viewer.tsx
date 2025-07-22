@@ -106,10 +106,6 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
   const [localUnits, setLocalUnits] = useState<Unit[]>(units);
   const [drawingPolygon, setDrawingPolygon] = useState<{x:number,y:number}[]>([]);
 
-  useEffect(() => {
-    setLocalUnits(units);
-  }, [units]);
-
   // Precision Zoom (Magnifying Glass) state
   const [isPrecisionZooming, setIsPrecisionZooming] = useState(false);
   const preZoomState = useRef({ scale: 1.0, scrollLeft: 0, scrollTop: 0 });
@@ -127,6 +123,18 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
       'Οικοπεδούχος': true,
   }));
   const [zoomInput, setZoomInput] = useState(`${(scale * 100).toFixed(0)}%`);
+
+
+  const completeAndResetDrawing = useCallback(() => {
+    if (drawingPolygon.length > 2) {
+        onPolygonDrawn(drawingPolygon);
+    }
+    setDrawingPolygon([]);
+  }, [drawingPolygon, onPolygonDrawn]);
+
+  useEffect(() => {
+    setLocalUnits(units);
+  }, [units]);
 
    useEffect(() => {
      setZoomInput(`${(scale * 100).toFixed(0)}%`);
@@ -173,24 +181,17 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
     localStorage.setItem('floorPlanStatusVisibility', JSON.stringify(statusVisibility));
   }, [statusVisibility]);
 
-  const resetDrawingState = useCallback(() => {
-    if (drawingPolygon.length > 2) {
-        onPolygonDrawn(drawingPolygon);
-    }
-    setDrawingPolygon([]);
-  }, [drawingPolygon, onPolygonDrawn]);
-
   useEffect(() => {
     setPageNumber(1);
+    setDrawingPolygon([]); // Reset drawing on new PDF
   }, [pdfUrl]);
 
 
   const toggleEditMode = () => {
     setIsEditMode(prev => {
         const newMode = !prev;
-        if (!newMode && drawingPolygon.length > 2) {
-             // Exiting edit mode, finalize polygon
-             onPolygonDrawn(drawingPolygon);
+        if (!newMode && drawingPolygon.length > 0) {
+             // Exiting edit mode, clear any unfinished polygon
              setDrawingPolygon([]);
         } else if (newMode) {
             setDrawingPolygon([]);
@@ -707,8 +708,8 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
                         <Button variant="ghost" size="icon" onClick={handleUndo} disabled={drawingPolygon.length === 0}>
                             <Undo2 />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={resetDrawingState} disabled={drawingPolygon.length < 3}>
-                            Ολοκλήρωση
+                        <Button variant="default" size="sm" onClick={completeAndResetDrawing} disabled={drawingPolygon.length < 3}>
+                            Ολοκλήρωση Πολυγώνου
                         </Button>
                     </>
                 )}
