@@ -229,7 +229,10 @@ export default function FloorDetailsPage() {
   }
 
   const handleCreateUnit = async (data: UnitFormValues) => {
-    if (!floor || !floor.buildingId || !floor.originalId) return;
+    if (!floor || !floor.buildingId || !floor.originalId) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν είναι δυνατή η δημιουργία ακινήτου χωρίς έγκυρο γονικό όροφο/κτίριο.' });
+        return;
+    }
 
      const unitData = getUnitDataForSave(data);
      if (!unitData) {
@@ -264,12 +267,15 @@ export default function FloorDetailsPage() {
        toast({ title: 'Επιτυχία', description: 'Το ακίνητο προστέθηκε με επιτυχία.' });
      } catch(error) {
        console.error('Error adding unit: ', error);
-       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη του ακινήτου.' });
+       toast({ variant: 'destructive', title: 'Σφάλμα Αποθήκευσης', description: 'Δεν ήταν δυνατή η προσθήκη του ακινήτου στη βάση δεδομένων.' });
      }
   }
 
   const handleUpdateUnit = async (data: UnitFormValues) => {
-    if (!editingUnit || !floor) return;
+    if (!editingUnit || !floor) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν υπάρχει επιλεγμένο ακίνητο για επεξεργασία.' });
+        return;
+    }
 
     const unitDataToSave = getUnitDataForSave(data);
     if (!unitDataToSave) {
@@ -291,7 +297,6 @@ export default function FloorDetailsPage() {
         // Update sub-collection document only if it exists (part of a project)
         if (buildingData.projectId && buildingData.originalId && editingUnit.originalId) {
             const unitSubRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', editingUnit.originalId);
-            // Check if sub-doc exists before updating to prevent errors
             const subDocSnap = await getDoc(unitSubRef);
             if(subDocSnap.exists()) {
                 await updateDoc(unitSubRef, unitDataToSave);
@@ -301,7 +306,7 @@ export default function FloorDetailsPage() {
         toast({ title: 'Επιτυχία', description: 'Το ακίνητο ενημερώθηκε.' });
     } catch(error) {
         console.error('Error updating unit: ', error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η ενημέρωση του ακινήτου.' });
+        toast({ variant: 'destructive', title: 'Σφάλμα Ενημέρωσης', description: 'Δεν ήταν δυνατή η ενημέρωση του ακινήτου στη βάση δεδομένων.' });
     }
   }
 
@@ -602,3 +607,5 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
+
+    
