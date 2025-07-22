@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   doc,
@@ -49,6 +49,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import {
   Form,
@@ -69,13 +70,13 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, Upload, FileText, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, Upload, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { FloorPlanViewer } from '@/components/floor-plan-viewer';
+import { FloorPlanViewer } from '@/components/floor-plan/FloorPlanViewer';
 
 const unitSchema = z.object({
   identifier: z.string().min(1, { message: 'Ο κωδικός είναι υποχρεωτικός.' }),
@@ -546,7 +547,6 @@ export default function FloorDetailsPage() {
                   <FloorPlanViewer 
                     pdfUrl={floor.floorPlanUrl} 
                     units={units}
-                    drawingPolygon={drawingPolygon}
                     onUnitClick={handleUnitSelectForEdit}
                     onUnitDelete={handleDeleteUnit}
                     onPolygonDrawn={handlePolygonDrawn}
