@@ -9,6 +9,8 @@ import {
   collection,
   onSnapshot,
   addDoc,
+  updateDoc,
+  deleteDoc,
   serverTimestamp,
   Timestamp,
   query,
@@ -35,6 +37,17 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Form,
   FormControl,
   FormField,
@@ -46,7 +59,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, Home, BedDouble, Bath, Compass, Tag, Euro } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, Home, BedDouble, Bath, Compass, Tag, Euro, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
@@ -55,12 +68,13 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
 const attachmentSchema = z.object({
+  id: z.string().optional(), // Used to know if we are editing
   type: z.enum(['parking', 'storage'], {
     required_error: 'Ο τύπος είναι υποχρεωτικός.'
   }),
   details: z.string().optional(),
-  area: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Το εμβαδόν πρέπει να είναι αριθμός." }).optional(),
-  price: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Η τιμή πρέπει να είναι αριθμός." }).optional(),
+  area: z.string().transform(v => v.trim()).refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Το εμβαδόν πρέπει να είναι αριθμός." }).optional(),
+  price: z.string().transform(v => v.trim()).refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Η τιμή πρέπει να είναι αριθμός." }).optional(),
   photoUrl: z.string().url({ message: "Το URL της φωτογραφίας δεν είναι έγκυρο." }).or(z.literal('')).optional(),
 });
 
@@ -84,8 +98,10 @@ interface Unit {
   amenities?: string[];
 }
 
-interface Attachment extends AttachmentFormValues {
+interface Attachment {
   id: string;
+  type: 'parking' | 'storage';
+  details?: string;
   unitId: string;
   createdAt: any;
   area?: number;
@@ -109,6 +125,7 @@ export default function UnitDetailsPage() {
   const form = useForm<AttachmentFormValues>({
     resolver: zodResolver(attachmentSchema),
     defaultValues: {
+      id: undefined,
       type: 'parking',
       details: '',
       area: '',
@@ -116,6 +133,21 @@ export default function UnitDetailsPage() {
       photoUrl: '',
     },
   });
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      form.reset({
+        id: undefined,
+        type: 'parking',
+        details: '',
+        area: '',
+        price: '',
+        photoUrl: '',
+      });
+    }
+  };
+
 
   // Fetch unit details from top-level collection
   useEffect(() => {
@@ -159,29 +191,62 @@ export default function UnitDetailsPage() {
      if (!unitId) return;
      
      setIsSubmitting(true);
-     try {
-       await addDoc(collection(db, 'attachments'), {
-         ...data,
+     
+     const finalData = {
+         type: data.type,
+         details: data.details,
          area: data.area ? parseFloat(data.area) : undefined,
          price: data.price ? parseFloat(data.price) : undefined,
-         photoUrl: data.photoUrl?.trim() || '',
+         photoUrl: data.photoUrl?.trim() || undefined,
          unitId: unitId,
-         createdAt: serverTimestamp(),
-       });
+     };
 
-       toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα προστέθηκε.' });
-       form.reset();
-       setIsDialogOpen(false);
+     try {
+       if (data.id) { // This is an update
+          const attachmentRef = doc(db, 'attachments', data.id);
+          await updateDoc(attachmentRef, finalData);
+          toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα ενημερώθηκε.' });
+       } else { // This is a new document
+          await addDoc(collection(db, 'attachments'), {
+              ...finalData,
+              createdAt: serverTimestamp(),
+          });
+          toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα προστέθηκε.' });
+       }
+       handleDialogOpenChange(false);
      } catch (error) {
-       console.error('Error adding attachment: ', error);
-       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη του παρακολουθήματος.' });
+       console.error('Error submitting attachment: ', error);
+       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η υποβολή.' });
      } finally {
        setIsSubmitting(false);
      }
   };
 
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    try {
+        await deleteDoc(doc(db, 'attachments', attachmentId));
+        toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα διαγράφηκε.' });
+    } catch (error) {
+        console.error('Error deleting attachment: ', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η διαγραφή.' });
+    }
+  };
+
+  const handleEditAttachment = (attachment: Attachment) => {
+      form.reset({
+          id: attachment.id,
+          type: attachment.type,
+          details: attachment.details || '',
+          area: attachment.area?.toString() || '',
+          price: attachment.price?.toString() || '',
+          photoUrl: attachment.photoUrl || '',
+      });
+      setIsDialogOpen(true);
+  };
+
+
   const formatDate = (timestamp: Timestamp | undefined) => {
-    if (!timestamp) return 'N/A';
+    if (!timestamp) return 'Άγνωστο';
     return format(timestamp.toDate(), 'dd/MM/yyyy');
   };
   
@@ -268,12 +333,12 @@ export default function UnitDetailsPage() {
       
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-foreground">Παρακολουθήματα Ακινήτου</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild><Button><PlusCircle className="mr-2" />Νέο Παρακολούθημα</Button></DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Προσθήκη Νέου Παρακολουθήματος</DialogTitle>
-              <DialogDescription>Συμπληρώστε τις πληροφορίες για να προσθέσετε ένα νέο παρακολούθημα.</DialogDescription>
+              <DialogTitle>{form.getValues('id') ? 'Επεξεργασία' : 'Προσθήκη'} Παρακολουθήματος</DialogTitle>
+              <DialogDescription>Συμπληρώστε τις πληροφορίες.</DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmitAttachment)} className="grid gap-4 py-4">
@@ -342,7 +407,7 @@ export default function UnitDetailsPage() {
                 />
                 <DialogFooter>
                    <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
-                   <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Προσθήκη</Button>
+                   <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{form.getValues('id') ? 'Αποθήκευση' : 'Προσθήκη'}</Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -364,12 +429,12 @@ export default function UnitDetailsPage() {
                   <TableHead>Λεπτομέρειες</TableHead>
                   <TableHead>Εμβαδόν</TableHead>
                   <TableHead>Τιμή</TableHead>
-                  <TableHead>Ημ/νία Δημιουργίας</TableHead>
+                  <TableHead className="text-right">Ενέργειες</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {attachments.map((att) => (
-                  <TableRow key={att.id}>
+                  <TableRow key={att.id} className="group">
                      <TableCell>
                       {att.photoUrl ? (
                         <Image
@@ -387,7 +452,36 @@ export default function UnitDetailsPage() {
                     <TableCell className="text-muted-foreground">{att.details || 'N/A'}</TableCell>
                     <TableCell className="text-muted-foreground">{att.area ? `${att.area} τ.μ.` : 'N/A'}</TableCell>
                     <TableCell className="text-muted-foreground">{formatPrice(att.price)}</TableCell>
-                    <TableCell>{formatDate(att.createdAt)}</TableCell>
+                    <TableCell className="text-right">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => handleEditAttachment(att)}>
+                                <Edit className="h-4 w-4" />
+                                <span className="sr-only">Επεξεργασία</span>
+                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Διαγραφή</span>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το παρακολούθημα.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteAttachment(att.id)} className="bg-destructive hover:bg-destructive/90">
+                                            Διαγραφή
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -400,5 +494,3 @@ export default function UnitDetailsPage() {
     </div>
   );
 }
-
-    
