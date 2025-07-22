@@ -251,48 +251,62 @@ export default function CompaniesPage() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : companies.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Λογότυπο</TableHead>
-                  <TableHead>Όνομα</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Website</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {companies.map((company) => (
-                  <TableRow key={company.id}>
-                    <TableCell>
-                      <Avatar>
-                        <AvatarImage src={company.logoUrl || undefined} alt={company.name} />
-                        <AvatarFallback>
-                           {company.name
-                            .split(' ')
-                            .map(w => w[0])
-                            .join('')
-                            .slice(0, 2)
-                            .toUpperCase()
-                          }
-                        </AvatarFallback>
-                      </Avatar>
-                    </TableCell>
-                    <TableCell className="font-medium">{company.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{company.contactInfo?.email}</TableCell>
-                    <TableCell>
-                      {company.website ? (
-                        <Link href={company.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
-                          <LinkIcon size={14}/>
-                          Επίσκεψη
-                        </Link>
-                      ) : (
-                        <span className="text-muted-foreground">N/A</span>
-                      )}
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Λογότυπο</TableHead>
+                    <TableHead>Όνομα</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Τηλέφωνο</TableHead>
+                    <TableHead>ΑΦΜ</TableHead>
+                    <TableHead>Website</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {companies.map((company) => (
+                    <TableRow key={company.id}>
+                      <TableCell>
+                        <Avatar title={company.name}>
+                          <AvatarImage src={company.logoUrl || undefined} alt={company.name} />
+                          <AvatarFallback>
+                            {company.name
+                              .split(' ')
+                              .map(w => w[0])
+                              .join('')
+                              .slice(0, 2)
+                              .toUpperCase()
+                            }
+                          </AvatarFallback>
+                        </Avatar>
+                      </TableCell>
+                      <TableCell className="font-medium">{company.name}</TableCell>
+                      <TableCell>
+                        {company.contactInfo?.email ? (
+                           <a href={`mailto:${company.contactInfo.email}`} className="text-primary hover:underline">
+                            {company.contactInfo.email}
+                           </a>
+                        ) : (
+                           <span className="text-muted-foreground">N/A</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">{company.contactInfo?.phone || 'N/A'}</TableCell>
+                      <TableCell className="text-muted-foreground">{company.contactInfo?.afm || 'N/A'}</TableCell>
+                      <TableCell>
+                        {company.website ? (
+                          <Link href={company.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                            <LinkIcon size={14}/>
+                            Επίσκεψη
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">N/A</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : (
              <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν εταιρείες.</p>
           )}
