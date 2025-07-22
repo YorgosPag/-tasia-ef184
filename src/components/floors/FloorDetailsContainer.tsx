@@ -188,7 +188,9 @@ export function FloorDetailsContainer() {
       batch.update(doc(db, 'units', unitId), dataToUpdate);
       if (buildingData.projectId && buildingData.originalId && unitOriginalId) {
         const subDocRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', unitOriginalId);
-        if ((await getDoc(subDocRef)).exists()) {
+        // It's possible the subcollection document doesn't exist if data is inconsistent. Check first.
+        const subDocSnap = await getDoc(subDocRef);
+        if (subDocSnap.exists()) {
           batch.update(subDocRef, dataToUpdate);
         }
       }
@@ -223,17 +225,26 @@ export function FloorDetailsContainer() {
           const buildingData = buildingDoc.data();
           const topLevelUnitRef = doc(collection(db, 'units'));
           let subCollectionUnitRef;
+          
+          const batch = writeBatch(db);
+
+          const finalUnitData = {
+            ...unitData,
+            floorId: floor.id,
+            buildingId: floor.buildingId,
+            createdAt: serverTimestamp(),
+          };
+
           if (buildingData.projectId && buildingData.originalId) {
             subCollectionUnitRef = doc(collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units'));
-            await setDoc(subCollectionUnitRef, { ...unitData, createdAt: serverTimestamp() });
+            batch.set(subCollectionUnitRef, finalUnitData);
+            batch.set(topLevelUnitRef, { ...finalUnitData, originalId: subCollectionUnitRef.id });
+          } else {
+             batch.set(topLevelUnitRef, { ...finalUnitData, originalId: topLevelUnitRef.id });
           }
-          await setDoc(topLevelUnitRef, {
-            ...unitData,
-            originalId: subCollectionUnitRef ? subCollectionUnitRef.id : topLevelUnitRef.id,
-            buildingId: floor.buildingId,
-            floorId: floor.id,
-            createdAt: serverTimestamp(),
-          });
+
+          await batch.commit();
+
           toast({ title: 'Επιτυχία', description: 'Το ακίνητο προστέθηκε.' });
           success = true;
         } catch (error) {
@@ -293,6 +304,7 @@ export function FloorDetailsContainer() {
       toast({ variant: 'destructive', title: 'Λάθος τύπος αρχείου', description: 'Παρακαλώ επιλέξτε ένα αρχείο PDF.' });
       setSelectedFile(null);
     }
+    event.target.value = ''; // Reset file input
   };
 
   const handleFileUpload = async () => {
