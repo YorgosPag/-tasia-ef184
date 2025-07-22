@@ -9,7 +9,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
 import { DataProvider } from '@/hooks/use-data-store';
 import { QueryProvider } from '@/hooks/use-query-provider';
-import { useEffect } from 'react';
+import { ProtectedRoute } from '@/components/auth/protected-route';
 
 export default function RootLayout({
   children,
@@ -30,15 +30,17 @@ export default function RootLayout({
         <AuthProvider>
           <QueryProvider>
             <DataProvider>
-              <SidebarProvider defaultOpen>
-                <AppSidebar />
-                <div className="flex flex-1 flex-col">
-                  <AppHeader />
-                  <main className="flex-1 p-4 md:p-6 lg:p-8">
-                    {children}
-                  </main>
-                </div>
-              </SidebarProvider>
+              <ProtectedRoute>
+                <SidebarProvider defaultOpen>
+                  <AppSidebar />
+                  <div className="flex flex-1 flex-col">
+                    <AppHeader />
+                    <main className="flex-1 p-4 md:p-6 lg:p-8">
+                      {children}
+                    </main>
+                  </div>
+                </SidebarProvider>
+              </ProtectedRoute>
               <Toaster />
             </DataProvider>
           </QueryProvider>
