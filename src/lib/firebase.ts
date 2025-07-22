@@ -1,3 +1,4 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -27,7 +28,9 @@ const storage = getStorage(app);
 let analytics;
 if (typeof window !== 'undefined') {
     try {
-        analytics = getAnalytics(app);
+        if (firebaseConfig.measurementId) {
+            analytics = getAnalytics(app);
+        }
     } catch (error) {
         console.log('Firebase Analytics not available in this environment.');
     }
