@@ -141,10 +141,10 @@ export function useBreadcrumbs() {
     }
     
     let tempBreadcrumbs: BreadcrumbItem[] = [];
-
-    if (companyData) tempBreadcrumbs.push({ href: `/companies`, label: companyData.name || 'Εταιρείες' });
-    if (projectData) tempBreadcrumbs.push({ href: `/projects/${projectData.id}`, label: projectData.title || 'Έργο' });
-    if (buildingData) tempBreadcrumbs.push({ href: `/buildings/${buildingData.id}`, label: buildingData.address || 'Κτίριο' });
+    
+    if(companyData?.name) tempBreadcrumbs.push({ href: `/companies`, label: companyData.name });
+    if(projectData?.title) tempBreadcrumbs.push({ href: `/projects/${projectData.id}`, label: projectData.title });
+    if(buildingData?.address) tempBreadcrumbs.push({ href: `/buildings/${buildingData.id}`, label: buildingData.address });
     
     if (floorData) {
         let label = `Όροφος ${floorData.level}`;
@@ -157,7 +157,7 @@ export function useBreadcrumbs() {
         tempBreadcrumbs.push({ href: `/floors/${floorData.id}`, label: label || 'Όροφος' });
     }
     
-    if (unitData) tempBreadcrumbs.push({ href: `/units/${unitData.id}`, label: unitData.name || 'Ακίνητο' });
+    if (unitData?.name) tempBreadcrumbs.push({ href: `/units/${unitData.id}`, label: unitData.name });
     
     if (tempBreadcrumbs.length === 0 && staticPathLabels[currentSegment]) {
         tempBreadcrumbs.push({ href: `/${currentSegment}`, label: staticPathLabels[currentSegment] });
