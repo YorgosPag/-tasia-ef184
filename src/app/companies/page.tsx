@@ -39,9 +39,12 @@ import { PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDataStore, Company } from '@/hooks/use-data-store';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const companySchema = z.object({
   name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
+  logoUrl: z.string().url({ message: "Το URL του λογότυπου δεν είναι έγκυρο." }).or(z.literal('')),
   contactInfo: z.object({
       email: z.string().email({ message: "Το email δεν είναι έγκυρο." }).or(z.literal('')),
       phone: z.string().optional(),
@@ -62,6 +65,7 @@ export default function CompaniesPage() {
     resolver: zodResolver(companySchema),
     defaultValues: {
       name: '',
+      logoUrl: '',
       contactInfo: {
           email: '',
           phone: '',
@@ -74,7 +78,12 @@ export default function CompaniesPage() {
   const onSubmit = async (data: CompanyFormValues) => {
     setIsSubmitting(true);
     try {
-      await addCompany(data);
+      // Remove empty string from logoUrl if it exists
+      const companyData = {
+        ...data,
+        logoUrl: data.logoUrl || undefined,
+      };
+      await addCompany(companyData);
       toast({
         title: "Επιτυχία",
         description: "Η εταιρεία προστέθηκε με επιτυχία.",
@@ -123,6 +132,19 @@ export default function CompaniesPage() {
                       <FormLabel>Όνομα Εταιρείας</FormLabel>
                       <FormControl>
                         <Input placeholder="π.χ. Παπαδόπουλος Α.Ε." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="logoUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL Λογοτύπου</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/logo.png" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -210,6 +232,7 @@ export default function CompaniesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Λογότυπο</TableHead>
                   <TableHead>Όνομα</TableHead>
                   <TableHead>Διεύθυνση</TableHead>
                   <TableHead>ΑΦΜ</TableHead>
@@ -220,6 +243,12 @@ export default function CompaniesPage() {
               <TableBody>
                 {companies.map((company) => (
                   <TableRow key={company.id}>
+                    <TableCell>
+                      <Avatar>
+                        <AvatarImage src={company.logoUrl} alt={company.name} />
+                        <AvatarFallback>{company.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    </TableCell>
                     <TableCell className="font-medium">{company.name}</TableCell>
                     <TableCell className="text-muted-foreground">{company.contactInfo?.address}</TableCell>
                     <TableCell className="text-muted-foreground">{company.contactInfo?.afm}</TableCell>
