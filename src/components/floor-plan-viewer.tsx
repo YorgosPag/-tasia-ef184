@@ -34,24 +34,58 @@ const getStatusColor = (status: Unit['status'] | undefined) => {
     }
 }
 
+// Helper to get state from localStorage
+const getInitialState = <T,>(key: string, defaultValue: T): T => {
+    if (typeof window === 'undefined') {
+        return defaultValue;
+    }
+    const savedValue = localStorage.getItem(key);
+    if (savedValue !== null) {
+        try {
+            return JSON.parse(savedValue);
+        } catch (e) {
+            console.error(`Error parsing localStorage key "${key}":`, e);
+            return defaultValue;
+        }
+    }
+    return defaultValue;
+};
+
+
 export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
-  const [scale, setScale] = useState(1.0);
-  const [rotation, setRotation] = useState(0);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [pageDimensions, setPageDimensions] = useState({ width: 0, height: 0 });
-  const [isLocked, setIsLocked] = useState(false);
+
+  // Initialize state from localStorage or use defaults
+  const [scale, setScale] = useState(() => getInitialState('floorPlanScale', 1.0));
+  const [rotation, setRotation] = useState(() => getInitialState('floorPlanRotation', 0));
+  const [isLocked, setIsLocked] = useState(() => getInitialState('floorPlanLocked', false));
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('floorPlanScale', JSON.stringify(scale));
+  }, [scale]);
+
+  useEffect(() => {
+    localStorage.setItem('floorPlanRotation', JSON.stringify(rotation));
+  }, [rotation]);
+
+  useEffect(() => {
+    localStorage.setItem('floorPlanLocked', JSON.stringify(isLocked));
+  }, [isLocked]);
+
 
   useEffect(() => {
     pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
   }, []);
   
   useEffect(() => {
+    // Reset view settings only when the PDF URL changes
     setPageNumber(1);
-    setScale(1.0);
-    setRotation(0);
+    // Don't reset scale, rotation, and lock state here anymore
   }, [pdfUrl]);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
@@ -113,7 +147,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                         width={pageDimensions.width * scale}
                         height={pageDimensions.height * scale}
                         viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
-                        style={{ pointerEvents: isLocked ? 'auto' : 'none' }}
+                        style={{ pointerEvents: 'auto' }}
                     >
                         {units.map((unit) =>
                         unit.polygonPoints ? (
