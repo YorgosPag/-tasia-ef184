@@ -11,6 +11,7 @@ import type { BreadcrumbItem } from '@/components/layout/breadcrumbs';
 const docCache = new Map<string, DocumentData>();
 
 async function getDocFromFirestore(collection: string, id: string): Promise<DocumentData | null> {
+  if (!id) return null;
   const cacheKey = `${collection}/${id}`;
   if (docCache.has(cacheKey)) {
     return docCache.get(cacheKey) || null;
@@ -41,6 +42,7 @@ const staticPathLabels: Record<string, string> = {
 
 const collectionNameMap: Record<string, string> = {
     projects: 'projects',
+    companies: 'companies',
     buildings: 'buildings',
     floors: 'floors',
     units: 'units',
@@ -53,18 +55,17 @@ const collectionNameMap: Record<string, string> = {
  */
 export function useBreadcrumbs() {
   const pathname = usePathname();
-  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([
-    { href: '/', label: 'Αρχική' },
-  ]);
+  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
   const generateBreadcrumbs = useCallback(async () => {
     const pathSegments = pathname.split('/').filter(Boolean);
-    const newBreadcrumbs: BreadcrumbItem[] = [{ href: '/', label: 'Αρχική' }];
+    const newBreadcrumbs: BreadcrumbItem[] = [];
     let currentPath = '';
 
     for (let i = 0; i < pathSegments.length; i++) {
         currentPath += `/${pathSegments[i]}`;
         const segment = pathSegments[i];
+        const isLastSegment = i === pathSegments.length - 1;
 
         if (staticPathLabels[segment]) {
             newBreadcrumbs.push({ href: currentPath, label: staticPathLabels[segment] });
@@ -77,28 +78,40 @@ export function useBreadcrumbs() {
                 if (docData) {
                     const label = docData.title || docData.address || docData.level || docData.name || docData.identifier || segment;
                     
-                    // Build the full path from parents
                     const parentCrumbs: BreadcrumbItem[] = [];
+
+                    let companyData, projectData, buildingData;
+                    
+                    if (docData.companyId) {
+                        companyData = await getDocFromFirestore('companies', docData.companyId);
+                    }
                     if (docData.projectId) {
-                         const projectData = await getDocFromFirestore('projects', docData.projectId);
-                         if(projectData) parentCrumbs.push({ href: `/projects/${docData.projectId}`, label: projectData.title || docData.projectId});
+                        projectData = await getDocFromFirestore('projects', docData.projectId);
+                        if(projectData && !companyData) {
+                             companyData = await getDocFromFirestore('companies', projectData.companyId);
+                        }
                     }
                      if (docData.buildingId) {
-                         const buildingData = await getDocFromFirestore('buildings', docData.buildingId);
-                         if(buildingData) {
-                             if(!docData.projectId && buildingData.projectId){
-                                const projectData = await getDocFromFirestore('projects', buildingData.projectId);
-                                if(projectData) parentCrumbs.push({ href: `/projects/${buildingData.projectId}`, label: projectData.title || buildingData.projectId});
+                         buildingData = await getDocFromFirestore('buildings', docData.buildingId);
+                         if(buildingData && !projectData) {
+                             projectData = await getDocFromFirestore('projects', buildingData.projectId);
+                             if(projectData && !companyData) {
+                                 companyData = await getDocFromFirestore('companies', projectData.companyId);
                              }
-                             parentCrumbs.push({ href: `/buildings/${docData.buildingId}`, label: buildingData.address || docData.buildingId});
                          }
                     }
-                    if (docData.floorId) {
-                         const floorData = await getDocFromFirestore('floors', docData.floorId);
-                         if(floorData) parentCrumbs.push({ href: `/floors/${docData.floorId}`, label: `Όροφος ${floorData.level}` || docData.floorId});
+                    
+                    // Build breadcrumbs in correct order: Company > Project > Building > Floor
+                    if (companyData) parentCrumbs.push({ href: `/companies`, label: companyData.name || 'Εταιρείες' });
+                    if (projectData) parentCrumbs.push({ href: `/projects/${projectData.id || docData.projectId}`, label: projectData.title || docData.projectId });
+                    if (buildingData) parentCrumbs.push({ href: `/buildings/${docData.buildingId}`, label: buildingData.address || docData.buildingId });
+                    
+                    if(docData.floorId) {
+                        const floorData = await getDocFromFirestore('floors', docData.floorId);
+                        if(floorData) parentCrumbs.push({ href: `/floors/${docData.floorId}`, label: `Όροφος ${floorData.level}` || docData.floorId});
                     }
 
-                    // Remove potential duplicates from static path and add hierarchical ones
+                    // Replace the generic list item (e.g., "Έργα") with the full path
                     const staticParentIndex = newBreadcrumbs.findIndex(crumb => crumb.href === `/${parentSegment}`);
                     if (staticParentIndex !== -1) {
                         newBreadcrumbs.splice(staticParentIndex, 1, ...parentCrumbs);
