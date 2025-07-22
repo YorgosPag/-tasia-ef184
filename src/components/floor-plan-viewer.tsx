@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -77,6 +77,9 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [pageDimensions, setPageDimensions] = useState({ width: 0, height: 0 });
   const [isEditMode, setIsEditMode] = useState(false);
+  const [currentPolygonPoints, setCurrentPolygonPoints] = useState<{ x: number; y: number }[]>([]);
+  const svgRef = useRef<SVGSVGElement>(null);
+
 
   // Initialize state from localStorage or use defaults
   const [scale, setScale] = useState(() => getInitialState('floorPlanScale', 1.0));
@@ -114,7 +117,15 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   
   useEffect(() => {
     setPageNumber(1);
+    setCurrentPolygonPoints([]); // Reset drawing on new PDF
   }, [pdfUrl]);
+
+  useEffect(() => {
+    // When exiting edit mode, clear the points
+    if (!isEditMode) {
+        setCurrentPolygonPoints([]);
+    }
+  }, [isEditMode])
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
@@ -132,9 +143,24 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   }
 
   const handleUnitClick = (unitId: string) => {
+    if (isEditMode) return;
     setSelectedUnitId(unitId);
     onUnitClick(unitId);
   };
+
+  const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (!isEditMode || !svgRef.current) return;
+
+    const svg = svgRef.current;
+    const pt = svg.createSVGPoint();
+    pt.x = event.clientX;
+    pt.y = event.clientY;
+
+    const svgPoint = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+    
+    setCurrentPolygonPoints(prev => [...prev, { x: svgPoint.x, y: svgPoint.y }]);
+  };
+
 
   const handleStatusVisibilityChange = (status: Unit['status'], checked: boolean) => {
       setStatusVisibility(prev => ({ ...prev, [status]: checked }));
@@ -176,52 +202,81 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                     />
                     {pageDimensions.width > 0 && (
                     <svg
+                        ref={svgRef}
                         className="absolute top-0 left-0"
                         width={pageDimensions.width * scale}
                         height={pageDimensions.height * scale}
                         viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
-                        style={{ pointerEvents: 'auto' }}
+                        style={{ pointerEvents: 'auto', cursor: isEditMode ? 'crosshair' : 'default' }}
+                        onClick={handleSvgClick}
                     >
-                        {visibleUnits.map((unit) =>
-                        unit.polygonPoints ? (
-                            <Popover key={unit.id}>
-                                <PopoverTrigger asChild>
-                                    <g onClick={() => handleUnitClick(unit.id)} className="cursor-pointer">
-                                        <polygon
-                                            points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
-                                            className={
-                                            `stroke-2 hover:opacity-100 transition-opacity ` +
-                                            (selectedUnitId === unit.id ? 'opacity-70' : 'opacity-40')
-                                            }
-                                            style={{
-                                                fill: getStatusColor(unit.status),
-                                                stroke: getStatusColor(unit.status)
-                                            }}
-                                        />
-                                    </g>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-80">
-                                   <div className="grid gap-4">
-                                        <div className="space-y-2">
-                                            <h4 className="font-medium leading-none">{unit.name} ({unit.identifier})</h4>
-                                            <p className="text-sm text-muted-foreground">
-                                                Περισσότερες λεπτομέρειες για το ακίνητο.
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium">Κατάσταση:</span>
-                                            <Badge variant="default" className={getStatusClass(unit.status)}>
-                                                {unit.status}
-                                            </Badge>
-                                        </div>
-                                        <Button size="sm" variant="outline" onClick={() => onUnitClick(unit.id)}>
-                                            <Info className="mr-2 h-4 w-4" />
-                                            Προβολή Στοιχείων
-                                        </Button>
-                                   </div>
-                                </PopoverContent>
-                            </Popover>
-                        ) : null
+                        {/* Layer for existing polygons */}
+                        <g>
+                            {visibleUnits.map((unit) =>
+                            unit.polygonPoints ? (
+                                <Popover key={unit.id}>
+                                    <PopoverTrigger asChild>
+                                        <g onClick={() => handleUnitClick(unit.id)} style={{pointerEvents: isEditMode ? 'none' : 'auto'}}>
+                                            <polygon
+                                                points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
+                                                className={
+                                                `stroke-2 hover:opacity-100 transition-opacity ` +
+                                                (selectedUnitId === unit.id ? 'opacity-70' : 'opacity-40')
+                                                }
+                                                style={{
+                                                    fill: getStatusColor(unit.status),
+                                                    stroke: getStatusColor(unit.status)
+                                                }}
+                                            />
+                                        </g>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80">
+                                    <div className="grid gap-4">
+                                            <div className="space-y-2">
+                                                <h4 className="font-medium leading-none">{unit.name} ({unit.identifier})</h4>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Περισσότερες λεπτομέρειες για το ακίνητο.
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium">Κατάσταση:</span>
+                                                <Badge variant="default" className={getStatusClass(unit.status)}>
+                                                    {unit.status}
+                                                </Badge>
+                                            </div>
+                                            <Button size="sm" variant="outline" onClick={() => onUnitClick(unit.id)}>
+                                                <Info className="mr-2 h-4 w-4" />
+                                                Προβολή Στοιχείων
+                                            </Button>
+                                    </div>
+                                    </PopoverContent>
+                                </Popover>
+                            ) : null
+                            )}
+                        </g>
+
+                        {/* Layer for drawing new polygon */}
+                        {isEditMode && currentPolygonPoints.length > 0 && (
+                            <g>
+                                <polyline
+                                    points={currentPolygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
+                                    fill="none"
+                                    stroke="hsl(var(--primary))"
+                                    strokeWidth="2"
+                                    strokeDasharray="4 4"
+                                />
+                                {currentPolygonPoints.map((point, index) => (
+                                    <circle
+                                        key={index}
+                                        cx={point.x}
+                                        cy={point.y}
+                                        r="4"
+                                        fill="hsl(var(--primary))"
+                                        stroke="#fff"
+                                        strokeWidth="1.5"
+                                    />
+                                ))}
+                            </g>
                         )}
                     </svg>
                     )}
