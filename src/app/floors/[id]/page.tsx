@@ -16,6 +16,8 @@ import {
   getDocs,
   query,
   where,
+  deleteDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { db, storage, auth } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -39,6 +41,17 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
   Form,
   FormControl,
   FormField,
@@ -57,7 +70,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, Upload, FileText, Edit } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, Upload, FileText, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
@@ -281,18 +294,21 @@ export default function FloorDetailsPage() {
         }
         const buildingData = buildingDoc.data();
         
-        // Update top-level document first
+        const batch = writeBatch(db);
+
+        // Update top-level document
         const unitTopRef = doc(db, 'units', unitId);
-        await updateDoc(unitTopRef, dataToUpdate);
+        batch.update(unitTopRef, dataToUpdate);
         
         // Update sub-collection document only if it exists (part of a project)
         if (buildingData.projectId && buildingData.originalId && unitOriginalId) {
             const unitSubRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', unitOriginalId);
             const subDocSnap = await getDoc(unitSubRef);
             if(subDocSnap.exists()) {
-                await updateDoc(unitSubRef, dataToUpdate);
+                batch.update(unitSubRef, dataToUpdate);
             }
         }
+        await batch.commit();
         return true;
      } catch(error) {
         console.error('Error updating unit: ', error);
@@ -332,6 +348,48 @@ export default function FloorDetailsPage() {
               description: "Οι νέες συντεταγμένες αποθηκεύτηκαν.",
           });
       }
+  }
+
+  const handleDeleteUnit = async (unitId: string) => {
+    const unitToDelete = units.find(u => u.id === unitId);
+    if (!unitToDelete || !floor) return;
+
+    try {
+        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+        if (!buildingDoc.exists()) {
+            throw new Error("Parent building not found for unit deletion");
+        }
+        const buildingData = buildingDoc.data();
+        
+        const batch = writeBatch(db);
+
+        // Delete from top-level collection
+        const unitTopRef = doc(db, 'units', unitId);
+        batch.delete(unitTopRef);
+
+        // Delete from sub-collection if applicable
+        if (buildingData.projectId && buildingData.originalId && unitToDelete.originalId) {
+            const unitSubRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', unitToDelete.originalId);
+            const subDocSnap = await getDoc(unitSubRef);
+            if(subDocSnap.exists()) {
+              batch.delete(unitSubRef);
+            }
+        }
+        
+        // Also delete any attachments associated with this unit
+        const attachmentsQuery = query(collection(db, 'attachments'), where('unitId', '==', unitId));
+        const attachmentsSnapshot = await getDocs(attachmentsQuery);
+        attachmentsSnapshot.forEach(attachmentDoc => {
+            batch.delete(attachmentDoc.ref);
+        });
+
+        await batch.commit();
+        toast({ title: "Επιτυχία", description: "Το ακίνητο και τα παρακολουθήματά του διαγράφηκαν." });
+
+    } catch(error) {
+        console.error('Error deleting unit:', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα Διαγραφής', description: 'Δεν ήταν δυνατή η διαγραφή του ακινήτου.' });
+    }
   }
 
 
@@ -473,6 +531,7 @@ export default function FloorDetailsPage() {
                     pdfUrl={floor.floorPlanUrl} 
                     units={units} 
                     onUnitClick={handleUnitSelectForEdit}
+                    onUnitDelete={handleDeleteUnit}
                     onPolygonDrawn={handlePolygonDrawn}
                     onUnitPointsUpdate={handleUnitPointsUpdate}
                   />
@@ -618,6 +677,29 @@ export default function FloorDetailsPage() {
                                 <Edit className="h-4 w-4" />
                                 <span className="sr-only">Επεξεργασία</span>
                             </Button>
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Διαγραφή</span>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το ακίνητο
+                                        "{unit.name} ({unit.identifier})" και όλα τα σχετικά δεδομένα από τους διακομιστές.
+                                    </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteUnit(unit.id)} className="bg-destructive hover:bg-destructive/90">
+                                        Διαγραφή
+                                    </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                             <Button variant="outline" size="sm" onClick={() => router.push(`/units/${unit.id}`)}>Προβολή</Button>
                        </div>
                     </TableCell>
