@@ -253,11 +253,11 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
           return unit;
         })
       );
+      setMousePosition({ x: svgPoint.x, y: svgPoint.y });
       return;
     }
     
-    // Handle drawing new polygon
-    if (isEditMode && currentPolygonPoints.length > 0 && !finalizedPolygon) {
+    if (isEditMode) {
       setMousePosition({ x: svgPoint.x, y: svgPoint.y });
     }
   };
@@ -335,7 +335,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
   );
 
   const drawingPolylinePoints = [...currentPolygonPoints];
-  if (mousePosition) {
+  if (mousePosition && currentPolygonPoints.length > 0) {
     drawingPolylinePoints.push(mousePosition);
   }
 
@@ -380,6 +380,25 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseLeave}
                     >
+                         {/* Layer for crosshair guides */}
+                        {isEditMode && mousePosition && (
+                            <g className="pointer-events-none">
+                                <line 
+                                    x1="0" y1={mousePosition.y} 
+                                    x2={pageDimensions.width} y2={mousePosition.y} 
+                                    stroke="hsl(var(--destructive))" 
+                                    strokeWidth="0.5" 
+                                    strokeDasharray="4 4" 
+                                />
+                                <line 
+                                    x1={mousePosition.x} y1="0" 
+                                    x2={mousePosition.x} y2={pageDimensions.height} 
+                                    stroke="hsl(var(--destructive))" 
+                                    strokeWidth="0.5" 
+                                    strokeDasharray="4 4"
+                                />
+                            </g>
+                        )}
                         {/* Layer for existing polygons */}
                         <g>
                             {visibleUnits.map((unit) =>
@@ -607,5 +626,3 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
   );
 
 }
-
-    
