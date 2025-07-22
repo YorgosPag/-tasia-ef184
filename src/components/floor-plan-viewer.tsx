@@ -205,7 +205,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
     
-    const newPoints = [...currentPolygonPoints, { x: svgPoint.x, y: svgPoint.y }];
+    let newPoints = [...currentPolygonPoints, { x: svgPoint.x, y: svgPoint.y }];
 
     // Check if user is closing the polygon
     if (currentPolygonPoints.length > 1) {
@@ -215,8 +215,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if(distance < CLOSING_DISTANCE_THRESHOLD) {
-            setFinalizedPolygon(currentPolygonPoints);
-            onPolygonDrawn(currentPolygonPoints);
+            // Finalize by setting the last point to be the same as the first
+            newPoints = currentPolygonPoints; // Don't add a new point, just close with existing
+            setFinalizedPolygon(newPoints);
+            onPolygonDrawn(newPoints); // Callback with the finalized points
             setCurrentPolygonPoints([]); // Clear temp points
             setMousePosition(null); // Stop drawing line to mouse
             setIsEditMode(false); // Exit edit mode
