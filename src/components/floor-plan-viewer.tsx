@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -76,6 +76,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [pageDimensions, setPageDimensions] = useState({ width: 0, height: 0 });
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // Initialize state from localStorage or use defaults
   const [scale, setScale] = useState(() => getInitialState('floorPlanScale', 1.0));
@@ -241,7 +242,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                 <RefreshCw />
             </Button>
              <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
-                {isLocked ? <Lock /> : <Unlock />}
+                {isLocked ? <Lock className="text-primary" /> : <Unlock />}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setIsEditMode(prev => !prev)} disabled={!numPages}>
+                <Pencil className={cn(isEditMode && "text-primary")} />
             </Button>
         </div>
 
