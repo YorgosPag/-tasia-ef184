@@ -211,9 +211,14 @@ export default function FloorDetailsPage() {
      let parsedPolygonPoints: {x: number, y: number}[] | undefined;
      if (data.polygonPoints) {
        try {
+         // This converts a string like "[[10,20], [30,40]]" into an array of objects
          const pointsArray = JSON.parse(data.polygonPoints);
          if (Array.isArray(pointsArray) && pointsArray.every(p => Array.isArray(p) && p.length === 2 && typeof p[0] === 'number' && typeof p[1] === 'number')) {
+            // Firestore can't store array of arrays for GeoPoint, so we convert to array of objects
            parsedPolygonPoints = pointsArray.map(p => ({ x: p[0], y: p[1]}));
+         } else if (Array.isArray(pointsArray) && pointsArray.every(p => typeof p.x === 'number' && typeof p.y === 'number')) {
+            // Already in the correct format {x, y}
+            parsedPolygonPoints = pointsArray;
          } else {
             throw new Error('Invalid format');
          }
@@ -221,7 +226,7 @@ export default function FloorDetailsPage() {
          toast({
            variant: 'destructive',
            title: 'Σφάλμα στις συντεταγμένες',
-           description: 'Οι συντεταγμένες πολυγώνου δεν είναι έγκυρο JSON. π.χ. [[10,10], [100,10]]'
+           description: 'Οι συντεταγμένες πολυγώνου δεν είναι έγκυρο JSON. π.χ. [{"x":10,"y":10}, ...]'
          });
          setIsSubmitting(false);
          return;
@@ -309,9 +314,6 @@ export default function FloorDetailsPage() {
     console.log("Storage Path:", storageRef.fullPath);
   
     try {
-      const token = await auth.currentUser.getIdToken();
-      console.log("Auth Token:", token ? "Token acquired" : "No token found");
-  
       await uploadBytes(storageRef, selectedFile);
       const downloadURL = await getDownloadURL(storageRef);
   
@@ -344,6 +346,12 @@ export default function FloorDetailsPage() {
       router.push(`/units/${unitDoc.id}`);
     }
   };
+  
+  const handlePolygonDrawn = (points: {x: number, y: number}[]) => {
+      // Stringify the array of objects to be easily used in the form's textarea.
+      const pointsJson = JSON.stringify(points, null, 2);
+      form.setValue('polygonPoints', pointsJson);
+  }
 
   const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return 'N/A';
@@ -394,7 +402,12 @@ export default function FloorDetailsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
               {floor.floorPlanUrl ? (
-                  <FloorPlanViewer pdfUrl={floor.floorPlanUrl} units={units} onUnitClick={(id) => console.log('Clicked unit:', id)} />
+                  <FloorPlanViewer 
+                    pdfUrl={floor.floorPlanUrl} 
+                    units={units} 
+                    onUnitClick={(id) => handleRowClick(id)}
+                    onPolygonDrawn={handlePolygonDrawn}
+                  />
               ) : (
                   <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
                       <p className="text-muted-foreground">Δεν έχει ανέβει κάτοψη για αυτόν τον όροφο.</p>
@@ -427,7 +440,7 @@ export default function FloorDetailsPage() {
             <DialogHeader>
               <DialogTitle>Προσθήκη Νέου Ακινήτου</DialogTitle>
               <DialogDescription>
-                Συμπληρώστε τις πληροφορίες για να προσθέσετε ένα νέο ακίνητο (unit) στον όροφο.
+                Συμπληρώστε τις πληροφορίες για να προσθέσετε ένα νέο ακίνητο (unit) στον όροφο. Χρησιμοποιήστε την κάτοψη για να σχεδιάσετε το περίγραμμα.
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -501,7 +514,7 @@ export default function FloorDetailsPage() {
                     <FormItem>
                       <FormLabel>Συντεταγμένες Πολυγώνου (JSON)</FormLabel>
                       <FormControl>
-                        <Textarea placeholder='π.χ. [[10,10], [100,10], [100,100], [10,100]]' {...field} />
+                        <Textarea placeholder='Σχεδιάστε στην κάτοψη ή επικολλήστε εδώ: [{"x": 10, "y": 10}, ...]' {...field} rows={3} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -567,3 +580,5 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
+
+    
