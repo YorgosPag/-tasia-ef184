@@ -380,7 +380,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
           unit.polygonPoints?.forEach(point => {
               const distance = Math.sqrt(Math.pow(point.x - svgPoint.x, 2) + Math.pow(point.y - svgPoint.y, 2));
               if (distance < minDistance) {
-                  minDistance = distance;
+                  minDistance = d;
                   bestSnapPoint = point;
               }
           });
@@ -592,6 +592,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
 
+  const { cropBox } = pageDimensions;
+  const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropBox.height : 1;
   
   return (
         <div className="flex flex-col gap-2 items-center">
@@ -611,9 +613,9 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={loadingElement}
-                  className="flex justify-center items-start" 
+                  className="flex justify-center items-center h-full"
                   >
-                  <div className="relative">
+                  <div className="relative" style={{ aspectRatio: croppedAspectRatio }}>
                       <Page 
                       pageNumber={pageNumber} 
                       scale={scale} 
@@ -629,7 +631,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                           className="absolute top-0 left-0"
                           width={pageDimensions.width * scale}
                           height={pageDimensions.height * scale}
-                          viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
+                          viewBox={`${cropBox.x} ${cropBox.y} ${cropBox.width} ${cropBox.height}`}
                           style={{ pointerEvents: 'auto', cursor: isLocked ? 'not-allowed' : isEditMode ? 'crosshair' : 'default' }}
                           onClick={handleSvgClick}
                           onMouseMove={handleMouseMove}
