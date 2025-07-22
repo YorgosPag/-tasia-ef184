@@ -79,9 +79,7 @@ export function usePdfHandlers({
   };
 
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (lastMouseEvent) {
-        lastMouseEvent.current = event.nativeEvent;
-    }
+    lastMouseEvent.current = event.nativeEvent;
     if (isLocked || !draggingPoint) return;
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
