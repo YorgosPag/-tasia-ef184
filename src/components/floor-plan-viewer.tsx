@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, Undo2, Redo2, Edit, Trash2, ZoomIn } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, Undo2, Redo2, Edit, Trash2, ZoomIn, Frame } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -478,8 +478,10 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
         
         // Restore scroll position after re-render with old scale
         setTimeout(() => {
-            pdfContainer.scrollLeft = preZoomState.current.scrollLeft;
-            pdfContainer.scrollTop = preZoomState.current.scrollTop;
+            if (pdfContainerRef.current) {
+              pdfContainerRef.current.scrollLeft = preZoomState.current.scrollLeft;
+              pdfContainerRef.current.scrollTop = preZoomState.current.scrollTop;
+            }
         }, 0);
       }
     };
@@ -508,10 +510,37 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
       setStatusVisibility(prev => ({ ...prev, [status]: checked }));
   }
 
+  const handleFitToView = () => {
+    const container = pdfContainerRef.current;
+    const pdf = pageDimensions;
+
+    if (!container || !pdf || pdf.width === 0 || pdf.height === 0) return;
+
+    // Add some padding to the fit
+    const PADDING = 0.95;
+
+    const scaleX = (container.clientWidth / pdf.width) * PADDING;
+    const scaleY = (container.clientHeight / pdf.height) * PADDING;
+
+    const newScale = Math.min(scaleX, scaleY);
+
+    setScale(newScale);
+
+    // Center the content after fitting
+    setTimeout(() => {
+      if (pdfContainerRef.current) {
+        const newScrollLeft = (pdf.width * newScale - container.clientWidth) / 2;
+        const newScrollTop = (pdf.height * newScale - container.clientHeight) / 2;
+        pdfContainerRef.current.scrollLeft = newScrollLeft > 0 ? newScrollLeft : 0;
+        pdfContainerRef.current.scrollTop = newScrollTop > 0 ? newScrollTop : 0;
+      }
+    }, 0);
+  };
+
   const visibleUnits = localUnits.filter(unit => statusVisibility[unit.status]);
   
   const loadingElement = (
-    <div className="flex flex-col items-center justify-center h-96 gap-4 text-muted-foreground">
+    <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
       <Loader2 className="h-12 w-12 animate-spin" />
       <p>Φόρτωση και ανάλυση κάτοψης...</p>
     </div>
@@ -531,9 +560,14 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   return (
         <div className="flex flex-col gap-4 items-center">
         <Card className="w-full">
-            <CardContent className="p-2 relative overflow-auto" ref={pdfContainerRef} onMouseUp={handleMouseUp}>
+            <CardContent 
+                className="p-2 relative overflow-auto bg-muted/20" 
+                style={{ height: '70vh' }}
+                ref={pdfContainerRef} 
+                onMouseUp={handleMouseUp}
+            >
             {pdfError ? (
-                <div className="flex items-center justify-center h-96 text-destructive text-center p-4">
+                <div className="flex items-center justify-center h-full text-destructive text-center p-4">
                 {pdfError}
                 </div>
             ) : (
@@ -542,7 +576,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                 onLoadSuccess={onDocumentLoadSuccess}
                 onLoadError={onDocumentLoadError}
                 loading={loadingElement}
-                className="flex justify-center"
+                className="flex justify-center items-center h-full"
                 >
                 <div className="relative">
                     <Page 
@@ -733,12 +767,15 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
             </CardContent>
         </Card>
         <div className="flex flex-wrap items-center justify-center gap-2 p-2 rounded-md bg-muted">
-            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.2, s - 0.05))} disabled={!numPages || isLocked}>
+            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.1, s - 0.1))} disabled={!numPages || isLocked}>
                 <Minus />
             </Button>
             <span className="text-sm font-medium w-16 text-center">{(scale * 100).toFixed(0)}%</span>
-            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(3, s + 0.05))} disabled={!numPages || isLocked}>
+            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(5, s + 0.1))} disabled={!numPages || isLocked}>
                 <Plus />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleFitToView} disabled={!numPages || isLocked} title="Προσαρμογή στην οθόνη">
+                <Frame />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages || isLocked}>
                 <RefreshCw />
