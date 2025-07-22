@@ -49,12 +49,13 @@ interface FloorPlanViewerProps {
 }
 
 const ALL_STATUSES: Unit['status'][] = ['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος'];
-const CLOSING_DISTANCE_THRESHOLD = 10; // Distance in SVG units to close the polygon
+const CLOSING_DISTANCE_THRESHOLD = 15; // Distance in SVG units to close the polygon
+const SNAPPING_DISTANCE_THRESHOLD = 10; // Distance to snap to an existing vertex
 
 const getStatusColor = (status?: Unit['status']) => {
     switch(status) {
         case 'Πωλημένο': return '#ef4444'; // red-500
-        case 'Κρατημένο': return '#f59e0b'; // yellow-500
+        case 'Κρατημένο': return '#3b82f6'; // blue-500
         case 'Διαθέσιμο': return '#22c55e'; // green-500
         case 'Οικοπεδούχος': return '#f97316'; // orange-500
         default: return '#6b7280'; // gray-500
@@ -64,7 +65,7 @@ const getStatusColor = (status?: Unit['status']) => {
 const getStatusClass = (status: Unit['status'] | undefined) => {
     switch(status) {
         case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600 text-white';
-        case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600 text-white';
+        case 'Κρατημένο': return 'bg-blue-500 hover:bg-blue-600 text-white';
         case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600 text-white';
         case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600 text-white';
         default: return 'bg-gray-500 hover:bg-gray-600 text-white';
@@ -99,6 +100,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentPolygonPoints, setCurrentPolygonPoints] = useState<{ x: number; y: number }[]>([]);
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const [snapPoint, setSnapPoint] = useState<{ x: number; y: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const { toast } = useToast();
   
@@ -153,6 +155,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const resetDrawingState = useCallback(() => {
     setCurrentPolygonPoints([]);
     setMousePosition(null);
+    setSnapPoint(null);
     setHistory([[]]); // Start with a single empty state
     setHistoryIndex(0);
   }, []);
@@ -201,25 +204,28 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
     if (!isEditMode || isLocked) return;
     
-    const svgPoint = getSvgPoint(event);
-    if (!svgPoint) return;
+    let clickPoint = getSvgPoint(event);
+    if (!clickPoint) return;
     
-    let newPoints = [...currentPolygonPoints, { x: svgPoint.x, y: svgPoint.y }];
+    // Use snap point if available
+    if(snapPoint) {
+        clickPoint = snapPoint;
+    }
+
+    let newPoints = [...currentPolygonPoints, { x: clickPoint.x, y: clickPoint.y }];
 
     // Check if user is closing the polygon
     if (currentPolygonPoints.length > 1) {
         const firstPoint = currentPolygonPoints[0];
-        const dx = firstPoint.x - svgPoint.x;
-        const dy = firstPoint.y - svgPoint.y;
+        const dx = firstPoint.x - clickPoint.x;
+        const dy = firstPoint.y - clickPoint.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if(distance < CLOSING_DISTANCE_THRESHOLD) {
-            // Finalize by setting the last point to be the same as the first
-            newPoints = currentPolygonPoints; // Don't add a new point, just close with existing
-            onPolygonDrawn(newPoints); // Callback with the finalized points
-            setCurrentPolygonPoints([]); // Clear temp points
-            setMousePosition(null); // Stop drawing line to mouse
-            setIsEditMode(false); // Exit edit mode
+            newPoints = currentPolygonPoints; 
+            onPolygonDrawn(newPoints);
+            resetDrawingState();
+            setIsEditMode(false);
             toast({
                 title: "Το σχήμα ολοκληρώθηκε",
                 description: "Οι συντεταγμένες είναι έτοιμες για αποθήκευση."
@@ -257,6 +263,31 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     
     if (isEditMode) {
       setMousePosition({ x: svgPoint.x, y: svgPoint.y });
+      // Snapping logic
+      let bestSnapPoint = null;
+      let minDistance = SNAPPING_DISTANCE_THRESHOLD;
+      
+      // Snap to own points (for closing)
+      if (currentPolygonPoints.length > 2) {
+          const firstPoint = currentPolygonPoints[0];
+          const d = Math.sqrt(Math.pow(firstPoint.x - svgPoint.x, 2) + Math.pow(firstPoint.y - svgPoint.y, 2));
+          if (d < minDistance) {
+              minDistance = d;
+              bestSnapPoint = firstPoint;
+          }
+      }
+      
+      // Snap to existing units' vertices
+      visibleUnits.forEach(unit => {
+          unit.polygonPoints?.forEach(point => {
+              const distance = Math.sqrt(Math.pow(point.x - svgPoint.x, 2) + Math.pow(point.y - svgPoint.y, 2));
+              if (distance < minDistance) {
+                  minDistance = distance;
+                  bestSnapPoint = point;
+              }
+          });
+      });
+      setSnapPoint(bestSnapPoint);
     }
   };
 
@@ -279,6 +310,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
 
   const handleMouseLeave = () => {
     setMousePosition(null);
+    setSnapPoint(null);
     // If dragging, we should stop to prevent weird behavior
     if (draggingPoint) {
         handleMouseUp();
@@ -334,7 +366,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
 
   const drawingPolylinePoints = [...currentPolygonPoints];
   if (mousePosition && currentPolygonPoints.length > 0) {
-    drawingPolylinePoints.push(mousePosition);
+    drawingPolylinePoints.push(snapPoint || mousePosition);
   }
 
   const canUndo = historyIndex > 0;
@@ -413,10 +445,11 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                                         >
                                             <polygon
                                                 points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
-                                                className={
-                                                `stroke-2 group-hover/polygon:opacity-100 transition-opacity ` +
-                                                (selectedUnitId === unit.id ? 'opacity-70' : 'opacity-40')
-                                                }
+                                                className={cn(
+                                                    'stroke-2 transition-opacity',
+                                                    selectedUnitId === unit.id ? 'opacity-50' : 'opacity-40',
+                                                    'group-hover/polygon:opacity-70'
+                                                )}
                                                 style={{
                                                     fill: getStatusColor(unit.status),
                                                     stroke: getStatusColor(unit.status)
@@ -524,6 +557,14 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                                     strokeWidth="2"
                                 />
                              </g>
+                        )}
+
+                        {/* Snap point indicator */}
+                        {snapPoint && isEditMode && (
+                            <g className="pointer-events-none">
+                                <circle cx={snapPoint.x} cy={snapPoint.y} r={SNAPPING_DISTANCE_THRESHOLD} fill="none" stroke="hsl(var(--destructive))" strokeWidth="1" strokeDasharray="2 2" />
+                                <circle cx={snapPoint.x} cy={snapPoint.y} r="3" fill="hsl(var(--destructive))" />
+                            </g>
                         )}
                     </svg>
                     )}
