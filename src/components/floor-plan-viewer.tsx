@@ -123,7 +123,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   // Precision Zoom (Magnifying Glass) state
   const [isPrecisionZooming, setIsPrecisionZooming] = useState(false);
   const preZoomState = useRef({ scale: 1.0, scrollLeft: 0, scrollTop: 0 });
-  const lastMouseEvent = useRef<React.MouseEvent | null>(null);
+  const lastMouseEvent = useRef<MouseEvent | null>(null);
 
 
   // Initialize state from localStorage or use defaults
@@ -201,7 +201,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     // Don't call onUnitClick here, it will be called from the popover buttons
   };
   
-  const getSvgPoint = (event: React.MouseEvent<SVGSVGElement | SVGCircleElement>) => {
+  const getSvgPoint = (event: React.MouseEvent<SVGSVGElement | SVGCircleElement> | MouseEvent) => {
     if (!svgRef.current) return null;
     const svg = svgRef.current;
     const pt = svg.createSVGPoint();
@@ -250,7 +250,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   };
   
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
-    lastMouseEvent.current = event;
+    lastMouseEvent.current = event.nativeEvent;
     if (isLocked) return;
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
@@ -371,25 +371,19 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
         e.preventDefault();
         setIsPrecisionZooming(true);
 
-        // Store current state
         preZoomState.current = {
             scale: scale,
             scrollLeft: pdfContainer.scrollLeft,
             scrollTop: pdfContainer.scrollTop,
         };
         
-        // Calculate zoom origin based on mouse position
         const rect = pdfContainer.getBoundingClientRect();
         const mouseX = lastMouseEvent.current.clientX - rect.left;
         const mouseY = lastMouseEvent.current.clientY - rect.top;
         
         const newScale = PRECISION_ZOOM_SCALE;
-
-        // Apply new scale and scroll to keep the mouse position centered
         setScale(newScale);
 
-        // The scroll needs to be adjusted after the scale is applied and rendered
-        // We use a short timeout to let the DOM update.
         setTimeout(() => {
             const newScrollLeft = (mouseX * newScale) - (pdfContainer.clientWidth / 2);
             const newScrollTop = (mouseY * newScale) - (pdfContainer.clientHeight / 2);
@@ -404,20 +398,28 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
         e.preventDefault();
         setIsPrecisionZooming(false);
         setScale(preZoomState.current.scale);
-        // Restore scroll position after DOM update
+        
         setTimeout(() => {
             pdfContainer.scrollLeft = preZoomState.current.scrollLeft;
             pdfContainer.scrollTop = preZoomState.current.scrollTop;
         }, 0);
       }
     };
+    
+    // Update last mouse event globally for keydown handler
+    const updateMousePosition = (e: MouseEvent) => {
+        lastMouseEvent.current = e;
+    };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('mousemove', updateMousePosition, true);
+
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('mousemove', updateMousePosition, true);
     };
   }, [isEditMode, isPrecisionZooming, scale]);
 
@@ -750,7 +752,3 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   );
 
 }
-
-    
-
-    
