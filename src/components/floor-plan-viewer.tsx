@@ -5,10 +5,12 @@ import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Badge } from './ui/badge';
+
 
 interface Unit {
   id: string;
@@ -24,7 +26,7 @@ interface FloorPlanViewerProps {
   onUnitClick: (unitId: string) => void;
 }
 
-const getStatusColor = (status: Unit['status'] | undefined) => {
+const getStatusColor = (status: Unit['status']) => {
     switch(status) {
         case 'Πωλημένο': return '#ef4444'; // red-500
         case 'Κρατημένο': return '#f59e0b'; // yellow-500
@@ -33,6 +35,17 @@ const getStatusColor = (status: Unit['status'] | undefined) => {
         default: return '#6b7280'; // gray-500
     }
 }
+
+const getStatusClass = (status: Unit['status'] | undefined) => {
+    switch(status) {
+        case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600 text-white';
+        case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600 text-white';
+        case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600 text-white';
+        case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600 text-white';
+        default: return 'bg-gray-500 hover:bg-gray-600 text-white';
+    }
+}
+
 
 // Helper to get state from localStorage
 const getInitialState = <T,>(key: string, defaultValue: T): T => {
@@ -83,9 +96,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   }, []);
   
   useEffect(() => {
-    // Reset view settings only when the PDF URL changes
     setPageNumber(1);
-    // Don't reset scale, rotation, and lock state here anymore
   }, [pdfUrl]);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
@@ -116,7 +127,6 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   );
 
   return (
-    <TooltipProvider>
         <div className="flex flex-col gap-4 items-center">
         <Card className="w-full">
             <CardContent className="p-2 relative overflow-auto">
@@ -151,13 +161,13 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                     >
                         {units.map((unit) =>
                         unit.polygonPoints ? (
-                            <Tooltip key={unit.id} delayDuration={100}>
-                                <TooltipTrigger asChild>
-                                    <g onClick={() => handleUnitClick(unit.id)}>
+                            <Popover key={unit.id}>
+                                <PopoverTrigger asChild>
+                                    <g onClick={() => handleUnitClick(unit.id)} className="cursor-pointer">
                                         <polygon
                                             points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
                                             className={
-                                            `stroke-2 hover:opacity-100 cursor-pointer transition-opacity ` +
+                                            `stroke-2 hover:opacity-100 transition-opacity ` +
                                             (selectedUnitId === unit.id ? 'opacity-70' : 'opacity-40')
                                             }
                                             style={{
@@ -166,12 +176,28 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                                             }}
                                         />
                                     </g>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p className="font-bold">{unit.name} ({unit.identifier})</p>
-                                    <p>Κατάσταση: {unit.status}</p>
-                                </TooltipContent>
-                            </Tooltip>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80">
+                                   <div className="grid gap-4">
+                                        <div className="space-y-2">
+                                            <h4 className="font-medium leading-none">{unit.name} ({unit.identifier})</h4>
+                                            <p className="text-sm text-muted-foreground">
+                                                Περισσότερες λεπτομέρειες για το ακίνητο.
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium">Κατάσταση:</span>
+                                            <Badge variant="default" className={getStatusClass(unit.status)}>
+                                                {unit.status}
+                                            </Badge>
+                                        </div>
+                                        <Button size="sm" variant="outline" onClick={() => onUnitClick(unit.id)}>
+                                            <Info className="mr-2 h-4 w-4" />
+                                            Προβολή Στοιχείων
+                                        </Button>
+                                   </div>
+                                </PopoverContent>
+                            </Popover>
                         ) : null
                         )}
                     </svg>
@@ -192,18 +218,19 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
             <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages || isLocked}>
                 <RefreshCw />
             </Button>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" disabled={!numPages}>
                         {isLocked ? <Lock /> : <Unlock />}
                     </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>{isLocked ? 'Ξεκλείδωμα κίνησης/zoom' : 'Κλείδωμα κίνησης/zoom'}</p>
-                </TooltipContent>
-            </Tooltip>
+                </PopoverTrigger>
+                <PopoverContent side="top" className="w-auto p-2">
+                     <Button variant="ghost" size="sm" onClick={() => setIsLocked(prev => !prev)}>
+                        {isLocked ? 'Ξεκλείδωμα' : 'Κλείδωμα'}
+                    </Button>
+                </PopoverContent>
+            </Popover>
         </div>
         </div>
-    </TooltipProvider>
   );
 }
