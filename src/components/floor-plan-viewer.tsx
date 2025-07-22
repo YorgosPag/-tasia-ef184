@@ -14,11 +14,8 @@ import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { cn } from '@/lib/utils';
 
-// Set worker path
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
+// Set worker path to a specific, compatible version from a CDN
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 
 interface Unit {
