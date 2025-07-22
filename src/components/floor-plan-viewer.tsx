@@ -267,6 +267,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
 
   const handleMouseLeave = () => {
     setMousePosition(null);
+    // If dragging, we should stop to prevent weird behavior
+    if (draggingPoint) {
+        handleMouseUp();
+    }
   };
 
   const handleUndo = useCallback(() => {
