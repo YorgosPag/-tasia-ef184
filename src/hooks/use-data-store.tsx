@@ -11,6 +11,7 @@ import { useToast } from './use-toast';
 export interface Company {
   id: string;
   name: string;
+  logoUrl?: string;
   contactInfo: {
     email: string;
     phone: string;
