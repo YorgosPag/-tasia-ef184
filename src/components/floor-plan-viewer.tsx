@@ -556,9 +556,9 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
         setTimeout(() => {
             container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
             container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
-        }, 50); // Increased timeout slightly
+        }, 50);
     }
-  }, [scale, pageDimensions]); // Rerun when scale or pageDimensions change
+  }, [scale]); 
 
   const handleFitToView = () => {
     const container = pdfContainerRef.current;
@@ -596,11 +596,11 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropBox.height : 1;
   
   return (
-        <div className="flex flex-col gap-2 items-center">
+        <div className="flex flex-col gap-4 items-center">
             <div 
                 ref={pdfContainerRef} 
                 className="w-full bg-muted/20 border rounded-lg overflow-auto"
-                style={{ height: '50vh' }}
+                style={{ height: '35vh' }}
                 onMouseUp={handleMouseUp}
             >
               {pdfError ? (
