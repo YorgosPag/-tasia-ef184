@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "tasia-ef184"
-  }
+    "default": "tasia-ef184",
+    "main": "tasia-6f77i"
+  },
+  "targets": {},
+  "etags": {}
 }
