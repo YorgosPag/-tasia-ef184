@@ -41,6 +41,7 @@ interface Unit {
 interface FloorPlanViewerProps {
   pdfUrl: string;
   units: Unit[];
+  drawingPolygon: { x: number; y: number }[] | null;
   onUnitClick: (unitId: string) => void;
   onUnitDelete: (unitId: string) => void;
   onPolygonDrawn: (points: { x: number; y: number }[]) => void;
@@ -89,7 +90,7 @@ const getInitialState = <T,>(key: string, defaultValue: T): T => {
 };
 
 
-export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPolygonDrawn, onUnitPointsUpdate }: FloorPlanViewerProps) {
+export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, onUnitDelete, onPolygonDrawn, onUnitPointsUpdate }: FloorPlanViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -98,7 +99,6 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentPolygonPoints, setCurrentPolygonPoints] = useState<{ x: number; y: number }[]>([]);
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
-  const [finalizedPolygon, setFinalizedPolygon] = useState<{ x: number; y: number }[] | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const { toast } = useToast();
   
@@ -153,7 +153,6 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
   const resetDrawingState = useCallback(() => {
     setCurrentPolygonPoints([]);
     setMousePosition(null);
-    setFinalizedPolygon(null);
     setHistory([[]]); // Start with a single empty state
     setHistoryIndex(0);
   }, []);
@@ -200,7 +199,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
   };
 
   const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (!isEditMode || finalizedPolygon || isLocked) return;
+    if (!isEditMode || isLocked) return;
     
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
@@ -217,7 +216,6 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
         if(distance < CLOSING_DISTANCE_THRESHOLD) {
             // Finalize by setting the last point to be the same as the first
             newPoints = currentPolygonPoints; // Don't add a new point, just close with existing
-            setFinalizedPolygon(newPoints);
             onPolygonDrawn(newPoints); // Callback with the finalized points
             setCurrentPolygonPoints([]); // Clear temp points
             setMousePosition(null); // Stop drawing line to mouse
@@ -499,8 +497,8 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
                                     points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
                                     fill="none"
                                     stroke="hsl(var(--destructive))"
-                                    strokeWidth="3"
-                                    strokeDasharray="5 5"
+                                    strokeWidth="2"
+                                    strokeDasharray="6 6"
                                 />
                                 {currentPolygonPoints.map((point, index) => (
                                     <circle
@@ -517,10 +515,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
                         )}
                         
                         {/* Layer for a finalized but unsaved polygon */}
-                        {finalizedPolygon && (
+                        {drawingPolygon && (
                              <g className="pointer-events-none">
                                 <polygon
-                                    points={finalizedPolygon.map(p => `${p.x},${p.y}`).join(' ')}
+                                    points={drawingPolygon.map(p => `${p.x},${p.y}`).join(' ')}
                                     fill="hsla(var(--primary), 0.3)"
                                     stroke="hsl(var(--primary))"
                                     strokeWidth="2"
