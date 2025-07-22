@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -19,12 +19,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogIn, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { Breadcrumbs } from './breadcrumbs';
+import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 
 export function AppHeader() {
   const isMobile = useIsMobile();
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
+
+  const breadcrumbs = useBreadcrumbs();
+  const showBreadcrumbs = breadcrumbs.length > 1 && !pathname.endsWith('/edit');
 
   useEffect(() => {
     // The useAuth hook doesn't provide a loading state,
@@ -53,7 +59,9 @@ export function AppHeader() {
     <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 shadow-sm backdrop-blur-sm sm:h-16 sm:px-6">
       {isMobile && <SidebarTrigger />}
       <div className="flex-1">
-        {/* You can add a page title or breadcrumbs here */}
+        {showBreadcrumbs && (
+          <Breadcrumbs items={breadcrumbs} />
+        )}
       </div>
       <div className="flex items-center gap-4">
         {isLoading ? (
