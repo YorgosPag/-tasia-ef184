@@ -78,6 +78,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   const [pageDimensions, setPageDimensions] = useState({ width: 0, height: 0 });
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentPolygonPoints, setCurrentPolygonPoints] = useState<{ x: number; y: number }[]>([]);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
 
@@ -112,7 +113,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
 
 
   useEffect(() => {
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
   }, []);
   
   useEffect(() => {
@@ -124,6 +125,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
     // When exiting edit mode, clear the points
     if (!isEditMode) {
         setCurrentPolygonPoints([]);
+        setMousePosition(null);
     }
   }, [isEditMode])
 
@@ -147,18 +149,34 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
     setSelectedUnitId(unitId);
     onUnitClick(unitId);
   };
-
-  const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (!isEditMode || !svgRef.current) return;
-
+  
+  const getSvgPoint = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current) return null;
     const svg = svgRef.current;
     const pt = svg.createSVGPoint();
     pt.x = event.clientX;
     pt.y = event.clientY;
+    return pt.matrixTransform(svg.getScreenCTM()?.inverse());
+  };
 
-    const svgPoint = pt.matrixTransform(svg.getScreenCTM()?.inverse());
-    
-    setCurrentPolygonPoints(prev => [...prev, { x: svgPoint.x, y: svgPoint.y }]);
+  const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (!isEditMode) return;
+    const svgPoint = getSvgPoint(event);
+    if (svgPoint) {
+      setCurrentPolygonPoints(prev => [...prev, { x: svgPoint.x, y: svgPoint.y }]);
+    }
+  };
+  
+  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (!isEditMode || currentPolygonPoints.length === 0) return;
+    const svgPoint = getSvgPoint(event);
+     if (svgPoint) {
+      setMousePosition({ x: svgPoint.x, y: svgPoint.y });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setMousePosition(null);
   };
 
 
@@ -174,6 +192,11 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
       <p>Φόρτωση κάτοψης...</p>
     </div>
   );
+
+  const drawingPolylinePoints = [...currentPolygonPoints];
+  if (mousePosition) {
+    drawingPolylinePoints.push(mousePosition);
+  }
 
   return (
         <div className="flex flex-col gap-4 items-center">
@@ -209,6 +232,8 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                         viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
                         style={{ pointerEvents: 'auto', cursor: isEditMode ? 'crosshair' : 'default' }}
                         onClick={handleSvgClick}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
                     >
                         {/* Layer for existing polygons */}
                         <g>
@@ -256,10 +281,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                         </g>
 
                         {/* Layer for drawing new polygon */}
-                        {isEditMode && currentPolygonPoints.length > 0 && (
+                        {isEditMode && drawingPolylinePoints.length > 0 && (
                             <g>
                                 <polyline
-                                    points={currentPolygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
+                                    points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
                                     fill="none"
                                     stroke="hsl(var(--primary))"
                                     strokeWidth="2"
