@@ -374,6 +374,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
                                     <PopoverTrigger asChild>
                                         <g 
                                             onClick={() => handleUnitClick(unit.id)} 
+                                            className="group/polygon"
                                             style={{
                                                 pointerEvents: isEditMode || isLocked ? 'none' : 'auto', 
                                                 cursor: isLocked ? 'not-allowed' : 'pointer'
@@ -382,7 +383,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
                                             <polygon
                                                 points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
                                                 className={
-                                                `stroke-2 hover:opacity-100 transition-opacity ` +
+                                                `stroke-2 group-hover/polygon:opacity-100 transition-opacity ` +
                                                 (selectedUnitId === unit.id ? 'opacity-70' : 'opacity-40')
                                                 }
                                                 style={{
@@ -430,7 +431,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
                                         stroke="#fff"
                                         strokeWidth="1.5"
                                         onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
-                                        className="cursor-move"
+                                        className="cursor-move transition-all hover:r-7 hover:stroke-2"
                                     />
                                 ))
                             )}
