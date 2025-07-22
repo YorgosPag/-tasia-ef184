@@ -167,10 +167,14 @@ export default function FloorDetailsPage() {
             const unsubscribe = onSnapshot(
               unitsColRef,
               (snapshot) => {
-                const unitsData: Unit[] = snapshot.docs.map((doc) => ({
-                  id: doc.id,
-                  ...doc.data(),
-                } as Unit));
+                const unitsData: Unit[] = snapshot.docs.map((doc) => {
+                  const data = doc.data();
+                  return {
+                    id: doc.id,
+                    ...data,
+                    polygonPoints: data.polygonPoints || [],
+                  } as Unit
+                });
                 setUnits(unitsData);
                 setIsLoadingUnits(false);
               },
@@ -209,18 +213,13 @@ export default function FloorDetailsPage() {
      setIsSubmitting(true);
      
      let parsedPolygonPoints: {x: number, y: number}[] | undefined;
-     if (data.polygonPoints) {
+     if (data.polygonPoints && data.polygonPoints.trim() !== '') {
        try {
-         // This converts a string like "[[10,20], [30,40]]" or "[{x:10, y:20},...]" into an array of objects
          const pointsArray = JSON.parse(data.polygonPoints);
-         if (Array.isArray(pointsArray) && pointsArray.every(p => Array.isArray(p) && p.length === 2 && typeof p[0] === 'number' && typeof p[1] === 'number')) {
-            // Firestore can't store array of arrays for GeoPoint, so we convert to array of objects
-           parsedPolygonPoints = pointsArray.map(p => ({ x: p[0], y: p[1]}));
-         } else if (Array.isArray(pointsArray) && pointsArray.every(p => typeof p.x === 'number' && typeof p.y === 'number')) {
-            // Already in the correct format {x, y}
+         if (Array.isArray(pointsArray) && pointsArray.every(p => typeof p.x === 'number' && typeof p.y === 'number')) {
             parsedPolygonPoints = pointsArray;
          } else {
-            throw new Error('Invalid format');
+            throw new Error('Invalid points format. Expected an array of {x, y} objects.');
          }
        } catch (e) {
          toast({
@@ -264,7 +263,6 @@ export default function FloorDetailsPage() {
           createdAt: serverTimestamp(),
        });
        
-
        toast({
          title: 'Επιτυχία',
          description: 'Το ακίνητο προστέθηκε με επιτυχία.',
