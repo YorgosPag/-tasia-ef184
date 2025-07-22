@@ -558,7 +558,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
             container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
         }, 50);
     }
-  }, [scale]); 
+  }, [scale, pageDimensions]); 
 
   const handleFitToView = () => {
     const container = pdfContainerRef.current;
@@ -568,6 +568,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     const { clientWidth, clientHeight } = container;
     const { width: cropWidth, height: cropHeight } = pageDimensions.cropBox;
   
+    if (cropWidth <= 0 || cropHeight <= 0) return;
+
     const scaleX = (clientWidth / cropWidth) * PADDING;
     const scaleY = (clientHeight / cropHeight) * PADDING;
   
@@ -596,11 +598,11 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropBox.height : 1;
   
   return (
-        <div className="flex flex-col gap-4 items-center">
+        <div className="flex flex-col gap-2 items-center">
             <div 
                 ref={pdfContainerRef} 
                 className="w-full bg-muted/20 border rounded-lg overflow-auto"
-                style={{ height: '35vh' }}
+                style={{ height: '40vh' }}
                 onMouseUp={handleMouseUp}
             >
               {pdfError ? (
@@ -613,7 +615,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={loadingElement}
-                  className="flex justify-center items-center h-full"
+                  className="flex justify-center items-center min-h-full"
                   >
                   <div className="relative" style={{ aspectRatio: croppedAspectRatio }}>
                       <Page 
