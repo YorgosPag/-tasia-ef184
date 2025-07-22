@@ -148,7 +148,7 @@ export function UnitDialogForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Ενέργεια</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || 'new'}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε ενέργεια..." /></SelectTrigger></FormControl>
                       <SelectContent>
                         <SelectItem value="new">Δημιουργία Νέου Ακινήτου</SelectItem>
