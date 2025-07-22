@@ -87,7 +87,8 @@ interface Unit {
   type?: string;
   status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
   buildingId: string;
-  floorId: string;
+  floorIds: string[];
+  levelSpan?: string;
   originalId: string; // The ID in the subcollection
   createdAt: Timestamp;
   area?: number;
@@ -300,7 +301,10 @@ export default function UnitDetailsPage() {
             <div className="flex justify-between items-start">
                 <div>
                     <CardTitle>Ακίνητο: {unit.name} ({unit.identifier})</CardTitle>
-                    <CardDescription>Τύπος: {unit.type || 'N/A'} | ID Ορόφου: {unit.floorId}</CardDescription>
+                    <CardDescription>
+                        Τύπος: {unit.type || 'N/A'} | 
+                        {unit.levelSpan ? ` Όροφοι: ${unit.levelSpan}` : ` ID Ορόφου: ${unit.floorIds?.join(', ')}`}
+                    </CardDescription>
                 </div>
                 <Badge variant="default" className={getStatusClass(unit.status)}>
                     {unit.status}
