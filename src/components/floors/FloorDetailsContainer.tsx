@@ -272,14 +272,18 @@ export function FloorDetailsContainer() {
     }
   };
   
-  const handleUnitPointsUpdate = async (unitId: string, newPoints: { x: number; y: number }[]) => {
+  const handleUnitPointsUpdate = useCallback(async (unitId: string, newPoints: { x: number; y: number }[]) => {
     const unitToUpdate = units.find(u => u.id === unitId);
     if (!unitToUpdate) return;
+    
     const success = await updateUnitInFirestore(unitToUpdate.id, unitToUpdate.originalId, { polygonPoints: newPoints });
+    
     if (success) {
       toast({ title: "Το σχήμα ενημερώθηκε", description: "Οι νέες συντεταγμένες αποθηκεύτηκαν." });
     }
-  };
+    // Failure toast is handled inside updateUnitInFirestore
+  }, [units, toast]);
+
 
   // --- UI Event Handlers ---
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
