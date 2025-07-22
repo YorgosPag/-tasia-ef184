@@ -16,7 +16,6 @@ interface PageDimensions {
 }
 
 interface useFloorPlanStateProps {
-    units: Unit[];
     onPolygonDrawn: (points: { x: number; y: number }[]) => void;
 }
 
@@ -26,7 +25,7 @@ interface useFloorPlanStateProps {
  * It manages the composition of more specialized hooks for zoom, drawing, and UI state.
  * This is the primary hook consumed by the FloorPlanViewer component.
  */
-export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStateProps) {
+export function useFloorPlanState({ onPolygonDrawn }: useFloorPlanStateProps) {
     const [pageDimensions, setPageDimensions] = useState<PageDimensions>({
         width: 0, height: 0, cropBox: { x: 0, y: 0, width: 0, height: 0 }
     });
@@ -50,7 +49,8 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         drawingPolygon,
         setDrawingPolygon,
         handleUndo,
-        completeAndResetDrawing
+        completeAndResetDrawing,
+        cancelDrawing,
     } = usePolygonDraw({ isEditMode, onPolygonDrawn });
 
     const zoom = useZoom({ pdfContainerRef, pageDimensions });
@@ -91,11 +91,12 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
 
     const toggleEditMode = () => {
         setIsEditMode(prev => {
-            // Clear any unfinished polygon when exiting edit mode
-            if (!prev && drawingPolygon.length > 0) {
-                 setDrawingPolygon([]);
+            const isEnteringEditMode = !prev;
+            // If exiting edit mode with an unfinished polygon, cancel it.
+            if (!isEnteringEditMode && drawingPolygon.length > 0) {
+                 cancelDrawing();
             }
-            return !prev;
+            return isEnteringEditMode;
         });
     }
 
