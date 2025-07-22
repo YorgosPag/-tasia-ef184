@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +30,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 const registerSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -43,6 +45,7 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const isMobile = useIsMobile();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -51,6 +54,29 @@ export default function RegisterPage() {
       password: "",
     },
   });
+
+   // Handle redirect result from Google Sign-In
+   useEffect(() => {
+    const checkRedirectResult = async () => {
+      setIsGoogleLoading(true);
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          router.push('/');
+        }
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Google Sign-Up Failed",
+          description: error.message,
+        });
+      } finally {
+        setIsGoogleLoading(false);
+      }
+    };
+    checkRedirectResult();
+  }, [router, toast]);
+
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
@@ -86,8 +112,12 @@ export default function RegisterPage() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      router.push('/');
+      if (isMobile) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+        router.push('/');
+      }
     } catch (error: any) {
       if (error.code !== 'auth/popup-closed-by-user') {
           toast({
@@ -96,7 +126,6 @@ export default function RegisterPage() {
             description: error.message,
           });
       }
-    } finally {
       setIsGoogleLoading(false);
     }
   };
