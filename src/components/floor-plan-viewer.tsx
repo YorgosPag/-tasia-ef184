@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page, pdfjs, PDFPageProxy } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, Undo2, Redo2, Edit, Trash2, ZoomIn } from 'lucide-react';
@@ -98,7 +98,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
-  const [pageDimensions, setPageDimensions] = useState({ width: 0, height: 0 });
+  const [pageDimensions, setPageDimensions] = useState({ width: 0, height: 0, cropBox: { x: 0, y: 0, width: 0, height: 0 } });
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentPolygonPoints, setCurrentPolygonPoints] = useState<{ x: number; y: number }[]>([]);
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
@@ -190,9 +190,64 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     setPdfError(`Απέτυχε η φόρτωση του PDF: ${error.message}.`);
   }
   
-  function onPageLoadSuccess(page: any) {
-    const { width, height } = page.getViewport({ scale: 1 });
-    setPageDimensions({ width, height });
+  async function onPageLoadSuccess(page: PDFPageProxy) {
+    const originalViewport = page.getViewport({ scale: 1 });
+  
+    // Create an in-memory canvas to analyze the PDF content
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) {
+        setPageDimensions({ width: originalViewport.width, height: originalViewport.height, cropBox: { x: 0, y: 0, width: originalViewport.width, height: originalViewport.height } });
+        return;
+    }
+  
+    canvas.width = originalViewport.width;
+    canvas.height = originalViewport.height;
+  
+    const renderContext = {
+      canvasContext: context,
+      viewport: originalViewport,
+    };
+    await page.render(renderContext).promise;
+  
+    // Analyze the canvas to find the content bounding box
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    let minX = canvas.width, minY = canvas.height, maxX = -1, maxY = -1;
+  
+    // Check for non-white pixels (with a tolerance for off-white)
+    const isWhite = (r: number, g: number, b: number, a: number) => a === 0 || (r > 240 && g > 240 && b > 240);
+  
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const i = (y * canvas.width + x) * 4;
+        if (!isWhite(data[i], data[i+1], data[i+2], data[i+3])) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    
+    // Fallback if no content is found
+    if (maxX === -1) {
+        minX = 0; minY = 0; maxX = canvas.width; maxY = canvas.height;
+    }
+  
+    const padding = 20; // Add some padding around the content
+    const cropBox = {
+        x: Math.max(0, minX - padding),
+        y: Math.max(0, minY - padding),
+        width: Math.min(canvas.width, (maxX - minX) + 2 * padding),
+        height: Math.min(canvas.height, (maxY - minY) + 2 * padding),
+    };
+    
+    setPageDimensions({ 
+        width: cropBox.width, 
+        height: cropBox.height,
+        cropBox
+    });
   }
 
   const handleUnitClick = (unitId: string) => {
@@ -207,7 +262,13 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     const pt = svg.createSVGPoint();
     pt.x = event.clientX;
     pt.y = event.clientY;
-    return pt.matrixTransform(svg.getScreenCTM()?.inverse());
+    const transformedPoint = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+    
+    // Adjust for the crop
+    return {
+        x: transformedPoint.x + pageDimensions.cropBox.x,
+        y: transformedPoint.y + pageDimensions.cropBox.y
+    };
   };
 
   const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -230,7 +291,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
         const dy = firstPoint.y - clickPoint.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if(distance < CLOSING_DISTANCE_THRESHOLD) {
+        if(distance < CLOSING_DISTANCE_THRESHOLD / scale) {
             newPoints = currentPolygonPoints; 
             onPolygonDrawn(newPoints);
             resetDrawingState();
@@ -275,7 +336,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
       setMousePosition({ x: svgPoint.x, y: svgPoint.y });
       // Snapping logic
       let bestSnapPoint = null;
-      let minDistance = SNAPPING_DISTANCE_THRESHOLD;
+      let minDistance = SNAPPING_DISTANCE_THRESHOLD / scale;
       
       // Snap to own points (for closing)
       if (currentPolygonPoints.length > 2) {
@@ -452,7 +513,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const loadingElement = (
     <div className="flex flex-col items-center justify-center h-96 gap-4 text-muted-foreground">
       <Loader2 className="h-12 w-12 animate-spin" />
-      <p>Φόρτωση κάτοψης...</p>
+      <p>Φόρτωση και ανάλυση κάτοψης...</p>
     </div>
   );
 
@@ -463,6 +524,9 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
+
+  const pageViewbox = `0 0 ${pageDimensions.width} ${pageDimensions.height}`;
+  const svgViewbox = `0 0 ${pageDimensions.cropBox.width} ${pageDimensions.cropBox.height}`;
 
   return (
         <div className="flex flex-col gap-4 items-center">
@@ -488,6 +552,10 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                     renderTextLayer={false}
                     renderAnnotationLayer={false}
                     onLoadSuccess={onPageLoadSuccess}
+                    customTextRenderer={() => false}
+                    viewBox={pageDimensions.width > 0 ? pageDimensions.cropBox : undefined}
+                    width={pageDimensions.width > 0 ? pageDimensions.width * scale : undefined}
+                    height={pageDimensions.height > 0 ? pageDimensions.height * scale : undefined}
                     />
                     {pageDimensions.width > 0 && (
                     <svg
@@ -505,18 +573,18 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                         {isEditMode && mousePosition && (
                             <g className="pointer-events-none">
                                 <line 
-                                    x1="0" y1={mousePosition.y} 
-                                    x2={pageDimensions.width} y2={mousePosition.y} 
+                                    x1={0} y1={mousePosition.y} 
+                                    x2={pageDimensions.cropBox.x + pageDimensions.cropBox.width} y2={mousePosition.y} 
                                     stroke="hsl(var(--destructive))" 
-                                    strokeWidth="0.5" 
-                                    strokeDasharray="4 4" 
+                                    strokeWidth={0.5 / scale} 
+                                    strokeDasharray={`${4/scale} ${4/scale}`} 
                                 />
                                 <line 
-                                    x1={mousePosition.x} y1="0" 
-                                    x2={mousePosition.x} y2={pageDimensions.height} 
+                                    x1={mousePosition.x} y1={0} 
+                                    x2={mousePosition.x} y2={pageDimensions.cropBox.y + pageDimensions.cropBox.height} 
                                     stroke="hsl(var(--destructive))" 
-                                    strokeWidth="0.5" 
-                                    strokeDasharray="4 4"
+                                    strokeWidth={0.5 / scale} 
+                                    strokeDasharray={`${4/scale} ${4/scale}`}
                                 />
                             </g>
                         )}
@@ -538,12 +606,12 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                                                 points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
                                                 className={cn(
                                                     'stroke-2 transition-all',
-                                                    selectedUnitId === unit.id ? 'opacity-50' : 'opacity-40',
-                                                    'group-hover/polygon:opacity-70'
+                                                    selectedUnitId === unit.id ? 'opacity-50' : 'opacity-40 group-hover/polygon:opacity-70'
                                                 )}
                                                 style={{
                                                     fill: getStatusColor(unit.status),
-                                                    stroke: getStatusColor(unit.status)
+                                                    stroke: getStatusColor(unit.status),
+                                                    strokeWidth: 2 / scale,
                                                 }}
                                             />
                                         </g>
@@ -603,10 +671,10 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                                         key={`${unit.id}-point-${index}`}
                                         cx={point.x}
                                         cy={point.y}
-                                        r="5"
+                                        r={5 / scale}
                                         fill={getStatusColor(unit.status)}
                                         stroke="#fff"
-                                        strokeWidth="1.5"
+                                        strokeWidth={1.5 / scale}
                                         onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
                                         className="cursor-move transition-all hover:r-7 hover:stroke-2"
                                     />
@@ -621,18 +689,18 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                                     points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
                                     fill="none"
                                     stroke="hsl(var(--destructive))"
-                                    strokeWidth="2"
-                                    strokeDasharray="6 6"
+                                    strokeWidth={2 / scale}
+                                    strokeDasharray={`${6/scale} ${6/scale}`}
                                 />
                                 {currentPolygonPoints.map((point, index) => (
                                     <circle
                                         key={index}
                                         cx={point.x}
                                         cy={point.y}
-                                        r="4"
+                                        r={4 / scale}
                                         fill={index === 0 ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
                                         stroke="#fff"
-                                        strokeWidth="1.5"
+                                        strokeWidth={1.5 / scale}
                                     />
                                 ))}
                             </g>
@@ -645,7 +713,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                                     points={drawingPolygon.map(p => `${p.x},${p.y}`).join(' ')}
                                     fill="hsla(var(--primary), 0.3)"
                                     stroke="hsl(var(--primary))"
-                                    strokeWidth="2"
+                                    strokeWidth={2 / scale}
                                 />
                              </g>
                         )}
@@ -653,8 +721,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                         {/* Snap point indicator */}
                         {snapPoint && isEditMode && (
                             <g className="pointer-events-none">
-                                <circle cx={snapPoint.x} cy={snapPoint.y} r={SNAPPING_DISTANCE_THRESHOLD} fill="none" stroke="hsl(var(--destructive))" strokeWidth="1" strokeDasharray="2 2" />
-                                <circle cx={snapPoint.x} cy={snapPoint.y} r="3" fill="hsl(var(--destructive))" />
+                                <circle cx={snapPoint.x} cy={snapPoint.y} r={SNAPPING_DISTANCE_THRESHOLD / scale} fill="none" stroke="hsl(var(--destructive))" strokeWidth={1/scale} strokeDasharray={`${2/scale} ${2/scale}`} />
+                                <circle cx={snapPoint.x} cy={snapPoint.y} r={3/scale} fill="hsl(var(--destructive))" />
                             </g>
                         )}
                     </svg>
