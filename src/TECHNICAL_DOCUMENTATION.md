@@ -107,6 +107,12 @@
 - **name**: `string` - Όνομα/Περιγραφή ακινήτου.
 - **type**: `string` (optional) - Τύπος (π.χ. "Δυάρι").
 - **status**: `string` - (`Διαθέσιμο`, `Κρατημένο`, `Πωλημένο`, `Οικοπεδούχος`).
+- **area**: `number` (optional) - Εμβαδόν σε τ.μ.
+- **price**: `number` (optional) - Τιμή πώλησης/ενοικίασης.
+- **bedrooms**: `number` (optional) - Αριθμός υπνοδωματίων.
+- **bathrooms**: `number` (optional) - Αριθμός λουτρών/WC.
+- **orientation**: `string` (optional) - Προσανατολισμός.
+- **amenities**: `array` of `string` (optional) - Λίστα με παροχές.
 - **polygonPoints**: `array` of `map` - Οι συντεταγμένες `{x, y}` του πολυγώνου.
 - **floorId**: `string` - Αναφορά στην `floors` collection.
 - **buildingId**: `string` - Αναφορά στην `buildings` collection.

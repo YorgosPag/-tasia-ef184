@@ -91,6 +91,12 @@ export function FloorDetailsContainer() {
     defaultValues: {
       identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '',
       existingUnitId: 'new',
+      area: '',
+      price: '',
+      bedrooms: '',
+      bathrooms: '',
+      orientation: '',
+      amenities: '',
     },
   });
 
@@ -141,17 +147,25 @@ export function FloorDetailsContainer() {
         status: editingUnit.status,
         polygonPoints: editingUnit.polygonPoints ? JSON.stringify(editingUnit.polygonPoints, null, 2) : '',
         existingUnitId: editingUnit.id,
+        area: editingUnit.area?.toString() || '',
+        price: editingUnit.price?.toString() || '',
+        bedrooms: editingUnit.bedrooms?.toString() || '',
+        bathrooms: editingUnit.bathrooms?.toString() || '',
+        orientation: editingUnit.orientation || '',
+        amenities: editingUnit.amenities?.join(', ') || '',
       });
     } else if (drawingPolygon) {
       form.reset({
         identifier: '', name: '', type: '', status: 'Διαθέσιμο', 
         polygonPoints: JSON.stringify(drawingPolygon, null, 2),
-        existingUnitId: 'new'
+        existingUnitId: 'new',
+        area: '', price: '', bedrooms: '', bathrooms: '', orientation: '', amenities: '',
       });
     } else {
       form.reset({
         identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '',
-        existingUnitId: 'new'
+        existingUnitId: 'new',
+        area: '', price: '', bedrooms: '', bathrooms: '', orientation: '', amenities: '',
       });
     }
   }, [editingUnit, drawingPolygon, form]);
@@ -161,7 +175,11 @@ export function FloorDetailsContainer() {
     if (!open) {
       setDrawingPolygon(null);
       setEditingUnit(null);
-      form.reset({ identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '', existingUnitId: 'new' });
+      form.reset({
+        identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '',
+        existingUnitId: 'new',
+        area: '', price: '', bedrooms: '', bathrooms: '', orientation: '', amenities: '',
+      });
     }
   };
 
@@ -181,6 +199,23 @@ export function FloorDetailsContainer() {
       }
     }
     return undefined;
+  };
+
+  const getUnitDataFromForm = (data: UnitFormValues) => {
+    const amenitiesArray = data.amenities ? data.amenities.split(',').map(a => a.trim()).filter(Boolean) : [];
+    
+    return {
+      identifier: data.identifier,
+      name: data.name,
+      type: data.type || '',
+      status: data.status,
+      area: data.area ? parseFloat(data.area) : undefined,
+      price: data.price ? parseFloat(data.price) : undefined,
+      bedrooms: data.bedrooms ? parseInt(data.bedrooms, 10) : undefined,
+      bathrooms: data.bathrooms ? parseInt(data.bathrooms, 10) : undefined,
+      orientation: data.orientation || '',
+      amenities: amenitiesArray,
+    };
   };
 
   const updateUnitInFirestore = async (unitId: string, dataToUpdate: any) => {
@@ -224,7 +259,7 @@ export function FloorDetailsContainer() {
     // Case 1: Editing an existing unit's details
     if (editingUnit) {
       const unitData = {
-          identifier: data.identifier, name: data.name, type: data.type, status: data.status,
+          ...getUnitDataFromForm(data),
           ...(parsedPolygonPoints !== undefined && { polygonPoints: parsedPolygonPoints }),
       };
       success = await updateUnitInFirestore(editingUnit.id, unitData);
@@ -250,7 +285,7 @@ export function FloorDetailsContainer() {
           const topLevelUnitRef = doc(collection(db, 'units'));
           
           const finalUnitData: any = {
-            identifier: data.identifier, name: data.name, type: data.type, status: data.status,
+            ...getUnitDataFromForm(data),
             ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
             floorId: floor.id,
             buildingId: floor.buildingId,

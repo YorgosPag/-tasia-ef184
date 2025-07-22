@@ -46,7 +46,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, Home, BedDouble, Bath, Compass, Tag, Euro } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
@@ -72,6 +72,12 @@ interface Unit {
   floorId: string;
   originalId: string; // The ID in the subcollection
   createdAt: Timestamp;
+  area?: number;
+  price?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  orientation?: string;
+  amenities?: string[];
 }
 
 interface Attachment extends AttachmentFormValues {
@@ -180,6 +186,25 @@ export default function UnitDetailsPage() {
       }
   }
 
+  const formatPrice = (price: number | undefined) => {
+    if (price === undefined) return 'N/A';
+    return new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(price);
+  }
+
+  const UnitStat = ({ icon, label, value }: { icon: React.ElementType, label: string, value: string | number | undefined}) => {
+    if (value === undefined || value === null || value === '') return null;
+    const IconComponent = icon;
+    return (
+        <div className="flex items-center gap-2 text-sm">
+            <IconComponent className="h-5 w-5 text-muted-foreground" />
+            <div>
+                <p className="font-semibold text-foreground">{value}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
+            </div>
+        </div>
+    );
+  };
+
   if (isLoadingUnit) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
   }
@@ -194,13 +219,37 @@ export default function UnitDetailsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Ακίνητο: {unit.name} ({unit.identifier})</CardTitle>
-          <CardDescription>Τύπος: {unit.type || 'N/A'} | ID Ορόφου: {unit.floorId}</CardDescription>
+            <div className="flex justify-between items-start">
+                <div>
+                    <CardTitle>Ακίνητο: {unit.name} ({unit.identifier})</CardTitle>
+                    <CardDescription>Τύπος: {unit.type || 'N/A'} | ID Ορόφου: {unit.floorId}</CardDescription>
+                </div>
+                <Badge variant="default" className={getStatusClass(unit.status)}>
+                    {unit.status}
+                </Badge>
+            </div>
         </CardHeader>
         <CardContent>
-            <Badge variant="default" className={getStatusClass(unit.status)}>
-                {unit.status}
-            </Badge>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-y-4 gap-x-2 border-t pt-4">
+                <UnitStat icon={Home} label="Εμβαδόν" value={unit.area ? `${unit.area} τ.μ.` : undefined} />
+                <UnitStat icon={Euro} label="Τιμή" value={formatPrice(unit.price)} />
+                <UnitStat icon={BedDouble} label="Υπνοδωμάτια" value={unit.bedrooms} />
+                <UnitStat icon={Bath} label="Μπάνια" value={unit.bathrooms} />
+                <UnitStat icon={Compass} label="Προσανατολισμός" value={unit.orientation} />
+            </div>
+            {unit.amenities && unit.amenities.length > 0 && (
+                <div className="mt-4 border-t pt-4">
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-muted-foreground" />
+                        Παροχές
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                        {unit.amenities.map((amenity, index) => (
+                            <Badge key={index} variant="secondary">{amenity}</Badge>
+                        ))}
+                    </div>
+                </div>
+            )}
         </CardContent>
       </Card>
       
