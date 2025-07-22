@@ -511,24 +511,29 @@ export default function FloorDetailsPage() {
   if (!floor) return null;
 
   return (
-    <div className="flex flex-col gap-8">
-      <Button variant="outline" size="sm" className="w-fit" onClick={() => router.back()}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Επιστροφή
-      </Button>
-
-        <Card>
-            <CardHeader>
-            <CardTitle>Όροφος: {floor.level}</CardTitle>
-            <CardDescription>
-                Περιγραφή: {floor.description || 'N/A'} | ID Κτιρίου: {floor.buildingId}
-            </CardDescription>
-            </CardHeader>
-        </Card>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+         <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" className="w-fit" onClick={() => router.back()}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Επιστροφή
+            </Button>
+            <div>
+                <h1 className="text-xl font-bold">Όροφος: {floor.level}</h1>
+                <p className="text-sm text-muted-foreground">Περιγραφή: {floor.description || 'N/A'}</p>
+            </div>
+         </div>
+         <div className="flex items-center gap-2">
+            <Input id="pdf-upload" type="file" accept="application/pdf" onChange={handleFileChange} className="max-w-xs text-xs h-9"/>
+            <Button onClick={handleFileUpload} disabled={!selectedFile || isUploading} size="sm">
+                {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <Upload className="mr-2" />}
+                {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα'}
+            </Button>
+         </div>
+      </div>
       
       <Card>
-          <CardHeader><CardTitle>Κάτοψη Ορόφου</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-0">
               {floor.floorPlanUrl ? (
                   <FloorPlanViewer 
                     pdfUrl={floor.floorPlanUrl} 
@@ -542,22 +547,15 @@ export default function FloorDetailsPage() {
               ) : (
                   <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
                       <p className="text-muted-foreground">Δεν έχει ανέβει κάτοψη για αυτόν τον όροφο.</p>
+                      <p className="text-sm text-muted-foreground mt-2">Χρησιμοποιήστε το πεδίο παραπάνω για να ανεβάσετε ένα αρχείο PDF.</p>
                   </div>
               )}
-               <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-                  <Input id="pdf-upload" type="file" accept="application/pdf" onChange={handleFileChange} className="max-w-xs" />
-                  <Button onClick={handleFileUpload} disabled={!selectedFile || isUploading}>
-                      {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <Upload className="mr-2" />}
-                      {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα Κάτοψης'}
-                  </Button>
-               </div>
-               {selectedFile && <p className="text-sm text-muted-foreground flex items-center gap-2"><FileText size={16} />Επιλεγμένο αρχείο: {selectedFile.name}</p>}
           </CardContent>
       </Card>
 
 
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Λίστα Ακινήτων του Ορόφου</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">Ακίνητα του Ορόφου</h2>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
             <Button onClick={() => setEditingUnit(null)}><PlusCircle className="mr-2" />Νέο Ακίνητο</Button>
