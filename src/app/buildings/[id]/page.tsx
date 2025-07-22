@@ -57,6 +57,7 @@ import Image from 'next/image';
 const floorSchema = z.object({
   level: z.string().min(1, { message: 'Το επίπεδο είναι υποχρεωτικό.' }),
   description: z.string().optional(),
+  floorPlanUrl: z.string().url({ message: "Το URL της κάτοψης δεν είναι έγκυρο." }).or(z.literal('')),
 });
 
 type FloorFormValues = z.infer<typeof floorSchema>;
@@ -72,10 +73,11 @@ interface Building {
   createdAt: Timestamp;
 }
 
-interface Floor extends FloorFormValues {
+interface Floor extends Omit<FloorFormValues, 'floorPlanUrl'> {
   id: string; // This is the ID from the top-level collection
   createdAt: any;
   originalId: string; // This is the ID from the sub-collection
+  floorPlanUrl?: string;
 }
 
 export default function BuildingDetailsPage() {
@@ -96,6 +98,7 @@ export default function BuildingDetailsPage() {
     defaultValues: {
       level: '',
       description: '',
+      floorPlanUrl: '',
     },
   });
 
@@ -166,19 +169,23 @@ export default function BuildingDetailsPage() {
     }
     setIsSubmitting(true);
     try {
-      // Add to subcollection
       const floorSubRef = doc(collection(db, 'projects', building.projectId, 'buildings', building.originalId, 'floors'));
       const floorTopRef = doc(collection(db, 'floors'));
       
+      const finalData = {
+          ...data,
+          floorPlanUrl: data.floorPlanUrl?.trim() || '',
+      };
+      
       await setDoc(floorSubRef, {
-        ...data,
+        ...finalData,
         topLevelId: floorTopRef.id,
         createdAt: serverTimestamp(),
       });
       
       // Also add to a top-level 'floors' collection
       await setDoc(floorTopRef, {
-          ...data,
+          ...finalData,
           buildingId: building.id,
           originalId: floorSubRef.id,
           createdAt: serverTimestamp(),
@@ -296,6 +303,19 @@ export default function BuildingDetailsPage() {
                       <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
                       <FormControl>
                         <Input placeholder="π.χ. Γραφεία εταιρείας" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="floorPlanUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL Κάτοψης (Προαιρετικό)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/plan.pdf" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

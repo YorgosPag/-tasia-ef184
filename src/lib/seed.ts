@@ -151,9 +151,9 @@ export async function seedDatabase() {
 
   // --- Floors (Dual Write) ---
   const floorsData = [
-    { _id: 'flr-alpha-1', level: '1', description: 'Πρώτος όροφος', buildingId: 'bld-alpha' },
-    { _id: 'flr-alpha-2', level: '2', description: 'Δεύτερος όροφος', buildingId: 'bld-alpha' },
-    { _id: 'flr-beta-1', level: '1', description: 'Γραφεία Διοίκησης', buildingId: 'bld-beta' },
+    { _id: 'flr-alpha-1', level: '1', description: 'Πρώτος όροφος', buildingId: 'bld-alpha', floorPlanUrl: 'https://firebasestorage.googleapis.com/v0/b/tasia-6f77i.appspot.com/o/floor_plans%2Fsample-floor-plan.pdf?alt=media&token=8a536968-3b2a-4303-a178-6512822c7595' },
+    { _id: 'flr-alpha-2', level: '2', description: 'Δεύτερος όροφος', buildingId: 'bld-alpha', floorPlanUrl: '' },
+    { _id: 'flr-beta-1', level: '1', description: 'Γραφεία Διοίκησης', buildingId: 'bld-beta', floorPlanUrl: '' },
   ];
 
   for (const floor of floorsData) {
@@ -173,18 +173,21 @@ export async function seedDatabase() {
       const subCollectionFloorRef = doc(collection(db, 'projects', parentProjectRef.id, 'buildings', buildingOriginalId, 'floors'));
       originalIds[floor._id] = { ...originalIds[floor._id], floor: subCollectionFloorRef.id };
 
+      const floorData = {
+        level: floor.level,
+        description: floor.description,
+        floorPlanUrl: floor.floorPlanUrl,
+        createdAt: serverTimestamp(),
+      }
+
       batch.set(subCollectionFloorRef, {
-          level: floor.level,
-          description: floor.description,
+          ...floorData,
           topLevelId: topLevelFloorRef.id,
-          createdAt: serverTimestamp(),
       });
       batch.set(topLevelFloorRef, {
-          level: floor.level,
-          description: floor.description,
+          ...floorData,
           buildingId: parentBuildingTopLevelRef.id,
           originalId: subCollectionFloorRef.id,
-          createdAt: serverTimestamp(),
       });
   }
    console.log('Floors queued for creation.');
