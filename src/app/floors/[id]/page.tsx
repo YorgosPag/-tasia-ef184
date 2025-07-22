@@ -629,5 +629,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
