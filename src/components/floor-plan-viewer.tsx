@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, Undo2, Redo2, Edit, Trash2 } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, Undo2, Redo2, Edit, Trash2, ZoomIn } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -51,6 +51,8 @@ interface FloorPlanViewerProps {
 const ALL_STATUSES: Unit['status'][] = ['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος'];
 const CLOSING_DISTANCE_THRESHOLD = 15; // Distance in SVG units to close the polygon
 const SNAPPING_DISTANCE_THRESHOLD = 10; // Distance to snap to an existing vertex
+const PRECISION_ZOOM_SCALE = 2.5;
+
 
 const getStatusColor = (status?: Unit['status']) => {
     switch(status) {
@@ -102,25 +104,32 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
   const [snapPoint, setSnapPoint] = useState<{ x: number; y: number } | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
   // State for dragging points
   const [draggingPoint, setDraggingPoint] = useState<{ unitId: string; pointIndex: number } | null>(null);
-  const [localUnits, setLocalUnits] = useState<Unit[]>(units);
   
-  // Undo/Redo state
-  const [history, setHistory] = useState<({ x: number; y: number }[])[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-
-  // Sync local units state when the prop changes
+  // Local state for optimistic UI updates
+  const [localUnits, setLocalUnits] = useState<Unit[]>(units);
   useEffect(() => {
     setLocalUnits(units);
   }, [units]);
 
+  
+  // Undo/Redo state
+  const [history, setHistory] = useState<({ x: number; y: number }[])[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  
+  // Precision Zoom (Magnifying Glass) state
+  const [isPrecisionZooming, setIsPrecisionZooming] = useState(false);
+  const preZoomScale = useRef(1.0);
+
+
   // Initialize state from localStorage or use defaults
   const [scale, setScale] = useState(() => getInitialState('floorPlanScale', 1.0));
   const [rotation, setRotation] = useState(() => getInitialState('floorPlanRotation', 0));
-  const [isLocked, setIsLocked] = useState(() => getInitialState('floorPlanLocked', false));
+  const [isLocked, setIsLocked] = useState(() => getInitialState('floorPlanLocked', true));
   const [statusVisibility, setStatusVisibility] = useState(() => getInitialState('floorPlanStatusVisibility', {
       'Διαθέσιμο': true,
       'Κρατημένο': true,
@@ -349,6 +358,34 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isEditMode, handleUndo, handleRedo]);
+  
+  // Effect for Precision Zoom (Magnifying Glass)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Shift' && isEditMode && !isPrecisionZooming) {
+            e.preventDefault();
+            preZoomScale.current = scale;
+            setScale(PRECISION_ZOOM_SCALE);
+            setIsPrecisionZooming(true);
+        }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+        if (e.key === 'Shift' && isEditMode && isPrecisionZooming) {
+            e.preventDefault();
+            setScale(preZoomScale.current);
+            setIsPrecisionZooming(false);
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [isEditMode, isPrecisionZooming, scale]);
 
 
   const handleStatusVisibilityChange = (status: Unit['status'], checked: boolean) => {
@@ -375,7 +412,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   return (
         <div className="flex flex-col gap-4 items-center">
         <Card className="w-full">
-            <CardContent className="p-2 relative overflow-auto">
+            <CardContent className="p-2 relative overflow-auto" ref={pdfContainerRef}>
             {pdfError ? (
                 <div className="flex items-center justify-center h-96 text-destructive text-center p-4">
                 {pdfError}
@@ -446,7 +483,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                                             <polygon
                                                 points={unit.polygonPoints.map(p => `${p.x},${p.y}`).join(' ')}
                                                 className={cn(
-                                                    'stroke-2 transition-opacity',
+                                                    'stroke-2 transition-all',
                                                     selectedUnitId === unit.id ? 'opacity-50' : 'opacity-40',
                                                     'group-hover/polygon:opacity-70'
                                                 )}
@@ -602,7 +639,21 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
             )}
         </div>
         
-        {isLocked && (
+        {isPrecisionZooming && (
+             <Card className="w-full max-w-md bg-blue-500/10 border-blue-500/40">
+                <CardContent className="p-3 text-center">
+                    <p className="text-sm text-blue-700 font-medium flex items-center justify-center gap-2">
+                        <ZoomIn size={16} />
+                        Λειτουργία Ακρίβειας
+                    </p>
+                    <p className="text-xs text-blue-700/80">
+                        Αφήστε το πλήκτρο Shift για επαναφορά.
+                    </p>
+                </CardContent>
+            </Card>
+        )}
+        
+        {isLocked && !isPrecisionZooming && (
              <Card className="w-full max-w-md bg-yellow-500/10 border-yellow-500/40">
                 <CardContent className="p-3 text-center">
                     <p className="text-sm text-yellow-700 font-medium">
@@ -615,20 +666,20 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
             </Card>
         )}
         
-        {isEditMode && (
+        {isEditMode && !isPrecisionZooming && (
             <Card className="w-full max-w-md bg-primary/10 border-primary/40">
                 <CardContent className="p-3 text-center">
                     <p className="text-sm text-primary font-medium">
                         Λειτουργία Σχεδίασης: Κάντε κλικ στην κάτοψη για να προσθέσετε σημεία.
                     </p>
                     <p className="text-xs text-primary/80">
-                        Κάντε κλικ κοντά στο πρώτο σημείο (κόκκινο) για να κλείσετε το σχήμα. (Ctrl+Z για αναίρεση)
+                        Κρατήστε πατημένο το Shift για zoom. (Ctrl+Z για αναίρεση)
                     </p>
                 </CardContent>
             </Card>
         )}
         
-        {!isEditMode && !isLocked && (
+        {!isEditMode && !isLocked && !isPrecisionZooming && (
             <Card className="w-full max-w-md bg-secondary/60 border-secondary/40">
                 <CardContent className="p-3 text-center">
                     <p className="text-sm text-secondary-foreground font-medium">
@@ -665,3 +716,5 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   );
 
 }
+
+    
