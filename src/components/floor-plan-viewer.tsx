@@ -5,11 +5,14 @@ import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Badge } from './ui/badge';
+import { Checkbox } from './ui/checkbox';
+import { Label } from './ui/label';
+import { cn } from '@/lib/utils';
 
 
 interface Unit {
@@ -25,6 +28,8 @@ interface FloorPlanViewerProps {
   units: Unit[];
   onUnitClick: (unitId: string) => void;
 }
+
+const ALL_STATUSES: Unit['status'][] = ['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος'];
 
 const getStatusColor = (status: Unit['status']) => {
     switch(status) {
@@ -76,6 +81,13 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   const [scale, setScale] = useState(() => getInitialState('floorPlanScale', 1.0));
   const [rotation, setRotation] = useState(() => getInitialState('floorPlanRotation', 0));
   const [isLocked, setIsLocked] = useState(() => getInitialState('floorPlanLocked', false));
+  const [statusVisibility, setStatusVisibility] = useState(() => getInitialState('floorPlanStatusVisibility', {
+      'Διαθέσιμο': true,
+      'Κρατημένο': true,
+      'Πωλημένο': true,
+      'Οικοπεδούχος': true,
+  }));
+
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
@@ -89,6 +101,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   useEffect(() => {
     localStorage.setItem('floorPlanLocked', JSON.stringify(isLocked));
   }, [isLocked]);
+
+  useEffect(() => {
+    localStorage.setItem('floorPlanStatusVisibility', JSON.stringify(statusVisibility));
+  }, [statusVisibility]);
 
 
   useEffect(() => {
@@ -118,6 +134,12 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
     setSelectedUnitId(unitId);
     onUnitClick(unitId);
   };
+
+  const handleStatusVisibilityChange = (status: Unit['status'], checked: boolean) => {
+      setStatusVisibility(prev => ({ ...prev, [status]: checked }));
+  }
+
+  const visibleUnits = units.filter(unit => statusVisibility[unit.status]);
   
   const loadingElement = (
     <div className="flex flex-col items-center justify-center h-96 gap-4 text-muted-foreground">
@@ -159,7 +181,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                         viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
                         style={{ pointerEvents: 'auto' }}
                     >
-                        {units.map((unit) =>
+                        {visibleUnits.map((unit) =>
                         unit.polygonPoints ? (
                             <Popover key={unit.id}>
                                 <PopoverTrigger asChild>
@@ -231,6 +253,30 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                 </PopoverContent>
             </Popover>
         </div>
+
+        <Card className="w-full max-w-md">
+            <CardContent className="p-4">
+                <h4 className="mb-4 text-sm font-medium leading-none">Εμφάνιση Layers</h4>
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                    {ALL_STATUSES.map(status => (
+                        <div key={status} className="flex items-center space-x-2">
+                            <Checkbox
+                                id={`status-${status}`}
+                                checked={statusVisibility[status]}
+                                onCheckedChange={(checked) => handleStatusVisibilityChange(status, checked as boolean)}
+                                className="data-[state=checked]:bg-transparent"
+                                style={{ borderColor: getStatusColor(status), color: getStatusColor(status) }}
+                            />
+                            <Label htmlFor={`status-${status}`} className="text-sm font-medium">
+                                {status}
+                            </Label>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+
         </div>
   );
-}
+
+    
