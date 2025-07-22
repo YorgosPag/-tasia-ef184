@@ -32,8 +32,8 @@ export function StatusFilter({
 }: StatusFilterProps) {
   return (
     <Card className="w-full">
-      <CardContent className="flex items-center justify-between p-2">
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+      <CardContent className="flex flex-col items-start justify-between p-2 gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-1">
           <h4 className="whitespace-nowrap text-sm font-medium leading-none">
             Εμφάνιση Layers:
           </h4>
@@ -67,7 +67,7 @@ export function StatusFilter({
             );
           })}
         </div>
-        <Button variant="ghost" size="icon" onClick={onReset} title="Επαναφορά προεπιλογών">
+        <Button variant="ghost" size="icon" onClick={onReset} title="Επαναφορά προεπιλογών" className="self-end sm:self-center">
           <RefreshCw className="h-4 w-4" />
         </Button>
       </CardContent>
