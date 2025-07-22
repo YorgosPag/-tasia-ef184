@@ -87,6 +87,11 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         setStatusColors(prev => ({ ...prev, [status]: color }));
     };
 
+    const handleReset = () => {
+        setStatusVisibility(ALL_STATUSES.reduce((acc, status) => ({ ...acc, [status]: true }), {} as Record<Unit['status'], boolean>));
+        setStatusColors(STATUS_COLOR_MAP);
+    };
+
     const toggleEditMode = () => {
         setIsEditMode(prev => {
             // Clear any unfinished polygon when exiting edit mode
@@ -104,6 +109,7 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         handleStatusVisibilityChange,
         statusColors,
         handleColorChange,
+        handleReset,
         isLocked,
         setIsLocked,
         isEditMode,
