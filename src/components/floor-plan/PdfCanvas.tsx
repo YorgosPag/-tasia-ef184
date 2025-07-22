@@ -105,6 +105,19 @@ export function PdfCanvas({
   const { cropBox } = pageDimensions;
   const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropBox.height : 1;
 
+  // Center the view whenever the scale changes, unless precision zooming.
+  // This is better handled here than a useEffect to ensure it runs after render.
+  React.useEffect(() => {
+    const container = pdfContainerRef.current;
+    if (container && !isPrecisionZooming) {
+        // We use a small timeout to allow the DOM to update before scrolling
+        setTimeout(() => {
+            container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+            container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
+        }, 50);
+    }
+  }, [zoom.scale, pageDimensions, pdfContainerRef, isPrecisionZooming]);
+
   return (
     <div
       ref={pdfContainerRef}

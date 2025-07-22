@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 
 interface UseZoomProps {
@@ -10,7 +10,6 @@ interface UseZoomProps {
     height: number;
     cropBox: { x: number; y: number; width: number; height: number };
   };
-  isPrecisionZooming: boolean;
 }
 
 /**
@@ -18,7 +17,7 @@ interface UseZoomProps {
  * A hook to manage all state and logic related to PDF zoom and rotation.
  * It persists the scale and rotation values to localStorage.
  */
-export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }: UseZoomProps) {
+export function useZoom({ pdfContainerRef, pageDimensions }: UseZoomProps) {
   const [scale, setScale] = useLocalStorageState('floorPlanScale', 1.0);
   const [rotation, setRotation] = useLocalStorageState('floorPlanRotation', 0);
   const [zoomInput, setZoomInput] = useState(`${(scale * 100).toFixed(0)}%`);
@@ -28,19 +27,6 @@ export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }:
     setZoomInput(`${(scale * 100).toFixed(0)}%`);
   }, [scale]);
   
-  // Effect to center the view when scale or dimensions change
-  useEffect(() => {
-    const container = pdfContainerRef.current;
-    if (container && !isPrecisionZooming) {
-        // We use a small timeout to allow the DOM to update before scrolling
-        setTimeout(() => {
-            container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
-            container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
-        }, 50);
-    }
-  }, [scale, pageDimensions, pdfContainerRef, isPrecisionZooming]); 
-
-
   const handleZoomInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setZoomInput(e.target.value);
   };
@@ -65,7 +51,7 @@ export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }:
     }
   };
 
-  const handleFitToView = () => {
+  const handleFitToView = useCallback(() => {
     const container = pdfContainerRef.current;
     if (!container || !pageDimensions.cropBox || pageDimensions.cropBox.width === 0) return;
 
@@ -80,7 +66,16 @@ export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }:
 
     const newScale = Math.min(scaleX, scaleY);
     setScale(newScale);
-  };
+  }, [pdfContainerRef, pageDimensions, setScale]);
+  
+  // Effect to fit view on initial load of a PDF
+  // We use a timeout to ensure dimensions are fully propagated before fitting
+  useEffect(() => {
+    if (pageDimensions.width > 0) {
+        const timer = setTimeout(() => handleFitToView(), 100);
+        return () => clearTimeout(timer);
+    }
+  }, [pageDimensions.width, pageDimensions.height, handleFitToView]);
 
   return {
     scale,

@@ -50,24 +50,22 @@ export function UnitLayers({
         )}
       </g>
       <g>
-        {!isLocked && !isEditMode && units.map((unit) =>
-          unit.polygonPoints?.map((point, index) => (
+        {!isLocked && !isEditMode && units.map((unit) => {
+          const pointColor = statusColors[unit.status] ?? '#6b7280';
+          return unit.polygonPoints?.map((point, index) => (
             <circle
               key={`${unit.id}-point-${index}`}
               cx={point.x}
               cy={point.y}
               r={5 / scale}
-              fill="currentColor"
+              fill={pointColor}
               stroke="#fff"
               strokeWidth={1.5 / scale}
               onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
               className="cursor-move transition-all hover:r-7 hover:stroke-2"
-              style={{
-                  color: 'hsl(var(--primary))'
-              }}
             />
-          ))
-        )}
+          ));
+        })}
       </g>
     </>
   );
