@@ -102,12 +102,12 @@ export default function BuildingDetailsPage() {
     },
   });
 
-  // Effect to reset form when dialog is closed
-  useEffect(() => {
-    if (!isDialogOpen) {
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
       form.reset();
     }
-  }, [isDialogOpen, form]);
+  };
 
 
   // Fetch building details
@@ -174,7 +174,7 @@ export default function BuildingDetailsPage() {
       
       const finalData = {
           ...data,
-          floorPlanUrl: data.floorPlanUrl?.trim() || '',
+          floorPlanUrl: data.floorPlanUrl?.trim() ? data.floorPlanUrl : undefined,
       };
       
       await setDoc(floorSubRef, {
@@ -194,7 +194,7 @@ export default function BuildingDetailsPage() {
         title: 'Επιτυχία',
         description: 'Ο όροφος προστέθηκε με επιτυχία.',
       });
-      setIsDialogOpen(false);
+      handleDialogOpenChange(false);
     } catch (error) {
       console.error('Error adding floor: ', error);
       toast({
@@ -243,17 +243,22 @@ export default function BuildingDetailsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row gap-4">
-            {building.photoUrl && (
-                <div className="md:w-1/3">
-                    <Image 
-                        src={building.photoUrl} 
-                        alt={`Photo of ${building.address}`}
-                        width={400}
-                        height={300}
-                        className="rounded-lg object-cover aspect-[4/3]"
-                    />
+            <div className="md:w-1/3">
+              {building.photoUrl ? (
+                  <Image 
+                      src={building.photoUrl} 
+                      alt={`Photo of ${building.address}`}
+                      width={400}
+                      height={300}
+                      className="rounded-lg object-cover aspect-[4/3]"
+                      loading="lazy"
+                  />
+              ) : (
+                <div className="w-full aspect-[4/3] bg-muted flex items-center justify-center rounded-lg">
+                  <p className="text-sm text-muted-foreground">Χωρίς φωτογραφία</p>
                 </div>
-            )}
+              )}
+            </div>
             {building.description && (
                 <p className="text-sm text-muted-foreground flex-1">
                     {building.description}
@@ -266,7 +271,7 @@ export default function BuildingDetailsPage() {
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Όροφοι του Κτιρίου
         </h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2" />
