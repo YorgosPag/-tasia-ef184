@@ -28,7 +28,7 @@ export function AppHeader() {
   const router = useRouter();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
-
+  const pathname = usePathname();
   const breadcrumbs = useBreadcrumbs();
   const showBreadcrumbs = breadcrumbs.length > 0 && !pathname.startsWith('/login') && !pathname.startsWith('/register') && pathname !== '/';
 
@@ -39,8 +39,6 @@ export function AppHeader() {
   useEffect(() => {
     setIsLoading(user === undefined);
   }, [user]);
-
-  const pathname = usePathname();
 
 
   const handleLogout = async () => {
