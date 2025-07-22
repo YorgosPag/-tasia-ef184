@@ -352,8 +352,6 @@ export default function FloorDetailsPage() {
   };
   
   const handleUnitSelectForEdit = (unitId: string) => {
-    // We need to find the full unit data, which is in the `units` state.
-    // The units in the floor plan viewer might be a subset.
     const unitToEdit = units.find(u => u.id === unitId);
     if(unitToEdit){
       setEditingUnit(unitToEdit);
