@@ -54,7 +54,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, Upload, FileText } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, Upload, FileText, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
@@ -87,6 +87,7 @@ interface Unit extends Omit<UnitFormValues, 'polygonPoints'> {
   createdAt: any;
   polygonPoints?: { x: number; y: number }[];
   status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
+  originalId: string;
 }
 
 export default function FloorDetailsPage() {
@@ -100,6 +101,7 @@ export default function FloorDetailsPage() {
   const [isLoadingUnits, setIsLoadingUnits] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -115,6 +117,28 @@ export default function FloorDetailsPage() {
       polygonPoints: '',
     },
   });
+
+  // Effect to populate form when editingUnit changes
+  useEffect(() => {
+    if (editingUnit) {
+      form.reset({
+        identifier: editingUnit.identifier,
+        name: editingUnit.name,
+        type: editingUnit.type || '',
+        status: editingUnit.status,
+        polygonPoints: editingUnit.polygonPoints ? JSON.stringify(editingUnit.polygonPoints, null, 2) : '',
+      });
+    } else {
+      form.reset({
+        identifier: '',
+        name: '',
+        type: '',
+        status: 'Διαθέσιμο',
+        polygonPoints: form.getValues('polygonPoints') || '', // Keep polygon points if drawn for new unit
+      });
+    }
+  }, [editingUnit, form]);
+
 
   // Fetch floor details from top-level collection
   useEffect(() => {
@@ -151,11 +175,6 @@ export default function FloorDetailsPage() {
             const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
             if (!buildingDoc.exists() || !buildingDoc.data()?.projectId || !buildingDoc.data()?.originalId) {
                 setIsLoadingUnits(false);
-                toast({
-                    variant: 'default',
-                    title: 'Ενημέρωση',
-                    description: 'Αυτό το κτίριο δεν ανήκει σε έργο. Τα ακίνητα δεν είναι διαθέσιμα.',
-                });
                 return;
             }
 
@@ -207,12 +226,8 @@ export default function FloorDetailsPage() {
     };
   }, [floor, toast]);
   
-  const onSubmitUnit = async (data: UnitFormValues) => {
-     if (!floor || !floor.buildingId || !floor.originalId) return;
-
-     setIsSubmitting(true);
-     
-     let parsedPolygonPoints: {x: number, y: number}[] | undefined;
+  const getUnitDataForSave = (data: UnitFormValues) => {
+    let parsedPolygonPoints: {x: number, y: number}[] | undefined;
      if (data.polygonPoints && data.polygonPoints.trim() !== '') {
        try {
          const pointsArray = JSON.parse(data.polygonPoints);
@@ -227,18 +242,26 @@ export default function FloorDetailsPage() {
            title: 'Σφάλμα στις συντεταγμένες',
            description: 'Οι συντεταγμένες πολυγώνου δεν είναι έγκυρο JSON. π.χ. [{"x":10,"y":10}, ...]'
          });
-         setIsSubmitting(false);
-         return;
+         return null;
        }
      }
-
-     const unitData = {
+     return {
        identifier: data.identifier,
        name: data.name,
        type: data.type,
        status: data.status,
        ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
      };
+  }
+
+  const handleCreateUnit = async (data: UnitFormValues) => {
+    if (!floor || !floor.buildingId || !floor.originalId) return;
+
+     const unitData = getUnitDataForSave(data);
+     if (!unitData) {
+       setIsSubmitting(false);
+       return;
+     }
 
      try {
        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
@@ -249,12 +272,8 @@ export default function FloorDetailsPage() {
        const originalBuildingId = buildingDoc.data().originalId;
        
        const unitSubRef = doc(collection(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId, 'units'));
-
-       await setDoc(unitSubRef, {
-         ...unitData,
-         createdAt: serverTimestamp(),
-       });
-
+       await setDoc(unitSubRef, { ...unitData, createdAt: serverTimestamp() });
+       
        await setDoc(doc(db, 'units', unitSubRef.id), {
           ...unitData,
           originalId: unitSubRef.id,
@@ -263,22 +282,54 @@ export default function FloorDetailsPage() {
           createdAt: serverTimestamp(),
        });
        
-       toast({
-         title: 'Επιτυχία',
-         description: 'Το ακίνητο προστέθηκε με επιτυχία.',
-       });
-       form.reset();
-       setIsDialogOpen(false);
-     } catch (error) {
+       toast({ title: 'Επιτυχία', description: 'Το ακίνητο προστέθηκε με επιτυχία.' });
+     } catch(error) {
        console.error('Error adding unit: ', error);
-       toast({
-         variant: 'destructive',
-         title: 'Σφάλμα',
-         description: 'Δεν ήταν δυνατή η προσθήκη του ακινήτου.',
-       });
-     } finally {
-       setIsSubmitting(false);
+       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη του ακινήτου.' });
      }
+  }
+
+  const handleUpdateUnit = async (data: UnitFormValues) => {
+    if (!editingUnit || !floor) return;
+
+    const unitData = getUnitDataForSave(data);
+    if (!unitData) {
+       setIsSubmitting(false);
+       return;
+    }
+
+    try {
+        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+        if (!buildingDoc.exists() || !buildingDoc.data()?.projectId || !buildingDoc.data()?.originalId) {
+            throw new Error("Building or project ID not found for unit update");
+        }
+        const projectId = buildingDoc.data().projectId;
+        const originalBuildingId = buildingDoc.data().originalId;
+        
+        // Update sub-collection document
+        const unitSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId, 'units', editingUnit.originalId);
+        await updateDoc(unitSubRef, unitData);
+
+        // Update top-level document
+        const unitTopRef = doc(db, 'units', editingUnit.id);
+        await updateDoc(unitTopRef, unitData);
+
+        toast({ title: 'Επιτυχία', description: 'Το ακίνητο ενημερώθηκε.' });
+    } catch(error) {
+        console.error('Error updating unit: ', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η ενημέρωση του ακινήτου.' });
+    }
+  }
+
+  const onSubmitUnit = async (data: UnitFormValues) => {
+     setIsSubmitting(true);
+     if (editingUnit) {
+        await handleUpdateUnit(data);
+     } else {
+        await handleCreateUnit(data);
+     }
+     setIsSubmitting(false);
+     handleDialogOpenChange(false);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -294,62 +345,39 @@ export default function FloorDetailsPage() {
   };
 
   const handleFileUpload = async () => {
-    if (!selectedFile) {
-      toast({ variant: 'destructive', title: 'Δεν επιλέχθηκε αρχείο', description: 'Παρακαλώ επιλέξτε ένα αρχείο για ανέβασμα.' });
-      return;
-    }
-    if (!floorId) {
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το ID του ορόφου.' });
-      return;
-    }
-    if (!auth.currentUser) {
-      toast({ variant: 'destructive', title: 'Σφάλμα Αυθεντικοποίησης', description: 'Πρέπει να είστε συνδεδεμένος για να ανεβάσετε αρχεία.' });
-      return;
-    }
+    if (!selectedFile) return;
+    if (!floorId) return;
+    if (!auth.currentUser) return;
   
     setIsUploading(true);
     const storageRef = ref(storage, `floor_plans/${floorId}/${selectedFile.name}`);
-    console.log("Storage Path:", storageRef.fullPath);
   
     try {
       await uploadBytes(storageRef, selectedFile);
       const downloadURL = await getDownloadURL(storageRef);
-  
       const floorDocRef = doc(db, 'floors', floorId);
-      await updateDoc(floorDocRef, {
-        floorPlanUrl: downloadURL,
-      });
-  
+      await updateDoc(floorDocRef, { floorPlanUrl: downloadURL });
       toast({ title: 'Επιτυχία', description: 'Η κάτοψη ανέβηκε με επιτυχία.' });
       setSelectedFile(null);
     } catch (error: any) {
-      console.error("Upload error:", {
-        message: error.message,
-        code: error.code,
-        details: error.serverResponse,
-      });
-      toast({
-        variant: 'destructive',
-        title: 'Σφάλμα Ανεβάσματος',
-        description: `Δεν ήταν δυνατή η μεταφόρτωση του αρχείου: ${error.message}`,
-      });
+      console.error("Upload error:", error);
+      toast({ variant: 'destructive', title: 'Σφάλμα Ανεβάσματος', description: `Δεν ήταν δυνατή η μεταφόρτωση του αρχείου: ${error.message}` });
     } finally {
       setIsUploading(false);
     }
   };
   
-  const handleRowClick = (unitId: string) => {
-    const unitDoc = units.find(u => u.id === unitId);
-    if(unitDoc){
-      router.push(`/units/${unitDoc.id}`);
+  const handleUnitSelectForEdit = (unitId: string) => {
+    const unitToEdit = units.find(u => u.id === unitId);
+    if(unitToEdit){
+      setEditingUnit(unitToEdit);
+      setIsDialogOpen(true);
     }
   };
   
   const handlePolygonDrawn = (points: {x: number, y: number}[]) => {
-      // Stringify the array of objects to be easily used in the form's textarea.
       const pointsJson = JSON.stringify(points, null, 2);
       form.setValue('polygonPoints', pointsJson);
-      // Open the dialog automatically for the user
       setIsDialogOpen(true);
   }
 
@@ -368,25 +396,18 @@ export default function FloorDetailsPage() {
       }
   }
   
-  // When closing the dialog, reset the form, especially the polygon points
   const handleDialogOpenChange = (open: boolean) => {
       setIsDialogOpen(open);
       if(!open) {
           form.reset();
+          setEditingUnit(null);
       }
   }
 
   if (isLoadingFloor) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
   }
-
-  if (!floor) {
-    return null;
-  }
+  if (!floor) return null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -405,15 +426,13 @@ export default function FloorDetailsPage() {
         </Card>
       
       <Card>
-          <CardHeader>
-              <CardTitle>Κάτοψη Ορόφου</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Κάτοψη Ορόφου</CardTitle></CardHeader>
           <CardContent className="space-y-4">
               {floor.floorPlanUrl ? (
                   <FloorPlanViewer 
                     pdfUrl={floor.floorPlanUrl} 
                     units={units} 
-                    onUnitClick={(id) => handleRowClick(id)}
+                    onUnitClick={handleUnitSelectForEdit}
                     onPolygonDrawn={handlePolygonDrawn}
                   />
               ) : (
@@ -434,21 +453,16 @@ export default function FloorDetailsPage() {
 
 
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          Λίστα Ακινήτων του Ορόφου
-        </h2>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">Λίστα Ακινήτων του Ορόφου</h2>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" />
-              Νέο Ακίνητο
-            </Button>
+            <Button><PlusCircle className="mr-2" />Νέο Ακίνητο</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Προσθήκη Νέου Ακινήτου</DialogTitle>
+              <DialogTitle>{editingUnit ? 'Επεξεργασία Ακινήτου' : 'Προσθήκη Νέου Ακινήτου'}</DialogTitle>
               <DialogDescription>
-                Συμπληρώστε τις πληροφορίες για να προσθέσετε ένα νέο ακίνητο (unit) στον όροφο. Χρησιμοποιήστε την κάτοψη για να σχεδιάσετε το περίγραμμα.
+                {editingUnit ? 'Ενημερώστε τις πληροφορίες του ακινήτου.' : 'Συμπληρώστε τις πληροφορίες για να προσθέσετε ένα νέο ακίνητο (unit) στον όροφο.'}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -459,9 +473,7 @@ export default function FloorDetailsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Κωδικός</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. A1, B2" {...field} />
-                      </FormControl>
+                      <FormControl><Input placeholder="π.χ. A1, B2" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -472,9 +484,7 @@ export default function FloorDetailsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Όνομα/Αναγνωριστικό Ακινήτου</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Διαμέρισμα, Κατάστημα" {...field} />
-                      </FormControl>
+                      <FormControl><Input placeholder="π.χ. Διαμέρισμα, Κατάστημα" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -485,9 +495,7 @@ export default function FloorDetailsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Τύπος (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Γκαρσονιέρα" {...field} />
-                      </FormControl>
+                      <FormControl><Input placeholder="π.χ. Γκαρσονιέρα" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -498,12 +506,8 @@ export default function FloorDetailsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Κατάσταση</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Επιλέξτε κατάσταση" />
-                          </SelectTrigger>
-                        </FormControl>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε κατάσταση" /></SelectTrigger></FormControl>
                         <SelectContent>
                           <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
                           <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
@@ -529,14 +533,10 @@ export default function FloorDetailsPage() {
                   )}
                 />
                 <DialogFooter>
-                   <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmitting}>
-                      Ακύρωση
-                    </Button>
-                  </DialogClose>
+                   <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Προσθήκη Ακινήτου
+                    {editingUnit ? 'Αποθήκευση Αλλαγών' : 'Προσθήκη Ακινήτου'}
                   </Button>
                 </DialogFooter>
               </form>
@@ -548,9 +548,7 @@ export default function FloorDetailsPage() {
       <Card>
         <CardContent className="pt-6">
           {isLoadingUnits ? (
-            <div className="flex justify-center items-center h-40">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
           ) : units.length > 0 ? (
             <Table>
               <TableHeader>
@@ -560,22 +558,28 @@ export default function FloorDetailsPage() {
                   <TableHead>Τύπος</TableHead>
                   <TableHead>Κατάσταση</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
+                  <TableHead className="text-right">Ενέργειες</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {units.map((unit) => (
-                  <TableRow key={unit.id} onClick={() => handleRowClick(unit.id)} className="cursor-pointer">
+                  <TableRow key={unit.id} className="group">
                     <TableCell className="font-medium">{unit.identifier}</TableCell>
                     <TableCell className="font-medium">{unit.name}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
                     <TableCell>
-                        <Badge 
-                            variant="default"
-                            className={getStatusClass(unit.status)}>
-                            {unit.status}
-                        </Badge>
+                        <Badge variant="default" className={getStatusClass(unit.status)}>{unit.status}</Badge>
                     </TableCell>
                     <TableCell>{formatDate(unit.createdAt)}</TableCell>
+                    <TableCell className="text-right">
+                       <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => handleUnitSelectForEdit(unit.id)}>
+                                <Edit className="h-4 w-4" />
+                                <span className="sr-only">Επεξεργασία</span>
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => router.push(`/units/${unit.id}`)}>Προβολή</Button>
+                       </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
