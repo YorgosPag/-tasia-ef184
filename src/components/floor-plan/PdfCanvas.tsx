@@ -23,6 +23,7 @@ interface PageDimensions {
 interface PdfCanvasProps {
   pdfUrl: string;
   units: Unit[];
+  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   statusVisibility: Record<Unit['status'], boolean>;
   statusColors: Record<Unit['status'], string>;
   isLocked: boolean;
@@ -37,7 +38,6 @@ interface PdfCanvasProps {
   setPageDimensions: React.Dispatch<React.SetStateAction<PageDimensions>>;
   setDrawingPolygon: React.Dispatch<React.SetStateAction<{ x: number; y: number }[]>>;
   setDraggingPoint: React.Dispatch<React.SetStateAction<{ unitId: string; pointIndex: number } | null>>;
-  setLocalUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   onUnitPointsUpdate: (unitId: string, newPoints: { x: number; y: number }[]) => void;
   onUnitClick: (unitId: string) => void;
   onUnitDelete: (unitId: string) => void;
@@ -58,6 +58,7 @@ const LoadingElement = () => (
 export function PdfCanvas({
   pdfUrl,
   units,
+  setUnits,
   statusVisibility,
   statusColors,
   isLocked,
@@ -72,7 +73,6 @@ export function PdfCanvas({
   setPageDimensions,
   setDrawingPolygon,
   setDraggingPoint,
-  setLocalUnits,
   onUnitPointsUpdate,
   onUnitClick,
   onUnitDelete,
@@ -93,10 +93,10 @@ export function PdfCanvas({
     isEditMode,
     isLocked,
     draggingPoint,
+    setUnits,
     lastMouseEvent,
     setDrawingPolygon,
     setDraggingPoint,
-    setLocalUnits,
     onUnitPointsUpdate,
     setPageDimensions,
   });
