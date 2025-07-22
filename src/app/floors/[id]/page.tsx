@@ -174,8 +174,11 @@ export default function FloorDetailsPage() {
         try {
             const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
             if (!buildingDoc.exists() || !buildingDoc.data()?.projectId || !buildingDoc.data()?.originalId) {
+                // If there's no project, it means it's a standalone building with no subcollections to listen to.
+                // We should still check for units in the top-level collection that might be parented to this floor.
+                console.log("Building is standalone, no subcollection listener needed for units.");
                 setIsLoadingUnits(false);
-                return;
+                return () => {}; // Return an empty unsubscribe function
             }
 
             const projectId = buildingDoc.data().projectId;
@@ -186,16 +189,17 @@ export default function FloorDetailsPage() {
             const unsubscribe = onSnapshot(
               unitsColRef,
               (snapshot) => {
-                const unitsData: Unit[] = snapshot.docs.map((doc) => {
-                  const data = doc.data();
-                  return {
-                    id: doc.id,
-                    ...data,
-                    polygonPoints: data.polygonPoints || [],
-                  } as Unit
-                });
-                setUnits(unitsData);
-                setIsLoadingUnits(false);
+                 const subCollectionUnits = snapshot.docs.map(doc => doc.id);
+                 // Now, fetch all top-level units for this floor to get the complete data
+                 const topLevelUnitsColRef = collection(db, 'units');
+                 getDocs(topLevelUnitsColRef).then(topLevelSnapshot => {
+                    const allUnitsForFloor = topLevelSnapshot.docs
+                        .map(doc => ({id: doc.id, ...doc.data()}) as Unit)
+                        .filter(u => u.floorId === floor.id);
+
+                    setUnits(allUnitsForFloor);
+                 });
+                 setIsLoadingUnits(false);
               },
               (error) => {
                 console.error('Error fetching units: ', error);
@@ -265,18 +269,23 @@ export default function FloorDetailsPage() {
 
      try {
        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-       if (!buildingDoc.exists() || !buildingDoc.data()?.projectId || !buildingDoc.data()?.originalId) {
-           throw new Error("Building or project ID not found for unit creation");
+       if (!buildingDoc.exists()) {
+           throw new Error("Parent building not found");
        }
-       const projectId = buildingDoc.data().projectId;
-       const originalBuildingId = buildingDoc.data().originalId;
+       const buildingData = buildingDoc.data();
        
-       const unitSubRef = doc(collection(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId, 'units'));
-       await setDoc(unitSubRef, { ...unitData, createdAt: serverTimestamp() });
+       const topLevelUnitRef = doc(collection(db, 'units'));
+       let subCollectionUnitRef;
        
-       await setDoc(doc(db, 'units', unitSubRef.id), {
+       // Dual write only if the building is part of a project
+       if (buildingData.projectId && buildingData.originalId) {
+            subCollectionUnitRef = doc(collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units'));
+            await setDoc(subCollectionUnitRef, { ...unitData, createdAt: serverTimestamp() });
+       }
+       
+       await setDoc(topLevelUnitRef, {
           ...unitData,
-          originalId: unitSubRef.id,
+          originalId: subCollectionUnitRef ? subCollectionUnitRef.id : topLevelUnitRef.id,
           buildingId: floor.buildingId,
           floorId: floor.id,
           createdAt: serverTimestamp(),
@@ -292,27 +301,32 @@ export default function FloorDetailsPage() {
   const handleUpdateUnit = async (data: UnitFormValues) => {
     if (!editingUnit || !floor) return;
 
-    const unitData = getUnitDataForSave(data);
-    if (!unitData) {
+    const unitDataToSave = getUnitDataForSave(data);
+    if (!unitDataToSave) {
        setIsSubmitting(false);
        return;
     }
 
     try {
         const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-        if (!buildingDoc.exists() || !buildingDoc.data()?.projectId || !buildingDoc.data()?.originalId) {
-            throw new Error("Building or project ID not found for unit update");
+        if (!buildingDoc.exists()) {
+            throw new Error("Parent building not found for unit update");
         }
-        const projectId = buildingDoc.data().projectId;
-        const originalBuildingId = buildingDoc.data().originalId;
+        const buildingData = buildingDoc.data();
         
-        // Update sub-collection document
-        const unitSubRef = doc(db, 'projects', projectId, 'buildings', originalBuildingId, 'floors', floor.originalId, 'units', editingUnit.originalId);
-        await updateDoc(unitSubRef, unitData);
-
-        // Update top-level document
+        // Update top-level document first
         const unitTopRef = doc(db, 'units', editingUnit.id);
-        await updateDoc(unitTopRef, unitData);
+        await updateDoc(unitTopRef, unitDataToSave);
+        
+        // Update sub-collection document only if it exists (part of a project)
+        if (buildingData.projectId && buildingData.originalId && editingUnit.originalId) {
+            const unitSubRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', editingUnit.originalId);
+            // Check if sub-doc exists before updating to prevent errors
+            const subDocSnap = await getDoc(unitSubRef);
+            if(subDocSnap.exists()) {
+                await updateDoc(unitSubRef, unitDataToSave);
+            }
+        }
 
         toast({ title: 'Επιτυχία', description: 'Το ακίνητο ενημερώθηκε.' });
     } catch(error) {
@@ -368,16 +382,22 @@ export default function FloorDetailsPage() {
   };
   
   const handleUnitSelectForEdit = (unitId: string) => {
+    // We need to find the full unit data, which is in the `units` state.
+    // The units in the floor plan viewer might be a subset.
     const unitToEdit = units.find(u => u.id === unitId);
     if(unitToEdit){
       setEditingUnit(unitToEdit);
       setIsDialogOpen(true);
+    } else {
+      console.warn(`Unit with ID ${unitId} not found in the main units list.`);
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκαν οι πλήρεις πληροφορίες του ακινήτου.' });
     }
   };
   
   const handlePolygonDrawn = (points: {x: number, y: number}[]) => {
       const pointsJson = JSON.stringify(points, null, 2);
       form.setValue('polygonPoints', pointsJson);
+      setEditingUnit(null); // Ensure we are in "create" mode
       setIsDialogOpen(true);
   }
 
@@ -399,7 +419,13 @@ export default function FloorDetailsPage() {
   const handleDialogOpenChange = (open: boolean) => {
       setIsDialogOpen(open);
       if(!open) {
-          form.reset();
+          form.reset({
+              identifier: '',
+              name: '',
+              type: '',
+              status: 'Διαθέσιμο',
+              polygonPoints: '',
+          });
           setEditingUnit(null);
       }
   }
@@ -456,7 +482,7 @@ export default function FloorDetailsPage() {
         <h2 className="text-2xl font-bold tracking-tight text-foreground">Λίστα Ακινήτων του Ορόφου</h2>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
-            <Button><PlusCircle className="mr-2" />Νέο Ακίνητο</Button>
+            <Button onClick={() => setEditingUnit(null)}><PlusCircle className="mr-2" />Νέο Ακίνητο</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -592,3 +618,5 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
+
+    
