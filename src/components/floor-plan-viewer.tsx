@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
@@ -42,6 +42,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [pageDimensions, setPageDimensions] = useState({ width: 0, height: 0 });
+  const [isLocked, setIsLocked] = useState(false);
 
   useEffect(() => {
     pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
@@ -146,15 +147,18 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
             </CardContent>
         </Card>
         <div className="flex items-center justify-center gap-2 p-2 rounded-md bg-muted">
-            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.5, s - 0.2))} disabled={!numPages}>
-            <Minus />
+            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.2, s - 0.1))} disabled={!numPages || isLocked}>
+                <Minus />
             </Button>
             <span className="text-sm font-medium w-16 text-center">{(scale * 100).toFixed(0)}%</span>
-            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(3, s + 0.2))} disabled={!numPages}>
-            <Plus />
+            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(3, s + 0.1))} disabled={!numPages || isLocked}>
+                <Plus />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages}>
-            <RefreshCw />
+            <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages || isLocked}>
+                <RefreshCw />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
+                {isLocked ? <Lock /> : <Unlock />}
             </Button>
         </div>
         </div>
