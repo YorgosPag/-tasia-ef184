@@ -3,7 +3,9 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { FloorPlanViewer, Unit } from '@/components/floor-plan/FloorPlanViewer';
+import { FloorPlanViewer } from '@/components/floor-plan/FloorPlanViewer';
+import type { Unit } from '@/components/floor-plan/FloorPlanViewer';
+
 
 interface FloorPlanCardProps {
   floorPlanUrl?: string;

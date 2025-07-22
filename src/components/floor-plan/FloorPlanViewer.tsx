@@ -53,7 +53,6 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
     completeAndResetDrawing,
     handleUndo,
     isPrecisionZooming,
-    setIsPrecisionZooming,
     lastMouseEvent,
     zoom,
     pdfContainerRef,

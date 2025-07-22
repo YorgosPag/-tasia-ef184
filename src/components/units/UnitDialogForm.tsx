@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useForm, UseFormReturn } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import {
   Dialog,
@@ -45,13 +45,12 @@ export type UnitFormValues = z.infer<typeof unitSchema>;
 
 interface Unit {
   id: string;
-  // include other unit properties if needed for display in the form
 }
 
 interface UnitDialogFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: UnitFormValues) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   form: UseFormReturn<UnitFormValues>;
   isSubmitting: boolean;
   editingUnit: Unit | null;
