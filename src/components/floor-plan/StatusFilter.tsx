@@ -5,9 +5,14 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Unit } from './FloorPlanViewer';
-import { ALL_STATUSES } from './utils';
+import type { Unit } from './FloorPlanViewer';
+import { ALL_STATUSES, STATUS_COLOR_MAP } from './utils';
 
+/**
+ * StatusFilter
+ * UI filter for showing or hiding units based on their status (layer).
+ * This is a dumb component that receives its state and callbacks from a parent.
+ */
 interface StatusFilterProps {
   statusVisibility: Record<Unit['status'], boolean>;
   onVisibilityChange: (status: Unit['status'], checked: boolean) => void;
@@ -25,18 +30,12 @@ export function StatusFilter({
             Εμφάνιση Layers:
           </h4>
           {ALL_STATUSES.map((status) => {
-            const colorMap = {
-              'Πωλημένο': 'hsl(var(--destructive))',
-              'Κρατημένο': 'hsl(var(--primary))',
-              'Διαθέσιμο': '#22c55e',
-              'Οικοπεδούχος': '#f97316',
-            };
-            const color = colorMap[status] || '#6b7280';
+            const color = STATUS_COLOR_MAP[status] ?? '#6b7280';
             return (
               <div key={status} className="flex items-center space-x-2">
                 <Checkbox
                   id={`status-${status}`}
-                  checked={statusVisibility[status]}
+                  checked={statusVisibility[status] ?? true}
                   onCheckedChange={(checked) =>
                     onVisibilityChange(status, checked as boolean)
                   }

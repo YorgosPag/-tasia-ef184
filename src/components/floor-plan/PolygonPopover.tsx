@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { Unit } from './FloorPlanViewer';
-import { getStatusClass } from './utils';
+import { getStatusClass, STATUS_COLOR_MAP } from './utils';
 
 interface PolygonPopoverProps {
   unit: Unit;
@@ -43,6 +43,8 @@ export function PolygonPopover({
 }: PolygonPopoverProps) {
   if (!unit.polygonPoints) return null;
 
+  const polygonColor = STATUS_COLOR_MAP[unit.status] ?? '#6b7280';
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -57,8 +59,8 @@ export function PolygonPopover({
             points={unit.polygonPoints.map((p) => `${p.x},${p.y}`).join(' ')}
             className="stroke-2 transition-all opacity-40 group-hover/polygon:opacity-70"
             style={{
-              fill: `hsl(var(--${getStatusClass(unit.status, 'color')}))`,
-              stroke: `hsl(var(--${getStatusClass(unit.status, 'color')}))`,
+              fill: polygonColor,
+              stroke: polygonColor,
               strokeWidth: 2 / scale,
             }}
           />

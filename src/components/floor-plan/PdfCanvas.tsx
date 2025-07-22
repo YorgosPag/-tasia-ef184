@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
 import { PolygonPopover } from './PolygonPopover';
 import { Unit } from './FloorPlanViewer';
 import { usePdfHandlers } from './hooks/usePdfHandlers';
-import { getStatusClass } from './utils';
+import { getStatusClass, STATUS_COLOR_MAP } from './utils';
 
 // Set worker path for react-pdf
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
@@ -93,7 +93,7 @@ export function PdfCanvas({
     setPageDimensions,
   });
   
-  const visibleUnits = units.filter((unit) => statusVisibility[unit.status]);
+  const visibleUnits = units.filter((unit) => statusVisibility[unit.status] ?? true);
   const { cropBox } = pageDimensions;
   const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropBox.height : 1;
 
@@ -249,7 +249,7 @@ function UnitLayers({
               cx={point.x}
               cy={point.y}
               r={5 / scale}
-              fill={`hsl(var(--${getStatusClass(unit.status, 'color')}))`}
+              fill={STATUS_COLOR_MAP[unit.status] ?? '#6b7280'}
               stroke="#fff"
               strokeWidth={1.5 / scale}
               onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
