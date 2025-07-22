@@ -8,12 +8,13 @@ import {
   Timestamp,
   doc,
   DocumentReference,
-  getDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
 // A simple map to hold the generated document references for use within the seeding script.
 const refs: { [key: string]: DocumentReference } = {};
+const buildingOriginalIds: { [key: string]: string } = {};
+
 
 type UnitStatus = 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
 
@@ -108,7 +109,8 @@ export async function seedDatabase() {
       const subCollectionBuildingRef = doc(collection(parentProjectRef, 'buildings'));
       const topLevelBuildingRef = doc(collection(db, 'buildings'));
       refs[building._id] = topLevelBuildingRef; 
-      
+      buildingOriginalIds[building._id] = subCollectionBuildingRef.id;
+
       batch.set(subCollectionBuildingRef, {
         address: building.address,
         type: building.type,
@@ -146,13 +148,14 @@ export async function seedDatabase() {
       
       const parentProjectRef = refs[originalBuildingData.projectId];
       if (!parentProjectRef) continue;
-
-      const topLevelBuildingDocData = { originalId: `placeholder_for_${parentBuildingTopLevelRef.id}` };
       
+      const buildingOriginalId = buildingOriginalIds[floor.buildingId];
+      if (!buildingOriginalId) continue;
+
       const topLevelFloorRef = doc(collection(db, 'floors'));
       refs[floor._id] = topLevelFloorRef;
       
-      const subCollectionFloorRef = doc(collection(db, 'projects', parentProjectRef.id, 'buildings', topLevelBuildingDocData.originalId, 'floors'));
+      const subCollectionFloorRef = doc(collection(db, 'projects', parentProjectRef.id, 'buildings', buildingOriginalId, 'floors'));
 
       batch.set(subCollectionFloorRef, {
           level: floor.level,
@@ -187,11 +190,17 @@ export async function seedDatabase() {
 
   for (const u of unitsData) {
       const parentFloorRef = refs[u.floorId];
-      const parentBuildingRef = refs[floorsData.find(f => f._id === u.floorId)?.buildingId || ''];
+      const parentBuildingId = floorsData.find(f => f._id === u.floorId)?.buildingId;
+      const parentBuildingRef = refs[parentBuildingId || ''];
+
       if (!parentFloorRef || !parentBuildingRef) continue;
 
       const unitDocRef = doc(collection(db, 'units'));
       refs[u._id] = unitDocRef;
+
+      // This is a placeholder since we can't know the sub-collection doc id beforehand.
+      // In a real app, this linkage would happen differently, but for seeding it's okay.
+      const subCollectionUnitId = doc(collection(db, 'dummy')).id;
 
       batch.set(unitDocRef, {
         identifier: u.identifier,
@@ -201,7 +210,7 @@ export async function seedDatabase() {
         polygonPoints: u.polygonPoints || [],
         floorId: parentFloorRef.id,
         buildingId: parentBuildingRef.id,
-        originalId: `placeholder_for_${unitDocRef.id}`, // Placeholder
+        originalId: subCollectionUnitId, // Placeholder
         createdAt: serverTimestamp(),
       });
       
