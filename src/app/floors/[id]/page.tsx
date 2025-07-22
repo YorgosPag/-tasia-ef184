@@ -15,7 +15,7 @@ import {
   setDoc,
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { db, storage, auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -299,6 +299,15 @@ export default function FloorDetailsPage() {
 
   const handleFileUpload = async () => {
     if (!selectedFile || !floor) return;
+
+    if (!auth.currentUser) {
+        toast({
+            variant: 'destructive',
+            title: 'Σφάλμα Αυθεντικοποίησης',
+            description: 'Πρέπει να είστε συνδεδεμένοι για να ανεβάσετε αρχεία.',
+        });
+        return;
+    }
 
     setIsUploading(true);
     const filePath = `floor-plans/${floor.id}/${selectedFile.name}`;
