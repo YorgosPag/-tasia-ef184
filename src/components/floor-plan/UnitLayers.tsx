@@ -7,6 +7,7 @@ import { PolygonPopover } from './PolygonPopover';
 
 interface UnitLayersProps {
   units: Unit[];
+  statusColors: Record<Unit['status'], string>;
   isEditMode: boolean;
   isLocked: boolean;
   scale: number;
@@ -22,6 +23,7 @@ interface UnitLayersProps {
  */
 export function UnitLayers({
   units,
+  statusColors,
   isEditMode,
   isLocked,
   scale,
@@ -37,6 +39,7 @@ export function UnitLayers({
             <PolygonPopover
               key={unit.id}
               unit={unit}
+              statusColors={statusColors}
               isEditMode={isEditMode}
               isLocked={isLocked}
               scale={scale}

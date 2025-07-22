@@ -24,6 +24,7 @@ interface PdfCanvasProps {
   pdfUrl: string;
   units: Unit[];
   statusVisibility: Record<Unit['status'], boolean>;
+  statusColors: Record<Unit['status'], string>;
   isLocked: boolean;
   isEditMode: boolean;
   drawingPolygon: { x: number; y: number }[];
@@ -58,6 +59,7 @@ export function PdfCanvas({
   pdfUrl,
   units,
   statusVisibility,
+  statusColors,
   isLocked,
   isEditMode,
   drawingPolygon,
@@ -157,6 +159,7 @@ export function PdfCanvas({
                 />
                 <UnitLayers
                   units={visibleUnits}
+                  statusColors={statusColors}
                   isEditMode={isEditMode}
                   isLocked={isLocked}
                   scale={zoom.scale}

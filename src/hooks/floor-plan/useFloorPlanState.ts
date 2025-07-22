@@ -7,7 +7,7 @@ import { usePolygonDraw } from './usePolygonDraw';
 import { useZoom } from './useZoom';
 import { usePrecisionZoom } from './usePrecisionZoom';
 import { Unit } from '@/components/floor-plan/FloorPlanViewer';
-import { ALL_STATUSES } from '@/components/floor-plan/utils';
+import { ALL_STATUSES, STATUS_COLOR_MAP } from '@/components/floor-plan/utils';
 
 interface PageDimensions {
     width: number;
@@ -37,6 +37,10 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
     const [statusVisibility, setStatusVisibility] = useLocalStorageState(
         'floorPlanStatusVisibility',
         ALL_STATUSES.reduce((acc, status) => ({ ...acc, [status]: true }), {} as Record<Unit['status'], boolean>)
+    );
+     const [statusColors, setStatusColors] = useLocalStorageState(
+        'floorPlanStatusColors',
+        STATUS_COLOR_MAP
     );
 
     const [isEditMode, setIsEditMode] = useState(false);
@@ -79,6 +83,10 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         setStatusVisibility(prev => ({ ...prev, [status]: checked }));
     }
 
+    const handleColorChange = (status: Unit['status'], color: string) => {
+        setStatusColors(prev => ({ ...prev, [status]: color }));
+    };
+
     const toggleEditMode = () => {
         setIsEditMode(prev => {
             // Clear any unfinished polygon when exiting edit mode
@@ -94,6 +102,8 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         setPageDimensions,
         statusVisibility,
         handleStatusVisibilityChange,
+        statusColors,
+        handleColorChange,
         isLocked,
         setIsLocked,
         isEditMode,
