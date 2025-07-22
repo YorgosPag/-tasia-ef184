@@ -1,0 +1,87 @@
+
+# Τεχνική Τεκμηρίωση Εφαρμογής TASIA
+
+## 1. Επισκόπηση Εφαρμογής
+
+Η TASIA είναι μια web εφαρμογή τύπου Real Estate Index, σχεδιασμένη για την ιεραρχική διαχείριση και οπτικοποίηση κατασκευαστικών έργων. Επιτρέπει στους χρήστες να καταχωρούν και να παρακολουθούν εταιρείες, τα έργα που αναλαμβάνουν, τα κτίρια που περιλαμβάνουν, τους ορόφους κάθε κτιρίου, και τα επιμέρους ακίνητα (units) με τα παρακολουθήματά τους (π.χ. parking, αποθήκες).
+
+Το κεντρικό χαρακτηριστικό της εφαρμογής είναι ο **Floor Plan Viewer**, ένα διαδραστικό εργαλείο που επιτρέπει την οπτικοποίηση αρχιτεκτονικών κατόψεων σε μορφή PDF, πάνω στις οποίες οι χρήστες μπορούν να σχεδιάσουν "ζωντανά" πολύγωνα που αντιστοιχούν στα ακίνητα, να τα χρωματίσουν ανάλογα με την κατάστασή τους (status) και να τα διαχειριστούν.
+
+---
+
+## 2. Τεχνολογικό Stack (Tech Stack)
+
+Η εφαρμογή είναι χτισμένη με ένα σύγχρονο, component-based stack που δίνει έμφαση στην ταχύτητα ανάπτυξης, την απόδοση και τη συντηρησιμότητα.
+
+- **Frontend Framework**: **Next.js (App Router)** - Χρησιμοποιούμε το App Router για βελτιωμένη δρομολόγηση, server-side rendering (SSR) και React Server Components (RSC) by default.
+- **Γλώσσα Προγραμματισμού**: **TypeScript** - Για type-safety και καλύτερο developer experience.
+- **UI Components**: **ShadCN/UI** - Μια βιβλιοθήκη από όμορφα και προσβάσιμα components, χτισμένα πάνω σε **Radix UI** (για τη λογική) και **Tailwind CSS** (για το styling).
+- **Styling**: **Tailwind CSS** - Για γρήγορο και συνεπές utility-first CSS styling.
+- **Backend & Database**: **Firebase (Firestore & Authentication)** - Χρησιμοποιούμε τη σουίτα της Firebase για:
+    - **Firestore**: Ως NoSQL, document-based βάση δεδομένων για την αποθήκευση όλων των δεδομένων της εφαρμογής.
+    - **Firebase Authentication**: Για τη διαχείριση χρηστών (login/register με email/password και Google Sign-In).
+    - **Firebase Storage**: Για την αποθήκευση αρχείων, όπως οι κατόψεις σε PDF.
+- **State Management**:
+    - **React Hooks (`useState`, `useEffect`, `useContext`)**: Για τη βασική διαχείριση κατάστασης.
+    - **TanStack Query (React Query)**: Για το data fetching, caching, και τον συγχρονισμό του server state (π.χ. φόρτωση όλων των units).
+    - **Zustand (μέσω του `useDataStore`)**: Για τη δημιουργία ενός κεντρικού, client-side store που κρατάει δεδομένα που αλλάζουν συχνά (π.χ. projects, companies) και τα μοιράζεται σε όλη την εφαρμογή χωρίς prop drilling.
+- **Forms**: **React Hook Form** με **Zod** για τη διαχείριση φορμών και την επικύρωση των δεδομένων (validation).
+- **PDF Rendering**: **react-pdf** - Μια ισχυρή βιβλιοθήκη για την απόδοση PDF αρχείων μέσα σε React components.
+
+---
+
+## 3. Δομή Δεδομένων & Ιεραρχία (Data Architecture)
+
+Η καρδιά της εφαρμογής είναι η ιεραρχική σχέση μεταξύ των οντοτήτων της. Η αποθήκευση γίνεται στο Firestore ακολουθώντας ένα υβριδικό μοντέλο για ευελιξία και απόδοση.
+
+### Η Ιεραρχία:
+
+**Company** -> **Project** -> **Building** -> **Floor** -> **Unit** -> **Attachment**
+
+### Το "Πάντρεμα" των Δεδομένων στο Firestore:
+
+Για να επιτύχουμε γρήγορες αναγνώσεις τόσο σε επίπεδο έργου (π.χ. "δείξε μου όλα τα κτίρια αυτού του έργου") όσο και σε συνολικό επίπεδο (π.χ. "δείξε μου όλα τα κτίρια ανεξαρτήτως έργου"), χρησιμοποιούμε μια **dual-write strategy**:
+
+1.  **Nested Subcollections**: Τα δεδομένα αποθηκεύονται στην κανονική τους ιεραρχία. Για παράδειγμα, ένα `building` αποθηκεύεται ως έγγραφο μέσα στη subcollection `buildings` ενός συγκεκριμένου `project`.
+    - `projects/{projectId}/buildings/{buildingId}/floors/{floorId}/units/{unitId}`
+
+2.  **Top-Level Collections (Denormalization)**: Ταυτόχρονα, κάθε οντότητα (π.χ. `building`, `floor`, `unit`) αποθηκεύεται και σε μια "επίπεδη" (flat) top-level collection.
+    - `/buildings/{buildingId}`
+    - `/floors/{floorId}`
+    - `/units/{unitId}`
+    - `/attachments/{attachmentId}`
+
+### Πώς γίνεται η Σύνδεση:
+
+Κάθε έγγραφο στις top-level collections περιέχει αναφορές (IDs) στους "γονείς" του, ενώ τα έγγραφα στις subcollections περιέχουν μια αναφορά (`topLevelId`) στο αντίστοιχο έγγραφο της top-level collection.
+
+**Παράδειγμα για ένα `Building`:**
+- Το έγγραφο στο `/projects/{projectId}/buildings/{originalBuildingId}` περιέχει ένα πεδίο `topLevelId` που δείχνει στο `/buildings/{topLevelBuildingId}`.
+- Το έγγραφο στο `/buildings/{topLevelBuildingId}` περιέχει πεδία `projectId` και `originalId` που δείχνουν πίσω στο έγγραφο της subcollection.
+
+Αυτή η στρατηγική μας επιτρέπει:
+- **Να φορτώνουμε γρήγορα όλα τα κτίρια ενός έργου** διαβάζοντας απλώς τη subcollection του.
+- **Να φορτώνουμε γρήγορα όλα τα κτίρια της εφαρμογής** διαβάζοντας την top-level collection `buildings`.
+
+---
+
+## 4. Λειτουργικότητα του Floor Plan Viewer
+
+Ο viewer είναι το πιο σύνθετο κομμάτι της εφαρμογής.
+
+- **PDF Canvas**: Χρησιμοποιεί το `react-pdf` για να αποδώσει την κάτοψη. Πάνω από το PDF, τοποθετείται ένα SVG overlay.
+- **SVG Overlay**: Όλες οι διαδραστικές λειτουργίες (σχεδίαση, σημεία, πολύγωνα) συμβαίνουν σε αυτό το SVG layer. Αυτό διασφαλίζει ότι δεν επεμβαίνουμε στο ίδιο το PDF.
+- **Σχεδίαση & Πολύγωνα (`polygonPoints`)**:
+    1.  Ο χρήστης μπαίνει σε "Edit Mode".
+    2.  Κάθε κλικ καταγράφεται και οι συντεταγμένες `{x, y}` αποθηκεύονται σε ένα state array (`drawingPolygon`).
+    3.  Το SVG σχεδιάζει δυναμικά το περίγραμμα με βάση αυτό το array.
+    4.  Με την ολοκλήρωση, το array μετατρέπεται σε JSON string και αποθηκεύεται στο πεδίο `polygonPoints` του αντίστοιχου `unit` στο Firestore.
+- **Διαχείριση State με Custom Hooks**: Η πολυπλοκότητα του viewer είναι απομονωμένη σε μια σειρά από εξειδικευμένα custom hooks για να κρατάμε τον κώδικα καθαρό:
+    - `useFloorPlanState`: Ο κεντρικός "ενορχηστρωτής" που συνδυάζει όλα τα άλλα hooks.
+    - `useZoom`: Διαχειρίζεται τη λογική για το zoom και την περιστροφή.
+    - `usePolygonDraw`: Διαχειρίζεται τη σχεδίαση νέων πολυγώνων.
+    - `usePrecisionZoom`: Υλοποιεί τη μεγέθυνση ακριβείας με το πλήκτρο Shift.
+    - `usePdfHandlers`: Περιέχει τους event handlers (onClick, onMouseMove) του SVG καμβά.
+- **Layers & Filtering**: Οι χρήστες μπορούν να φιλτράρουν τα ακίνητα (layers) βάσει του status τους. Το UI επιτρέπει την αλλαγή του χρώματος κάθε layer, και η αλλαγή αυτή αντικατοπτρίζεται δυναμικά σε όλη την εφαρμογή (πολύγωνα, checkboxes, badges).
+
+Αυτή η τεκμηρίωση παρέχει μια σφαιρική εικόνα της εφαρμογής και θα πρέπει να είναι αρκετή για να βοηθήσει οποιονδήποτε νέο developer να κατανοήσει τη δομή και τη ροή της.
