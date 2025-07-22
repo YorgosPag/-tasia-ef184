@@ -44,7 +44,6 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
     );
 
     const [isEditMode, setIsEditMode] = useState(false);
-    const [localUnits, setLocalUnits] = useState<Unit[]>(units);
     const [draggingPoint, setDraggingPoint] = useState<{ unitId: string; pointIndex: number } | null>(null);
     
     const {
@@ -63,10 +62,6 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         currentScale: zoom.scale,
         setScale: zoom.setScale,
     });
-    
-    useEffect(() => {
-        setLocalUnits(units);
-    }, [units]);
     
     // Effect to update the last mouse position, used by precision zoom
     useEffect(() => {
@@ -116,8 +111,6 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         setIsLocked,
         isEditMode,
         toggleEditMode,
-        localUnits,
-        setLocalUnits,
         draggingPoint,
         setDraggingPoint,
         drawingPolygon,

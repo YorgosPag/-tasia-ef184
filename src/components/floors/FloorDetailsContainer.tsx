@@ -379,6 +379,7 @@ export function FloorDetailsContainer() {
       <FloorPlanCard
         floorPlanUrl={floor.floorPlanUrl}
         units={units}
+        setUnits={setUnits}
         onUnitClick={handleUnitSelectForEdit}
         onUnitDelete={handleDeleteUnit}
         onPolygonDrawn={handlePolygonDrawn}
