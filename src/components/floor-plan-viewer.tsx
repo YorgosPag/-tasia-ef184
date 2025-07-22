@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Check } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -240,18 +240,9 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
             <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages || isLocked}>
                 <RefreshCw />
             </Button>
-            <Popover>
-                <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" disabled={!numPages}>
-                        {isLocked ? <Lock /> : <Unlock />}
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent side="top" className="w-auto p-2">
-                     <Button variant="ghost" size="sm" onClick={() => setIsLocked(prev => !prev)}>
-                        {isLocked ? 'Ξεκλείδωμα' : 'Κλείδωμα'}
-                    </Button>
-                </PopoverContent>
-            </Popover>
+             <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
+                {isLocked ? <Lock /> : <Unlock />}
+            </Button>
         </div>
 
         <Card className="w-full max-w-md">
@@ -278,5 +269,4 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
 
         </div>
   );
-
-    
+}
