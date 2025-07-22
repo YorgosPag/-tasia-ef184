@@ -2,10 +2,15 @@
 'use client';
 import { useState, useEffect } from 'react';
 
+/**
+ * Helper to safely get the initial state from localStorage.
+ */
 function getInitialState<T>(key: string, defaultValue: T): T {
+  // Can't access localStorage on the server
   if (typeof window === 'undefined') {
     return defaultValue;
   }
+
   const savedValue = localStorage.getItem(key);
   if (savedValue !== null) {
     try {
@@ -15,9 +20,18 @@ function getInitialState<T>(key: string, defaultValue: T): T {
       return defaultValue;
     }
   }
+
   return defaultValue;
 }
 
+/**
+ * useLocalStorageState
+ * A custom hook that persists state to localStorage.
+ * It's a reactive wrapper around `useState` that automatically
+ * syncs with localStorage on state changes.
+ * @param key The key to use in localStorage.
+ * @param defaultValue The default value if nothing is found in localStorage.
+ */
 export function useLocalStorageState<T>(
   key: string,
   defaultValue: T
@@ -26,8 +40,13 @@ export function useLocalStorageState<T>(
     getInitialState(key, defaultValue)
   );
 
+  // Effect to update localStorage when the state changes
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(state));
+    try {
+      localStorage.setItem(key, JSON.stringify(state));
+    } catch (e) {
+      console.error(`Error setting localStorage key "${key}":`, e);
+    }
   }, [key, state]);
 
   return [state, setState];
