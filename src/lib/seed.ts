@@ -190,10 +190,16 @@ export async function seedDatabase() {
 
   for (const u of unitsData) {
       const parentFloorRef = refs[u.floorId];
-      const parentBuildingId = floorsData.find(f => f._id === u.floorId)?.buildingId;
-      const parentBuildingRef = refs[parentBuildingId || ''];
-
-      if (!parentFloorRef || !parentBuildingRef) continue;
+      if (!parentFloorRef) {
+        console.warn(`[SEED] Floor with _id "${u.floorId}" not found for unit "${u.name}". Skipping.`);
+        continue;
+      }
+      
+      const parentFloorData = floorsData.find(f => f._id === u.floorId);
+      if (!parentFloorData) continue;
+      
+      const parentBuildingRef = refs[parentFloorData.buildingId];
+      if (!parentBuildingRef) continue;
 
       const unitDocRef = doc(collection(db, 'units'));
       refs[u._id] = unitDocRef;

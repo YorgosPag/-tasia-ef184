@@ -12,6 +12,9 @@ import {
   serverTimestamp,
   Timestamp,
   setDoc,
+  query,
+  where,
+  getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -67,8 +70,9 @@ interface Building {
 }
 
 interface Floor extends FloorFormValues {
-  id: string;
+  id: string; // This is the ID from the top-level collection
   createdAt: any;
+  originalId: string; // This is the ID from the sub-collection
 }
 
 export default function BuildingDetailsPage() {
@@ -114,12 +118,14 @@ export default function BuildingDetailsPage() {
     getBuildingData();
   }, [buildingId, router, toast]);
 
-  // Listen for floors in the subcollection
+  // Listen for floors belonging to this building from the top-level collection
   useEffect(() => {
-    if (!building || !building.projectId || !building.originalId) return;
-    const floorsColRef = collection(db, 'projects', building.projectId, 'buildings', building.originalId, 'floors');
-    const unsubscribe = onSnapshot(
-      floorsColRef,
+    if (!buildingId) return;
+    
+    setIsLoadingFloors(true);
+    const q = query(collection(db, 'floors'), where('buildingId', '==', buildingId));
+
+    const unsubscribe = onSnapshot(q,
       (snapshot) => {
         const floorsData: Floor[] = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -140,7 +146,7 @@ export default function BuildingDetailsPage() {
     );
 
     return () => unsubscribe();
-  }, [building, toast]);
+  }, [buildingId, toast]);
 
   const onSubmitFloor = async (data: FloorFormValues) => {
     if (!building || !building.projectId || !building.originalId) {
@@ -151,13 +157,16 @@ export default function BuildingDetailsPage() {
     try {
       // Add to subcollection
       const floorSubRef = doc(collection(db, 'projects', building.projectId, 'buildings', building.originalId, 'floors'));
+      const floorTopRef = doc(collection(db, 'floors'));
+      
       await setDoc(floorSubRef, {
         ...data,
+        topLevelId: floorTopRef.id,
         createdAt: serverTimestamp(),
       });
       
       // Also add to a top-level 'floors' collection
-      await setDoc(doc(db, 'floors', floorSubRef.id), {
+      await setDoc(floorTopRef, {
           ...data,
           buildingId: building.id,
           originalId: floorSubRef.id,
