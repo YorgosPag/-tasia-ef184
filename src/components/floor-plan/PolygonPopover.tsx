@@ -1,0 +1,121 @@
+
+'use client';
+
+import React from 'react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Edit, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Unit } from './FloorPlanViewer';
+import { getStatusColor, getStatusClass } from './utils';
+
+interface PolygonPopoverProps {
+  unit: Unit;
+  isEditMode: boolean;
+  isLocked: boolean;
+  scale: number;
+  onUnitClick: (unitId: string) => void;
+  onUnitDelete: (unitId: string) => void;
+}
+
+export function PolygonPopover({
+  unit,
+  isEditMode,
+  isLocked,
+  scale,
+  onUnitClick,
+  onUnitDelete,
+}: PolygonPopoverProps) {
+  if (!unit.polygonPoints) return null;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <g
+          className="group/polygon"
+          style={{
+            pointerEvents: isEditMode || isLocked ? 'none' : 'auto',
+            cursor: isLocked ? 'not-allowed' : 'pointer',
+          }}
+        >
+          <polygon
+            points={unit.polygonPoints.map((p) => `${p.x},${p.y}`).join(' ')}
+            className="stroke-2 transition-all opacity-40 group-hover/polygon:opacity-70"
+            style={{
+              fill: getStatusColor(unit.status),
+              stroke: getStatusColor(unit.status),
+              strokeWidth: 2 / scale,
+            }}
+          />
+        </g>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto">
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <h4 className="font-medium leading-none">
+              {unit.name} ({unit.identifier})
+            </h4>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Κατάσταση:</span>
+              <Badge variant="default" className={getStatusClass(unit.status)}>
+                {unit.status}
+              </Badge>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onUnitClick(unit.id)}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Επεξεργασία
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="destructive_outline">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Διαγραφή
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί
+                    οριστικά το ακίνητο "{unit.name} ({unit.identifier})".
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onUnitDelete(unit.id)}
+                    className="bg-destructive hover:bg-destructive/90"
+                  >
+                    Διαγραφή
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
