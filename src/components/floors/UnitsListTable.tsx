@@ -27,6 +27,8 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
+import { getStatusClass } from '@/components/floor-plan/utils';
+import type { Unit as IUnit } from '@/components/floor-plan/FloorPlanViewer';
 
 interface Unit {
   id: string;
@@ -40,20 +42,11 @@ interface Unit {
 interface UnitsListTableProps {
   units: Unit[];
   isLoading: boolean;
+  statusColors: Record<IUnit['status'], string>;
   onAddNewUnit: () => void;
   onEditUnit: (unitId: string) => void;
   onDeleteUnit: (unitId: string) => void;
   onViewUnit: (unitId: string) => void;
-}
-
-const getStatusClass = (status: Unit['status'] | undefined) => {
-    switch(status) {
-        case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600 text-white';
-        case 'Κρατημένο': return 'bg-blue-500 hover:bg-blue-600 text-white';
-        case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600 text-white';
-        case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600 text-white';
-        default: return 'bg-gray-500 hover:bg-gray-600 text-white';
-    }
 }
 
 const formatDate = (timestamp: Timestamp | undefined) => {
@@ -68,6 +61,7 @@ const formatDate = (timestamp: Timestamp | undefined) => {
 export function UnitsListTable({
   units,
   isLoading,
+  statusColors,
   onAddNewUnit,
   onEditUnit,
   onDeleteUnit,
@@ -108,7 +102,11 @@ export function UnitsListTable({
                     <TableCell className="font-medium">{unit.name}</TableCell>
                     <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
                     <TableCell>
-                      <Badge variant="default" className={getStatusClass(unit.status)}>
+                      <Badge 
+                        variant="default" 
+                        style={{ backgroundColor: statusColors[unit.status] }}
+                        className={getStatusClass(unit.status)}
+                      >
                         {unit.status}
                       </Badge>
                     </TableCell>

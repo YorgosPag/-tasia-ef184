@@ -31,6 +31,7 @@ import { FloorInfoHeader } from './FloorInfoHeader';
 import { FloorPlanCard } from './FloorPlanCard';
 import { UnitsListTable } from './UnitsListTable';
 import { UnitDialogForm, UnitFormValues } from '@/components/units/UnitDialogForm';
+import { useFloorPlanState } from '@/hooks/floor-plan/useFloorPlanState';
 
 // --- Interfaces & Schemas ---
 const unitSchema = z.object({
@@ -83,6 +84,9 @@ export function FloorDetailsContainer() {
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [drawingPolygon, setDrawingPolygon] = useState<{ x: number; y: number }[] | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
+  // Get status colors from the central hook
+  const { statusColors } = useFloorPlanState({ units: [], onPolygonDrawn: () => {} });
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
@@ -383,6 +387,7 @@ export function FloorDetailsContainer() {
       <UnitsListTable
         units={units}
         isLoading={isLoadingUnits}
+        statusColors={statusColors}
         onAddNewUnit={handleAddNewUnitClick}
         onEditUnit={handleUnitSelectForEdit}
         onDeleteUnit={handleDeleteUnit}
