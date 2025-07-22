@@ -37,7 +37,7 @@ export interface Project {
   location?: string;
   description?: string;
   deadline: Timestamp;
-  status: string;
+  status: 'Ενεργό' | 'Σε εξέλιξη' | 'Ολοκληρωμένο';
   createdAt: any;
 }
 
@@ -100,10 +100,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     const unsubCompanies = onSnapshot(collection(db, 'companies'), snapshot => {
         setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
+    }, error => {
+      console.error("Company listener error:", error);
     });
 
     const unsubProjects = onSnapshot(collection(db, 'projects'), snapshot => {
         setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
+    }, error => {
+      console.error("Project listener error:", error);
     });
 
     return () => {
