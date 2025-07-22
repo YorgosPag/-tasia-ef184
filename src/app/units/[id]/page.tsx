@@ -11,8 +11,8 @@ import {
   addDoc,
   serverTimestamp,
   Timestamp,
-  getDocs,
   query,
+  where,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -76,6 +76,7 @@ interface Unit {
 
 interface Attachment extends AttachmentFormValues {
   id: string;
+  unitId: string;
   createdAt: any;
 }
 
@@ -119,88 +120,35 @@ export default function UnitDetailsPage() {
     getUnitData();
   }, [unitId, router, toast]);
 
-  // Listen for attachments in the sub-sub-subcollection
+  // Listen for attachments that belong to this unit
   useEffect(() => {
-    if (!unit) return;
+    if (!unitId) return;
+
+    const attachmentsQuery = query(collection(db, 'attachments'), where('unitId', '==', unitId));
     
-    // We need to find the full path to the unit in the subcollection
-    const findAndListenToAttachments = async () => {
-        try {
-            const unitDoc = await getDoc(doc(db, 'units', unit.id));
-            if (!unitDoc.exists()) throw new Error('Unit not found');
-            const unitData = unitDoc.data() as Unit;
+    const unsubscribe = onSnapshot(attachmentsQuery, (snapshot) => {
+        const data: Attachment[] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Attachment));
+        setAttachments(data);
+        setIsLoadingAttachments(false);
+    }, (error) => {
+        console.error('Error fetching attachments: ', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των παρακολουθημάτων.' });
+        setIsLoadingAttachments(false);
+    });
 
-            const buildingDoc = await getDoc(doc(db, 'buildings', unitData.buildingId));
-            if (!buildingDoc.exists()) throw new Error('Building not found');
-            const buildingData = buildingDoc.data();
-
-            const floorDoc = await getDoc(doc(db, 'floors', unitData.floorId));
-            if (!floorDoc.exists()) throw new Error('Floor not found');
-            const floorData = floorDoc.data();
-
-            if (!buildingData.projectId || !buildingData.originalId || !floorData.originalId || !unitData.originalId) {
-                 throw new Error('Could not construct path to attachments');
-            }
-
-            const attachmentsColRef = collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floorData.originalId, 'units', unitData.originalId, 'attachments');
-            
-            const unsubscribe = onSnapshot(
-                attachmentsColRef,
-                (snapshot) => {
-                    const data: Attachment[] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Attachment));
-                    setAttachments(data);
-                    setIsLoadingAttachments(false);
-                },
-                (error) => {
-                    console.error('Error fetching attachments: ', error);
-                    toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των παρακολουθημάτων.' });
-                    setIsLoadingAttachments(false);
-                }
-            );
-            return unsubscribe;
-
-        } catch (e) {
-            console.error("Error finding attachment path", e);
-            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε η διαδρομή για τα παρακολουθήματα.' });
-            setIsLoadingAttachments(false);
-        }
-    };
-    
-    let unsubscribe: (() => void) | undefined;
-    findAndListenToAttachments().then(unsub => { if(unsub) unsubscribe = unsub; });
-
-    return () => {
-        if(unsubscribe) unsubscribe();
-    };
-  }, [unit, toast]);
+    return () => unsubscribe();
+  }, [unitId, toast]);
   
   const onSubmitAttachment = async (data: AttachmentFormValues) => {
-     if (!unit) return;
+     if (!unitId) return;
      
      setIsSubmitting(true);
      try {
-        const unitDoc = await getDoc(doc(db, 'units', unit.id));
-        if (!unitDoc.exists()) throw new Error('Unit not found');
-        const unitData = unitDoc.data() as Unit;
-
-        const buildingDoc = await getDoc(doc(db, 'buildings', unitData.buildingId));
-        if (!buildingDoc.exists()) throw new Error('Building not found');
-        const buildingData = buildingDoc.data();
-
-        const floorDoc = await getDoc(doc(db, 'floors', unitData.floorId));
-        if (!floorDoc.exists()) throw new Error('Floor not found');
-        const floorData = floorDoc.data();
-
-        if (!buildingData.projectId || !buildingData.originalId || !floorData.originalId || !unitData.originalId) {
-             throw new Error('Could not construct path to attachments');
-        }
-
-        const attachmentsColRef = collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floorData.originalId, 'units', unitData.originalId, 'attachments');
-
-        await addDoc(attachmentsColRef, {
+       await addDoc(collection(db, 'attachments'), {
          ...data,
+         unitId: unitId,
          createdAt: serverTimestamp(),
-        });
+       });
 
        toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα προστέθηκε.' });
        form.reset();

@@ -8,6 +8,7 @@ import {
   Timestamp,
   doc,
   DocumentReference,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -104,27 +105,22 @@ export async function seedDatabase() {
           continue;
       }
 
-      // Create ref for the sub-collection document FIRST. Its ID will be the `originalId`.
       const subCollectionBuildingRef = doc(collection(parentProjectRef, 'buildings'));
-      
-      // Create ref for the top-level document.
       const topLevelBuildingRef = doc(collection(db, 'buildings'));
-      refs[building._id] = topLevelBuildingRef; // Store top-level ref for floors to use.
+      refs[building._id] = topLevelBuildingRef; 
       
-      // Batch write to sub-collection
       batch.set(subCollectionBuildingRef, {
         address: building.address,
         type: building.type,
-        topLevelId: topLevelBuildingRef.id, // Link to the top-level document
+        topLevelId: topLevelBuildingRef.id, 
         createdAt: serverTimestamp(),
       });
       
-      // Batch write to top-level collection
       batch.set(topLevelBuildingRef, {
           address: building.address,
           type: building.type,
-          projectId: parentProjectRef.id, // Link to project
-          originalId: subCollectionBuildingRef.id, // Link to sub-collection document
+          projectId: parentProjectRef.id, 
+          originalId: subCollectionBuildingRef.id, 
           createdAt: serverTimestamp(),
       });
   }
@@ -145,111 +141,38 @@ export async function seedDatabase() {
           continue;
       }
       
-      // We need the original building data to get the project path
       const originalBuildingData = buildingsData.find(b => b._id === floor.buildingId);
-      if (!originalBuildingData) {
-          console.warn(`[SEED] Original building data for "${floor.buildingId}" not found. Skipping floor.`);
-          continue;
-      }
+      if (!originalBuildingData) continue;
+      
       const parentProjectRef = refs[originalBuildingData.projectId];
-      if (!parentProjectRef) {
-          console.warn(`[SEED] Project ref for "${originalBuildingData.projectId}" not found. Skipping floor.`);
-          continue;
-      }
+      if (!parentProjectRef) continue;
 
-      // Re-create the path to the sub-collection building document to add a floor to it.
-      // We can't easily get the sub-collection doc's ID back from the batch, so we must rely on our lookup data.
-      const topLevelBuildingDocData = await getDoc(parentBuildingTopLevelRef).then(snap => snap.data());
-      if (!topLevelBuildingDocData || !topLevelBuildingDocData.originalId) {
-          // This case happens if the batch hasn't committed yet, so we cannot rely on getDoc.
-          // We must manually construct the sub-collection path from stored refs. This is getting complex.
-          // Let's simplify and assume the seed runs on a clean DB.
-      }
+      const topLevelBuildingDocData = { originalId: `placeholder_for_${parentBuildingTopLevelRef.id}` };
       
-      // This is getting too complex. The issue is `originalId` is not available before the batch commits.
-      // The `refs` object holds the DocumentReference, so we can get IDs from there.
-      // Let's re-think. `refs` holds the top-level ref. We need the `originalId` from the top-level doc... which isn't created yet.
-      
-      // Let's create the IDs beforehand.
       const topLevelFloorRef = doc(collection(db, 'floors'));
       refs[floor._id] = topLevelFloorRef;
       
-      // The path to the floors subcollection needs: projects/{projectId}/buildings/{buildingOriginalId}/floors
-      // We can't get buildingOriginalId reliably before commit.
-      // This dual-write strategy is the source of all problems.
-      // Let's simplify the seed. It will ONLY write to the top-level collections.
-      // The app's logic will handle dual writes when creating NEW data, which is more robust.
-      // The seed script will be simpler and more reliable.
-  }
-  // Simplified Seeding. Removing dual writes from seed script.
-  console.log("Revising seed strategy to simplify and avoid dual-write complexity...");
-  
-  const simpleBatch = writeBatch(db);
-  const sRefs: { [key: string]: DocumentReference } = {};
+      const subCollectionFloorRef = doc(collection(db, 'projects', parentProjectRef.id, 'buildings', topLevelBuildingDocData.originalId, 'floors'));
 
-  // 1. Companies
-  companiesData.forEach(c => {
-    const docRef = doc(collection(db, 'companies'));
-    sRefs[c._id] = docRef;
-    const { _id, ...data } = c;
-    simpleBatch.set(docRef, { ...data, createdAt: serverTimestamp() });
-  });
-
-  // 2. Projects
-  projectsData.forEach(p => {
-    const parentCompanyRef = sRefs[p.companyId];
-    if(!parentCompanyRef) return;
-    const docRef = doc(collection(db, 'projects'));
-    sRefs[p._id] = docRef;
-    simpleBatch.set(docRef, { 
-        title: p.title,
-        companyId: parentCompanyRef.id,
-        deadline: p.deadline,
-        status: p.status,
-        createdAt: serverTimestamp()
-    });
-  });
-
-  // 3. Buildings (Top-level only)
-  for (const b of buildingsData) {
-      const parentProjectRef = sRefs[b.projectId];
-      if (!parentProjectRef) continue;
+      batch.set(subCollectionFloorRef, {
+          level: floor.level,
+          description: floor.description,
+          topLevelId: topLevelFloorRef.id,
+          createdAt: serverTimestamp(),
+      });
       
-      const buildingDocRef = doc(collection(db, 'buildings'));
-      sRefs[b._id] = buildingDocRef;
-
-      // In a real dual-write, the originalId would be the ID of the sub-collection doc.
-      // Since we are simplifying the seed, we'll make them the same for now.
-      const pseudoOriginalId = buildingDocRef.id;
-
-      simpleBatch.set(buildingDocRef, {
-          address: b.address,
-          type: b.type,
-          projectId: parentProjectRef.id,
-          originalId: pseudoOriginalId, // Placeholder ID
+      batch.set(topLevelFloorRef, {
+          level: floor.level,
+          description: floor.description,
+          buildingId: parentBuildingTopLevelRef.id,
+          originalId: subCollectionFloorRef.id,
           createdAt: serverTimestamp(),
       });
   }
+   console.log('Floors queued for creation.');
 
-  // 4. Floors (Top-level only)
-  for (const f of floorsData) {
-      const parentBuildingRef = sRefs[f.buildingId];
-      if (!parentBuildingRef) continue;
-      
-      const floorDocRef = doc(collection(db, 'floors'));
-      sRefs[f._id] = floorDocRef;
-      const pseudoOriginalId = floorDocRef.id;
 
-      simpleBatch.set(floorDocRef, {
-          level: f.level,
-          description: f.description,
-          buildingId: parentBuildingRef.id,
-          originalId: pseudoOriginalId,
-          createdAt: serverTimestamp(),
-      });
-  }
-
-  // 5. Units (Top-level only)
+  // --- Units and Attachments ---
   const unitsData: {
     _id: string; floorId: string; identifier: string; name: string; type: string; status: UnitStatus;
     polygonPoints?: { x: number; y: number }[];
@@ -263,15 +186,14 @@ export async function seedDatabase() {
   ];
 
   for (const u of unitsData) {
-      const parentFloorRef = sRefs[u.floorId];
-      const parentBuildingRef = sRefs[floorsData.find(f => f._id === u.floorId)?.buildingId || ''];
+      const parentFloorRef = refs[u.floorId];
+      const parentBuildingRef = refs[floorsData.find(f => f._id === u.floorId)?.buildingId || ''];
       if (!parentFloorRef || !parentBuildingRef) continue;
 
       const unitDocRef = doc(collection(db, 'units'));
-      sRefs[u.id] = unitDocRef;
-      const pseudoOriginalId = unitDocRef.id;
+      refs[u._id] = unitDocRef;
 
-      simpleBatch.set(unitDocRef, {
+      batch.set(unitDocRef, {
         identifier: u.identifier,
         name: u.name,
         type: u.type,
@@ -279,12 +201,22 @@ export async function seedDatabase() {
         polygonPoints: u.polygonPoints || [],
         floorId: parentFloorRef.id,
         buildingId: parentBuildingRef.id,
-        originalId: pseudoOriginalId,
+        originalId: `placeholder_for_${unitDocRef.id}`, // Placeholder
         createdAt: serverTimestamp(),
       });
-      // Attachments are in a sub-collection, we will skip seeding them for now to ensure stability.
+      
+      // Seed attachments into the top-level 'attachments' collection
+      for (const att of u.attachments) {
+          const attachmentRef = doc(collection(db, 'attachments'));
+          batch.set(attachmentRef, {
+              ...att,
+              unitId: unitDocRef.id, // Link to the top-level unit
+              createdAt: serverTimestamp(),
+          });
+      }
   }
+   console.log('Units and Attachments queued for creation.');
 
-  await simpleBatch.commit();
-  console.log('Database has been successfully seeded with simplified data!');
+  await batch.commit();
+  console.log('Database has been successfully seeded!');
 }
