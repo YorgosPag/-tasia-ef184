@@ -329,9 +329,10 @@ export default function FloorDetailsPage() {
   };
 
   const handleFileUpload = async () => {
-    if (!selectedFile) return;
-    if (!floorId) return;
-    if (!auth.currentUser) return;
+    if (!selectedFile || !floorId || !auth.currentUser) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν υπάρχει επιλεγμένο αρχείο ή δεν είστε συνδεδεμένοι.' });
+        return;
+    };
   
     setIsUploading(true);
     const storageRef = ref(storage, `floor_plans/${floorId}/${selectedFile.name}`);
@@ -339,8 +340,23 @@ export default function FloorDetailsPage() {
     try {
       await uploadBytes(storageRef, selectedFile);
       const downloadURL = await getDownloadURL(storageRef);
+      
       const floorDocRef = doc(db, 'floors', floorId);
       await updateDoc(floorDocRef, { floorPlanUrl: downloadURL });
+
+      // Also update the subcollection document if it exists
+      if(floor.originalId && floor.buildingId) {
+          const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+          const buildingData = buildingDoc.data();
+          if (buildingData?.projectId && buildingData?.originalId) {
+            const floorSubDocRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId);
+            const subDocSnap = await getDoc(floorSubDocRef);
+            if (subDocSnap.exists()) {
+                await updateDoc(floorSubDocRef, { floorPlanUrl: downloadURL });
+            }
+          }
+      }
+
       toast({ title: 'Επιτυχία', description: 'Η κάτοψη ανέβηκε με επιτυχία.' });
       setSelectedFile(null);
     } catch (error: any) {
