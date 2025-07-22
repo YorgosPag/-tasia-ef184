@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useFloorPlanState } from './hooks/useFloorPlanState';
+import { useFloorPlanState } from '@/hooks/floor-plan/useFloorPlanState';
 import { Toolbar } from './Toolbar';
 import { InfoPanel } from './InfoPanel';
 import { StatusFilter } from './StatusFilter';
