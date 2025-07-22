@@ -32,6 +32,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -56,6 +57,8 @@ import { useDataStore } from '@/hooks/use-data-store';
 const projectSchema = z.object({
   title: z.string().min(1, { message: "Ο τίτλος είναι υποχρεωτικός." }),
   companyId: z.string().min(1, { message: "Η εταιρεία είναι υποχρεωτική." }),
+  location: z.string().min(1, { message: "Η τοποθεσία είναι υποχρεωτική." }),
+  description: z.string().optional(),
   deadline: z.date({
     required_error: "Η προθεσμία είναι υποχρεωτική.",
   }),
@@ -76,6 +79,8 @@ export default function ProjectsPage() {
     defaultValues: {
       title: '',
       companyId: '',
+      location: '',
+      description: '',
       status: 'Ενεργό',
     },
   });
@@ -142,7 +147,7 @@ export default function ProjectsPage() {
               Νέο Έργο
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Δημιουργία Νέου Έργου</DialogTitle>
               <DialogDescription>
@@ -183,6 +188,32 @@ export default function ProjectsPage() {
                             </SelectContent>
                         </Select>
                         <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Τοποθεσία</FormLabel>
+                      <FormControl>
+                        <Input placeholder="π.χ. Αμπελόκηποι, Αθήνα" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Σύντομη περιγραφή του έργου..." {...field} />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -281,6 +312,7 @@ export default function ProjectsPage() {
                 <TableRow>
                   <TableHead>Τίτλος</TableHead>
                   <TableHead>Εταιρεία</TableHead>
+                  <TableHead>Τοποθεσία</TableHead>
                   <TableHead>Προθεσμία</TableHead>
                   <TableHead>Κατάσταση</TableHead>
                 </TableRow>
@@ -290,6 +322,7 @@ export default function ProjectsPage() {
                   <TableRow key={project.id} onClick={() => handleRowClick(project.id)} className="cursor-pointer">
                     <TableCell className="font-medium">{project.title}</TableCell>
                     <TableCell className="text-muted-foreground">{getCompanyName(project.companyId)}</TableCell>
+                    <TableCell className="text-muted-foreground">{project.location}</TableCell>
                     <TableCell>{formatDate(project.deadline)}</TableCell>
                     <TableCell>
                       <Badge variant={getStatusVariant(project.status)}>
@@ -308,3 +341,5 @@ export default function ProjectsPage() {
     </div>
   );
 }
+
+    

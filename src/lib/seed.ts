@@ -64,6 +64,8 @@ export async function seedDatabase() {
       _id: 'proj-athens-revival',
       title: 'Athens Revival',
       companyId: 'dev-construct',
+      location: 'Κέντρο Αθήνας',
+      description: 'Ολοκληρωμένη ανάπλαση ιστορικού κτιρίου γραφείων σε σύγχρονες κατοικίες υψηλών προδιαγραφών.',
       deadline: Timestamp.fromDate(new Date('2025-12-31')),
       status: 'Σε εξέλιξη',
     },
@@ -71,6 +73,8 @@ export async function seedDatabase() {
       _id: 'proj-thess-towers',
       title: 'Thessaloniki Towers',
       companyId: 'city-build',
+      location: 'Ανατολική Θεσσαλονίκη',
+      description: 'Ανέγερση δύο πύργων μεικτής χρήσης (κατοικίες, καταστήματα και γραφεία) με θέα στη θάλασσα.',
       deadline: Timestamp.fromDate(new Date('2026-06-30')),
       status: 'Ενεργό',
     },
@@ -89,6 +93,8 @@ export async function seedDatabase() {
     batch.set(docRef, {
         title: project.title,
         companyId: parentCompanyRef.id,
+        location: project.location,
+        description: project.description,
         deadline: project.deadline,
         status: project.status,
         createdAt: serverTimestamp(),
@@ -239,3 +245,5 @@ export async function seedDatabase() {
   await batch.commit();
   console.log('Database has been successfully seeded!');
 }
+
+    
