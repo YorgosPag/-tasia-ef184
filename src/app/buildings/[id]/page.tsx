@@ -52,6 +52,7 @@ import { ArrowLeft, PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
+import Image from 'next/image';
 
 const floorSchema = z.object({
   level: z.string().min(1, { message: 'Το επίπεδο είναι υποχρεωτικό.' }),
@@ -64,6 +65,8 @@ interface Building {
   id: string;
   address: string;
   type: string;
+  description?: string;
+  photoUrl?: string;
   projectId?: string;
   originalId?: string;
   createdAt: Timestamp;
@@ -225,6 +228,24 @@ export default function BuildingDetailsPage() {
             Τύπος: {building.type} | Ημερομηνία Δημιουργίας: {formatDate(building.createdAt)}
           </CardDescription>
         </CardHeader>
+        <CardContent className="flex flex-col md:flex-row gap-4">
+            {building.photoUrl && (
+                <div className="md:w-1/3">
+                    <Image 
+                        src={building.photoUrl} 
+                        alt={`Photo of ${building.address}`}
+                        width={400}
+                        height={300}
+                        className="rounded-lg object-cover aspect-[4/3]"
+                    />
+                </div>
+            )}
+            {building.description && (
+                <p className="text-sm text-muted-foreground flex-1">
+                    {building.description}
+                </p>
+            )}
+        </CardContent>
       </Card>
       
       <div className="flex items-center justify-between">

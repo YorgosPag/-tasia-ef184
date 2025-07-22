@@ -101,8 +101,22 @@ export async function seedDatabase() {
 
   // --- Buildings (Dual Write) ---
   const buildingsData = [
-    { _id: 'bld-alpha', address: 'Πατησίων 100', type: 'Πολυκατοικία', projectId: 'proj-athens-revival' },
-    { _id: 'bld-beta', address: 'Αγίας Σοφίας 12', type: 'Κτίριο Γραφείων', projectId: 'proj-thess-towers' },
+    { 
+        _id: 'bld-alpha', 
+        address: 'Πατησίων 100', 
+        type: 'Πολυκατοικία', 
+        projectId: 'proj-athens-revival', 
+        description: 'Ιστορικό κτίριο του 1960 με πλήρη ανακαίνιση.',
+        photoUrl: 'https://placehold.co/600x400.png'
+    },
+    { 
+        _id: 'bld-beta', 
+        address: 'Αγίας Σοφίας 12', 
+        type: 'Κτίριο Γραφείων', 
+        projectId: 'proj-thess-towers',
+        description: 'Μοντέρνο κτίριο με γυάλινη πρόσοψη.',
+        photoUrl: 'https://placehold.co/600x400.png'
+    },
   ];
 
   for(const building of buildingsData) {
@@ -115,18 +129,22 @@ export async function seedDatabase() {
       refs[building._id] = topLevelBuildingRef; 
       originalIds[building._id] = { building: subCollectionBuildingRef.id };
 
-      batch.set(subCollectionBuildingRef, {
+      const buildingData = {
         address: building.address,
         type: building.type,
-        topLevelId: topLevelBuildingRef.id, 
+        description: building.description,
+        photoUrl: building.photoUrl,
         createdAt: serverTimestamp(),
+      };
+
+      batch.set(subCollectionBuildingRef, {
+        ...buildingData,
+        topLevelId: topLevelBuildingRef.id, 
       });
       batch.set(topLevelBuildingRef, {
-          address: building.address,
-          type: building.type,
+          ...buildingData,
           projectId: parentProjectRef.id, 
           originalId: subCollectionBuildingRef.id, 
-          createdAt: serverTimestamp(),
       });
   }
   console.log('Buildings queued for creation.');
