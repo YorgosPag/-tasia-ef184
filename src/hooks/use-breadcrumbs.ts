@@ -102,92 +102,76 @@ export function useBreadcrumbs() {
 
   const generateBreadcrumbs = useCallback(async () => {
     const pathSegments = pathname.split('/').filter(Boolean);
-    let newBreadcrumbs: BreadcrumbItem[] = [];
+    if (pathSegments.length === 0) {
+        setBreadcrumbs([]);
+        return;
+    }
+
     let currentPath = '';
+    const breadcrumbPromises: Promise<BreadcrumbItem | null>[] = [];
 
-    for (let i = 0; i < pathSegments.length; i++) {
-        currentPath += `/${pathSegments[i]}`;
-        const segment = pathSegments[i];
+    let companyData: DocumentData | null = null;
+    let projectData: DocumentData | null = null;
+    let buildingData: DocumentData | null = null;
+    let floorData: DocumentData | null = null;
+    let unitData: DocumentData | null = null;
 
-        if (staticPathLabels[segment]) {
-            newBreadcrumbs.push({ href: currentPath, label: staticPathLabels[segment] });
-        } else if (i > 0) {
-            const parentSegment = pathSegments[i - 1];
-            const collectionName = collectionNameMap[parentSegment];
-            
-            if (collectionName) {
-                const docData = await getDocFromFirestore(collectionName, segment);
-                if (docData) {
-                    const currentItemLabel = docData.title || docData.address || docData.name || docData.identifier || segment;
-                    
-                    let companyData: DocumentData | null = null;
-                    let projectData: DocumentData | null = null;
-                    let buildingData: DocumentData | null = null;
-                    let floorData: DocumentData | null = null;
-                    let unitData: DocumentData | null = null;
+    const parentSegment = pathSegments[pathSegments.length - 2];
+    const currentSegment = pathSegments[pathSegments.length - 1];
+    const collectionName = collectionNameMap[parentSegment];
+    
+    if (collectionName) {
+        const docData = await getDocFromFirestore(collectionName, currentSegment);
 
-                    // --- Build hierarchy upwards from the current document ---
-                    if (collectionName === 'units') {
-                        unitData = docData;
-                        if (unitData?.floorIds?.length > 0) {
-                             const floors = await getDocsFromFirestore('floors', unitData.floorIds);
-                             if (floors.length > 0) {
-                                floorData = floors[0]; // Use first floor for hierarchy lookup
-                                if(unitData.levelSpan) {
-                                    unitData.displayLevel = unitData.levelSpan;
-                                } else {
-                                    unitData.displayLevel = "Όροφοι: " + floors.map(f => f.level).join(', ');
-                                }
-                             }
-                        }
-                        if (unitData?.buildingId) buildingData = await getDocFromFirestore('buildings', unitData.buildingId);
-                    } else if (collectionName === 'floors') {
-                        floorData = docData;
-                        if (floorData?.buildingId) buildingData = await getDocFromFirestore('buildings', floorData.buildingId);
-                    } else if (collectionName === 'buildings') {
-                        buildingData = docData;
-                    } else if (collectionName === 'projects') {
-                        projectData = docData;
-                    } else if (collectionName === 'companies') {
-                        companyData = docData;
-                    }
+        if (docData) {
+            if (collectionName === 'units') unitData = docData;
+            if (collectionName === 'floors') floorData = docData;
+            if (collectionName === 'buildings') buildingData = docData;
+            if (collectionName === 'projects') projectData = docData;
+            if (collectionName === 'companies') companyData = docData;
 
-                    if (buildingData?.projectId && !projectData) {
-                        projectData = await getDocFromFirestore('projects', buildingData.projectId);
-                    }
-                    if (projectData?.companyId && !companyData) {
-                        companyData = await getDocFromFirestore('companies', projectData.companyId);
-                    }
-
-                    // --- Construct the final breadcrumb array ---
-                    let constructedCrumbs: BreadcrumbItem[] = [];
-                    if (companyData) constructedCrumbs.push({ href: `/companies`, label: companyData.name || 'Εταιρείες' });
-                    if (projectData) constructedCrumbs.push({ href: `/projects/${projectData.id}`, label: projectData.title || 'Έργο' });
-                    if (buildingData) constructedCrumbs.push({ href: `/buildings/${buildingData.id}`, label: buildingData.address || 'Κτίριο' });
-                    
-                    if (floorData && collectionName !== 'units') {
-                         constructedCrumbs.push({ href: `/floors/${floorData.id}`, label: `Όροφος ${floorData.level}` || 'Όροφος' });
-                    }
-                    if(unitData) {
-                        const floorLabel = unitData.displayLevel || 'Όροφος';
-                        constructedCrumbs.push({ href: `/floors/${floorData?.id}`, label: floorLabel });
-                    }
-
-                    newBreadcrumbs = [...constructedCrumbs, { href: currentPath, label: currentItemLabel }];
-
-                } else {
-                     newBreadcrumbs.push({ href: currentPath, label: segment }); // Fallback to ID
-                }
+            if (unitData?.floorIds?.length > 0) {
+                const floors = await getDocsFromFirestore('floors', unitData.floorIds);
+                if (floors.length > 0) floorData = floors[0]; // Use first floor for hierarchy lookup
             }
+            if (floorData?.buildingId) buildingData = await getDocFromFirestore('buildings', floorData.buildingId);
+            if (buildingData?.projectId) projectData = await getDocFromFirestore('projects', buildingData.projectId);
+            if (projectData?.companyId) companyData = await getDocFromFirestore('companies', projectData.companyId);
         }
     }
     
-    // Remove duplicate breadcrumbs by href (important for deep hierarchies)
-    const uniqueBreadcrumbs = newBreadcrumbs.filter((crumb, index, self) =>
-        index === self.findIndex((c) => c.href === crumb.href)
-    );
+    let tempBreadcrumbs: BreadcrumbItem[] = [];
 
-    setBreadcrumbs(uniqueBreadcrumbs);
+    if (companyData) tempBreadcrumbs.push({ href: `/companies`, label: companyData.name || 'Εταιρείες' });
+    if (projectData) tempBreadcrumbs.push({ href: `/projects/${projectData.id}`, label: projectData.title || 'Έργο' });
+    if (buildingData) tempBreadcrumbs.push({ href: `/buildings/${buildingData.id}`, label: buildingData.address || 'Κτίριο' });
+    
+    if (floorData) {
+        let label = `Όροφος ${floorData.level}`;
+        if(unitData?.levelSpan) {
+            label = unitData.levelSpan;
+        } else if (unitData?.floorIds?.length > 1) {
+            const floors = await getDocsFromFirestore('floors', unitData.floorIds);
+            label = "Όροφοι: " + floors.map(f => f.level).join(', ');
+        }
+        tempBreadcrumbs.push({ href: `/floors/${floorData.id}`, label: label || 'Όροφος' });
+    }
+    
+    if (unitData) tempBreadcrumbs.push({ href: `/units/${unitData.id}`, label: unitData.name || 'Ακίνητο' });
+    
+    if (tempBreadcrumbs.length === 0 && staticPathLabels[currentSegment]) {
+        tempBreadcrumbs.push({ href: `/${currentSegment}`, label: staticPathLabels[currentSegment] });
+    }
+
+    const uniqueCrumbs = tempBreadcrumbs.reduce((acc, current) => {
+        if (!acc.find(item => item.href === current.href)) {
+            acc.push(current);
+        }
+        return acc;
+    }, [] as BreadcrumbItem[]);
+
+    setBreadcrumbs(uniqueCrumbs);
+
   }, [pathname]);
 
 

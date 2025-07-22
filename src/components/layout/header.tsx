@@ -21,6 +21,7 @@ import { LogIn, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Breadcrumbs } from './breadcrumbs';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
+import { Skeleton } from '../ui/skeleton';
 
 export function AppHeader() {
   const isMobile = useIsMobile();
@@ -29,14 +30,17 @@ export function AppHeader() {
   const [isLoading, setIsLoading] = useState(true);
 
   const breadcrumbs = useBreadcrumbs();
-  const showBreadcrumbs = breadcrumbs.length > 1;
+  const showBreadcrumbs = breadcrumbs.length > 0 && !pathname.startsWith('/login') && !pathname.startsWith('/register') && pathname !== '/';
 
+
+  // The useAuth hook doesn't provide a loading state,
+  // so we manage it locally to prevent UI flicker on initial load.
+  // Once the user object is determined (either a user or null), loading is complete.
   useEffect(() => {
-    // The useAuth hook doesn't provide a loading state,
-    // so we manage it locally to prevent UI flicker on initial load.
-    // Once the user object is determined (either a user or null), loading is complete.
-    setIsLoading(false);
+    setIsLoading(user === undefined);
   }, [user]);
+
+  const pathname = usePathname();
 
 
   const handleLogout = async () => {
@@ -64,7 +68,7 @@ export function AppHeader() {
       </div>
       <div className="flex items-center gap-4">
         {isLoading ? (
-          <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
+          <Skeleton className="h-8 w-20 rounded-md" />
         ) : user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
