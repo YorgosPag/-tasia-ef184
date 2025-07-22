@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 
 interface UseZoomProps {
@@ -65,7 +65,7 @@ export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }:
     }
   };
 
-  const handleFitToView = () => {
+  const handleFitToView = useCallback(() => {
     const container = pdfContainerRef.current;
     if (!container || !pageDimensions.cropBox || pageDimensions.cropBox.width === 0) return;
 
@@ -80,7 +80,16 @@ export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }:
 
     const newScale = Math.min(scaleX, scaleY);
     setScale(newScale);
-  };
+  }, [pdfContainerRef, pageDimensions, setScale]);
+  
+  // Effect to fit view on initial load of a PDF
+  // We use a timeout to ensure dimensions are fully propagated before fitting
+  useEffect(() => {
+    if (pageDimensions.width > 0) {
+        const timer = setTimeout(() => handleFitToView(), 100);
+        return () => clearTimeout(timer);
+    }
+  }, [pageDimensions.width, pageDimensions.height, handleFitToView]);
 
   return {
     scale,

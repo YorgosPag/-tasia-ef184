@@ -51,7 +51,8 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         drawingPolygon,
         setDrawingPolygon,
         handleUndo,
-        completeAndResetDrawing
+        completeAndResetDrawing,
+        cancelDrawing
     } = usePolygonDraw({ isEditMode, onPolygonDrawn });
 
     const zoom = useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming: false });
@@ -96,11 +97,12 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
 
     const toggleEditMode = () => {
         setIsEditMode(prev => {
-            // Clear any unfinished polygon when exiting edit mode
-            if (prev && drawingPolygon.length > 0) {
-                 setDrawingPolygon([]);
+            const isEnteringEditMode = !prev;
+            // If exiting edit mode with an unfinished polygon, cancel it.
+            if (!isEnteringEditMode && drawingPolygon.length > 0) {
+                 cancelDrawing();
             }
-            return !prev;
+            return isEnteringEditMode;
         });
     }
 
