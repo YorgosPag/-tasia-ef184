@@ -548,7 +548,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
       setStatusVisibility(prev => ({ ...prev, [status]: checked }));
   }
 
-  // Effect to center content whenever scale changes
+  // Effect to center content whenever scale changes or page dimensions are calculated
   useEffect(() => {
     const container = pdfContainerRef.current;
     if (container) {
@@ -564,7 +564,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     const container = pdfContainerRef.current;
     if (!container || !pageDimensions || pageDimensions.cropBox.width === 0) return;
   
-    const PADDING = 0.95;
+    const PADDING = 0.95; // 95% of view
     const { clientWidth, clientHeight } = container;
     const { width: cropWidth, height: cropHeight } = pageDimensions.cropBox;
   
