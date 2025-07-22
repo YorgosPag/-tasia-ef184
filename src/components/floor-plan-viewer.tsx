@@ -181,14 +181,10 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
     localStorage.setItem('floorPlanStatusVisibility', JSON.stringify(statusVisibility));
   }, [statusVisibility]);
   
-  const resetDrawingState = useCallback(() => {
-    setDrawingPolygon([]);
-  }, []);
-
   useEffect(() => {
     setPageNumber(1);
-    resetDrawingState(); // Reset drawing on new PDF
-  }, [pdfUrl, resetDrawingState]);
+    // Reset drawing on new PDF
+  }, [pdfUrl]);
 
 
   const toggleEditMode = () => {
@@ -496,6 +492,16 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
       <p>Φόρτωση και ανάλυση κάτοψης...</p>
     </div>
   );
+
+  const getSvgPoint = (e: React.MouseEvent<SVGSVGElement> | MouseEvent) => {
+    if (!svgRef.current) return null;
+    const svg = svgRef.current;
+    const point = svg.createSVGPoint();
+    point.x = e.clientX;
+    point.y = e.clientY;
+    return point.matrixTransform(svg.getScreenCTM()?.inverse());
+  };
+
 
   const { cropBox } = pageDimensions;
   const croppedAspectRatio = cropBox.width > 0 ? cropBox.width / cropBox.height : 1;
