@@ -14,6 +14,12 @@ import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { cn } from '@/lib/utils';
 
+// Set worker path
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
+
 
 interface Unit {
   id: string;
@@ -111,10 +117,6 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
     localStorage.setItem('floorPlanStatusVisibility', JSON.stringify(statusVisibility));
   }, [statusVisibility]);
 
-
-  useEffect(() => {
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-  }, []);
   
   useEffect(() => {
     setPageNumber(1);
