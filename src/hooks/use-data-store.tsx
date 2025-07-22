@@ -7,6 +7,14 @@ import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { useToast } from './use-toast';
 
+/**
+ * useDataStore: A custom hook that serves as a central data hub for the application.
+ * It fetches, caches, and provides real-time updates for top-level collections
+ * like 'companies' and 'projects' from Firestore. It also exposes memoized
+ * functions for adding new documents, abstracting away the direct Firestore calls
+ * from the UI components. This hook is designed to be used within the DataProvider.
+ */
+
 // --- Interfaces ---
 export interface Company {
   id: string;
@@ -136,5 +144,3 @@ export const useDataStore = () => {
   }
   return context;
 };
-
-    

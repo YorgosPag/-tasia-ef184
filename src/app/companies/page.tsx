@@ -78,20 +78,26 @@ export default function CompaniesPage() {
     },
   });
 
+  // Effect to reset form when dialog is closed
+  useEffect(() => {
+    if (!isDialogOpen) {
+      form.reset();
+    }
+  }, [isDialogOpen, form]);
+
   const onSubmit = async (data: CompanyFormValues) => {
     setIsSubmitting(true);
     try {
       const companyData = {
         ...data,
-        logoUrl: data.logoUrl || undefined,
-        website: data.website || undefined,
+        logoUrl: data.logoUrl?.trim() || undefined,
+        website: data.website?.trim() || undefined,
       };
       await addCompany(companyData);
       toast({
         title: "Επιτυχία",
         description: "Η εταιρεία προστέθηκε με επιτυχία.",
       });
-      form.reset();
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Error adding company: ", error);
@@ -224,7 +230,7 @@ export default function CompaniesPage() {
                       Ακύρωση
                     </Button>
                   </DialogClose>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button type="submit" disabled={isSubmitting || isLoading}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Δημιουργία
                   </Button>
@@ -259,8 +265,16 @@ export default function CompaniesPage() {
                   <TableRow key={company.id}>
                     <TableCell>
                       <Avatar>
-                        <AvatarImage src={company.logoUrl} alt={company.name} />
-                        <AvatarFallback>{company.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={company.logoUrl || undefined} alt={company.name} />
+                        <AvatarFallback>
+                           {company.name
+                            .split(' ')
+                            .map(w => w[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase()
+                          }
+                        </AvatarFallback>
                       </Avatar>
                     </TableCell>
                     <TableCell className="font-medium">{company.name}</TableCell>
