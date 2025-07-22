@@ -106,7 +106,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
   // Initialize state from localStorage or use defaults
   const [scale, setScale] = useState(() => getInitialState('floorPlanScale', 1.0));
   const [rotation, setRotation] = useState(() => getInitialState('floorPlanRotation', 0));
-  const [isLocked, setIsLocked] = useState(() => getInitialState('floorPlanLocked', true));
+  const [isLocked, setIsLocked] = useState(() => getInitialState('floorPlanLocked', false));
   const [statusVisibility, setStatusVisibility] = useState(() => getInitialState('floorPlanStatusVisibility', {
       'Διαθέσιμο': true,
       'Κρατημένο': true,
@@ -508,6 +508,19 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
             )}
         </div>
         
+        {isLocked && (
+             <Card className="w-full max-w-md bg-yellow-500/10 border-yellow-500/40">
+                <CardContent className="p-3 text-center">
+                    <p className="text-sm text-yellow-700 font-medium">
+                        Η επεξεργασία είναι κλειδωμένη.
+                    </p>
+                    <p className="text-xs text-yellow-700/80">
+                        Πατήστε το εικονίδιο <Unlock size={12} className="inline-block -mt-px" /> για να την ενεργοποιήσετε.
+                    </p>
+                </CardContent>
+            </Card>
+        )}
+        
         {isEditMode && (
             <Card className="w-full max-w-md bg-primary/10 border-primary/40">
                 <CardContent className="p-3 text-center">
@@ -558,3 +571,5 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
   );
 
 }
+
+    
