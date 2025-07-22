@@ -35,16 +35,18 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2 } from 'lucide-react';
+import { PlusCircle, Loader2, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDataStore, Company } from '@/hooks/use-data-store';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from 'next/link';
 
 
 const companySchema = z.object({
   name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
   logoUrl: z.string().url({ message: "Το URL του λογότυπου δεν είναι έγκυρο." }).or(z.literal('')),
+  website: z.string().url({ message: "Το URL του website δεν είναι έγκυρο." }).or(z.literal('')),
   contactInfo: z.object({
       email: z.string().email({ message: "Το email δεν είναι έγκυρο." }).or(z.literal('')),
       phone: z.string().optional(),
@@ -66,6 +68,7 @@ export default function CompaniesPage() {
     defaultValues: {
       name: '',
       logoUrl: '',
+      website: '',
       contactInfo: {
           email: '',
           phone: '',
@@ -78,10 +81,10 @@ export default function CompaniesPage() {
   const onSubmit = async (data: CompanyFormValues) => {
     setIsSubmitting(true);
     try {
-      // Remove empty string from logoUrl if it exists
       const companyData = {
         ...data,
         logoUrl: data.logoUrl || undefined,
+        website: data.website || undefined,
       };
       await addCompany(companyData);
       toast({
@@ -145,6 +148,19 @@ export default function CompaniesPage() {
                       <FormLabel>URL Λογοτύπου</FormLabel>
                       <FormControl>
                         <Input placeholder="https://example.com/logo.png" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Website</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -234,10 +250,8 @@ export default function CompaniesPage() {
                 <TableRow>
                   <TableHead>Λογότυπο</TableHead>
                   <TableHead>Όνομα</TableHead>
-                  <TableHead>Διεύθυνση</TableHead>
-                  <TableHead>ΑΦΜ</TableHead>
-                  <TableHead>Τηλέφωνο</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Website</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -250,10 +264,17 @@ export default function CompaniesPage() {
                       </Avatar>
                     </TableCell>
                     <TableCell className="font-medium">{company.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{company.contactInfo?.address}</TableCell>
-                    <TableCell className="text-muted-foreground">{company.contactInfo?.afm}</TableCell>
-                    <TableCell className="text-muted-foreground">{company.contactInfo?.phone}</TableCell>
                     <TableCell className="text-muted-foreground">{company.contactInfo?.email}</TableCell>
+                    <TableCell>
+                      {company.website ? (
+                        <Link href={company.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                          <LinkIcon size={14}/>
+                          Επίσκεψη
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground">N/A</span>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
