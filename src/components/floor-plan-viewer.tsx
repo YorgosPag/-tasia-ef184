@@ -5,10 +5,21 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, Undo2, Redo2 } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, Undo2, Redo2, Edit, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from './ui/badge';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
@@ -31,6 +42,7 @@ interface FloorPlanViewerProps {
   pdfUrl: string;
   units: Unit[];
   onUnitClick: (unitId: string) => void;
+  onUnitDelete: (unitId: string) => void;
   onPolygonDrawn: (points: { x: number; y: number }[]) => void;
   onUnitPointsUpdate: (unitId: string, newPoints: { x: number; y: number }[]) => void;
 }
@@ -77,7 +89,7 @@ const getInitialState = <T,>(key: string, defaultValue: T): T => {
 };
 
 
-export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, onUnitPointsUpdate }: FloorPlanViewerProps) {
+export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPolygonDrawn, onUnitPointsUpdate }: FloorPlanViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -175,7 +187,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
   const handleUnitClick = (unitId: string) => {
     if (isEditMode || isLocked) return;
     setSelectedUnitId(unitId);
-    onUnitClick(unitId);
+    // Don't call onUnitClick here, it will be called from the popover buttons
   };
   
   const getSvgPoint = (event: React.MouseEvent<SVGSVGElement | SVGCircleElement>) => {
@@ -393,24 +405,46 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
                                             />
                                         </g>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-80">
+                                    <PopoverContent className="w-auto">
                                     <div className="grid gap-4">
                                             <div className="space-y-2">
                                                 <h4 className="font-medium leading-none">{unit.name} ({unit.identifier})</h4>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Περισσότερες λεπτομέρειες για το ακίνητο.
-                                                </p>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-medium">Κατάσταση:</span>
+                                                    <Badge variant="default" className={getStatusClass(unit.status)}>
+                                                        {unit.status}
+                                                    </Badge>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium">Κατάσταση:</span>
-                                                <Badge variant="default" className={getStatusClass(unit.status)}>
-                                                    {unit.status}
-                                                </Badge>
+                                            <div className="flex gap-2">
+                                                <Button size="sm" variant="outline" onClick={() => onUnitClick(unit.id)}>
+                                                    <Edit className="mr-2 h-4 w-4" />
+                                                    Επεξεργασία
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button size="sm" variant="destructive_outline">
+                                                          <Trash2 className="mr-2 h-4 w-4" />
+                                                          Διαγραφή
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                        <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το ακίνητο
+                                                            "{unit.name} ({unit.identifier})".
+                                                        </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                        <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => onUnitDelete(unit.id)} className="bg-destructive hover:bg-destructive/90">
+                                                            Διαγραφή
+                                                        </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             </div>
-                                            <Button size="sm" variant="outline" onClick={() => onUnitClick(unit.id)}>
-                                                <Info className="mr-2 h-4 w-4" />
-                                                Προβολή Στοιχείων
-                                            </Button>
                                     </div>
                                     </PopoverContent>
                                 </Popover>
@@ -571,5 +605,3 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn, on
   );
 
 }
-
-    
