@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil } from 'lucide-react';
+import { Loader2, Minus, Plus, RefreshCw, Lock, Unlock, Info, Pencil, X, Undo2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -13,6 +13,7 @@ import { Badge } from './ui/badge';
 import { Checkbox } from './ui/checkbox';
 import { Label } from './ui/label';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 // Set worker path to a specific, compatible version from a CDN
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
@@ -30,9 +31,11 @@ interface FloorPlanViewerProps {
   pdfUrl: string;
   units: Unit[];
   onUnitClick: (unitId: string) => void;
+  onPolygonDrawn: (points: { x: number; y: number }[]) => void;
 }
 
 const ALL_STATUSES: Unit['status'][] = ['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος'];
+const CLOSING_DISTANCE_THRESHOLD = 10; // Distance in SVG units to close the polygon
 
 const getStatusColor = (status: Unit['status']) => {
     switch(status) {
@@ -73,7 +76,7 @@ const getInitialState = <T,>(key: string, defaultValue: T): T => {
 };
 
 
-export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerProps) {
+export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onPolygonDrawn }: FloorPlanViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -82,7 +85,9 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentPolygonPoints, setCurrentPolygonPoints] = useState<{ x: number; y: number }[]>([]);
   const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const [finalizedPolygon, setFinalizedPolygon] = useState<{ x: number; y: number }[] | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const { toast } = useToast();
 
 
   // Initialize state from localStorage or use defaults
@@ -117,16 +122,28 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   
   useEffect(() => {
     setPageNumber(1);
-    setCurrentPolygonPoints([]); // Reset drawing on new PDF
+    resetDrawingState(); // Reset drawing on new PDF
   }, [pdfUrl]);
 
-  useEffect(() => {
-    // When exiting edit mode, clear the points
-    if (!isEditMode) {
-        setCurrentPolygonPoints([]);
-        setMousePosition(null);
-    }
-  }, [isEditMode])
+  const toggleEditMode = () => {
+    setIsEditMode(prev => {
+        const newMode = !prev;
+        if (!newMode) {
+            // Exiting edit mode, so clear everything
+            resetDrawingState();
+        } else {
+             // Entering edit mode, clear previous drawings
+            resetDrawingState();
+        }
+        return newMode;
+    });
+  }
+  
+  const resetDrawingState = () => {
+    setCurrentPolygonPoints([]);
+    setMousePosition(null);
+    setFinalizedPolygon(null);
+  }
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
@@ -159,15 +176,37 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   };
 
   const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (!isEditMode) return;
+    if (!isEditMode || finalizedPolygon) return;
+    
     const svgPoint = getSvgPoint(event);
-    if (svgPoint) {
-      setCurrentPolygonPoints(prev => [...prev, { x: svgPoint.x, y: svgPoint.y }]);
+    if (!svgPoint) return;
+    
+    // Check if user is closing the polygon
+    if (currentPolygonPoints.length > 1) {
+        const firstPoint = currentPolygonPoints[0];
+        const dx = firstPoint.x - svgPoint.x;
+        const dy = firstPoint.y - svgPoint.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if(distance < CLOSING_DISTANCE_THRESHOLD) {
+            setFinalizedPolygon(currentPolygonPoints);
+            onPolygonDrawn(currentPolygonPoints);
+            setCurrentPolygonPoints([]); // Clear temp points
+            setMousePosition(null); // Stop drawing line to mouse
+            setIsEditMode(false); // Exit edit mode
+            toast({
+                title: "Το σχήμα ολοκληρώθηκε",
+                description: "Οι συντεταγμένες είναι έτοιμες για αποθήκευση."
+            });
+            return;
+        }
     }
+    
+    setCurrentPolygonPoints(prev => [...prev, { x: svgPoint.x, y: svgPoint.y }]);
   };
   
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
-    if (!isEditMode || currentPolygonPoints.length === 0) return;
+    if (!isEditMode || currentPolygonPoints.length === 0 || finalizedPolygon) return;
     const svgPoint = getSvgPoint(event);
      if (svgPoint) {
       setMousePosition({ x: svgPoint.x, y: svgPoint.y });
@@ -279,9 +318,9 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                             )}
                         </g>
 
-                        {/* Layer for drawing new polygon */}
-                        {isEditMode && drawingPolylinePoints.length > 0 && (
-                            <g>
+                        {/* Layer for drawing in-progress polyline */}
+                        {isEditMode && currentPolygonPoints.length > 0 && (
+                            <g className="pointer-events-none">
                                 <polyline
                                     points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
                                     fill="none"
@@ -295,12 +334,24 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                                         cx={point.x}
                                         cy={point.y}
                                         r="4"
-                                        fill="hsl(var(--primary))"
+                                        fill={index === 0 ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
                                         stroke="#fff"
                                         strokeWidth="1.5"
                                     />
                                 ))}
                             </g>
+                        )}
+                        
+                        {/* Layer for a finalized but unsaved polygon */}
+                        {finalizedPolygon && (
+                             <g className="pointer-events-none">
+                                <polygon
+                                    points={finalizedPolygon.map(p => `${p.x},${p.y}`).join(' ')}
+                                    fill="hsla(var(--primary), 0.3)"
+                                    stroke="hsl(var(--primary))"
+                                    strokeWidth="2"
+                                />
+                             </g>
                         )}
                     </svg>
                     )}
@@ -309,7 +360,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
             )}
             </CardContent>
         </Card>
-        <div className="flex items-center justify-center gap-2 p-2 rounded-md bg-muted">
+        <div className="flex flex-wrap items-center justify-center gap-2 p-2 rounded-md bg-muted">
             <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.2, s - 0.05))} disabled={!numPages || isLocked}>
                 <Minus />
             </Button>
@@ -323,10 +374,28 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
              <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
                 {isLocked ? <Lock className="text-primary" /> : <Unlock />}
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => setIsEditMode(prev => !prev)} disabled={!numPages}>
+            <Button variant="ghost" size="icon" onClick={toggleEditMode} disabled={!numPages}>
                 <Pencil className={cn(isEditMode && "text-primary")} />
             </Button>
+             {isEditMode && (
+                <Button variant="destructive" size="icon" onClick={resetDrawingState}>
+                    <Undo2 />
+                </Button>
+            )}
         </div>
+        
+        {isEditMode && (
+            <Card className="w-full max-w-md bg-primary/10 border-primary/40">
+                <CardContent className="p-3 text-center">
+                    <p className="text-sm text-primary font-medium">
+                        Λειτουργία Επεξεργασίας: Κάντε κλικ στην κάτοψη για να προσθέσετε σημεία.
+                    </p>
+                    <p className="text-xs text-primary/80">
+                        Κάντε κλικ κοντά στο πρώτο σημείο (κόκκινο) για να κλείσετε το σχήμα.
+                    </p>
+                </CardContent>
+            </Card>
+        )}
 
         <Card className="w-full max-w-md">
             <CardContent className="p-4">
@@ -354,3 +423,5 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
   );
 
 }
+
+    
