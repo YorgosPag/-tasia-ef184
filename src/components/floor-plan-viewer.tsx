@@ -380,13 +380,19 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
         const rect = pdfContainer.getBoundingClientRect();
         const mouseX = lastMouseEvent.current.clientX - rect.left;
         const mouseY = lastMouseEvent.current.clientY - rect.top;
-        
+
         const newScale = PRECISION_ZOOM_SCALE;
+        
+        // Calculate the point on the scaled content to center on
+        const pointX = (preZoomState.current.scrollLeft + mouseX) / preZoomState.current.scale;
+        const pointY = (preZoomState.current.scrollTop + mouseY) / preZoomState.current.scale;
+
         setScale(newScale);
 
+        // After re-render with new scale, adjust scroll to center the point
         setTimeout(() => {
-            const newScrollLeft = (mouseX * newScale) - (pdfContainer.clientWidth / 2);
-            const newScrollTop = (mouseY * newScale) - (pdfContainer.clientHeight / 2);
+            const newScrollLeft = (pointX * newScale) - (pdfContainer.clientWidth / 2);
+            const newScrollTop = (pointY * newScale) - (pdfContainer.clientHeight / 2);
             pdfContainer.scrollLeft = newScrollLeft;
             pdfContainer.scrollTop = newScrollTop;
         }, 0);
@@ -399,6 +405,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
         setIsPrecisionZooming(false);
         setScale(preZoomState.current.scale);
         
+        // Restore scroll position after re-render with old scale
         setTimeout(() => {
             pdfContainer.scrollLeft = preZoomState.current.scrollLeft;
             pdfContainer.scrollTop = preZoomState.current.scrollTop;
@@ -413,13 +420,13 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    window.addEventListener('mousemove', updateMousePosition, true);
+    pdfContainer.addEventListener('mousemove', updateMousePosition);
 
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-      window.removeEventListener('mousemove', updateMousePosition, true);
+      pdfContainer.removeEventListener('mousemove', updateMousePosition);
     };
   }, [isEditMode, isPrecisionZooming, scale]);
 
