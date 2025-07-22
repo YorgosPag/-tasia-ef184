@@ -32,6 +32,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
@@ -41,6 +48,7 @@ import { PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
+import { useDataStore } from '@/hooks/use-data-store';
 
 
 const buildingSchema = z.object({
@@ -65,6 +73,7 @@ export default function BuildingsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const { projects, isLoading: isLoadingProjects } = useDataStore();
 
   const form = useForm<BuildingFormValues>({
     resolver: zodResolver(buildingSchema),
@@ -228,11 +237,29 @@ export default function BuildingsPage() {
                   name="projectId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Αναγνωριστικό Έργου (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. PROJ-456" {...field} />
-                      </FormControl>
-                      <FormMessage />
+                        <FormLabel>Αντιστοίχιση σε Έργο (Προαιρετικό)</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Επιλέξτε έργο..." />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="">
+                                    <em>Κανένα</em>
+                                </SelectItem>
+                                {isLoadingProjects ? (
+                                    <div className="flex items-center justify-center p-2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    </div>
+                                ) : (
+                                    projects.map(project => (
+                                        <SelectItem key={project.id} value={project.id}>{project.title}</SelectItem>
+                                    ))
+                                )}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
                     </FormItem>
                   )}
                 />
