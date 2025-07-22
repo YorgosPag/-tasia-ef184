@@ -34,48 +34,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '../ui/separator';
 
-const numberFromString = z.string().transform((val, ctx) => {
-  const parsed = parseFloat(val);
-  if (isNaN(parsed)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Πρέπει να είναι αριθμός.',
-    });
-    return z.NEVER;
-  }
-  return parsed;
-});
-
 export const unitSchema = z.object({
   existingUnitId: z.string().optional(),
-  identifier: z.string(),
-  name: z.string(),
+  identifier: z.string().min(1, { message: "Ο κωδικός είναι υποχρεωτικός." }),
+  name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
   type: z.string().optional(),
   status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
   polygonPoints: z.string().optional(),
-  area: z.string().refine(val => val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) > 0 && parseFloat(val) <= 10000), { message: "Το εμβαδόν πρέπει να είναι μεταξύ 1 και 10000 τ.μ." }).optional(),
+  area: z.string().refine(val => val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 1 && parseFloat(val) <= 10000), { message: "Το εμβαδόν πρέπει να είναι 1-10000 τ.μ." }).optional(),
   price: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Η τιμή πρέπει να είναι αριθμός." }).optional(),
   bedrooms: z.string().refine(val => val === '' || !isNaN(parseInt(val, 10)), { message: "Πρέπει να είναι ακέραιος αριθμός." }).optional(),
   bathrooms: z.string().refine(val => val === '' || !isNaN(parseInt(val, 10)), { message: "Πρέπει να είναι ακέραιος αριθμός." }).optional(),
   orientation: z.string().optional(),
   amenities: z.string().optional(),
-}).superRefine((data, ctx) => {
-  if (data.existingUnitId === 'new') {
-    if (data.identifier.trim() === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Ο κωδικός είναι υποχρεωτικός.',
-        path: ['identifier'],
-      });
-    }
-    if (data.name.trim() === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Το όνομα είναι υποχρεωτικό.',
-        path: ['name'],
-      });
-    }
-  }
 });
 
 
