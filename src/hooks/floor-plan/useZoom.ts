@@ -77,6 +77,22 @@ export function useZoom({ pdfContainerRef, pageDimensions }: UseZoomProps) {
     }
   }, [pageDimensions.width, pageDimensions.height, handleFitToView]);
 
+  // Effect to center the view when scale or dimensions change, but not during precision zoom
+  useEffect(() => {
+    const container = pdfContainerRef.current;
+    if (container) {
+      const isPrecisionZooming = (window as any).__isPrecisionZooming; // Simple flag to avoid import cycle
+      if (!isPrecisionZooming) {
+        // We use a small timeout to allow the DOM to update before scrolling
+        setTimeout(() => {
+            container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+            container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
+        }, 50);
+      }
+    }
+  }, [scale, pageDimensions, pdfContainerRef]); 
+
+
   return {
     scale,
     setScale,
