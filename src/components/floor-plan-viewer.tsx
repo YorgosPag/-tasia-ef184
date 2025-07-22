@@ -110,7 +110,6 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   // State for dragging points
   const [draggingPoint, setDraggingPoint] = useState<{ unitId: string; pointIndex: number } | null>(null);
   
-  // Local state for optimistic UI updates
   const [localUnits, setLocalUnits] = useState<Unit[]>(units);
   useEffect(() => {
     setLocalUnits(units);
@@ -123,7 +122,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   
   // Precision Zoom (Magnifying Glass) state
   const [isPrecisionZooming, setIsPrecisionZooming] = useState(false);
-  const preZoomScale = useRef(1.0);
+  const preZoomState = useRef({ scale: 1.0, scrollLeft: 0, scrollTop: 0 });
+  const lastMouseEvent = useRef<React.MouseEvent | null>(null);
 
 
   // Initialize state from localStorage or use defaults
@@ -250,6 +250,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   };
   
   const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    lastMouseEvent.current = event;
     if (isLocked) return;
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
@@ -341,7 +342,8 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
       setCurrentPolygonPoints(history[newIndex]);
     }
   }, [history, historyIndex]);
-
+  
+  // Undo/Redo keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
         if (!isEditMode) return;
@@ -359,31 +361,63 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isEditMode, handleUndo, handleRedo]);
   
-  // Effect for Precision Zoom (Magnifying Glass)
+  // Precision Zoom (Magnifying Glass) with Shift key
   useEffect(() => {
+    const pdfContainer = pdfContainerRef.current;
+    if (!pdfContainer) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Shift' && isEditMode && !isPrecisionZooming) {
-            e.preventDefault();
-            preZoomScale.current = scale;
-            setScale(PRECISION_ZOOM_SCALE);
-            setIsPrecisionZooming(true);
-        }
+      if (e.key === 'Shift' && isEditMode && !isPrecisionZooming && lastMouseEvent.current) {
+        e.preventDefault();
+        setIsPrecisionZooming(true);
+
+        // Store current state
+        preZoomState.current = {
+            scale: scale,
+            scrollLeft: pdfContainer.scrollLeft,
+            scrollTop: pdfContainer.scrollTop,
+        };
+        
+        // Calculate zoom origin based on mouse position
+        const rect = pdfContainer.getBoundingClientRect();
+        const mouseX = lastMouseEvent.current.clientX - rect.left;
+        const mouseY = lastMouseEvent.current.clientY - rect.top;
+        
+        const newScale = PRECISION_ZOOM_SCALE;
+
+        // Apply new scale and scroll to keep the mouse position centered
+        setScale(newScale);
+
+        // The scroll needs to be adjusted after the scale is applied and rendered
+        // We use a short timeout to let the DOM update.
+        setTimeout(() => {
+            const newScrollLeft = (mouseX * newScale) - (pdfContainer.clientWidth / 2);
+            const newScrollTop = (mouseY * newScale) - (pdfContainer.clientHeight / 2);
+            pdfContainer.scrollLeft = newScrollLeft;
+            pdfContainer.scrollTop = newScrollTop;
+        }, 0);
+      }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-        if (e.key === 'Shift' && isEditMode && isPrecisionZooming) {
-            e.preventDefault();
-            setScale(preZoomScale.current);
-            setIsPrecisionZooming(false);
-        }
+      if (e.key === 'Shift' && isPrecisionZooming) {
+        e.preventDefault();
+        setIsPrecisionZooming(false);
+        setScale(preZoomState.current.scale);
+        // Restore scroll position after DOM update
+        setTimeout(() => {
+            pdfContainer.scrollLeft = preZoomState.current.scrollLeft;
+            pdfContainer.scrollTop = preZoomState.current.scrollTop;
+        }, 0);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
     return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
   }, [isEditMode, isPrecisionZooming, scale]);
 
@@ -716,5 +750,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   );
 
 }
+
+    
 
     
