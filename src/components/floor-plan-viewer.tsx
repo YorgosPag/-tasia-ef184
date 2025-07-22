@@ -184,11 +184,6 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   }, [statusVisibility]);
 
   
-  useEffect(() => {
-    setPageNumber(1);
-    resetDrawingState(); // Reset drawing on new PDF
-  }, [pdfUrl, resetDrawingState]);
-
   const resetDrawingState = useCallback(() => {
     setCurrentPolygonPoints([]);
     setMousePosition(null);
@@ -196,6 +191,12 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     setHistory([[]]); // Start with a single empty state
     setHistoryIndex(0);
   }, []);
+
+  useEffect(() => {
+    setPageNumber(1);
+    resetDrawingState(); // Reset drawing on new PDF
+  }, [pdfUrl, resetDrawingState]);
+
 
   const toggleEditMode = () => {
     setIsEditMode(prev => {
@@ -837,35 +838,34 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                     </>
                 )}
             </div>
-
              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
                 <Card className="w-full">
-                        <CardContent className="p-2 text-center">
-                            {isPrecisionZooming ? (
-                                <p className="text-sm text-blue-700 font-medium flex items-center justify-center gap-2">
-                                    <ZoomIn size={16} />
-                                    Λειτουργία Ακρίβειας <span className="text-xs text-blue-700/80">(Αφήστε το Shift)</span>
-                                </p>
-                            ) : isLocked ? (
-                                <p className="text-sm text-yellow-700 font-medium flex items-center justify-center gap-2">
-                                    Κλειδωμένη <Unlock size={12} className="inline-block" />
-                                </p>
-                            ) : isEditMode ? (
-                                <p className="text-sm text-primary font-medium flex items-center justify-center gap-2">
-                                    Λειτουργία Σχεδίασης <span className="text-xs text-primary/80">(Esc για ακύρωση)</span>
-                                </p>
-                            ) : (
-                                <p className="text-sm text-secondary-foreground font-medium">
-                                    Λειτουργία Επεξεργασίας: Σύρετε τα σημεία για να αλλάξετε το σχήμα.
-                                </p>
-                            )}
-                        </CardContent>
+                    <CardContent className="p-2 text-center h-full flex items-center justify-center">
+                        {isPrecisionZooming ? (
+                            <p className="text-sm text-blue-700 font-medium flex items-center justify-center gap-2">
+                                <ZoomIn size={16} />
+                                Λειτουργία Ακρίβειας <span className="text-xs text-blue-700/80">(Αφήστε το Shift)</span>
+                            </p>
+                        ) : isLocked ? (
+                            <p className="text-sm text-yellow-700 font-medium flex items-center justify-center gap-2">
+                                Κλειδωμένη <Unlock size={12} className="inline-block" />
+                            </p>
+                        ) : isEditMode ? (
+                            <p className="text-sm text-primary font-medium flex items-center justify-center gap-2">
+                                Λειτουργία Σχεδίασης <span className="text-xs text-primary/80">(Esc για ακύρωση)</span>
+                            </p>
+                        ) : (
+                            <p className="text-sm text-secondary-foreground font-medium">
+                                Λειτουργία Επεξεργασίας: Σύρετε τα σημεία για να αλλάξετε το σχήμα.
+                            </p>
+                        )}
+                    </CardContent>
                 </Card>
 
                 <Card className="w-full">
-                    <CardContent className="p-2">
-                        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                            <h4 className="text-sm font-medium leading-none">Εμφάνιση Layers:</h4>
+                    <CardContent className="p-2 h-full flex items-center">
+                        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 w-full">
+                            <h4 className="text-sm font-medium leading-none whitespace-nowrap">Εμφάνιση Layers:</h4>
                             {ALL_STATUSES.map(status => (
                                 <div key={status} className="flex items-center space-x-2">
                                     <Checkbox
