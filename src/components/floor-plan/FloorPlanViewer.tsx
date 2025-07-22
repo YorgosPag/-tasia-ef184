@@ -42,6 +42,7 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
     handleStatusVisibilityChange,
     statusColors,
     handleColorChange,
+    handleReset,
     isLocked,
     setIsLocked,
     isEditMode,
@@ -118,6 +119,7 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
             onVisibilityChange={handleStatusVisibilityChange}
             statusColors={statusColors}
             onColorChange={handleColorChange}
+            onReset={handleReset}
           />
         </div>
       </div>
