@@ -79,7 +79,7 @@ export function PolygonPopover({
               <Badge 
                 variant="default"
                 style={{ backgroundColor: polygonColor }}
-                className={getStatusClass(unit.status)}
+                className={getStatusClass(polygonColor)}
               >
                 {unit.status}
               </Badge>
