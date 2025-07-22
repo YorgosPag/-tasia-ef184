@@ -298,37 +298,42 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
 
   const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
     if (!isEditMode || isLocked) return;
-    
-    let clickPoint = getSvgPoint(event);
-    if (!clickPoint) return;
-    
+  
+    const svg = event.currentTarget;
+    const pt = svg.createSVGPoint();
+    pt.x = event.clientX;
+    pt.y = event.clientY;
+    const cursorPoint = pt.matrixTransform(svg.getScreenCTM()!.inverse());
+  
+    let clickPoint = cursorPoint;
+  
     // Use snap point if available
-    if(snapPoint) {
-        clickPoint = snapPoint;
+    if (snapPoint) {
+      clickPoint = snapPoint;
     }
-
+  
     let newPoints = [...currentPolygonPoints, { x: clickPoint.x, y: clickPoint.y }];
-
+  
     // Check if user is closing the polygon
     if (currentPolygonPoints.length > 1) {
-        const firstPoint = currentPolygonPoints[0];
-        const dx = firstPoint.x - clickPoint.x;
-        const dy = firstPoint.y - clickPoint.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if(distance < CLOSING_DISTANCE_THRESHOLD / scale) {
-            newPoints = currentPolygonPoints; 
-            onPolygonDrawn(newPoints);
-            resetDrawingState();
-            setIsEditMode(false);
-            toast({
-                title: "Το σχήμα ολοκληρώθηκε",
-                description: "Οι συντεταγμένες είναι έτοιμες για αποθήκευση."
-            });
-            return;
-        }
+      const firstPoint = currentPolygonPoints[0];
+      const dx = firstPoint.x - clickPoint.x;
+      const dy = firstPoint.y - clickPoint.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+  
+      if (distance < CLOSING_DISTANCE_THRESHOLD / scale) {
+        newPoints = currentPolygonPoints;
+        onPolygonDrawn(newPoints);
+        resetDrawingState();
+        setIsEditMode(false);
+        toast({
+          title: "Το σχήμα ολοκληρώθηκε",
+          description: "Οι συντεταγμένες είναι έτοιμες για αποθήκευση."
+        });
+        return;
+      }
     }
-    
+  
     const newHistory = history.slice(0, historyIndex + 1);
     setHistory([...newHistory, newPoints]);
     setHistoryIndex(newHistory.length);
@@ -558,19 +563,19 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     }
   }, [scale, pageDimensions, isPrecisionZooming]); 
 
-  const handleFitToView = () => {
+ const handleFitToView = () => {
     const container = pdfContainerRef.current;
-    if (!container || !pageDimensions || pageDimensions.cropBox.width === 0) return;
-  
+    if (!container || !pageDimensions.cropBox || pageDimensions.cropBox.width === 0) return;
+
     const PADDING = 0.95; // 95% of view
     const { clientWidth, clientHeight } = container;
     const { width: cropWidth, height: cropHeight } = pageDimensions.cropBox;
-  
+
     if (cropWidth <= 0 || cropHeight <= 0) return;
 
     const scaleX = (clientWidth / cropWidth) * PADDING;
     const scaleY = (clientHeight / cropHeight) * PADDING;
-  
+
     const newScale = Math.min(scaleX, scaleY);
     setScale(newScale);
   };
@@ -889,3 +894,5 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   );
 
 }
+
+    
