@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   doc,
@@ -49,7 +49,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import {
   Form,
@@ -477,11 +476,11 @@ export default function FloorDetailsPage() {
     }
   };
   
-  const handlePolygonDrawn = (points: {x: number, y: number}[]) => {
+  const handlePolygonDrawn = useCallback((points: {x: number, y: number}[]) => {
       setEditingUnit(null); 
       setDrawingPolygon(points);
       setIsDialogOpen(true);
-  }
+  }, []);
 
   const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return 'N/A';
@@ -726,5 +725,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
