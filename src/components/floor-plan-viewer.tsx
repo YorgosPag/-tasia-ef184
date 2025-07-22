@@ -343,10 +343,20 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     }
   }, [history, historyIndex]);
   
-  // Undo/Redo keyboard shortcuts
+  // Keyboard shortcuts (Undo, Redo, Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
         if (!isEditMode) return;
+        
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            resetDrawingState();
+            toast({
+                title: "Η σχεδίαση ακυρώθηκε",
+                description: "Μπορείτε να ξεκινήσετε ένα νέο σχήμα.",
+            });
+        }
+        
         if (e.metaKey || e.ctrlKey) {
             if (e.key === 'z') {
                 e.preventDefault();
@@ -359,7 +369,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditMode, handleUndo, handleRedo]);
+  }, [isEditMode, handleUndo, handleRedo, resetDrawingState, toast]);
   
   // Precision Zoom (Magnifying Glass) with Shift key
   useEffect(() => {
@@ -383,7 +393,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
 
         const newScale = PRECISION_ZOOM_SCALE;
         
-        // Calculate the point on the scaled content to center on
+        // Calculate the point on the unscaled content to center on
         const pointX = (preZoomState.current.scrollLeft + mouseX) / preZoomState.current.scale;
         const pointY = (preZoomState.current.scrollTop + mouseY) / preZoomState.current.scale;
 
@@ -426,7 +436,9 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-      pdfContainer.removeEventListener('mousemove', updateMousePosition);
+      if (pdfContainer) {
+        pdfContainer.removeEventListener('mousemove', updateMousePosition);
+      }
     };
   }, [isEditMode, isPrecisionZooming, scale]);
 
@@ -455,7 +467,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
   return (
         <div className="flex flex-col gap-4 items-center">
         <Card className="w-full">
-            <CardContent className="p-2 relative overflow-auto" ref={pdfContainerRef}>
+            <CardContent className="p-2 relative overflow-auto" ref={pdfContainerRef} onMouseUp={handleMouseUp}>
             {pdfError ? (
                 <div className="flex items-center justify-center h-96 text-destructive text-center p-4">
                 {pdfError}
@@ -487,7 +499,6 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                         style={{ pointerEvents: 'auto', cursor: isLocked ? 'not-allowed' : isEditMode ? 'crosshair' : 'default' }}
                         onClick={handleSvgClick}
                         onMouseMove={handleMouseMove}
-                        onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseLeave}
                     >
                          {/* Layer for crosshair guides */}
@@ -716,7 +727,7 @@ export function FloorPlanViewer({ pdfUrl, units, drawingPolygon, onUnitClick, on
                         Λειτουργία Σχεδίασης: Κάντε κλικ στην κάτοψη για να προσθέσετε σημεία.
                     </p>
                     <p className="text-xs text-primary/80">
-                        Κρατήστε πατημένο το Shift για zoom. (Ctrl+Z για αναίρεση)
+                        Κρατήστε πατημένο το Shift για zoom. (Ctrl+Z για αναίρεση, Esc για ακύρωση)
                     </p>
                 </CardContent>
             </Card>
