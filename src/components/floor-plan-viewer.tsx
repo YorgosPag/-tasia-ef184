@@ -61,7 +61,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
 
   function onDocumentLoadError(error: Error) {
     console.error('Error while loading document!', error);
-    setPdfError(`Απέτυχε η φόρτωση του PDF: ${error.message}. Βεβαιωθείτε ότι το URL είναι σωστό και επιτρέπει την πρόσβαση (CORS).`);
+    setPdfError(`Απέτυχε η φόρτωση του PDF: ${error.message}.`);
   }
   
   function onPageLoadSuccess(page: any) {
@@ -113,6 +113,7 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
                         width={pageDimensions.width * scale}
                         height={pageDimensions.height * scale}
                         viewBox={`0 0 ${pageDimensions.width} ${pageDimensions.height}`}
+                        style={{ pointerEvents: isLocked ? 'auto' : 'none' }}
                     >
                         {units.map((unit) =>
                         unit.polygonPoints ? (
@@ -147,19 +148,26 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick }: FloorPlanViewerP
             </CardContent>
         </Card>
         <div className="flex items-center justify-center gap-2 p-2 rounded-md bg-muted">
-            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.2, s - 0.1))} disabled={!numPages || isLocked}>
+            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.max(0.2, s - 0.05))} disabled={!numPages || isLocked}>
                 <Minus />
             </Button>
             <span className="text-sm font-medium w-16 text-center">{(scale * 100).toFixed(0)}%</span>
-            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(3, s + 0.1))} disabled={!numPages || isLocked}>
+            <Button variant="ghost" size="icon" onClick={() => setScale(s => Math.min(3, s + 0.05))} disabled={!numPages || isLocked}>
                 <Plus />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setRotation(r => (r + 90) % 360)} disabled={!numPages || isLocked}>
                 <RefreshCw />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
-                {isLocked ? <Lock /> : <Unlock />}
-            </Button>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={() => setIsLocked(prev => !prev)} disabled={!numPages}>
+                        {isLocked ? <Lock /> : <Unlock />}
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{isLocked ? 'Ξεκλείδωμα κίνησης/zoom' : 'Κλείδωμα κίνησης/zoom'}</p>
+                </TooltipContent>
+            </Tooltip>
         </div>
         </div>
     </TooltipProvider>
