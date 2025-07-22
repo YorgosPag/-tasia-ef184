@@ -13,6 +13,7 @@ import {
   Timestamp,
   updateDoc,
   setDoc,
+  getDocs,
 } from 'firebase/firestore';
 import { db, storage, auth } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -618,5 +619,3 @@ export default function FloorDetailsPage() {
     </div>
   );
 }
-
-    
