@@ -83,6 +83,8 @@
 - **description**: `string` (optional) - Περιγραφή του έργου.
 - **deadline**: `timestamp` - Προθεσμία ολοκλήρωσης.
 - **status**: `string` - (`Ενεργό`, `Σε εξέλιξη`, `Ολοκληρωμένο`).
+- **photoUrl**: `string` (optional) - URL της κύριας φωτογραφίας/μακέτας.
+- **tags**: `array` of `string` (optional) - Κατηγοριοποίηση (π.χ. "residential", "commercial").
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
 ### Collection: `buildings`
@@ -90,6 +92,9 @@
 - **type**: `string` - Τύπος κτιρίου.
 - **description**: `string` (optional) - Περιγραφή / Σημειώσεις.
 - **photoUrl**: `string` (optional) - URL φωτογραφίας.
+- **floorsCount**: `number` (optional) - Συνολικό πλήθος ορόφων.
+- **constructionYear**: `number` (optional) - Έτος κατασκευής.
+- **tags**: `array` of `string` (optional) - Ειδικά χαρακτηριστικά (π.χ. "νεόδμητο", "πρόσοψη").
 - **projectId**: `string` - Αναφορά στην `projects` collection.
 - **originalId**: `string` - Το ID του εγγράφου στη subcollection.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
