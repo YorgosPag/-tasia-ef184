@@ -6,10 +6,10 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Loader2 } from 'lucide-react';
-import { PolygonPopover } from './PolygonPopover';
 import { Unit } from './FloorPlanViewer';
-import { usePdfHandlers } from './hooks/usePdfHandlers';
-import { getStatusClass, STATUS_COLOR_MAP } from './utils';
+import { usePdfHandlers } from '@/hooks/floor-plan/usePdfHandlers';
+import { DrawingLayers } from './DrawingLayers';
+import { UnitLayers } from './UnitLayers';
 
 // Set worker path for react-pdf
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
@@ -49,6 +49,11 @@ const LoadingElement = () => (
   </div>
 );
 
+/**
+ * PdfCanvas
+ * Renders the PDF floor plan with all SVG overlays (units, drawing layers).
+ * All event/mutation logic is handled via props and hooks.
+ */
 export function PdfCanvas({
   pdfUrl,
   units,
@@ -58,6 +63,7 @@ export function PdfCanvas({
   drawingPolygon,
   draggingPoint,
   lastMouseEvent,
+  isPrecisionZooming,
   pageDimensions,
   pdfContainerRef,
   zoom,
@@ -141,7 +147,6 @@ export function PdfCanvas({
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
               >
-                {/* Drawing and interaction layers */}
                 <DrawingLayers
                   isEditMode={isEditMode}
                   lastMouseEvent={lastMouseEvent}
@@ -165,99 +170,5 @@ export function PdfCanvas({
         </Document>
       )}
     </div>
-  );
-}
-
-// Sub-component for drawing-related SVG elements
-function DrawingLayers({
-  isEditMode,
-  lastMouseEvent,
-  getSvgPoint,
-  pageDimensions,
-  scale,
-  drawingPolygon,
-}: any) {
-  return (
-    <>
-      {isEditMode && lastMouseEvent.current && (
-        <g className="pointer-events-none">
-          <line
-            x1={0} y1={getSvgPoint(lastMouseEvent.current)?.y || 0}
-            x2={pageDimensions.width} y2={getSvgPoint(lastMouseEvent.current)?.y || 0}
-            stroke="hsl(var(--destructive))"
-            strokeWidth={0.8 / scale}
-            strokeDasharray={`${4 / scale} ${4 / scale}`}
-          />
-          <line
-            x1={getSvgPoint(lastMouseEvent.current)?.x || 0} y1={0}
-            x2={getSvgPoint(lastMouseEvent.current)?.x || 0} y2={pageDimensions.height}
-            stroke="hsl(var(--destructive))"
-            strokeWidth={0.8 / scale}
-            strokeDasharray={`${4 / scale} ${4 / scale}`}
-          />
-        </g>
-      )}
-      {isEditMode && drawingPolygon.length > 0 && (
-        <g className="pointer-events-none">
-          <polygon
-            points={drawingPolygon.map((p: any) => `${p.x},${p.y}`).join(' ')}
-            fill="hsl(var(--primary) / 0.3)"
-            stroke="hsl(var(--primary))"
-            strokeWidth={1.5 / scale}
-          />
-          {drawingPolygon.map((point: any, index: number) => (
-            <circle key={`drawing-point-${index}`} cx={point.x} cy={point.y} r={4 / scale} fill="hsl(var(--primary))" />
-          ))}
-        </g>
-      )}
-    </>
-  );
-}
-
-// Sub-component for unit-related SVG elements
-function UnitLayers({
-  units,
-  isEditMode,
-  isLocked,
-  scale,
-  onUnitClick,
-  onUnitDelete,
-  handlePointMouseDown,
-}: any) {
-  return (
-    <>
-      <g>
-        {units.map((unit: Unit) =>
-          unit.polygonPoints ? (
-            <PolygonPopover
-              key={unit.id}
-              unit={unit}
-              isEditMode={isEditMode}
-              isLocked={isLocked}
-              scale={scale}
-              onUnitClick={onUnitClick}
-              onUnitDelete={onUnitDelete}
-            />
-          ) : null
-        )}
-      </g>
-      <g>
-        {!isEditMode && !isLocked && units.map((unit: Unit) =>
-          unit.polygonPoints?.map((point, index) => (
-            <circle
-              key={`${unit.id}-point-${index}`}
-              cx={point.x}
-              cy={point.y}
-              r={5 / scale}
-              fill={STATUS_COLOR_MAP[unit.status] ?? '#6b7280'}
-              stroke="#fff"
-              strokeWidth={1.5 / scale}
-              onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
-              className="cursor-move transition-all hover:r-7 hover:stroke-2"
-            />
-          ))
-        )}
-      </g>
-    </>
   );
 }
