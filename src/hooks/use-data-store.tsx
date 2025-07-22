@@ -26,6 +26,8 @@ export interface Project {
   id: string;
   title: string;
   companyId: string;
+  location?: string;
+  description?: string;
   deadline: Timestamp;
   status: string;
   createdAt: any;
@@ -113,6 +115,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline'> & { deadline: Date }) => {
     await addDoc(collection(db, 'projects'), {
       ...projectData,
+      description: projectData.description || '',
       deadline: Timestamp.fromDate(projectData.deadline),
       createdAt: serverTimestamp(),
     });
@@ -133,3 +136,5 @@ export const useDataStore = () => {
   }
   return context;
 };
+
+    

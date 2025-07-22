@@ -62,6 +62,8 @@ interface Project {
   id: string;
   title: string;
   companyId: string;
+  location?: string;
+  description?: string;
   deadline: Timestamp;
   status: string;
 }
@@ -221,9 +223,14 @@ export default function ProjectDetailsPage() {
         <CardHeader>
           <CardTitle>{project.title}</CardTitle>
           <CardDescription>
-            Αναγνωριστικό Εταιρείας: {project.companyId} | Προθεσμία: {formatDate(project.deadline)} | Κατάσταση: {project.status}
+            {project.location} | Προθεσμία: {formatDate(project.deadline)} | Κατάσταση: {project.status}
           </CardDescription>
         </CardHeader>
+        {project.description && (
+            <CardContent>
+                <p className="text-sm text-muted-foreground">{project.description}</p>
+            </CardContent>
+        )}
       </Card>
       
       <div className="flex items-center justify-between">
@@ -325,3 +332,5 @@ export default function ProjectDetailsPage() {
     </div>
   );
 }
+
+    
