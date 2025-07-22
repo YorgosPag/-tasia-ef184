@@ -50,7 +50,7 @@ export function UnitLayers({
         )}
       </g>
       <g>
-        {!isLocked && units.map((unit) =>
+        {!isLocked && !isEditMode && units.map((unit) =>
           unit.polygonPoints?.map((point, index) => (
             <circle
               key={`${unit.id}-point-${index}`}
@@ -63,7 +63,7 @@ export function UnitLayers({
               onMouseDown={(e) => handlePointMouseDown(e, unit.id, index)}
               className="cursor-move transition-all hover:r-7 hover:stroke-2"
               style={{
-                  color: isEditMode || isLocked ? 'transparent' : 'hsl(var(--primary))'
+                  color: 'hsl(var(--primary))'
               }}
             />
           ))
