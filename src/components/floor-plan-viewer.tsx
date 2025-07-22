@@ -479,9 +479,9 @@ export function FloorPlanViewer({ pdfUrl, units, onUnitClick, onUnitDelete, onPo
                                 <polyline
                                     points={drawingPolylinePoints.map(p => `${p.x},${p.y}`).join(' ')}
                                     fill="none"
-                                    stroke="hsl(var(--primary))"
-                                    strokeWidth="2"
-                                    strokeDasharray="4 4"
+                                    stroke="hsl(var(--destructive))"
+                                    strokeWidth="3"
+                                    strokeDasharray="5 5"
                                 />
                                 {currentPolygonPoints.map((point, index) => (
                                     <circle
