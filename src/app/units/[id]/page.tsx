@@ -208,7 +208,7 @@ export default function UnitDetailsPage() {
      
      setIsSubmitting(true);
      
-     const finalData: Record<string, any> = {
+     const finalData: Omit<Partial<Attachment>, 'id' | 'createdAt'> = {
          type: data.type,
          details: data.details,
          area: data.area ? parseFloat(data.area) : undefined,
@@ -217,13 +217,12 @@ export default function UnitDetailsPage() {
          isBundle: data.isBundle,
          bundleUnitId: data.isBundle ? unitId : undefined,
          isStandalone: data.isStandalone,
-         photoUrl: data.photoUrl?.trim() ? data.photoUrl.trim() : undefined,
+         photoUrl: data.photoUrl?.trim() || undefined,
          unitId: unitId,
      };
      
      // Remove undefined fields to comply with Firestore
      Object.keys(finalData).forEach(key => finalData[key as keyof typeof finalData] === undefined && delete finalData[key as keyof typeof finalData]);
-
 
      try {
        if (data.id) { // This is an update
@@ -499,7 +498,9 @@ export default function UnitDetailsPage() {
                 />
                 <DialogFooter>
                    <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
-                   <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{form.getValues('id') ? 'Αποθήκευση' : 'Προσθήκη'}</Button>
+                   <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {form.getValues('id') ? 'Αποθήκευση' : 'Προσθήκη'}
+                   </Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -586,5 +587,3 @@ export default function UnitDetailsPage() {
     </div>
   );
 }
-
-    
