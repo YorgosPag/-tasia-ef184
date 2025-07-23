@@ -328,14 +328,24 @@ export default function ProjectDetailsPage() {
                     : doc(db, 'projects', projectId, 'phases', phaseId);
                 await updateDoc(docRef, finalData);
                 toast({ title: 'Επιτυχία', description: 'Η εγγραφή ενημερώθηκε.' });
+                await logActivity(isSubphase ? 'UPDATE_SUBPHASE' : 'UPDATE_PHASE', {
+                    entityId: phaseId,
+                    entityType: isSubphase ? 'subphase' : 'phase',
+                    changes: finalData,
+                });
 
             } else {
                  const parentId = isSubphase ? (editingPhase as { parentId: string }).parentId : null;
                  const collectionPath = parentId
                     ? collection(db, 'projects', projectId, 'phases', parentId, 'subphases')
                     : collection(db, 'projects', projectId, 'phases');
-                await addDoc(collectionPath, { ...finalData, createdAt: serverTimestamp() });
+                const newDocRef = await addDoc(collectionPath, { ...finalData, createdAt: serverTimestamp() });
                 toast({ title: 'Επιτυχία', description: `Η ${isSubphase ? 'υποφάση' : 'φάση'} προστέθηκε.` });
+                await logActivity(isSubphase ? 'CREATE_SUBPHASE' : 'CREATE_PHASE', {
+                    entityId: newDocRef.id,
+                    entityType: isSubphase ? 'subphase' : 'phase',
+                    details: finalData,
+                });
             }
             handlePhaseDialogOpenChange(false);
         } catch (error) {
@@ -363,14 +373,19 @@ export default function ProjectDetailsPage() {
     }
   };
   
-  const handleDeletePhase = async (phaseId: string, parentId?: string) => {
+  const handleDeletePhase = async (phase: Phase, parentId?: string) => {
     if (!projectId) return;
     try {
       const docPath = parentId
-        ? doc(db, 'projects', projectId, 'phases', parentId, 'subphases', phaseId)
-        : doc(db, 'projects', projectId, 'phases', phaseId);
+        ? doc(db, 'projects', projectId, 'phases', parentId, 'subphases', phase.id)
+        : doc(db, 'projects', projectId, 'phases', phase.id);
       await deleteDoc(docPath);
       toast({ title: 'Επιτυχία', description: 'Η εγγραφή διαγράφηκε.' });
+      await logActivity(parentId ? 'DELETE_SUBPHASE' : 'DELETE_PHASE', {
+        entityId: phase.id,
+        entityType: parentId ? 'subphase' : 'phase',
+        details: { name: phase.name, parentId: parentId },
+      });
     } catch (error) {
       console.error("Error deleting phase/subphase:", error);
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
@@ -517,7 +532,7 @@ export default function ProjectDetailsPage() {
                                         <Button variant="ghost" size="icon" title="Επεξεργασία Φάσης" onClick={() => handleEditPhase(phase)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Φάσης</span></Button>
                                         <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Φάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Φάσης</span></Button></AlertDialogTrigger>
                                             <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά τη φάση "{phase.name}" και όλες τις υποφάσεις της.</AlertDialogDescription></AlertDialogHeader>
-                                                <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(phase.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                                <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(phase)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>
                                     </div>
@@ -536,7 +551,7 @@ export default function ProjectDetailsPage() {
                                             <Button variant="ghost" size="icon" title="Επεξεργασία Υποφάσης" onClick={() => handleEditPhase(subphase, phase.id)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Υποφάσης</span></Button>
                                             <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Υποφάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Υποφάσης</span></Button></AlertDialogTrigger>
                                                 <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά την υποφάση "{subphase.name}".</AlertDialogDescription></AlertDialogHeader>
-                                                    <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(subphase.id, phase.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                                    <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(subphase, phase.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                                 </AlertDialogContent>
                                             </AlertDialog>
                                         </div>
