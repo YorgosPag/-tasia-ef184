@@ -22,6 +22,8 @@ import { Checklist } from './Checklist';
 import { formatDate, getCompanyNames, formatCurrency, getStatusVariant, calculateChecklistProgress } from './utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { WorkStagePhotoGallery } from './WorkStagePhotoGallery';
+import { WorkStageCommentsThread } from './WorkStageCommentsThread';
+import { WorkStageCommentForm } from './WorkStageCommentForm';
 
 const DetailItem = ({ icon, label, children }: { icon: React.ElementType, label: string, children: React.ReactNode }) => (
     <div className="flex items-start gap-2 text-sm">
@@ -42,6 +44,7 @@ export function WorkStageDetails({
     onDeleteWorkStage,
     onPhotoUpload,
     onInspectionNotesChange,
+    onCommentSubmit,
     isSubstage
 }: {
     stage: WorkStageWithSubstages;
@@ -53,6 +56,7 @@ export function WorkStageDetails({
     onDeleteWorkStage: (workStage: WorkStage, parentId?: string) => void;
     onPhotoUpload: (stage: WorkStage, files: FileList, isSubstage: boolean) => void;
     onInspectionNotesChange: (stage: WorkStage, itemIndex: number, notes: string, isSubstage: boolean) => void;
+    onCommentSubmit: (stage: WorkStage, comment: string, isSubstage: boolean) => void;
     isSubstage: boolean;
 }) {
 
@@ -119,6 +123,7 @@ export function WorkStageDetails({
                                 onDeleteWorkStage={onDeleteWorkStage}
                                 onPhotoUpload={onPhotoUpload}
                                 onInspectionNotesChange={onInspectionNotesChange}
+                                onCommentSubmit={onCommentSubmit}
                                 isSubstage={true}
                            />
                         </div>
@@ -136,6 +141,12 @@ export function WorkStageDetails({
                     </AlertDialog>
                 </div>
             )}
+            
+             <div className="mt-6 border-t pt-4">
+                <WorkStageCommentsThread comments={stage.comments || []} />
+                <WorkStageCommentForm onSubmit={(comment) => onCommentSubmit(stage, comment, isSubstage)} />
+            </div>
+
         </div>
     )
 }

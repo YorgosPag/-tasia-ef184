@@ -34,6 +34,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         handleInspectionNotesChange,
         setEditingWorkStage,
         handlePhotoUpload,
+        handleCommentSubmit,
         handleExport,
     } = useWorkStages(project.id, project.title);
 
@@ -90,6 +91,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                         onAddChecklistItem={handleAddChecklistItem}
                         onInspectionNotesChange={handleInspectionNotesChange}
                         onPhotoUpload={handlePhotoUpload}
+                        onCommentSubmit={handleCommentSubmit}
                     />
                 ) : (
                     <WorkStagesEmptyState onAddNewStage={handleAddNewStage}/>

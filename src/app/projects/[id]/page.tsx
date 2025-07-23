@@ -56,6 +56,15 @@ export interface WorkStagePhoto {
   uploadedBy: string;
 }
 
+export interface WorkStageComment {
+    id: string;
+    text: string;
+    authorId: string;
+    authorEmail: string;
+    createdAt: Timestamp;
+    type: 'internal' | 'client';
+}
+
 export interface WorkStage {
   id: string;
   name: string;
@@ -74,6 +83,7 @@ export interface WorkStage {
   budgetedCost?: number;
   actualCost?: number;
   photos?: WorkStagePhoto[];
+  comments?: WorkStageComment[];
 }
 
 export interface WorkStageWithSubstages extends WorkStage {
