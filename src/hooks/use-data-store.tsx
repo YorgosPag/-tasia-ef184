@@ -2,10 +2,11 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, getDocs, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { useToast } from './use-toast';
+import { logActivity } from '@/lib/logger';
 
 /**
  * useDataStore: A custom hook that serves as a central data hub for the application.
@@ -47,16 +48,16 @@ interface DataStoreContextType {
   companies: Company[];
   projects: Project[];
   isLoading: boolean;
-  addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<void>;
-  addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }) => Promise<void>;
+  addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<string | null>;
+  addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }) => Promise<string | null>;
 }
 
 const DataStoreContext = createContext<DataStoreContextType>({
   companies: [],
   projects: [],
   isLoading: true,
-  addCompany: async () => {},
-  addProject: async () => {},
+  addCompany: async () => null,
+  addProject: async () => null,
 });
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -119,25 +120,42 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
 
-  const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>) => {
-    await addDoc(collection(db, 'companies'), {
-      ...companyData,
-      createdAt: serverTimestamp(),
-    });
+  const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
+    try {
+        const docRef = await addDoc(collection(db, 'companies'), {
+            ...companyData,
+            createdAt: serverTimestamp(),
+        });
+        await logActivity('CREATE_COMPANY', {
+            entityId: docRef.id,
+            entityType: 'company',
+            name: companyData.name
+        });
+        return docRef.id;
+    } catch(e) {
+        console.error("Error adding company:", e);
+        return null;
+    }
   }, []);
 
-  const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline'| 'tags'> & { deadline: Date, tags?: string }) => {
-    const { tags, ...restOfData } = projectData;
-    const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
-    
-    await addDoc(collection(db, 'projects'), {
-      ...restOfData,
-      description: projectData.description || '',
-      photoUrl: projectData.photoUrl?.trim() || undefined,
-      tags: tagsArray,
-      deadline: Timestamp.fromDate(projectData.deadline),
-      createdAt: serverTimestamp(),
-    });
+  const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline'| 'tags'> & { deadline: Date, tags?: string }): Promise<string | null> => {
+    try {
+        const { tags, ...restOfData } = projectData;
+        const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+        
+        const docRef = await addDoc(collection(db, 'projects'), {
+          ...restOfData,
+          description: projectData.description || '',
+          photoUrl: projectData.photoUrl?.trim() || undefined,
+          tags: tagsArray,
+          deadline: Timestamp.fromDate(projectData.deadline),
+          createdAt: serverTimestamp(),
+        });
+        return docRef.id;
+    } catch (e) {
+        console.error("Error adding project:", e);
+        return null;
+    }
   }, []);
 
 

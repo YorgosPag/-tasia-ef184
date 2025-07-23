@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -65,6 +65,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { useDataStore, Project } from '@/hooks/use-data-store';
+import { logActivity } from '@/lib/logger';
 
 
 const projectSchema = z.object({
@@ -125,10 +126,19 @@ export default function ProjectsPage() {
   
   const handleDeleteProject = async (projectId: string) => {
       try {
+        const projectToDelete = projects.find(p => p.id === projectId);
         await deleteDoc(doc(db, 'projects', projectId));
         // Note: This simple delete doesn't cascade to subcollections.
         // A more robust solution would use a Cloud Function to clean up sub-collections.
         toast({ title: "Επιτυχία", description: "Το έργο διαγράφηκε." });
+
+        if (projectToDelete) {
+            await logActivity('DELETE_PROJECT', { 
+                entityId: projectId, 
+                entityType: 'project',
+                title: projectToDelete.title 
+            });
+        }
       } catch (error) {
         console.error("Error deleting project:", error);
         toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν ήταν δυνατή η διαγραφή του έργου." });
@@ -150,10 +160,23 @@ export default function ProjectsPage() {
         };
         await updateDoc(projectRef, updateData);
         toast({ title: "Επιτυχία", description: "Το έργο ενημερώθηκε." });
+        await logActivity('UPDATE_PROJECT', { 
+            entityId: editingProject.id, 
+            entityType: 'project',
+            title: updateData.title,
+            changes: updateData 
+        });
       } else {
         // Create logic
-        await addProject(data);
+        const newProjectId = await addProject(data);
         toast({ title: "Επιτυχία", description: "Το έργο προστέθηκε." });
+        if(newProjectId) {
+            await logActivity('CREATE_PROJECT', { 
+                entityId: newProjectId, 
+                entityType: 'project',
+                title: data.title 
+            });
+        }
       }
       handleDialogOpenChange(false);
     } catch (error: any) {
