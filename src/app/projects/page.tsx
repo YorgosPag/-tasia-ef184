@@ -57,7 +57,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2, CalendarIcon, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Loader2, CalendarIcon, Edit, Trash2, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -124,6 +124,35 @@ export default function ProjectsPage() {
     setIsDialogOpen(true);
   };
   
+  const handleDuplicateProject = async (projectId: string) => {
+    const projectToClone = projects.find(p => p.id === projectId);
+    if (!projectToClone) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το έργο προς αντιγραφή.' });
+        return;
+    }
+    try {
+        const { id, createdAt, ...clonedData } = projectToClone;
+        clonedData.title = `${clonedData.title} (Copy)`;
+        const newId = await addProject({
+            ...clonedData,
+            tags: clonedData.tags?.join(','),
+            deadline: clonedData.deadline instanceof Timestamp ? clonedData.deadline.toDate() : clonedData.deadline,
+        });
+        toast({ title: 'Επιτυχία', description: `Το έργο '${projectToClone.title}' αντιγράφηκε.` });
+        if (newId) {
+            await logActivity('DUPLICATE_PROJECT', {
+                entityId: newId,
+                entityType: 'project',
+                sourceEntityId: projectId,
+                name: clonedData.title,
+            });
+        }
+    } catch (error) {
+        console.error('Error duplicating project:', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η αντιγραφή απέτυχε.' });
+    }
+  };
+
   const handleDeleteProject = async (projectId: string) => {
       try {
         const projectToDelete = projects.find(p => p.id === projectId);
@@ -460,13 +489,17 @@ export default function ProjectsPage() {
                       </TableCell>
                        <TableCell className="text-right">
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1" data-action-button>
-                              <Button variant="ghost" size="icon" onClick={() => handleEditClick(project)}>
+                              <Button variant="ghost" size="icon" title="Αντιγραφή" onClick={() => handleDuplicateProject(project.id)}>
+                                  <Copy className="h-4 w-4" />
+                                  <span className="sr-only">Αντιγραφή</span>
+                              </Button>
+                              <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={() => handleEditClick(project)}>
                                   <Edit className="h-4 w-4" />
                                   <span className="sr-only">Επεξεργασία</span>
                               </Button>
                               <AlertDialog>
                                   <AlertDialogTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                      <Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive">
                                           <Trash2 className="h-4 w-4" />
                                           <span className="sr-only">Διαγραφή</span>
                                       </Button>

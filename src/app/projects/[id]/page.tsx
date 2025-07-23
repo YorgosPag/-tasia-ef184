@@ -60,7 +60,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, Edit, Trash2, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -194,6 +194,59 @@ export default function ProjectDetailsPage() {
 
     return () => unsubscribe();
   }, [projectId, toast]);
+
+  const handleDuplicateBuilding = async (buildingId: string) => {
+    const buildingToClone = buildings.find(b => b.id === buildingId);
+    if (!buildingToClone) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το κτίριο προς αντιγραφή.' });
+        return;
+    }
+
+    try {
+        const topLevelDoc = await getDoc(doc(db, 'buildings', buildingToClone.topLevelId));
+        if (!topLevelDoc.exists()) {
+            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκαν πλήρη δεδομένα για αντιγραφή.' });
+            return;
+        }
+
+        const originalData = topLevelDoc.data();
+        
+        // Remove fields that should not be copied
+        const { originalId, createdAt, ...clonedData } = originalData;
+
+        clonedData.address += ' (Copy)';
+        
+        // Use the regular "add" logic but with pre-filled data
+        const batch = writeBatch(db);
+        const newTopLevelRef = doc(collection(db, 'buildings'));
+        const newSubCollectionRef = doc(collection(db, 'projects', projectId, 'buildings'));
+
+        batch.set(newTopLevelRef, {
+            ...clonedData,
+            projectId: projectId,
+            originalId: newSubCollectionRef.id,
+            createdAt: serverTimestamp(),
+        });
+        batch.set(newSubCollectionRef, {
+            ...clonedData,
+            topLevelId: newTopLevelRef.id,
+            createdAt: serverTimestamp(),
+        });
+
+        await batch.commit();
+        toast({ title: 'Επιτυχία', description: `Το κτίριο '${originalData.address}' αντιγράφηκε.` });
+        await logActivity('DUPLICATE_BUILDING', {
+            entityId: newTopLevelRef.id,
+            entityType: 'building',
+            sourceEntityId: buildingToClone.topLevelId,
+            name: clonedData.address,
+        });
+    } catch (error) {
+        console.error('Error duplicating building:', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η αντιγραφή απέτυχε.' });
+    }
+  };
+
 
   const onSubmitBuilding = async (data: BuildingFormValues) => {
     setIsSubmitting(true);
@@ -568,13 +621,17 @@ export default function ProjectDetailsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleEditBuilding(building)}>
+                            <Button variant="ghost" size="icon" title="Αντιγραφή" onClick={() => handleDuplicateBuilding(building.id)}>
+                                <Copy className="h-4 w-4" />
+                                <span className="sr-only">Αντιγραφή</span>
+                            </Button>
+                            <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={() => handleEditBuilding(building)}>
                                 <Edit className="h-4 w-4" />
                                 <span className="sr-only">Επεξεργασία</span>
                             </Button>
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                    <Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive">
                                         <Trash2 className="h-4 w-4" />
                                         <span className="sr-only">Διαγραφή</span>
                                     </Button>
