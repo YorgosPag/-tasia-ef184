@@ -78,6 +78,8 @@ const staticPathLabels: Record<string, string> = {
   buildings: 'Κτίρια',
   floors: 'Όροφοι',
   units: 'Ακίνητα',
+  'audit-log': 'Audit Log',
+  'users': 'User Management',
 };
 
 const collectionNameMap: Record<string, string> = {
@@ -100,13 +102,13 @@ export function useBreadcrumbs() {
     }
 
     let tempBreadcrumbs: BreadcrumbItem[] = [];
-    const lastSegment = pathSegments[pathSegments.length - 1];
+    const firstSegment = pathSegments[0];
     
     // Handle top-level list pages e.g., /projects
-    if (pathSegments.length === 1 && staticPathLabels[lastSegment]) {
+    if (pathSegments.length === 1 && staticPathLabels[firstSegment]) {
         tempBreadcrumbs.push({ 
-            href: `/${lastSegment}`, 
-            label: staticPathLabels[lastSegment],
+            href: `/${firstSegment}`, 
+            label: staticPathLabels[firstSegment],
             tooltip: 'Λίστα',
         });
         setBreadcrumbs(tempBreadcrumbs);
@@ -114,8 +116,8 @@ export function useBreadcrumbs() {
     }
     
     // Handle details pages e.g., /units/some-id
-    if (pathSegments.length > 1 && collectionNameMap[pathSegments[0]]) {
-      const collectionSlug = pathSegments[0];
+    if (pathSegments.length > 1 && collectionNameMap[firstSegment]) {
+      const collectionSlug = firstSegment;
       const entityId = pathSegments[1];
       const collectionName = collectionNameMap[collectionSlug];
       
