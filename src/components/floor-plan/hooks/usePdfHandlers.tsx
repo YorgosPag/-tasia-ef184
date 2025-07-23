@@ -3,7 +3,7 @@
 
 import { useState, useCallback, MutableRefObject } from 'react';
 import { PDFPageProxy } from 'react-pdf';
-import { Unit } from '../FloorPlanViewer';
+import { Unit } from '@/components/floor-plan/FloorPlanViewer';
 
 interface PageDimensions {
   width: number;
@@ -16,23 +16,29 @@ interface UsePdfHandlersProps {
   isEditMode: boolean;
   isLocked: boolean;
   draggingPoint: { unitId: string; pointIndex: number } | null;
+  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   lastMouseEvent: MutableRefObject<MouseEvent | null>;
   setDrawingPolygon: React.Dispatch<React.SetStateAction<{ x: number; y: number }[]>>;
   setDraggingPoint: React.Dispatch<React.SetStateAction<{ unitId: string; pointIndex: number } | null>>;
-  setLocalUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   onUnitPointsUpdate: (unitId: string, newPoints: { x: number; y: number }[]) => void;
   setPageDimensions: React.Dispatch<React.SetStateAction<PageDimensions>>;
 }
 
+/**
+ * usePdfHandlers
+ * A hook to encapsulate all direct event handlers for the PDF/SVG canvas.
+ * This includes logic for clicking to draw, dragging points, and handling document/page load events.
+ * It keeps the PdfCanvas component clean of complex logic.
+ */
 export function usePdfHandlers({
   svgRef,
   isEditMode,
   isLocked,
   draggingPoint,
+  setUnits,
   lastMouseEvent,
   setDrawingPolygon,
   setDraggingPoint,
-  setLocalUnits,
   onUnitPointsUpdate,
   setPageDimensions,
 }: UsePdfHandlersProps) {
@@ -56,11 +62,61 @@ export function usePdfHandlers({
 
   const onPageLoadSuccess = async (page: PDFPageProxy) => {
     const originalViewport = page.getViewport({ scale: 1 });
-    // This logic could be expanded to auto-crop, for now we use full dimensions
-    setPageDimensions({
-      width: originalViewport.width,
-      height: originalViewport.height,
-      cropBox: { x: 0, y: 0, width: originalViewport.width, height: originalViewport.height },
+  
+    // Create an in-memory canvas to analyze the PDF content for auto-cropping
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) {
+        setPageDimensions({ width: originalViewport.width, height: originalViewport.height, cropBox: { x: 0, y: 0, width: originalViewport.width, height: originalViewport.height } });
+        return;
+    }
+  
+    canvas.width = originalViewport.width;
+    canvas.height = originalViewport.height;
+  
+    const renderContext = {
+      canvasContext: context,
+      viewport: originalViewport,
+    };
+    await page.render(renderContext).promise;
+  
+    // Analyze the canvas to find the content bounding box
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    let minX = canvas.width, minY = canvas.height, maxX = -1, maxY = -1;
+  
+    // Check for non-white pixels (with a tolerance for off-white)
+    const isWhite = (r: number, g: number, b: number, a: number) => a === 0 || (r > 240 && g > 240 && b > 240);
+  
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const i = (y * canvas.width + x) * 4;
+        if (!isWhite(data[i], data[i+1], data[i+2], data[i+3])) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    
+    // Fallback if no content is found (e.g., blank page)
+    if (maxX === -1) {
+        minX = 0; minY = 0; maxX = canvas.width; maxY = canvas.height;
+    }
+  
+    const padding = 20; // Add some padding around the detected content
+    const cropBox = {
+        x: Math.max(0, minX - padding),
+        y: Math.max(0, minY - padding),
+        width: Math.min(canvas.width, (maxX - minX) + 2 * padding),
+        height: Math.min(canvas.height, (maxY - minY) + 2 * padding),
+    };
+    
+    setPageDimensions({ 
+        width: originalViewport.width, 
+        height: originalViewport.height,
+        cropBox
     });
   };
 
@@ -78,7 +134,7 @@ export function usePdfHandlers({
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
 
-    setLocalUnits((prevUnits) =>
+    setUnits((prevUnits) =>
       prevUnits.map((unit) => {
         if (unit.id === draggingPoint.unitId) {
           const newPoints = [...(unit.polygonPoints || [])];
@@ -92,7 +148,7 @@ export function usePdfHandlers({
 
   const handleMouseUp = () => {
     if (draggingPoint) {
-      setLocalUnits((prevUnits) => {
+      setUnits((prevUnits) => {
         const unit = prevUnits.find((u) => u.id === draggingPoint.unitId);
         if (unit && unit.polygonPoints) {
           onUnitPointsUpdate(unit.id, unit.polygonPoints);
@@ -104,6 +160,7 @@ export function usePdfHandlers({
   };
   
   const handleMouseLeave = () => {
+    // Stop dragging if the mouse leaves the canvas to prevent weird states
     if (draggingPoint) {
       handleMouseUp();
     }
@@ -111,7 +168,7 @@ export function usePdfHandlers({
 
   const handlePointMouseDown = (event: React.MouseEvent<SVGCircleElement>, unitId: string, pointIndex: number) => {
     if (isLocked || isEditMode) return;
-    event.stopPropagation();
+    event.stopPropagation(); // Prevent the main SVG click handler from firing
     setDraggingPoint({ unitId, pointIndex });
   };
 

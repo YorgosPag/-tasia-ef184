@@ -28,7 +28,7 @@ import { FloorInfoHeader } from './FloorInfoHeader';
 import { FloorPlanCard } from './FloorPlanCard';
 import { UnitsListTable } from './UnitsListTable';
 import { UnitDialogForm, UnitFormValues, unitSchema } from '@/components/units/UnitDialogForm';
-import { useFloorPlanState } from '@/hooks/floor-plan/useFloorPlanState';
+import { useFloorPlanState } from '@/components/floor-plan/hooks/useFloorPlanState';
 import { logActivity } from '@/lib/logger';
 
 

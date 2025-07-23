@@ -16,7 +16,7 @@ interface UsePdfHandlersProps {
   isEditMode: boolean;
   isLocked: boolean;
   draggingPoint: { unitId: string; pointIndex: number } | null;
-  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
+  setLocalUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   lastMouseEvent: MutableRefObject<MouseEvent | null>;
   setDrawingPolygon: React.Dispatch<React.SetStateAction<{ x: number; y: number }[]>>;
   setDraggingPoint: React.Dispatch<React.SetStateAction<{ unitId: string; pointIndex: number } | null>>;
@@ -35,7 +35,7 @@ export function usePdfHandlers({
   isEditMode,
   isLocked,
   draggingPoint,
-  setUnits,
+  setLocalUnits,
   lastMouseEvent,
   setDrawingPolygon,
   setDraggingPoint,
@@ -134,7 +134,7 @@ export function usePdfHandlers({
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
 
-    setUnits((prevUnits) =>
+    setLocalUnits((prevUnits) =>
       prevUnits.map((unit) => {
         if (unit.id === draggingPoint.unitId) {
           const newPoints = [...(unit.polygonPoints || [])];
@@ -148,7 +148,7 @@ export function usePdfHandlers({
 
   const handleMouseUp = () => {
     if (draggingPoint) {
-      setUnits((prevUnits) => {
+      setLocalUnits((prevUnits) => {
         const unit = prevUnits.find((u) => u.id === draggingPoint.unitId);
         if (unit && unit.polygonPoints) {
           onUnitPointsUpdate(unit.id, unit.polygonPoints);

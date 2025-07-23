@@ -10,6 +10,7 @@ interface UseZoomProps {
     height: number;
     cropBox: { x: number; y: number; width: number; height: number };
   };
+  isPrecisionZooming: boolean;
 }
 
 /**
@@ -17,7 +18,7 @@ interface UseZoomProps {
  * A hook to manage all state and logic related to PDF zoom and rotation.
  * It persists the scale and rotation values to localStorage.
  */
-export function useZoom({ pdfContainerRef, pageDimensions }: UseZoomProps) {
+export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }: UseZoomProps) {
   const [scale, setScale] = useLocalStorageState('floorPlanScale', 1.0);
   const [rotation, setRotation] = useLocalStorageState('floorPlanRotation', 0);
   const [zoomInput, setZoomInput] = useState(`${(scale * 100).toFixed(0)}%`);
@@ -69,7 +70,6 @@ export function useZoom({ pdfContainerRef, pageDimensions }: UseZoomProps) {
   }, [pdfContainerRef, pageDimensions, setScale]);
   
   // Effect to fit view on initial load of a PDF
-  // We use a timeout to ensure dimensions are fully propagated before fitting
   useEffect(() => {
     if (pageDimensions.width > 0) {
         const timer = setTimeout(() => handleFitToView(), 100);
@@ -80,17 +80,14 @@ export function useZoom({ pdfContainerRef, pageDimensions }: UseZoomProps) {
   // Effect to center the view when scale or dimensions change, but not during precision zoom
   useEffect(() => {
     const container = pdfContainerRef.current;
-    if (container) {
-      const isPrecisionZooming = (window as any).__isPrecisionZooming; // Simple flag to avoid import cycle
-      if (!isPrecisionZooming) {
+     if (container && !isPrecisionZooming) {
         // We use a small timeout to allow the DOM to update before scrolling
         setTimeout(() => {
             container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
             container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
         }, 50);
-      }
     }
-  }, [scale, pageDimensions, pdfContainerRef]); 
+  }, [scale, pageDimensions, pdfContainerRef, isPrecisionZooming]); 
 
 
   return {
