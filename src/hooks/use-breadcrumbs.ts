@@ -101,21 +101,21 @@ export function useBreadcrumbs() {
         return;
     }
 
-    let tempBreadcrumbs: BreadcrumbItem[] = [];
     const firstSegment = pathSegments[0];
-    
-    // Handle top-level list pages e.g., /projects FIRST
+
+    // Handle top-level list pages first (e.g., /projects)
     if (pathSegments.length === 1 && staticPathLabels[firstSegment]) {
-        tempBreadcrumbs.push({ 
-            href: `/${firstSegment}`, 
-            label: staticPathLabels[firstSegment],
-            tooltip: `Λίστα: ${staticPathLabels[firstSegment]}`,
-        });
-        setBreadcrumbs(tempBreadcrumbs);
-        return;
+      setBreadcrumbs([{ 
+        href: `/${firstSegment}`, 
+        label: staticPathLabels[firstSegment],
+        tooltip: `Λίστα: ${staticPathLabels[firstSegment]}`,
+      }]);
+      return;
     }
+
+    let tempBreadcrumbs: BreadcrumbItem[] = [];
     
-    // Then, handle details pages e.g., /units/some-id
+    // Handle details pages (e.g., /units/[id])
     if (pathSegments.length > 1 && collectionNameMap[firstSegment]) {
       const collectionSlug = firstSegment;
       const entityId = pathSegments[1];
@@ -123,7 +123,7 @@ export function useBreadcrumbs() {
       
       const currentEntity = await getDocFromFirestore(collectionName, entityId);
       if (!currentEntity) {
-        // Fallback for list pages if direct fetch fails
+        // Fallback for list pages if direct fetch somehow fails or for invalid IDs
         if (staticPathLabels[collectionSlug]) {
              setBreadcrumbs([{ href: `/${collectionSlug}`, label: staticPathLabels[collectionSlug], tooltip: 'Λίστα' }]);
         }
@@ -229,14 +229,6 @@ export function useBreadcrumbs() {
         });
       }
 
-    } else {
-       // Catch-all for any other path that was not matched
-       if (staticPathLabels[firstSegment]) {
-         tempBreadcrumbs.push({ 
-            href: `/${firstSegment}`, 
-            label: staticPathLabels[firstSegment],
-         });
-       }
     }
 
     const uniqueCrumbs = tempBreadcrumbs.reduce((acc, current) => {
