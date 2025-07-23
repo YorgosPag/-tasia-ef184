@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -36,7 +36,7 @@ import { z } from 'zod';
 import { PlusCircle, Loader2, Link as LinkIcon, Download, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Company, useDataStore } from '@/hooks/use-data-store';
+import { useDataStore } from '@/hooks/use-data-store';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { exportToJson } from '@/lib/exporter';

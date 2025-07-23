@@ -2,19 +2,10 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, getDocs, doc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
-import { useToast } from './use-toast';
 import { logActivity } from '@/lib/logger';
-
-/**
- * useDataStore: A custom hook that serves as a central data hub for the application.
- * It provides real-time updates for top-level collections
- * from Firestore. It also exposes memoized
- * functions for adding new documents, abstracting away the direct Firestore calls
- * from the UI components. This hook is designed to be used within the DataProvider.
- */
 
 // --- Interfaces ---
 export interface Company {
@@ -47,7 +38,6 @@ export interface Project {
 interface DataStoreContextType {
   companies: Company[];
   isLoading: boolean;
-  isEditor: boolean;
   addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<string | null>;
   addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }) => Promise<string | null>;
 }
@@ -55,35 +45,39 @@ interface DataStoreContextType {
 const DataStoreContext = createContext<DataStoreContextType>({
   companies: [],
   isLoading: true,
-  isEditor: false,
   addCompany: async () => null,
   addProject: async () => null,
 });
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { user, isEditor } = useAuth();
+  const { user } = useAuth();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // This effect now only handles the loading state, data is fetched in pages.
   useEffect(() => {
+    // Return early if the user is not authenticated yet.
     if (!user) {
+        setCompanies([]); // Clear data on logout
         setIsLoading(false);
         return;
-    };
-    
+    }
+
+    setIsLoading(true);
+    // Set up the Firestore listener for companies.
+    // This will only run once when the user logs in.
     const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
         setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
+        setIsLoading(false);
+    }, (error) => {
+        console.error("Failed to fetch companies:", error);
+        setIsLoading(false);
     });
 
-    // The loading state is now managed within each page's data fetching hooks/effects.
-    // This provider just gives access to the auth state and add methods.
-    setIsLoading(false);
-    
+    // The cleanup function will be called when the user logs out (and the component unmounts/re-evaluates).
     return () => {
         unsubCompanies();
-    }
-  }, [user]);
+    };
+  }, [user]); // This effect depends only on the user object.
 
 
   const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
@@ -126,7 +120,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
 
   return (
-    <DataStoreContext.Provider value={{ companies, isLoading, isEditor, addCompany, addProject }}>
+    <DataStoreContext.Provider value={{ companies, isLoading, addCompany, addProject }}>
       {children}
     </DataStoreContext.Provider>
   );
