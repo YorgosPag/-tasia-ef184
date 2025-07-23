@@ -48,6 +48,7 @@ interface DataStoreContextType {
   companies: Company[];
   projects: Project[];
   isLoading: boolean;
+  isEditor: boolean;
   addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<string | null>;
   addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }) => Promise<string | null>;
 }
@@ -56,12 +57,13 @@ const DataStoreContext = createContext<DataStoreContextType>({
   companies: [],
   projects: [],
   isLoading: true,
+  isEditor: false,
   addCompany: async () => null,
   addProject: async () => null,
 });
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, isEditor } = useAuth();
   const { toast } = useToast();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -160,7 +162,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
 
   return (
-    <DataStoreContext.Provider value={{ companies, projects, isLoading, addCompany, addProject }}>
+    <DataStoreContext.Provider value={{ companies, projects, isLoading, isEditor, addCompany, addProject }}>
       {children}
     </DataStoreContext.Provider>
   );
