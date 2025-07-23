@@ -138,11 +138,20 @@ export function useBreadcrumbs() {
 
       // Assemble breadcrumbs from the fetched hierarchy
       tempBreadcrumbs.push({ href: '/companies', label: 'Εταιρείες' });
-      if (company) tempBreadcrumbs.push({ href: `/companies`, label: company.name });
+      if (company) {
+        // No need to add company again if it's the current page
+        if(collectionName !== 'companies' || currentEntity.id !== company.id) {
+           // This was causing duplicate keys. Let's fix it by not adding a separate link for the company if we're on a deeper page.
+           // The "Εταιρείες" link is enough. If we show the company page, it will be the last breadcrumb.
+        }
+      }
 
-      if (project) tempBreadcrumbs.push({ href: `/projects/${project.id}`, label: project.title });
-      if (building) tempBreadcrumbs.push({ href: `/buildings/${building.id}`, label: building.address });
-
+      if (project) {
+        tempBreadcrumbs.push({ href: `/projects/${project.id}`, label: project.title });
+      }
+      if (building) {
+        tempBreadcrumbs.push({ href: `/buildings/${building.id}`, label: building.address });
+      }
       if (floor) {
         let floorLabel = `Όροφος ${floor.level}`;
         if(unit?.levelSpan) {
@@ -154,7 +163,9 @@ export function useBreadcrumbs() {
         tempBreadcrumbs.push({ href: `/floors/${floor.id}`, label: floorLabel });
       }
 
-      if (unit) tempBreadcrumbs.push({ href: `/units/${unit.id}`, label: unit.name });
+      if (unit) {
+        tempBreadcrumbs.push({ href: `/units/${unit.id}`, label: unit.name });
+      }
 
     } else if (pathSegments.length === 1 && staticPathLabels[pathSegments[0]]) {
       // Handle simple list pages like /projects, /units etc.
