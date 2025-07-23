@@ -150,7 +150,7 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
         if (!project.id) return;
         setIsSubmitting(true);
 
-        const finalData = {
+        const rawData: any = {
             name: data.name, description: data.description || '', status: data.status,
             assignedTo: data.assignedTo === 'none' ? undefined : data.assignedTo,
             notes: data.notes || '', startDate: data.startDate ? Timestamp.fromDate(data.startDate) : undefined,
@@ -159,6 +159,9 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
             documents: data.documents ? data.documents.split(',').map(s => s.trim()).filter(Boolean) : [],
         };
         
+        // Remove undefined fields to prevent Firestore errors
+        const finalData = Object.fromEntries(Object.entries(rawData).filter(([_, v]) => v !== undefined));
+
         try {
             const isSubphase = editingPhase && 'parentId' in editingPhase;
             const isEditing = editingPhase && 'id' in editingPhase;
