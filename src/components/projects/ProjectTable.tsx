@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Copy, Info } from 'lucide-react';
+import { Edit, Trash2, Copy } from 'lucide-react';
 import { Company } from '@/hooks/use-data-store';
 import {
   formatDate,
@@ -32,53 +32,46 @@ import {
 } from '@/lib/project-helpers';
 import type { ProjectWithWorkStageSummary } from '@/hooks/use-projects-page';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { Timestamp } from 'firebase/firestore';
+import { Progress } from '../ui/progress';
 
 
 interface WorkStageStatusBadgeProps {
-    status: 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Εκκρεμεί' | 'Καθυστερεί' | undefined;
-    currentWorkStageName: string | undefined;
-    deadline: Timestamp | Date;
+    summary: ProjectWithWorkStageSummary['workStageSummary'];
+    deadline: ProjectWithWorkStageSummary['deadline'];
 }
 
-function WorkStageStatusBadge({ status, currentWorkStageName, deadline }: WorkStageStatusBadgeProps) {
+function WorkStageStatusBadge({ summary, deadline }: WorkStageStatusBadgeProps) {
+    if (!summary) {
+        return <Badge variant="outline">Δεν έχει οριστεί</Badge>
+    }
+
     let variant: "default" | "secondary" | "destructive" | "outline" = 'outline';
     let label = 'Προπώληση';
 
-    switch(status) {
-        case 'Σε εξέλιξη':
-            variant = 'secondary';
-            label = 'Σε κατασκευή';
-            break;
-        case 'Καθυστερεί':
-            variant = 'destructive';
-            label = 'Σε καθυστέρηση';
-            break;
-        case 'Ολοκληρώθηκε':
-            variant = 'default';
-            label = 'Ολοκληρωμένο';
-            break;
-        case 'Εκκρεμεί':
-        default:
-            variant = 'outline';
-            label = 'Προπώληση';
-            break;
+    switch(summary.overallStatus) {
+        case 'Σε εξέλιξη': variant = 'secondary'; label = 'Σε κατασκευή'; break;
+        case 'Καθυστερεί': variant = 'destructive'; label = 'Σε καθυστέρηση'; break;
+        case 'Ολοκληρώθηκε': variant = 'default'; label = 'Ολοκληρωμένο'; break;
+        default: variant = 'outline'; label = 'Προπώληση'; break;
     }
     
-    const summary = `Τρέχον στάδιο: ${currentWorkStageName || 'N/A'}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline)}`;
+    const tooltipText = `Τρέχον στάδιο: ${summary.currentWorkStageName || 'N/A'}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline)}`;
 
     return (
-        <div className="flex items-center gap-2">
-            <Badge variant={variant}>{label}</Badge>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Info className="h-4 w-4 text-muted-foreground cursor-help"/>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>{summary}</p>
-                </TooltipContent>
-            </Tooltip>
-        </div>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <div className="flex flex-col gap-1.5 w-40">
+                    <div className="flex justify-between items-center">
+                        <Badge variant={variant} className="whitespace-nowrap">{label}</Badge>
+                        <span className="text-xs font-medium text-muted-foreground">{Math.round(summary.progress)}%</span>
+                    </div>
+                    <Progress value={summary.progress} className="h-1.5" />
+                </div>
+            </TooltipTrigger>
+            <TooltipContent>
+                <p>{tooltipText}</p>
+            </TooltipContent>
+        </Tooltip>
     )
 }
 
@@ -120,7 +113,7 @@ export function ProjectTable({
                 <TableHead>Τίτλος</TableHead>
                 <TableHead>Εταιρεία</TableHead>
                 <TableHead>Τοποθεσία</TableHead>
-                <TableHead>Κατάσταση</TableHead>
+                <TableHead>Πρόοδος Κατασκευής</TableHead>
                 {isEditor && <TableHead className="text-right">Ενέργειες</TableHead>}
             </TableRow>
             </TableHeader>
@@ -138,8 +131,7 @@ export function ProjectTable({
                 <TableCell className="text-muted-foreground">{project.location}</TableCell>
                 <TableCell>
                    <WorkStageStatusBadge
-                        status={project.workStageSummary?.overallStatus}
-                        currentWorkStageName={project.workStageSummary?.currentWorkStageName}
+                        summary={project.workStageSummary}
                         deadline={project.deadline}
                     />
                 </TableCell>

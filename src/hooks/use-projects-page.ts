@@ -14,13 +14,14 @@ import { exportToJson } from '@/lib/exporter';
 import { ProjectFormValues, projectSchema } from '@/components/projects/ProjectDialogForm';
 import { formatDate } from '@/lib/project-helpers';
 import { useAuth } from './use-auth';
-import type { WorkStage } from '@/app/projects/[id]/page';
+import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
 
 
 export interface ProjectWithWorkStageSummary extends Project {
     workStageSummary?: {
         currentWorkStageName: string;
         overallStatus: 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Εκκρεμεί' | 'Καθυστερεί';
+        progress: number;
     }
 }
 
@@ -97,10 +98,12 @@ export function useProjectsPage() {
                 const lastCompletedIndex = workStages.map(p => p.status).lastIndexOf('Ολοκληρώθηκε');
                 currentWorkStageName = workStages[lastCompletedIndex + 1]?.name || "Επόμενο στάδιο";
             }
+
+            const progress = workStages.length > 0 ? (completedWorkStages / workStages.length) * 100 : 0;
             
             return {
                 ...project,
-                workStageSummary: { currentWorkStageName, overallStatus }
+                workStageSummary: { currentWorkStageName, overallStatus, progress }
             };
         }));
         

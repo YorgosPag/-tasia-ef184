@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -69,11 +69,15 @@ const DetailItem = ({ icon, label, children }: { icon: React.ElementType, label:
     </div>
 );
 
-const Checklist = ({ stage, onToggle, onAdd, isSubstage }: { stage: WorkStage, onToggle: (itemIndex: number, completed: boolean) => void, onAdd: (task: string) => void, isSubstage: boolean }) => {
+const Checklist = ({ stage, onToggle, onAdd }: { stage: WorkStage, onToggle: (itemIndex: number, completed: boolean) => void, onAdd: (task: string) => void }) => {
     const [newTask, setNewTask] = useState('');
-    const completedTasks = stage.checklist?.filter(item => item.completed).length || 0;
-    const totalTasks = stage.checklist?.length || 0;
-    const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    
+    const progress = useMemo(() => {
+        const totalTasks = stage.checklist?.length || 0;
+        if (totalTasks === 0) return 0;
+        const completedTasks = stage.checklist?.filter(item => item.completed).length || 0;
+        return (completedTasks / totalTasks) * 100;
+    }, [stage.checklist]);
     
     const handleAddTask = () => {
         if(newTask.trim()) {
@@ -85,10 +89,12 @@ const Checklist = ({ stage, onToggle, onAdd, isSubstage }: { stage: WorkStage, o
     return (
         <div className="mt-4 space-y-3">
             <h4 className="font-semibold">Checklist Εργασιών</h4>
-            <div>
-                <Progress value={progress} className="w-full h-2"/>
-                <p className="text-xs text-muted-foreground mt-1 text-right">{completedTasks} / {totalTasks} ολοκληρωμένα</p>
-            </div>
+             {stage.checklist && stage.checklist.length > 0 && (
+                <div>
+                    <Progress value={progress} className="w-full h-2"/>
+                    <p className="text-xs text-muted-foreground mt-1 text-right">{Math.round(progress)}% Ολοκληρώθηκε</p>
+                </div>
+             )}
             <div className="space-y-2">
                 {stage.checklist?.map((item, index) => (
                     <div key={index} className="flex items-center gap-3 bg-muted/50 p-2 rounded-md">
@@ -125,7 +131,7 @@ const StageDetails = ({ stage, companies, onChecklistItemToggle, onAddChecklistI
             <DetailItem icon={Briefcase} label="Σχετίζεται με">{(stage as any).relatedEntityIds?.join(', ') || '-'}</DetailItem>
             {stage.notes && <div className="col-span-full"><DetailItem icon={GripVertical} label="Σημειώσεις">{stage.notes}</DetailItem></div>}
         </div>
-        <Checklist stage={stage} onToggle={(index, completed) => onChecklistItemToggle(stage, index, completed, isSubstage)} onAdd={(task) => onAddChecklistItem(stage, task, isSubstage)} isSubstage={isSubstage} />
+        <Checklist stage={stage} onToggle={(index, completed) => onChecklistItemToggle(stage, index, completed, isSubstage)} onAdd={(task) => onAddChecklistItem(stage, task, isSubstage)} />
     </div>
 )
 
@@ -139,49 +145,70 @@ export function WorkStageAccordion({
     onChecklistItemToggle,
     onAddChecklistItem,
 }: WorkStageAccordionProps) {
+    const calculateStageProgress = (stage: WorkStageWithSubstages): number => {
+        const checklistProgress = stage.checklist?.length > 0 ? (stage.checklist.filter(c => c.completed).length / stage.checklist.length) * 100 : 0;
+        
+        if (stage.workSubstages?.length > 0) {
+            const substagesProgress = stage.workSubstages.map(ss => (ss.checklist?.length > 0 ? (ss.checklist.filter(c => c.completed).length / ss.checklist.length) * 100 : 0));
+            const totalSubstageProgress = substagesProgress.reduce((acc, p) => acc + p, 0) / stage.workSubstages.length;
+            // Weighted average: 50% for own checklist, 50% for substages
+            return (checklistProgress * 0.5) + (totalSubstageProgress * 0.5);
+        }
+
+        return checklistProgress;
+    }
+    
     return (
         <Accordion type="multiple" className="w-full">
-            {workStages.map(stage => (
-                <AccordionItem key={stage.id} value={stage.id}>
-                    <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
-                        <div className="flex items-center gap-4 flex-1">
-                             <Badge variant={getStatusVariant(stage.status)}>{stage.status}</Badge>
-                             <span className="font-bold text-base">{stage.name}</span>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pt-0">
-                       <StageDetails stage={stage} companies={companies} onChecklistItemToggle={onChecklistItemToggle} onAddChecklistItem={onAddChecklistItem} isSubstage={false} />
-                        {stage.workSubstages.length > 0 && (
-                            <div className="ml-4 mt-2 border-l-2 pl-4">
-                                <h4 className="font-semibold mb-2">Υποστάδια:</h4>
-                                {stage.workSubstages.map(substage => (
-                                    <div key={substage.id} className="mb-4 p-2 rounded-md hover:bg-muted/30">
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center gap-2">
-                                                 <Badge variant={getStatusVariant(substage.status)}>{substage.status}</Badge>
-                                                 <p className="font-semibold">{substage.name}</p>
-                                            </div>
-                                             <div className="flex items-center gap-1">
-                                                <Button variant="ghost" size="icon" title="Επεξεργασία Υποσταδίου" onClick={() => onEditWorkStage(substage, stage.id)}><Edit className="h-4 w-4"/></Button>
-                                                <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Υποσταδίου" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
-                                                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το υποστάδιο "{substage.name}".</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(substage, stage.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
-                                            </div>
-                                        </div>
-                                       <StageDetails stage={substage} companies={companies} onChecklistItemToggle={onChecklistItemToggle} onAddChecklistItem={onAddChecklistItem} isSubstage={true} />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                             <Button variant="outline" size="sm" onClick={() => onAddWorkSubstage(stage.id)}><GitMerge className="mr-2"/>Νέο Υποστάδιο</Button>
-                             <Button variant="outline" size="sm" onClick={() => onEditWorkStage(stage)}><Edit className="mr-2"/>Επεξεργασία Σταδίου</Button>
-                             <AlertDialog><AlertDialogTrigger asChild><Button variant="destructive_outline" size="sm"><Trash2 className="mr-2"/>Διαγραφή Σταδίου</Button></AlertDialogTrigger>
-                             <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το στάδιο "{stage.name}" και όλες τις υποφάσεις του.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(stage)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
-                        </div>
+            {workStages.map(stage => {
+                const progress = calculateStageProgress(stage);
 
-                    </AccordionContent>
-                </AccordionItem>
-            ))}
+                return (
+                    <AccordionItem key={stage.id} value={stage.id}>
+                        <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
+                            <div className="flex items-center gap-4 flex-1">
+                                <Badge variant={getStatusVariant(stage.status)}>{stage.status}</Badge>
+                                <span className="font-bold text-base">{stage.name}</span>
+                                <div className="flex items-center gap-2 ml-auto w-32">
+                                    <Progress value={progress} className="h-2 flex-1" />
+                                    <span className="text-xs font-mono text-muted-foreground">{Math.round(progress)}%</span>
+                                </div>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pt-0">
+                        <StageDetails stage={stage} companies={companies} onChecklistItemToggle={onChecklistItemToggle} onAddChecklistItem={onAddChecklistItem} isSubstage={false} />
+                            {stage.workSubstages.length > 0 && (
+                                <div className="ml-4 mt-2 border-l-2 pl-4">
+                                    <h4 className="font-semibold mb-2">Υποστάδια:</h4>
+                                    {stage.workSubstages.map(substage => (
+                                        <div key={substage.id} className="mb-4 p-2 rounded-md hover:bg-muted/30">
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant={getStatusVariant(substage.status)}>{substage.status}</Badge>
+                                                    <p className="font-semibold">{substage.name}</p>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <Button variant="ghost" size="icon" title="Επεξεργασία Υποσταδίου" onClick={() => onEditWorkStage(substage, stage.id)}><Edit className="h-4 w-4"/></Button>
+                                                    <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Υποσταδίου" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
+                                                    <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το υποστάδιο "{substage.name}".</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(substage, stage.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+                                                </div>
+                                            </div>
+                                        <StageDetails stage={substage} companies={companies} onChecklistItemToggle={onChecklistItemToggle} onAddChecklistItem={onAddChecklistItem} isSubstage={true} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                                <Button variant="outline" size="sm" onClick={() => onAddWorkSubstage(stage.id)}><GitMerge className="mr-2"/>Νέο Υποστάδιο</Button>
+                                <Button variant="outline" size="sm" onClick={() => onEditWorkStage(stage)}><Edit className="mr-2"/>Επεξεργασία Σταδίου</Button>
+                                <AlertDialog><AlertDialogTrigger asChild><Button variant="destructive_outline" size="sm"><Trash2 className="mr-2"/>Διαγραφή Σταδίου</Button></AlertDialogTrigger>
+                                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το στάδιο "{stage.name}" και όλες τις υποφάσεις του.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(stage)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+                            </div>
+
+                        </AccordionContent>
+                    </AccordionItem>
+                )
+            })}
         </Accordion>
     );
 }
