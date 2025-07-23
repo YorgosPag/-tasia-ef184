@@ -92,11 +92,13 @@
 
 #### Subcollection: `projects/{projectId}/phases`
 - **name**: `string` - (π.χ. “Εκσκαφές”, “Τοιχοποιία”).
-- **status**: `string` - (`Εκκρεμεί`, `Σε εξέλιξη`, `Ολοκληρώθηκε`).
+- **description**: `string` (optional) - Περιγραφή της φάσης.
+- **status**: `string` - (`Εκκρεμεί`, `Σε εξέλιξη`, `Ολοκληρώθηκε`, `Καθυστερεί`).
 - **startDate**: `timestamp` (optional) - Ημερομηνία έναρξης.
 - **endDate**: `timestamp` (optional) - Ημερομηνία λήξης.
 - **deadline**: `timestamp` (optional) - Προθεσμία.
-- **personInCharge**: `string` (optional) - Υπεύθυνος/Συνεργείο.
+- **assignedTo**: `array` of `string` (optional) - Λίστα με User IDs ή ονόματα συνεργείων.
+- **documents**: `array` of `string` (optional) - Λίστα με URLs σχετικών εγγράφων.
 - **notes**: `string` (optional) - Σημειώσεις.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
