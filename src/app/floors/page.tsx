@@ -13,9 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { exportToJson } from '@/lib/exporter';
 
 interface Floor {
   id: string;
@@ -59,12 +61,24 @@ export default function FloorsPage() {
     router.push(`/floors/${floorId}`);
   };
 
+  const handleExport = () => {
+    const dataToExport = floors.map(f => ({
+      ...f,
+      createdAt: formatDate(f.createdAt),
+    }));
+    exportToJson(dataToExport, 'floors');
+  };
+
   return (
     <div className="flex flex-col gap-8">
        <div className="flex items-center justify-between">
          <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Όροφοι
         </h1>
+        <Button onClick={handleExport} variant="outline" disabled={isLoading || floors.length === 0}>
+            <Download className="mr-2"/>
+            Εξαγωγή σε JSON
+        </Button>
       </div>
 
       <Card>

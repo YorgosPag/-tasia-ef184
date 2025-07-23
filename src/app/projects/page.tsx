@@ -57,7 +57,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2, CalendarIcon, Edit, Trash2, Copy } from 'lucide-react';
+import { PlusCircle, Loader2, CalendarIcon, Edit, Trash2, Copy, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,6 +66,7 @@ import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { useDataStore, Project } from '@/hooks/use-data-store';
 import { logActivity } from '@/lib/logger';
+import { exportToJson } from '@/lib/exporter';
 
 
 const projectSchema = z.object({
@@ -260,197 +261,213 @@ export default function ProjectsPage() {
     return companies.find(c => c.id === companyId)?.name || companyId;
   };
 
+  const handleExport = () => {
+    const dataToExport = projects.map(p => ({
+      ...p,
+      companyName: getCompanyName(p.companyId),
+      deadline: formatDate(p.deadline),
+      createdAt: formatDate(p.createdAt),
+    }));
+    exportToJson(dataToExport, 'projects');
+  };
+
   return (
     <div className="flex flex-col gap-8">
        <div className="flex items-center justify-between">
          <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Έργα
         </h1>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" />
-              Νέο Έργο
+        <div className="flex items-center gap-2">
+            <Button onClick={handleExport} variant="outline" disabled={isLoading || projects.length === 0}>
+                <Download className="mr-2"/>
+                Εξαγωγή σε JSON
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>{editingProject ? 'Επεξεργασία' : 'Δημιουργία Νέου'} Έργου</DialogTitle>
-              <DialogDescription>
-                {editingProject ? 'Ενημερώστε τις πληροφορίες του έργου.' : 'Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε ένα νέο έργο.'}
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
-                 <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Τίτλος Έργου</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Ανακαίνιση Κτιρίου" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="companyId"
-                  render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Εταιρεία</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
+            <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
+            <DialogTrigger asChild>
+                <Button>
+                <PlusCircle className="mr-2" />
+                Νέο Έργο
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                <DialogTitle>{editingProject ? 'Επεξεργασία' : 'Δημιουργία Νέου'} Έργου</DialogTitle>
+                <DialogDescription>
+                    {editingProject ? 'Ενημερώστε τις πληροφορίες του έργου.' : 'Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε ένα νέο έργο.'}
+                </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
+                    <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Τίτλος Έργου</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. Ανακαίνιση Κτιρίου" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="companyId"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Εταιρεία</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Επιλέξτε εταιρεία..." />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center p-2"><Loader2 className="h-4 w-4 animate-spin" /></div>
+                                    ) : (
+                                        companies.map(company => (
+                                            <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                                        ))
+                                    )}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Τοποθεσία</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. Αμπελόκηποι, Αθήνα" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="photoUrl"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="https://example.com/project.jpg" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="tags"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Tags (χωρισμένα με κόμμα)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. residential, luxury" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
+                        <FormControl>
+                            <Textarea placeholder="Σύντομη περιγραφή του έργου..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="deadline"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                        <FormLabel>Προθεσμία</FormLabel>
+                        <Popover>
+                            <PopoverTrigger asChild>
                             <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Επιλέξτε εταιρεία..." />
-                                </SelectTrigger>
+                                <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                )}
+                                >
+                                {field.value ? (
+                                    format(field.value, "PPP", { locale: el })
+                                ) : (
+                                    <span>Επιλέξτε ημερομηνία</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                            </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                date < new Date(new Date().setHours(0,0,0,0))
+                                }
+                                initialFocus
+                            />
+                            </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Κατάσταση</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Επιλέξτε κατάσταση" />
+                            </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {isLoading ? (
-                                    <div className="flex items-center justify-center p-2"><Loader2 className="h-4 w-4 animate-spin" /></div>
-                                ) : (
-                                    companies.map(company => (
-                                        <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
-                                    ))
-                                )}
+                            <SelectItem value="Ενεργό">Ενεργό</SelectItem>
+                            <SelectItem value="Σε εξέλιξη">Σε εξέλιξη</SelectItem>
+                            <SelectItem value="Ολοκληρωμένο">Ολοκληρωμένο</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Τοποθεσία</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Αμπελόκηποι, Αθήνα" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="photoUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/project.jpg" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tags (χωρισμένα με κόμμα)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. residential, luxury" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Σύντομη περιγραφή του έργου..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="deadline"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Προθεσμία</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP", { locale: el })
-                              ) : (
-                                <span>Επιλέξτε ημερομηνία</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date(new Date().setHours(0,0,0,0))
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Κατάσταση</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Επιλέξτε κατάσταση" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Ενεργό">Ενεργό</SelectItem>
-                          <SelectItem value="Σε εξέλιξη">Σε εξέλιξη</SelectItem>
-                          <SelectItem value="Ολοκληρωμένο">Ολοκληρωμένο</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmitting}>
-                      Ακύρωση
+                        </FormItem>
+                    )}
+                    />
+                    <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline" disabled={isSubmitting}>
+                        Ακύρωση
+                        </Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isSubmitting || isLoading}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {editingProject ? 'Αποθήκευση' : 'Δημιουργία'}
                     </Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={isSubmitting || isLoading}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {editingProject ? 'Αποθήκευση' : 'Δημιουργία'}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                    </DialogFooter>
+                </form>
+                </Form>
+            </DialogContent>
+            </Dialog>
+        </div>
       </div>
 
       <Card>
