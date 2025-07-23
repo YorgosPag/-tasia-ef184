@@ -52,9 +52,9 @@ const getStatusVariant = (status: Phase['status']) => {
     }
 };
 
-const getCompanyName = (companyId: string | undefined, companies: Company[]) => {
-    if (!companyId) return '-';
-    return companies.find(c => c.id === companyId)?.name || 'Άγνωστη εταιρεία';
+const getCompanyNames = (companyIds: string[] = [], companies: Company[]) => {
+    if (!companyIds || companyIds.length === 0) return '-';
+    return companyIds.map(id => companies.find(c => c.id === id)?.name || id).join(', ');
 };
 
 export function PhaseTable({
@@ -84,7 +84,7 @@ export function PhaseTable({
                         <TableRow className="group bg-muted/20">
                             <TableCell className="font-bold">{phase.name}</TableCell>
                             <TableCell><Badge variant={getStatusVariant(phase.status)}>{phase.status}</Badge></TableCell>
-                            <TableCell>{getCompanyName(phase.assignedTo, companies)}</TableCell>
+                            <TableCell>{getCompanyNames(phase.assignedTo, companies)}</TableCell>
                             <TableCell>{formatDate(phase.startDate)}</TableCell>
                             <TableCell>{formatDate(phase.endDate)}</TableCell>
                             <TableCell>{formatDate(phase.deadline)}</TableCell>
@@ -104,7 +104,7 @@ export function PhaseTable({
                             <TableRow key={subphase.id} className="group">
                                 <TableCell className="pl-8 text-muted-foreground"><span className="mr-2">└</span> {subphase.name}</TableCell>
                                 <TableCell><Badge variant={getStatusVariant(subphase.status)}>{subphase.status}</Badge></TableCell>
-                                <TableCell>{getCompanyName(subphase.assignedTo, companies)}</TableCell>
+                                <TableCell>{getCompanyNames(subphase.assignedTo, companies)}</TableCell>
                                 <TableCell>{formatDate(subphase.startDate)}</TableCell>
                                 <TableCell>{formatDate(subphase.endDate)}</TableCell>
                                 <TableCell>{formatDate(subphase.deadline)}</TableCell>

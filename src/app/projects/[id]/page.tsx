@@ -45,7 +45,7 @@ export interface Phase {
   name: string;
   description?: string;
   status: 'Εκκρεμεί' | 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Καθυστερεί';
-  assignedTo?: string;
+  assignedTo?: string[];
   notes?: string;
   startDate?: Timestamp;
   endDate?: Timestamp;

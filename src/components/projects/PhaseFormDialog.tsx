@@ -71,20 +71,10 @@ export function PhaseFormDialog({
                             name="assignedTo"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Ανάθεση σε Εταιρεία/Συνεργείο</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Επιλέξτε..." />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="none"><em>Κανένα</em></SelectItem>
-                                            {isLoadingCompanies ? <Loader2 className="animate-spin" /> : companies.map(c => (
-                                                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <FormLabel>Ανάθεση (IDs χωρισμένα με κόμμα)</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} placeholder="π.χ. ID εταιρείας, ID συνεργάτη..." />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
