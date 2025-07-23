@@ -208,7 +208,7 @@ export default function UnitDetailsPage() {
      
      setIsSubmitting(true);
      
-     const finalData = {
+     const finalData: Record<string, any> = {
          type: data.type,
          details: data.details,
          area: data.area ? parseFloat(data.area) : undefined,
@@ -586,3 +586,5 @@ export default function UnitDetailsPage() {
     </div>
   );
 }
+
+    
