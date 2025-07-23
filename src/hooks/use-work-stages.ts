@@ -206,7 +206,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
     };
     
     const handleChecklistItemToggle = async (stage: WorkStage, itemIndex: number, completed: boolean, isSubstage: boolean) => {
-        if (!projectId) return;
+        if (!projectId || !user) return;
         const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
         if (isSubstage && !parentId) return;
         
@@ -215,7 +215,13 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             : doc(db, 'projects', projectId, 'workStages', stage.id);
         
         const newChecklist = [...(stage.checklist || [])];
-        newChecklist[itemIndex] = { ...newChecklist[itemIndex], completed };
+        const updatedItem = { 
+            ...newChecklist[itemIndex], 
+            completed,
+            completionDate: completed ? serverTimestamp() : undefined,
+            completedBy: completed ? user.email : undefined,
+         };
+        newChecklist[itemIndex] = updatedItem;
         
         const batch = writeBatch(db);
         batch.update(docRef, { checklist: newChecklist });
@@ -223,6 +229,27 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         const topLevelRef = parentId ? doc(db, 'workSubstages', stage.id) : doc(db, 'workStages', stage.id);
         batch.update(topLevelRef, { checklist: newChecklist });
         await batch.commit();
+    };
+
+    const handleInspectionNotesChange = async (stage: WorkStage, itemIndex: number, notes: string, isSubstage: boolean) => {
+        if (!projectId) return;
+        const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
+        if (isSubstage && !parentId) return;
+
+        const docRef = parentId 
+            ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id)
+            : doc(db, 'projects', projectId, 'workStages', stage.id);
+
+        const newChecklist = [...(stage.checklist || [])];
+        newChecklist[itemIndex] = { ...newChecklist[itemIndex], inspectionNotes: notes };
+
+        const batch = writeBatch(db);
+        batch.update(docRef, { checklist: newChecklist });
+        const topLevelRef = parentId ? doc(db, 'workSubstages', stage.id) : doc(db, 'workStages', stage.id);
+        batch.update(topLevelRef, { checklist: newChecklist });
+        
+        await batch.commit();
+        toast({ title: "Οι παρατηρήσεις αποθηκεύτηκαν." });
     };
 
     const handleAddChecklistItem = async (stage: WorkStage, task: string, isSubstage: boolean) => {
@@ -331,6 +358,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         onSubmitWorkStage,
         handleChecklistItemToggle,
         handleAddChecklistItem,
+        handleInspectionNotesChange,
         handlePhotoUpload,
         handleExport,
     };

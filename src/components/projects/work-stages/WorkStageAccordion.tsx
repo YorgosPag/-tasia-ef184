@@ -22,6 +22,7 @@ interface WorkStageAccordionProps {
     onChecklistItemToggle: (stage: WorkStage, itemIndex: number, completed: boolean, isSubstage: boolean) => void;
     onAddChecklistItem: (stage: WorkStage, task: string, isSubstage: boolean) => void;
     onPhotoUpload: (stage: WorkStage, files: FileList, isSubstage: boolean) => void;
+    onInspectionNotesChange: (stage: WorkStage, itemIndex: number, notes: string, isSubstage: boolean) => void;
 }
 
 
@@ -33,6 +34,7 @@ export function WorkStageAccordion({
     onDeleteWorkStage,
     onChecklistItemToggle,
     onAddChecklistItem,
+    onInspectionNotesChange,
     onPhotoUpload,
 }: WorkStageAccordionProps) {
     return (
@@ -52,6 +54,7 @@ export function WorkStageAccordion({
                             onEditWorkStage={onEditWorkStage}
                             onDeleteWorkStage={onDeleteWorkStage}
                             onPhotoUpload={onPhotoUpload}
+                            onInspectionNotesChange={onInspectionNotesChange}
                             isSubstage={false}
                         />
                     </AccordionContent>

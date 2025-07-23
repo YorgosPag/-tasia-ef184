@@ -99,11 +99,17 @@
 - **endDate**: `timestamp` (optional) - Ημερομηνία λήξης.
 - **deadline**: `timestamp` (optional) - Προθεσμία.
 - **assignedTo**: `array` of `string` (optional) - Λίστα με IDs επαφών/συνεργείων/εταιρειών.
-- **documents**: `array` of `string` (optional) - Λίστα με URLs σχετικών εγγράφων.
+- **documents**: `array` of `string` (optional) - Λίστα με **ονόματα** απαιτούμενων εγγράφων.
 - **photos**: `array` of `map` (optional) - Λίστα με `{ url: string, uploadedAt: timestamp, uploadedBy: string }`.
 - **notes**: `string` (optional) - Σημειώσεις.
 - **relatedEntityIds**: `array` of `string` (optional) - Λίστα με IDs από κτίρια, ορόφους, ακίνητα.
-- **checklist**: `array` of `map` (optional) - Λίστα αντικειμένων με `{ task: string, completed: boolean }`.
+- **dependsOn**: `array` of `string` (optional) - Λίστα με IDs από άλλα workStages.
+- **checklist**: `array` of `map` (optional) - Λίστα αντικειμένων επιθεώρησης:
+  - `task`: `string` - Το όνομα της εργασίας.
+  - `completed`: `boolean` - Η κατάσταση.
+  - `inspectionNotes`: `string` (optional) - Παρατηρήσεις ελέγχου.
+  - `completionDate`: `timestamp` (optional) - Πότε ολοκληρώθηκε.
+  - `completedBy`: `string` (optional) - Email του χρήστη που το ολοκλήρωσε.
 - **budgetedCost**: `number` (optional) - Προϋπολογισμένο κόστος.
 - **actualCost**: `number` (optional) - Πραγματικό κόστος.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
