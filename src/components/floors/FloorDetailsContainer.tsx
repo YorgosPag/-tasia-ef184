@@ -244,10 +244,10 @@ export function FloorDetailsContainer() {
     }
   };
 
-  const createNewUnit = async (data: UnitFormValues, parsedPolygonPoints?: any[]) => {
+  const createNewUnit = async (data: UnitFormValues, parsedPolygonPoints?: any[]): Promise<string | null> => {
       if (!floor || !floor.buildingId || !floor.originalId) {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε γονικός όροφος/κτίριο.' });
-        return false;
+        return null;
       }
       try {
           const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
@@ -275,17 +275,17 @@ export function FloorDetailsContainer() {
 
           await batch.commit();
 
-          toast({ title: 'Επιτυχία', description: 'Το ακίνητο προστέθηκε.' });
+          toast({ title: 'Επιτυχία', description: 'Το ακίνητο δημιουργήθηκε.' });
           await logActivity('CREATE_UNIT', {
             entityId: topLevelUnitRef.id,
             entityType: 'unit',
             name: finalUnitData.name,
           });
-          return true;
+          return topLevelUnitRef.id;
       } catch (error) {
           console.error('Error adding unit:', error);
           toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη του ακινήτου.' });
-          return false;
+          return null;
       }
   };
 
@@ -298,6 +298,7 @@ export function FloorDetailsContainer() {
     }
 
     let success = false;
+    let newUnitId: string | null = null;
     
     // Case 1: Editing an existing unit's details
     if (editingUnit) {
@@ -330,12 +331,16 @@ export function FloorDetailsContainer() {
     
     // Case 3: Creating a new unit (either from a polygon or from scratch)
     } else {
-        success = await createNewUnit(data, parsedPolygonPoints);
+        newUnitId = await createNewUnit(data, parsedPolygonPoints);
+        success = !!newUnitId;
     }
 
     setIsSubmitting(false);
     if (success) {
       handleDialogOpenChange(false);
+      if (newUnitId) {
+          router.push(`/units/${newUnitId}`);
+      }
     }
   };
 
@@ -360,11 +365,10 @@ export function FloorDetailsContainer() {
         amenities: clonedData.amenities?.join(', '),
     };
 
-    const success = await createNewUnit(newFormValues, clonedData.polygonPoints);
+    const newUnitId = await createNewUnit(newFormValues, clonedData.polygonPoints);
 
-    if (success) {
+    if (newUnitId) {
         toast({ title: 'Επιτυχία', description: `Το ακίνητο '${name}' αντιγράφηκε.` });
-        // The createNewUnit function already logs the creation.
     }
   };
 
@@ -459,12 +463,7 @@ export function FloorDetailsContainer() {
   };
 
   const handleUnitSelectForEdit = (unitId: string) => {
-    const unitToEdit = units.find(u => u.id === unitId);
-    if (unitToEdit) {
-      setDrawingPolygon(null);
-      setEditingUnit(unitToEdit);
-      setIsDialogOpen(true);
-    }
+    router.push(`/units/${unitId}`);
   };
 
   const handleAddNewUnitClick = () => {
@@ -519,3 +518,5 @@ export function FloorDetailsContainer() {
     </div>
   );
 }
+
+    
