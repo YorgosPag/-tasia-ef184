@@ -186,9 +186,9 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
                     : doc(db, 'projects', project.id, 'phases', phaseId);
                 await updateDoc(docRef, finalData);
                 toast({ title: 'Επιτυχία', description: 'Η εγγραφή ενημερώθηκε.' });
-                await logActivity(isSubphase ? 'UPDATE_SUBPHASE' : 'UPDATE_PHASE', {
+                await logActivity(parentId ? 'UPDATE_SUBPHASE' : 'UPDATE_PHASE', {
                     entityId: phaseId,
-                    entityType: isSubphase ? 'subphase' : 'phase',
+                    entityType: parentId ? 'subphase' : 'phase',
                     changes: finalData,
                 });
 
