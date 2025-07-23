@@ -10,7 +10,6 @@ interface UseZoomProps {
     height: number;
     cropBox: { x: number; y: number; width: number; height: number };
   };
-  isPrecisionZooming: boolean;
 }
 
 /**
@@ -18,7 +17,7 @@ interface UseZoomProps {
  * A hook to manage all state and logic related to PDF zoom and rotation.
  * It persists the scale and rotation values to localStorage.
  */
-export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }: UseZoomProps) {
+export function useZoom({ pdfContainerRef, pageDimensions }: UseZoomProps) {
   const [scale, setScale] = useLocalStorageState('floorPlanScale', 1.0);
   const [rotation, setRotation] = useLocalStorageState('floorPlanRotation', 0);
   const [zoomInput, setZoomInput] = useState(`${(scale * 100).toFixed(0)}%`);
@@ -28,19 +27,6 @@ export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }:
     setZoomInput(`${(scale * 100).toFixed(0)}%`);
   }, [scale]);
   
-  // Effect to center the view when scale or dimensions change
-  useEffect(() => {
-    const container = pdfContainerRef.current;
-    if (container && !isPrecisionZooming) {
-        // We use a small timeout to allow the DOM to update before scrolling
-        setTimeout(() => {
-            container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
-            container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
-        }, 50);
-    }
-  }, [scale, pageDimensions, pdfContainerRef, isPrecisionZooming]); 
-
-
   const handleZoomInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setZoomInput(e.target.value);
   };
@@ -90,6 +76,22 @@ export function useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming }:
         return () => clearTimeout(timer);
     }
   }, [pageDimensions.width, pageDimensions.height, handleFitToView]);
+
+  // Effect to center the view when scale or dimensions change, but not during precision zoom
+  useEffect(() => {
+    const container = pdfContainerRef.current;
+    if (container) {
+      const isPrecisionZooming = (window as any).__isPrecisionZooming; // Simple flag to avoid import cycle
+      if (!isPrecisionZooming) {
+        // We use a small timeout to allow the DOM to update before scrolling
+        setTimeout(() => {
+            container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+            container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
+        }, 50);
+      }
+    }
+  }, [scale, pageDimensions, pdfContainerRef]); 
+
 
   return {
     scale,
