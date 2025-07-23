@@ -28,6 +28,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ALL_STATUSES } from '@/components/floor-plan/utils';
+import { getStatusClass } from '@/lib/unit-helpers';
 
 interface Unit {
   id: string;
@@ -63,8 +64,9 @@ export default function UnitsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [filters, setFilters] = useState({
-    status: [] as Unit['status'][],
+    status: ALL_STATUSES,
     minPrice: '',
     maxPrice: '',
     minArea: '',
@@ -74,25 +76,35 @@ export default function UnitsPage() {
 
   const { data: units = [], isLoading, isError } = useUnits();
 
+  // Effect to sync filters state with URL params on initial load
   useEffect(() => {
     const statusParam = searchParams.get('status');
+    const minPriceParam = searchParams.get('minPrice');
+    const maxPriceParam = searchParams.get('maxPrice');
+    
+    const newFilters = { ...filters };
+    let filtersChanged = false;
+
     if (statusParam) {
-      const statusMap = {
-        available: 'Διαθέσιμο',
-        reserved: 'Κρατημένο',
-        sold: 'Πωλημένο',
-        landowner: 'Οικοπεδούχος'
-      };
-      const validStatuses = Object.values(statusMap);
-      // @ts-ignore
-      if (statusMap[statusParam]) {
-        // @ts-ignore
-        setFilters(prev => ({ ...prev, status: [statusMap[statusParam]] }));
-      }
-    } else {
-        setFilters(prev => ({...prev, status: ALL_STATUSES}))
+      newFilters.status = statusParam.split(',') as Unit['status'][];
+      filtersChanged = true;
     }
-  }, [searchParams]);
+     if (minPriceParam) {
+      newFilters.minPrice = minPriceParam;
+      filtersChanged = true;
+    }
+     if (maxPriceParam) {
+      newFilters.maxPrice = maxPriceParam;
+      filtersChanged = true;
+    }
+
+    if (filtersChanged) {
+        setFilters(newFilters);
+        setIsFiltersOpen(true);
+    }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on component mount
 
   const handleFilterChange = (key: keyof typeof filters, value: string | string[]) => {
       setFilters(prev => ({ ...prev, [key]: value }));
@@ -108,16 +120,16 @@ export default function UnitsPage() {
   const clearFilters = () => {
     setSearchQuery('');
     setFilters({
-        status: ALL_STATUSES,
+        status: [],
         minPrice: '',
         maxPrice: '',
         minArea: '',
         maxArea: '',
         amenities: '',
     });
+    // Also remove from URL
     router.push('/units');
   }
-
 
   const handleRowClick = (unitId: string) => {
     router.push(`/units/${unitId}`);
@@ -130,16 +142,6 @@ export default function UnitsPage() {
     }
     return 'Άγνωστη ημερομηνία';
   };
-
-  const getStatusClass = (status: Unit['status'] | undefined) => {
-      switch(status) {
-          case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600';
-          case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600';
-          case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600';
-          case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600';
-          default: return 'bg-gray-500 hover:bg-gray-600';
-      }
-  }
   
   const filteredUnits = useMemo(() => {
     if (!units) return [];
@@ -193,6 +195,18 @@ export default function UnitsPage() {
     exportToJson(dataToExport, 'units');
   };
 
+  const activeFilterCount = useMemo(() => {
+      let count = 0;
+      if (searchQuery) count++;
+      if (filters.status.length > 0 && filters.status.length < ALL_STATUSES.length) count++;
+      if (filters.minPrice) count++;
+      if (filters.maxPrice) count++;
+      if (filters.minArea) count++;
+      if (filters.maxArea) count++;
+      if (filters.amenities) count++;
+      return count;
+  }, [searchQuery, filters]);
+
   return (
     <div className="flex flex-col gap-8">
        <div className="flex items-center justify-between">
@@ -216,11 +230,14 @@ export default function UnitsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Collapsible>
+          <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
             <CollapsibleTrigger asChild>
                 <Button variant="ghost" className="text-sm">
                     <ListFilter className="mr-2 h-4 w-4"/>
                     Προηγμένα Φίλτρα
+                    {activeFilterCount > 0 && (
+                        <Badge variant="secondary" className="ml-2">{activeFilterCount}</Badge>
+                    )}
                 </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4 space-y-6 animate-in fade-in-0">
@@ -250,11 +267,11 @@ export default function UnitsPage() {
                         <Input id="maxPrice" type="number" placeholder="π.χ. 500000" value={filters.maxPrice} onChange={e => handleFilterChange('maxPrice', e.target.value)} />
                      </div>
                      <div className="space-y-2">
-                        <Label htmlFor="minArea">Ελάχιστο Εμβαδόν (τμ)</Label>
+                        <Label htmlFor="minArea">Ελάχιστο Εμβαδόν (τ.μ.)</Label>
                         <Input id="minArea" type="number" placeholder="π.χ. 50" value={filters.minArea} onChange={e => handleFilterChange('minArea', e.target.value)} />
                      </div>
                      <div className="space-y-2">
-                        <Label htmlFor="maxArea">Μέγιστο Εμβαδόν (τμ)</Label>
+                        <Label htmlFor="maxArea">Μέγιστο Εμβαδόν (τ.μ.)</Label>
                         <Input id="maxArea" type="number" placeholder="π.χ. 150" value={filters.maxArea} onChange={e => handleFilterChange('maxArea', e.target.value)} />
                      </div>
                 </div>
@@ -285,41 +302,43 @@ export default function UnitsPage() {
           ) : isError ? (
              <p className="text-center text-destructive py-8">Σφάλμα κατά τη φόρτωση των δεδομένων.</p>
           ) : filteredUnits.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Κωδικός</TableHead>
-                  <TableHead>Όνομα/ID</TableHead>
-                  <TableHead>Τύπος</TableHead>
-                  <TableHead>Κατάσταση</TableHead>
-                  <TableHead>Όροφοι</TableHead>
-                  <TableHead>ID Κτιρίου</TableHead>
-                  <TableHead>Ημ/νία Δημιουργίας</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUnits.map((unit) => (
-                  <TableRow key={unit.id} onClick={() => handleRowClick(unit.id)} className="cursor-pointer">
-                    <TableCell className="font-medium">{unit.identifier}</TableCell>
-                    <TableCell className="font-medium">{unit.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
-                    <TableCell>
-                        <Badge
-                            variant="default" 
-                            className={`text-white ${getStatusClass(unit.status)}`}>
-                            {unit.status}
-                        </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{unit.levelSpan || unit.floorIds?.join(', ')}</TableCell>
-                    <TableCell className="text-muted-foreground">{unit.buildingId}</TableCell>
-                    <TableCell className="text-muted-foreground">{formatDate(unit.createdAt)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Κωδικός</TableHead>
+                    <TableHead>Όνομα/ID</TableHead>
+                    <TableHead>Τύπος</TableHead>
+                    <TableHead>Κατάσταση</TableHead>
+                    <TableHead>Όροφοι</TableHead>
+                    <TableHead>ID Κτιρίου</TableHead>
+                    <TableHead>Ημ/νία Δημιουργίας</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredUnits.map((unit) => (
+                    <TableRow key={unit.id} onClick={() => handleRowClick(unit.id)} className="cursor-pointer">
+                        <TableCell className="font-medium">{unit.identifier}</TableCell>
+                        <TableCell className="font-medium">{unit.name}</TableCell>
+                        <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
+                        <TableCell>
+                            <Badge
+                                variant="default" 
+                                className={getStatusClass(unit.status)}>
+                                {unit.status}
+                            </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{unit.levelSpan || unit.floorIds?.join(', ')}</TableCell>
+                        <TableCell className="text-muted-foreground">{unit.buildingId}</TableCell>
+                        <TableCell className="text-muted-foreground">{formatDate(unit.createdAt)}</TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </div>
           ) : (
              <p className="text-center text-muted-foreground py-8">
-                {searchQuery || Object.values(filters).some(v => Array.isArray(v) ? v.length < ALL_STATUSES.length : !!v) 
+                {searchQuery || Object.values(filters).some(v => Array.isArray(v) ? v.length > 0 && v.length < ALL_STATUSES.length : !!v) 
                     ? 'Δεν βρέθηκαν ακίνητα που να ταιριάζουν με τα φίλτρα.' 
                     : 'Δεν βρέθηκαν ακίνητα.'
                 }
