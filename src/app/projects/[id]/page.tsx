@@ -17,6 +17,7 @@ import {
   deleteDoc,
   orderBy,
   query,
+  getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -64,7 +65,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, Edit, Trash2, Copy, CalendarIcon } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, Edit, Trash2, Copy, CalendarIcon, GitMerge } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -137,6 +138,10 @@ interface Phase extends Omit<PhaseFormValues, 'startDate' | 'endDate' | 'deadlin
   assignedTo?: string[];
 }
 
+interface PhaseWithSubphases extends Phase {
+    subphases: Phase[];
+}
+
 
 export default function ProjectDetailsPage() {
   const params = useParams();
@@ -145,7 +150,7 @@ export default function ProjectDetailsPage() {
 
   const [project, setProject] = useState<Project | null>(null);
   const [buildings, setBuildings] = useState<Building[]>([]);
-  const [phases, setPhases] = useState<Phase[]>([]);
+  const [phases, setPhases] = useState<PhaseWithSubphases[]>([]);
   const [isLoadingProject, setIsLoadingProject] = useState(true);
   const [isLoadingBuildings, setIsLoadingBuildings] = useState(true);
   const [isLoadingPhases, setIsLoadingPhases] = useState(true);
@@ -153,7 +158,7 @@ export default function ProjectDetailsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPhaseDialogOpen, setIsPhaseDialogOpen] = useState(false);
   const [editingBuildingId, setEditingBuildingId] = useState<string | null>(null);
-  const [editingPhase, setEditingPhase] = useState<Phase | null>(null);
+  const [editingPhase, setEditingPhase] = useState<Phase | { parentId: string } | null>(null);
 
   const { toast } = useToast();
 
@@ -233,21 +238,32 @@ export default function ProjectDetailsPage() {
     return () => unsubscribe();
   }, [projectId, toast]);
 
-  useEffect(() => {
-    if(!projectId) return;
-    const phasesQuery = query(collection(db, 'projects', projectId, 'phases'), orderBy('createdAt', 'asc'));
-    const unsubscribe = onSnapshot(phasesQuery, 
-        (snapshot) => {
-            setPhases(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Phase)));
+    useEffect(() => {
+        if (!projectId) return;
+        const phasesQuery = query(collection(db, 'projects', projectId, 'phases'), orderBy('createdAt', 'asc'));
+        
+        const unsubscribe = onSnapshot(phasesQuery, async (phasesSnapshot) => {
+            const phasesDataPromises = phasesSnapshot.docs.map(async (phaseDoc) => {
+                const phase = { id: phaseDoc.id, ...phaseDoc.data() } as Phase;
+                
+                const subphasesQuery = query(collection(db, 'projects', projectId, 'phases', phase.id, 'subphases'), orderBy('createdAt', 'asc'));
+                const subphasesSnapshot = await getDocs(subphasesQuery);
+                const subphases = subphasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Phase));
+
+                return { ...phase, subphases };
+            });
+
+            const phasesWithSubphases = await Promise.all(phasesDataPromises);
+            setPhases(phasesWithSubphases);
             setIsLoadingPhases(false);
         },
         (error) => {
             console.error("Error fetching phases:", error);
             setIsLoadingPhases(false);
-        }
-    );
-    return () => unsubscribe();
-  }, [projectId]);
+        });
+
+        return () => unsubscribe();
+    }, [projectId]);
 
 
   // --- SUBMISSION LOGIC ---
@@ -287,39 +303,49 @@ export default function ProjectDetailsPage() {
     }
   };
 
-  const onSubmitPhase = async (data: PhaseFormValues) => {
-    if(!projectId) return;
-    setIsSubmitting(true);
-    
-    const finalData = {
-      name: data.name,
-      description: data.description || '',
-      status: data.status,
-      assignedTo: data.assignedTo ? data.assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [],
-      notes: data.notes || '',
-      startDate: data.startDate ? Timestamp.fromDate(data.startDate) : null,
-      endDate: data.endDate ? Timestamp.fromDate(data.endDate) : null,
-      deadline: data.deadline ? Timestamp.fromDate(data.deadline) : null,
-      documents: data.documents ? data.documents.split(',').map(s => s.trim()).filter(Boolean) : [],
-    };
+    const onSubmitPhase = async (data: PhaseFormValues) => {
+        if (!projectId) return;
+        setIsSubmitting(true);
 
-    try {
-        const phasesColRef = collection(db, 'projects', projectId, 'phases');
-        if (editingPhase) {
-            await updateDoc(doc(phasesColRef, editingPhase.id), finalData);
-            toast({ title: 'Επιτυχία', description: 'Η φάση ενημερώθηκε.' });
-        } else {
-            await addDoc(phasesColRef, { ...finalData, createdAt: serverTimestamp() });
-            toast({ title: 'Επιτυχία', description: 'Η φάση προστέθηκε.' });
+        const finalData = {
+            name: data.name, description: data.description || '', status: data.status,
+            assignedTo: data.assignedTo ? data.assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [],
+            notes: data.notes || '', startDate: data.startDate ? Timestamp.fromDate(data.startDate) : null,
+            endDate: data.endDate ? Timestamp.fromDate(data.endDate) : null,
+            deadline: data.deadline ? Timestamp.fromDate(data.deadline) : null,
+            documents: data.documents ? data.documents.split(',').map(s => s.trim()).filter(Boolean) : [],
+        };
+        
+        try {
+            const isSubphase = editingPhase && 'parentId' in editingPhase;
+            const isEditing = editingPhase && 'id' in editingPhase;
+
+            if (isEditing) {
+                const parentId = (editingPhase as any).parentId;
+                const phaseId = (editingPhase as Phase).id;
+                const docRef = parentId
+                    ? doc(db, 'projects', projectId, 'phases', parentId, 'subphases', phaseId)
+                    : doc(db, 'projects', projectId, 'phases', phaseId);
+                await updateDoc(docRef, finalData);
+                toast({ title: 'Επιτυχία', description: 'Η εγγραφή ενημερώθηκε.' });
+
+            } else {
+                 const parentId = isSubphase ? (editingPhase as { parentId: string }).parentId : null;
+                 const collectionPath = parentId
+                    ? collection(db, 'projects', projectId, 'phases', parentId, 'subphases')
+                    : collection(db, 'projects', projectId, 'phases');
+                await addDoc(collectionPath, { ...finalData, createdAt: serverTimestamp() });
+                toast({ title: 'Επιτυχία', description: `Η ${isSubphase ? 'υποφάση' : 'φάση'} προστέθηκε.` });
+            }
+            handlePhaseDialogOpenChange(false);
+        } catch (error) {
+            console.error("Error submitting phase/subphase:", error);
+            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η υποβολή απέτυχε.' });
+        } finally {
+            setIsSubmitting(false);
         }
-        handlePhaseDialogOpenChange(false);
-    } catch (error) {
-        console.error("Error submitting phase:", error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η υποβολή της φάσης.' });
-    } finally {
-        setIsSubmitting(false);
     }
-  }
+
 
   // --- DELETE & DUPLICATE LOGIC ---
    const handleDeleteBuilding = async (buildingId: string) => {
@@ -337,14 +363,17 @@ export default function ProjectDetailsPage() {
     }
   };
   
-  const handleDeletePhase = async (phaseId: string) => {
-    if(!projectId) return;
+  const handleDeletePhase = async (phaseId: string, parentId?: string) => {
+    if (!projectId) return;
     try {
-        await deleteDoc(doc(db, 'projects', projectId, 'phases', phaseId));
-        toast({ title: 'Επιτυχία', description: 'Η φάση διαγράφηκε.'});
+      const docPath = parentId
+        ? doc(db, 'projects', projectId, 'phases', parentId, 'subphases', phaseId)
+        : doc(db, 'projects', projectId, 'phases', phaseId);
+      await deleteDoc(docPath);
+      toast({ title: 'Επιτυχία', description: 'Η εγγραφή διαγράφηκε.' });
     } catch (error) {
-        console.error("Error deleting phase:", error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
+      console.error("Error deleting phase/subphase:", error);
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
     }
   }
 
@@ -367,18 +396,25 @@ export default function ProjectDetailsPage() {
     })
   };
 
-  const handleEditPhase = (phase: Phase) => {
-    setEditingPhase(phase);
-    phaseForm.reset({
-        ...phase,
-        assignedTo: phase.assignedTo?.join(', '),
-        documents: phase.documents?.join(', '),
-        startDate: phase.startDate?.toDate(),
-        endDate: phase.endDate?.toDate(),
-        deadline: phase.deadline?.toDate(),
-    });
-    setIsPhaseDialogOpen(true);
-  }
+    const handleEditPhase = (phase: Phase, parentId?: string) => {
+        setEditingPhase(parentId ? { ...phase, parentId } : phase);
+        phaseForm.reset({
+            ...phase,
+            assignedTo: phase.assignedTo?.join(', '),
+            documents: phase.documents?.join(', '),
+            startDate: phase.startDate?.toDate(),
+            endDate: phase.endDate?.toDate(),
+            deadline: phase.deadline?.toDate(),
+        });
+        setIsPhaseDialogOpen(true);
+    }
+    
+    const handleAddSubphase = (parentId: string) => {
+        setEditingPhase({ parentId });
+        phaseForm.reset({ status: 'Εκκρεμεί' });
+        setIsPhaseDialogOpen(true);
+    };
+
 
   const formatDate = (timestamp?: Timestamp | Date) => {
     if (!timestamp) return '-';
@@ -433,11 +469,11 @@ export default function ProjectDetailsPage() {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
-                            <DialogTitle>{editingPhase ? 'Επεξεργασία' : 'Νέα'} Φάση</DialogTitle>
+                            <DialogTitle>{editingPhase ? 'Επεξεργασία' : 'Νέα'} {editingPhase && 'parentId' in editingPhase ? 'Υποφάση' : 'Φάση'}</DialogTitle>
                         </DialogHeader>
                         <Form {...phaseForm}>
                             <form onSubmit={phaseForm.handleSubmit(onSubmitPhase)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
-                                <FormField control={phaseForm.control} name="name" render={({field}) => (<FormItem><FormLabel>Όνομα Φάσης</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                                <FormField control={phaseForm.control} name="name" render={({field}) => (<FormItem><FormLabel>Όνομα</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="description" render={({field}) => (<FormItem><FormLabel>Περιγραφή</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="status" render={({field}) => (<FormItem><FormLabel>Κατάσταση</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Εκκρεμεί">Εκκρεμεί</SelectItem><SelectItem value="Σε εξέλιξη">Σε εξέλιξη</SelectItem><SelectItem value="Ολοκληρώθηκε">Ολοκληρώθηκε</SelectItem><SelectItem value="Καθυστερεί">Καθυστερεί</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="assignedTo" render={({field}) => (<FormItem><FormLabel>Υπεύθυνοι (με κόμμα)</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
@@ -463,28 +499,51 @@ export default function ProjectDetailsPage() {
             : phases.length > 0 ? (
                 <Table>
                     <TableHeader>
-                        <TableRow><TableHead>Φάση</TableHead><TableHead>Κατάσταση</TableHead><TableHead>Υπεύθυνος</TableHead><TableHead>Έναρξη</TableHead><TableHead>Λήξη</TableHead><TableHead>Προθεσμία</TableHead><TableHead className="text-right">Ενέργειες</TableHead></TableRow>
+                        <TableRow><TableHead>Φάση / Υποφάση</TableHead><TableHead>Κατάσταση</TableHead><TableHead>Υπεύθυνος</TableHead><TableHead>Έναρξη</TableHead><TableHead>Λήξη</TableHead><TableHead>Προθεσμία</TableHead><TableHead className="text-right">Ενέργειες</TableHead></TableRow>
                     </TableHeader>
                     <TableBody>
                         {phases.map(phase => (
-                            <TableRow key={phase.id} className="group">
-                                <TableCell className="font-medium">{phase.name}</TableCell>
+                            <>
+                            <TableRow key={phase.id} className="group bg-muted/20">
+                                <TableCell className="font-bold">{phase.name}</TableCell>
                                 <TableCell><Badge variant={getStatusVariant(phase.status)}>{phase.status}</Badge></TableCell>
                                 <TableCell>{phase.assignedTo?.join(', ') || '-'}</TableCell>
                                 <TableCell>{formatDate(phase.startDate)}</TableCell>
                                 <TableCell>{formatDate(phase.endDate)}</TableCell>
                                 <TableCell>{formatDate(phase.deadline)}</TableCell>
                                 <TableCell className="text-right">
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                                        <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={() => handleEditPhase(phase)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία</span></Button>
-                                        <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή</span></Button></AlertDialogTrigger>
-                                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά τη φάση "{phase.name}".</AlertDialogDescription></AlertDialogHeader>
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
+                                        <Button variant="ghost" size="icon" title="Προσθήκη Υποφάσης" onClick={() => handleAddSubphase(phase.id)}><GitMerge className="h-4 w-4" /><span className="sr-only">Προσθήκη Υποφάσης</span></Button>
+                                        <Button variant="ghost" size="icon" title="Επεξεργασία Φάσης" onClick={() => handleEditPhase(phase)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Φάσης</span></Button>
+                                        <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Φάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Φάσης</span></Button></AlertDialogTrigger>
+                                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά τη φάση "{phase.name}" και όλες τις υποφάσεις της.</AlertDialogDescription></AlertDialogHeader>
                                                 <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(phase.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>
                                     </div>
                                 </TableCell>
                             </TableRow>
+                            {phase.subphases.map(subphase => (
+                                <TableRow key={subphase.id} className="group">
+                                    <TableCell className="pl-8 text-muted-foreground"><span className="mr-2">└</span> {subphase.name}</TableCell>
+                                    <TableCell><Badge variant={getStatusVariant(subphase.status)}>{subphase.status}</Badge></TableCell>
+                                    <TableCell>{subphase.assignedTo?.join(', ') || '-'}</TableCell>
+                                    <TableCell>{formatDate(subphase.startDate)}</TableCell>
+                                    <TableCell>{formatDate(subphase.endDate)}</TableCell>
+                                    <TableCell>{formatDate(subphase.deadline)}</TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
+                                            <Button variant="ghost" size="icon" title="Επεξεργασία Υποφάσης" onClick={() => handleEditPhase(subphase, phase.id)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Υποφάσης</span></Button>
+                                            <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Υποφάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Υποφάσης</span></Button></AlertDialogTrigger>
+                                                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά την υποφάση "{subphase.name}".</AlertDialogDescription></AlertDialogHeader>
+                                                    <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(subphase.id, phase.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            </>
                         ))}
                     </TableBody>
                 </Table>
