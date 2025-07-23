@@ -18,7 +18,7 @@ import { useAuth } from './use-auth';
 export function useProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
-  const { isEditor, isLoading: isAuthLoading } = useAuth();
+  const { user, isEditor, isLoading: isAuthLoading } = useAuth();
   const { addProject } = useDataStore();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,14 +44,19 @@ export function useProjectsPage() {
   });
 
   useEffect(() => {
-    // Only subscribe when auth is no longer loading and user is determined
-    if (isAuthLoading) {
-      return;
-    }
+    if (!user) {
+        if(!isAuthLoading){
+            setIsLoading(false);
+        }
+        return;
+    };
 
     const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
       setProjects(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Project)));
       setIsLoading(false);
+    }, (error) => {
+        console.error("Failed to fetch projects:", error);
+        setIsLoading(false);
     });
 
     const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
@@ -62,7 +67,7 @@ export function useProjectsPage() {
       unsubProjects();
       unsubCompanies();
     };
-  }, [isAuthLoading]);
+  }, [user, isAuthLoading]);
 
   const handleDialogOpenChange = useCallback((open: boolean) => {
     setIsDialogOpen(open);
@@ -183,7 +188,9 @@ export function useProjectsPage() {
 
     let viewFilteredProjects = projects;
 
-    if (view === 'index') {
+    if (view === 'construction') {
+        // Show all projects
+    } else { // Default to 'index' view
       viewFilteredProjects = projects.filter(p => p.status === 'Ενεργό' || p.status === 'Ολοκληρωμένο');
     }
 
@@ -230,3 +237,5 @@ export function useProjectsPage() {
     handleDeleteProject,
   };
 }
+
+    
