@@ -5,16 +5,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   doc,
-  getDoc,
-  collection,
   onSnapshot,
   Timestamp,
-  updateDoc,
   writeBatch,
+  getDoc,
+  deleteDoc,
   query,
   where,
-  deleteDoc,
   getDocs,
+  collection,
 } from 'firebase/firestore';
 import { db, storage, auth } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -26,10 +25,8 @@ import { Loader2 } from 'lucide-react';
 
 import { FloorInfoHeader } from './FloorInfoHeader';
 import { FloorPlanCard } from './FloorPlanCard';
-import { UnitsListTable } from './UnitsListTable';
-import { UnitDialogForm, UnitFormValues, unitSchema } from '@/components/units/UnitDialogForm';
-import { useFloorPlanState } from '@/components/floor-plan/hooks/useFloorPlanState';
 import { logActivity } from '@/lib/logger';
+import type { Unit } from '@/components/floor-plan/FloorPlanViewer';
 
 
 // --- Interfaces & Schemas ---
@@ -41,16 +38,6 @@ interface Floor {
   originalId: string;
   createdAt: Timestamp;
   floorPlanUrl?: string;
-}
-
-export interface Unit extends Omit<UnitFormValues, 'polygonPoints' | 'existingUnitId'> {
-  id: string;
-  createdAt: any;
-  polygonPoints?: { x: number; y: number }[];
-  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
-  originalId: string;
-  floorId: string;
-  projectId?: string;
 }
 
 /**
@@ -66,363 +53,61 @@ export function FloorDetailsContainer() {
 
   // --- State Management ---
   const [floor, setFloor] = useState<Floor | null>(null);
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [isLoadingFloor, setIsLoadingFloor] = useState(true);
-  const [isLoadingUnits, setIsLoadingUnits] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [initialUnits, setInitialUnits] = useState<Unit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
-  const [drawingPolygon, setDrawingPolygon] = useState<{ x: number; y: number }[] | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
-  const handlePolygonDrawn = useCallback((points: { x: number; y: number }[]) => {
-    setEditingUnit(null);
-    setDrawingPolygon(points);
-    setIsDialogOpen(true);
-  }, []);
-  
-  const { statusColors } = useFloorPlanState({ onPolygonDrawn: handlePolygonDrawn });
-
-  const form = useForm<UnitFormValues>({
-    resolver: zodResolver(unitSchema),
-    defaultValues: {
-      identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '',
-      existingUnitId: 'new',
-      area: '',
-      price: '',
-      bedrooms: '',
-      bathrooms: '',
-      orientation: '',
-      amenities: '',
-    },
-  });
-
-  const unitsWithoutPolygon = units.filter(u => !u.polygonPoints || u.polygonPoints.length === 0);
 
   // --- Data Fetching Effects ---
   useEffect(() => {
     if (!floorId) return;
-    const docRef = doc(db, 'floors', floorId);
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setFloor({ id: docSnap.id, ...docSnap.data() } as Floor);
-      } else {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Ο όροφος δεν βρέθηκε.' });
-        router.push('/buildings');
-      }
-      setIsLoadingFloor(false);
-    }, (error) => {
-      console.error("Error fetching floor:", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch floor details.' });
-      setIsLoadingFloor(false);
-    });
-    return () => unsubscribe();
-  }, [floorId, router, toast]);
 
-  useEffect(() => {
-    if (!floorId) return;
-    setIsLoadingUnits(true);
-    const q = query(collection(db, 'units'), where('floorId', '==', floorId));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setUnits(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit)));
-      setIsLoadingUnits(false);
-    }, (error) => {
-      console.error('Error fetching units:', error);
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων.' });
-      setIsLoadingUnits(false);
-    });
-    return () => unsubscribe();
-  }, [floorId, toast]);
+    let unsubFloor: () => void;
+    let unsubUnits: () => void;
 
-  // --- Form & Dialog Effects ---
-  useEffect(() => {
-    if (editingUnit) {
-      form.reset({
-        identifier: editingUnit.identifier,
-        name: editingUnit.name,
-        type: editingUnit.type || '',
-        status: editingUnit.status,
-        polygonPoints: editingUnit.polygonPoints ? JSON.stringify(editingUnit.polygonPoints, null, 2) : '',
-        existingUnitId: editingUnit.id,
-        area: editingUnit.area?.toString() || '',
-        price: editingUnit.price?.toString() || '',
-        bedrooms: editingUnit.bedrooms?.toString() || '',
-        bathrooms: editingUnit.bathrooms?.toString() || '',
-        orientation: editingUnit.orientation || '',
-        amenities: editingUnit.amenities?.join(', ') || '',
-      });
-    } else if (drawingPolygon) {
-      form.reset({
-        identifier: '', name: '', type: '', status: 'Διαθέσιμο', 
-        polygonPoints: JSON.stringify(drawingPolygon, null, 2),
-        existingUnitId: 'new',
-        area: '', price: '', bedrooms: '', bathrooms: '', orientation: '', amenities: '',
-      });
-    } else {
-      form.reset({
-        identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '',
-        existingUnitId: 'new',
-        area: '', price: '', bedrooms: '', bathrooms: '', orientation: '', amenities: '',
-      });
-    }
-  }, [editingUnit, drawingPolygon, form]);
-
-  const handleDialogOpenChange = (open: boolean) => {
-    setIsDialogOpen(open);
-    if (!open) {
-      setDrawingPolygon(null);
-      setEditingUnit(null);
-      form.reset({
-        identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '',
-        existingUnitId: 'new',
-        area: '', price: '', bedrooms: '', bathrooms: '', orientation: '', amenities: '',
-      });
-    }
-  };
-
-  // --- Firestore Logic ---
-  const getParsedPolygonPoints = (data: UnitFormValues) => {
-    if (data.polygonPoints && data.polygonPoints.trim() !== '') {
-      try {
-        const pointsArray = JSON.parse(data.polygonPoints);
-        if (Array.isArray(pointsArray) && pointsArray.every(p => typeof p.x === 'number' && typeof p.y === 'number')) {
-          return pointsArray;
-        } else {
-          throw new Error('Invalid points format.');
-        }
-      } catch (e) {
-        toast({ variant: 'destructive', title: 'Σφάλμα στις συντεταγμένες', description: 'Οι συντεταγμένες δεν είναι έγκυρο JSON.' });
-        return null;
-      }
-    }
-    return undefined;
-  };
-
-  const getUnitDataFromForm = (data: UnitFormValues) => {
-    const amenitiesArray = data.amenities ? data.amenities.split(',').map(a => a.trim()).filter(Boolean) : [];
-    
-    return {
-      identifier: data.identifier,
-      name: data.name,
-      type: data.type || '',
-      status: data.status,
-      area: data.area ? parseFloat(data.area) : undefined,
-      price: data.price ? parseFloat(data.price) : undefined,
-      bedrooms: data.bedrooms ? parseInt(data.bedrooms, 10) : undefined,
-      bathrooms: data.bathrooms ? parseInt(data.bathrooms, 10) : undefined,
-      orientation: data.orientation || '',
-      amenities: amenitiesArray,
-    };
-  };
-
-  const updateUnitInFirestore = async (unitId: string, dataToUpdate: any) => {
-    const unitToUpdate = units.find(u => u.id === unitId);
-    if (!unitToUpdate || !floor) return false;
-    
-    try {
-      const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-      if (!buildingDoc.exists()) throw new Error("Parent building not found");
-      const buildingData = buildingDoc.data();
-      const batch = writeBatch(db);
-      
-      batch.update(doc(db, 'units', unitId), dataToUpdate);
-
-      if (buildingData.projectId && buildingData.originalId && unitToUpdate.originalId) {
-        const subDocRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', unitToUpdate.originalId);
-        const subDocSnap = await getDoc(subDocRef);
-        if (subDocSnap.exists()) {
-          batch.update(subDocRef, dataToUpdate);
-        }
-      }
-      await batch.commit();
-      return true;
-    } catch (error) {
-      console.error('Error updating unit:', error);
-      toast({ variant: 'destructive', title: 'Σφάλμα Ενημέρωσης', description: 'Δεν ήταν δυνατή η ενημέρωση του ακινήτου.' });
-      return false;
-    }
-  };
-
-  const createNewUnit = async (data: UnitFormValues, parsedPolygonPoints?: any[]): Promise<string | null> => {
-      if (!floor || !floor.buildingId || !floor.originalId) {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε γονικός όροφος/κτίριο.' });
-        return null;
-      }
-      try {
-          const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-          if (!buildingDoc.exists()) throw new Error("Parent building not found");
-          const buildingData = buildingDoc.data();
-          
-          const batch = writeBatch(db);
-          const topLevelUnitRef = doc(collection(db, 'units'));
-          
-          const finalUnitData: any = {
-            ...getUnitDataFromForm(data),
-            ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
-            floorId: floor.id,
-            buildingId: floor.buildingId,
-            projectId: buildingData.projectId,
-            createdAt: serverTimestamp(),
-          };
-
-          if (buildingData.projectId && buildingData.originalId) {
-            const subCollectionUnitRef = doc(collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units'));
-            batch.set(subCollectionUnitRef, finalUnitData);
-            batch.set(topLevelUnitRef, { ...finalUnitData, originalId: subCollectionUnitRef.id });
-          } else {
-             batch.set(topLevelUnitRef, { ...finalUnitData, originalId: topLevelUnitRef.id });
-          }
-
-          await batch.commit();
-
-          toast({ title: 'Επιτυχία', description: 'Το ακίνητο δημιουργήθηκε.' });
-          await logActivity('CREATE_UNIT', {
-            entityId: topLevelUnitRef.id,
-            entityType: 'unit',
-            name: finalUnitData.name,
-            projectId: buildingData.projectId,
-          });
-          return topLevelUnitRef.id;
-      } catch (error) {
-          console.error('Error adding unit:', error);
-          toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη του ακινήτου.' });
-          return null;
-      }
-  };
-
-  const onSubmitUnit = async (data: UnitFormValues) => {
-    setIsSubmitting(true);
-    const parsedPolygonPoints = getParsedPolygonPoints(data);
-    if (data.polygonPoints && parsedPolygonPoints === null) {
-        setIsSubmitting(false);
-        return; // Invalid JSON for points
-    }
-
-    let success = false;
-    let newUnitId: string | null = null;
-    
-    // Case 1: Editing an existing unit's details
-    if (editingUnit) {
-      const unitData = {
-          ...getUnitDataFromForm(data),
-          ...(parsedPolygonPoints !== undefined && { polygonPoints: parsedPolygonPoints }),
-      };
-      success = await updateUnitInFirestore(editingUnit.id, unitData);
-      if (success) {
-        toast({ title: 'Επιτυχία', description: 'Το ακίνητο ενημερώθηκε.' });
-        await logActivity('UPDATE_UNIT', {
-          entityId: editingUnit.id,
-          entityType: 'unit',
-          changes: unitData,
-          projectId: editingUnit.projectId,
-        });
-      }
-    
-    // Case 2: Linking a new polygon to an existing unit
-    } else if (drawingPolygon && data.existingUnitId !== 'new') {
-        const unitId = data.existingUnitId;
-        const linkedUnit = units.find(u => u.id === unitId);
-        success = await updateUnitInFirestore(unitId, { polygonPoints: parsedPolygonPoints });
-        if (success) {
-            toast({ title: 'Επιτυχία', description: 'Το πολύγωνο συνδέθηκε με το ακίνητο.' });
-            await logActivity('UPDATE_UNIT_POLYGON', {
-                entityId: unitId,
-                entityType: 'unit',
-                details: `Updated polygon for unit ${unitId}`,
-                projectId: linkedUnit?.projectId,
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            // Fetch floor details
+            const docRef = doc(db, 'floors', floorId);
+            unsubFloor = onSnapshot(docRef, (docSnap) => {
+              if (docSnap.exists()) {
+                setFloor({ id: docSnap.id, ...docSnap.data() } as Floor);
+              } else {
+                toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Ο όροφος δεν βρέθηκε.' });
+                router.push('/buildings');
+              }
+            }, (error) => {
+              console.error("Error fetching floor:", error);
+              toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch floor details.' });
             });
+
+            // Fetch initial units
+            const unitsQuery = query(collection(db, 'units'), where('floorIds', 'array-contains', floorId));
+            unsubUnits = onSnapshot(unitsQuery, (snapshot) => {
+                setInitialUnits(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit)));
+                setIsLoading(false);
+            }, (error) => {
+                console.error('Error fetching units:', error);
+                toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων.' });
+                setIsLoading(false);
+            });
+
+        } catch (error) {
+            console.error("Error setting up listeners", error);
+            setIsLoading(false);
         }
-    
-    // Case 3: Creating a new unit (either from a polygon or from scratch)
-    } else {
-        newUnitId = await createNewUnit(data, parsedPolygonPoints);
-        success = !!newUnitId;
-    }
-
-    setIsSubmitting(false);
-    if (success) {
-      handleDialogOpenChange(false);
-      if (newUnitId) {
-          router.push(`/units/${newUnitId}`);
-      }
-    }
-  };
-
-  const handleDuplicateUnit = async (unitId: string) => {
-    const unitToClone = units.find(u => u.id === unitId);
-    if (!unitToClone) {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το ακίνητο προς αντιγραφή.' });
-        return;
     }
     
-    const { id, originalId, createdAt, identifier, name, ...clonedData } = unitToClone;
+    fetchData();
 
-    const newFormValues: UnitFormValues = {
-        ...clonedData,
-        identifier: `${identifier} (Copy)`,
-        name: `${name} (Copy)`,
-        polygonPoints: JSON.stringify(clonedData.polygonPoints || [], null, 2),
-        area: clonedData.area?.toString(),
-        price: clonedData.price?.toString(),
-        bedrooms: clonedData.bedrooms?.toString(),
-        bathrooms: clonedData.bathrooms?.toString(),
-        amenities: clonedData.amenities?.join(', '),
+    return () => {
+      if (unsubFloor) unsubFloor();
+      if (unsubUnits) unsubUnits();
     };
-
-    const newUnitId = await createNewUnit(newFormValues, clonedData.polygonPoints);
-
-    if (newUnitId) {
-        toast({ title: 'Επιτυχία', description: `Το ακίνητο '${name}' αντιγράφηκε.` });
-    }
-  };
-
-
-  const handleDeleteUnit = async (unitId: string) => {
-    const unitToDelete = units.find(u => u.id === unitId);
-    if (!unitToDelete || !floor) return;
-    try {
-      const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-      if (!buildingDoc.exists()) throw new Error("Parent building not found");
-      const buildingData = buildingDoc.data();
-      const batch = writeBatch(db);
-      batch.delete(doc(db, 'units', unitId));
-      if (buildingData.projectId && buildingData.originalId && unitToDelete.originalId) {
-        const subDocRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units', unitToDelete.originalId);
-        if ((await getDoc(subDocRef)).exists()) batch.delete(subDocRef);
-      }
-      const attachmentsSnapshot = await getDocs(query(collection(db, 'attachments'), where('unitId', '==', unitId)));
-      attachmentsSnapshot.forEach(attachmentDoc => batch.delete(attachmentDoc.ref));
-      await batch.commit();
-      toast({ title: "Επιτυχία", description: "Το ακίνητο διαγράφηκε." });
-      await logActivity('DELETE_UNIT', {
-        entityId: unitId,
-        entityType: 'unit',
-        name: unitToDelete.name,
-        projectId: unitToDelete.projectId,
-      });
-    } catch (error) {
-      console.error('Error deleting unit:', error);
-      toast({ variant: 'destructive', title: 'Σφάλμα Διαγραφής', description: 'Δεν ήταν δυνατή η διαγραφή.' });
-    }
-  };
+  }, [floorId, router, toast]);
   
-  const handleUnitPointsUpdate = useCallback(async (unitId: string, newPoints: { x: number; y: number }[]) => {
-    const unit = units.find(u => u.id === unitId);
-    const success = await updateUnitInFirestore(unitId, { polygonPoints: newPoints });
-    
-    if (success) {
-      toast({ title: "Το σχήμα ενημερώθηκε", description: "Οι νέες συντεταγμένες αποθηκεύτηκαν." });
-      await logActivity('UPDATE_UNIT_POLYGON', {
-        entityId: unitId,
-        entityType: 'unit',
-        details: `Updated polygon for unit ${unitId}`,
-        projectId: unit?.projectId,
-      });
-    }
-  }, [units, toast, floor]);
-
 
   // --- UI Event Handlers ---
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -461,7 +146,6 @@ export function FloorDetailsContainer() {
         entityId: floorId,
         entityType: 'floorplan',
         details: `Uploaded ${selectedFile.name} for floor ${floorId}`,
-        projectId: unit?.projectId,
       });
       setSelectedFile(null);
     } catch (error: any) {
@@ -472,17 +156,11 @@ export function FloorDetailsContainer() {
     }
   };
 
-  const handleUnitSelectForEdit = (unitId: string) => {
+  const handleUnitSelect = (unitId: string) => {
     router.push(`/units/${unitId}`);
   };
 
-  const handleAddNewUnitClick = () => {
-    setEditingUnit(null);
-    setDrawingPolygon(null);
-    setIsDialogOpen(true);
-  };
-  
-  if (isLoadingFloor || !floor) {
+  if (isLoading || !floor) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
   }
 
@@ -497,33 +175,10 @@ export function FloorDetailsContainer() {
         isUploading={isUploading}
       />
       <FloorPlanCard
+        floorId={floor.id}
         floorPlanUrl={floor.floorPlanUrl}
-        units={units}
-        setUnits={setUnits}
-        onUnitClick={handleUnitSelectForEdit}
-        onUnitDelete={handleDeleteUnit}
-        onPolygonDrawn={handlePolygonDrawn}
-        onUnitPointsUpdate={handleUnitPointsUpdate}
-      />
-      <UnitsListTable
-        units={units}
-        isLoading={isLoadingUnits}
-        statusColors={statusColors}
-        onAddNewUnit={handleAddNewUnitClick}
-        onEditUnit={handleUnitSelectForEdit}
-        onDeleteUnit={handleDeleteUnit}
-        onViewUnit={(unitId) => router.push(`/units/${unitId}`)}
-        onDuplicateUnit={handleDuplicateUnit}
-      />
-      <UnitDialogForm
-        open={isDialogOpen}
-        onOpenChange={handleDialogOpenChange}
-        onSubmit={form.handleSubmit(onSubmitUnit)}
-        form={form}
-        isSubmitting={isSubmitting}
-        editingUnit={editingUnit}
-        drawingPolygon={drawingPolygon}
-        availableUnits={unitsWithoutPolygon}
+        initialUnits={initialUnits}
+        onUnitClick={handleUnitSelect}
       />
     </div>
   );

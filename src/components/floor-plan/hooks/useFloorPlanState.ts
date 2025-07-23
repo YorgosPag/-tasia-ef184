@@ -46,8 +46,8 @@ export function useFloorPlanState({ onPolygonDrawn }: useFloorPlanStateProps) {
     const [draggingPoint, setDraggingPoint] = useState<{ unitId: string; pointIndex: number } | null>(null);
     
     const {
-        drawingPolygon,
-        setDrawingPolygon,
+        drawingPolygon: localDrawingPolygon,
+        setDrawingPolygon: setLocalDrawingPolygon,
         handleUndo,
         completeAndResetDrawing,
         cancelDrawing,
@@ -93,7 +93,7 @@ export function useFloorPlanState({ onPolygonDrawn }: useFloorPlanStateProps) {
         setIsEditMode(prev => {
             const isEnteringEditMode = !prev;
             // If exiting edit mode with an unfinished polygon, cancel it.
-            if (!isEnteringEditMode && drawingPolygon.length > 0) {
+            if (!isEnteringEditMode && localDrawingPolygon.length > 0) {
                  cancelDrawing();
             }
             return isEnteringEditMode;
@@ -114,8 +114,8 @@ export function useFloorPlanState({ onPolygonDrawn }: useFloorPlanStateProps) {
         toggleEditMode,
         draggingPoint,
         setDraggingPoint,
-        drawingPolygon,
-        setDrawingPolygon,
+        localDrawingPolygon,
+        setLocalDrawingPolygon,
         handleUndo,
         completeAndResetDrawing,
         isPrecisionZooming,
