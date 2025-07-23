@@ -13,6 +13,7 @@ import {
   Paperclip,
   Construction,
   CalendarDays,
+  ClipboardUser,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -65,6 +66,12 @@ export function AppSidebar() {
                 <SidebarMenuButton href="/projects?view=construction" isActive={isConstructionView}>
                     <Construction />
                     Στάδια Εργασιών
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton href="/assignments" isActive={pathname.startsWith('/assignments')}>
+                    <ClipboardUser />
+                    Οι Αναθέσεις μου
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>

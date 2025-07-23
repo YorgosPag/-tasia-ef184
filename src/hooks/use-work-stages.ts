@@ -16,6 +16,7 @@ import {
   addDoc,
   serverTimestamp,
   arrayUnion,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
@@ -98,11 +99,29 @@ export function useWorkStages(projectId: string, projectTitle: string) {
 
     const handleDeleteWorkStage = async (workStage: WorkStage, parentId?: string) => {
         if (!projectId) return;
+        const batch = writeBatch(db);
         try {
-          const docPath = parentId
-            ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', workStage.id)
-            : doc(db, 'projects', projectId, 'workStages', workStage.id);
-          await deleteDoc(docPath);
+            if (parentId) {
+                // Deleting a substage
+                const subStageSubRef = doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', workStage.id);
+                const subStageTopRef = doc(db, 'workSubstages', workStage.id);
+                batch.delete(subStageSubRef);
+                batch.delete(subStageTopRef);
+            } else {
+                // Deleting a main stage and all its substages
+                const mainStageSubRef = doc(db, 'projects', projectId, 'workStages', workStage.id);
+                const mainStageTopRef = doc(db, 'workStages', workStage.id);
+                batch.delete(mainStageSubRef);
+                batch.delete(mainStageTopRef);
+
+                // Also delete its substages from both locations
+                const subStagesSnapshot = await getDocs(collection(mainStageSubRef, 'workSubstages'));
+                for (const subDoc of subStagesSnapshot.docs) {
+                    batch.delete(subDoc.ref);
+                    batch.delete(doc(db, 'workSubstages', subDoc.id));
+                }
+            }
+          await batch.commit();
           toast({ title: 'Επιτυχία', description: 'Το Στάδιο Εργασίας διαγράφηκε.' });
           await logActivity(parentId ? 'DELETE_WORK_SUBSTAGE' : 'DELETE_WORK_STAGE', {
             entityId: workStage.id,
@@ -119,6 +138,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
     const onSubmitWorkStage = async (data: WorkStageFormValues) => {
         if (!projectId) return;
         setIsSubmitting(true);
+        const batch = writeBatch(db);
 
         const rawData: any = {
             name: data.name, description: data.description || '', status: data.status,
@@ -146,32 +166,28 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             if (isEditing) {
                 const parentId = (editingWorkStage as any).parentId;
                 const workStageId = (editingWorkStage as WorkStage).id;
-                const docRef = parentId
+                const topLevelRef = parentId ? doc(db, 'workSubstages', workStageId) : doc(db, 'workStages', workStageId);
+                const subRef = parentId
                     ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', workStageId)
                     : doc(db, 'projects', projectId, 'workStages', workStageId);
-                await updateDoc(docRef, finalData);
+                
+                batch.update(topLevelRef, { ...finalData, assignedToId: finalData.assignedTo?.[0] || null });
+                batch.update(subRef, finalData);
+                
                 toast({ title: 'Επιτυχία', description: 'Το Στάδιο Εργασίας ενημερώθηκε.' });
-                await logActivity(parentId ? 'UPDATE_WORK_SUBSTAGE' : 'UPDATE_WORK_STAGE', {
-                    entityId: workStageId,
-                    entityType: parentId ? 'workSubstage' : 'workStage',
-                    changes: finalData,
-                    projectId: projectId,
-                });
-
             } else {
                  const parentId = isSubstage ? (editingWorkStage as { parentId: string }).parentId : null;
-                 const collectionPath = parentId
-                    ? collection(db, 'projects', projectId, 'workStages', parentId, 'workSubstages')
-                    : collection(db, 'projects', projectId, 'workStages');
-                const newDocRef = await addDoc(collectionPath, { ...finalData, createdAt: serverTimestamp(), checklist: [] });
-                toast({ title: 'Επιτυχία', description: `Το ${isSubstage ? 'υποστάδιο εργασίας' : 'στάδιο εργασίας'} προστέθηκε.` });
-                await logActivity(isSubstage ? 'CREATE_WORK_SUBSTAGE' : 'CREATE_WORK_STAGE', {
-                    entityId: newDocRef.id,
-                    entityType: isSubstage ? 'workSubstage' : 'workStage',
-                    details: finalData,
-                    projectId: projectId,
-                });
+                 if (isSubstage && !parentId) throw new Error("Parent ID is missing for substage creation.");
+
+                 const subRef = parentId ? doc(collection(db, 'projects', projectId, 'workStages', parentId, 'workSubstages')) : doc(collection(db, 'projects', projectId, 'workStages'));
+                 const topLevelRef = parentId ? doc(db, 'workSubstages', subRef.id) : doc(db, 'workStages', subRef.id);
+
+                 batch.set(subRef, { ...finalData, createdAt: serverTimestamp(), checklist: [], topLevelId: topLevelRef.id });
+                 batch.set(topLevelRef, { ...finalData, projectId, parentStageId: parentId, assignedToId: finalData.assignedTo?.[0] || null, createdAt: serverTimestamp(), originalId: subRef.id });
+                
+                toast({ title: 'Επιτυχία', description: `Το ${isSubstage ? 'υποστάδιο' : 'στάδιο'} προστέθηκε.` });
             }
+            await batch.commit();
             // Manually close dialog from parent by resetting state
             setEditingWorkStage(null); 
             form.reset();
@@ -196,7 +212,12 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         const newChecklist = [...(stage.checklist || [])];
         newChecklist[itemIndex] = { ...newChecklist[itemIndex], completed };
         
-        await updateDoc(docRef, { checklist: newChecklist });
+        const batch = writeBatch(db);
+        batch.update(docRef, { checklist: newChecklist });
+        // Also update top-level doc
+        const topLevelRef = parentId ? doc(db, 'workSubstages', stage.id) : doc(db, 'workStages', stage.id);
+        batch.update(topLevelRef, { checklist: newChecklist });
+        await batch.commit();
     };
 
     const handleAddChecklistItem = async (stage: WorkStage, task: string, isSubstage: boolean) => {
@@ -207,10 +228,15 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         const docRef = parentId
             ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id)
             : doc(db, 'projects', projectId, 'workStages', stage.id);
-            
-        await updateDoc(docRef, {
-            checklist: arrayUnion({ task, completed: false })
-        });
+        
+        const newItem = { task, completed: false };
+        
+        const batch = writeBatch(db);
+        batch.update(docRef, { checklist: arrayUnion(newItem) });
+        const topLevelRef = parentId ? doc(db, 'workSubstages', stage.id) : doc(db, 'workStages', stage.id);
+        batch.update(topLevelRef, { checklist: arrayUnion(newItem) });
+        
+        await batch.commit();
     };
 
     const handleCommentSubmit = useCallback((comment: string, files: FileList | null) => {
