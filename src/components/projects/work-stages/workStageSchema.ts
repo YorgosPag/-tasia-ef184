@@ -8,6 +8,7 @@ export const workStageSchema = z.object({
     status: z.enum(['Εκκρεμεί', 'Σε εξέλιξη', 'Ολοκληρώθηκε', 'Καθυστερεί']),
     assignedTo: z.string().optional(), // Now a string of comma-separated IDs
     relatedEntityIds: z.string().optional(),
+    dependsOn: z.string().optional(), // Comma-separated IDs of stages this stage depends on
     notes: z.string().optional(),
     startDate: z.date().optional().nullable(),
     endDate: z.date().optional().nullable(),
