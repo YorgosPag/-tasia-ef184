@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { doc, getDoc, DocumentData, getDocs, collection, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -94,38 +94,43 @@ export function useBreadcrumbs() {
   const pathname = usePathname();
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
-  const generateBreadcrumbs = useCallback(async () => {
-    const pathSegments = pathname.split('/').filter(Boolean);
-    if (pathSegments.length === 0) {
+  useEffect(() => {
+    const generateBreadcrumbs = async () => {
+      const pathSegments = pathname.split('/').filter(Boolean);
+      
+      if (pathSegments.length === 0) {
         setBreadcrumbs([]);
         return;
-    }
+      }
 
-    const firstSegment = pathSegments[0];
+      const firstSegment = pathSegments[0];
+      const isListPage = pathSegments.length === 1 && staticPathLabels[firstSegment];
 
-    // Handle top-level list pages first (e.g., /projects)
-    if (pathSegments.length === 1 && staticPathLabels[firstSegment]) {
-      setBreadcrumbs([{ 
-        href: `/${firstSegment}`, 
-        label: staticPathLabels[firstSegment],
-        tooltip: `Λίστα: ${staticPathLabels[firstSegment]}`,
-      }]);
-      return;
-    }
+      if (isListPage) {
+        setBreadcrumbs([{ 
+          href: `/${firstSegment}`, 
+          label: staticPathLabels[firstSegment],
+        }]);
+        return;
+      }
+      
+      const isDetailPage = pathSegments.length > 1 && collectionNameMap[firstSegment];
+      if (!isDetailPage) {
+        setBreadcrumbs([]); // Reset for unknown paths
+        return;
+      }
 
-    let tempBreadcrumbs: BreadcrumbItem[] = [];
-    
-    // Handle details pages (e.g., /units/[id])
-    if (pathSegments.length > 1 && collectionNameMap[firstSegment]) {
+      let tempBreadcrumbs: BreadcrumbItem[] = [];
       const collectionSlug = firstSegment;
       const entityId = pathSegments[1];
       const collectionName = collectionNameMap[collectionSlug];
       
       const currentEntity = await getDocFromFirestore(collectionName, entityId);
       if (!currentEntity) {
-        // Fallback for list pages if direct fetch somehow fails or for invalid IDs
         if (staticPathLabels[collectionSlug]) {
-             setBreadcrumbs([{ href: `/${collectionSlug}`, label: staticPathLabels[collectionSlug], tooltip: 'Λίστα' }]);
+             setBreadcrumbs([{ href: `/${collectionSlug}`, label: staticPathLabels[collectionSlug] }]);
+        } else {
+            setBreadcrumbs([]);
         }
         return;
       }
@@ -136,7 +141,6 @@ export function useBreadcrumbs() {
       let floor: DocumentData | null = null;
       let unit: DocumentData | null = null;
       
-      // Build hierarchy upwards from the current entity
       switch(collectionName) {
         case 'units':
             unit = currentEntity;
@@ -168,84 +172,39 @@ export function useBreadcrumbs() {
             break;
       }
 
-      // Assemble breadcrumbs from the fetched hierarchy
       if (company) {
-        tempBreadcrumbs.push({ 
-            href: `/companies`, 
-            label: 'Εταιρείες',
-        });
+        tempBreadcrumbs.push({ href: `/companies`, label: 'Εταιρείες'});
       }
 
       if (project) {
-        tempBreadcrumbs.push({ 
-            href: `/projects`, 
-            label: 'Έργα',
-        });
-        tempBreadcrumbs.push({ 
-            href: `/projects/${project.id}`, 
-            label: project.title,
-            tooltip: project.title,
-        });
+        tempBreadcrumbs.push({ href: `/projects`, label: 'Έργα' });
+        tempBreadcrumbs.push({ href: `/projects/${project.id}`, label: project.title });
       }
       if (building) {
-        tempBreadcrumbs.push({ 
-            href: `/buildings`, 
-            label: 'Κτίρια',
-        });
-        tempBreadcrumbs.push({ 
-            href: `/buildings/${building.id}`, 
-            label: building.address,
-            tooltip: building.address,
-        });
+        tempBreadcrumbs.push({ href: `/buildings`, label: 'Κτίρια' });
+        tempBreadcrumbs.push({ href: `/buildings/${building.id}`, label: building.address });
       }
       if (floor) {
-        let floorLabel = `Όροφος ${floor.level}`;
-        if(unit?.levelSpan) {
-            floorLabel = unit.levelSpan;
-        } else if (unit?.floorIds?.length > 1) {
-            const floorsData = await getDocsFromFirestore('floors', unit.floorIds);
-            floorLabel = "Όροφοι: " + floorsData.map(f => f.level).join(', ');
-        }
-        tempBreadcrumbs.push({ 
-            href: `/floors`, 
-            label: 'Όροφοι',
-        });
-        tempBreadcrumbs.push({ 
-            href: `/floors/${floor.id}`, 
-            label: floorLabel,
-            tooltip: 'Όροφος/οι',
-        });
+        tempBreadcrumbs.push({ href: `/floors`, label: 'Όροφοι' });
+        tempBreadcrumbs.push({ href: `/floors/${floor.id}`, label: `Όροφος ${floor.level}`});
       }
-
       if (unit) {
-        tempBreadcrumbs.push({ 
-            href: `/units`, 
-            label: 'Ακίνητα',
-        });
-        tempBreadcrumbs.push({ 
-            href: `/units/${unit.id}`, 
-            label: unit.name,
-            tooltip: 'Ακίνητο',
-        });
+        tempBreadcrumbs.push({ href: `/units`, label: 'Ακίνητα' });
+        tempBreadcrumbs.push({ href: `/units/${unit.id}`, label: unit.name });
       }
-
-    }
-
-    const uniqueCrumbs = tempBreadcrumbs.reduce((acc, current) => {
+      
+      const uniqueCrumbs = tempBreadcrumbs.reduce((acc, current) => {
         if (!acc.find(item => item.href === current.href)) {
             acc.push(current);
         }
         return acc;
     }, [] as BreadcrumbItem[]);
 
-    setBreadcrumbs(uniqueCrumbs);
+      setBreadcrumbs(uniqueCrumbs);
+    };
 
-  }, [pathname]);
-
-
-  useEffect(() => {
     generateBreadcrumbs();
-  }, [pathname, generateBreadcrumbs]);
+  }, [pathname]);
 
   return breadcrumbs;
 }
