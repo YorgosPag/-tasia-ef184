@@ -46,6 +46,7 @@ export interface WorkStage {
   description?: string;
   status: 'Εκκρεμεί' | 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Καθυστερεί';
   assignedTo?: string[];
+  relatedEntityIds?: string[];
   notes?: string;
   startDate?: Timestamp;
   endDate?: Timestamp;

@@ -21,14 +21,16 @@ import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2 } from 'lucide-react';
+import { PlusCircle, Loader2, MessageSquare, Paperclip } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { logActivity } from '@/lib/logger';
 import { Company } from '@/hooks/use-data-store';
 import { WorkStageFormDialog } from './PhaseFormDialog';
-import { WorkStageTable } from './PhaseTable';
+import { WorkStageAccordion } from './WorkStageAccordion';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '../ui/input';
 import type { Project, WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
 
 // Schema for the work stage form
@@ -38,6 +40,7 @@ const workStageSchema = z.object({
     description: z.string().optional(),
     status: z.enum(['Εκκρεμεί', 'Σε εξέλιξη', 'Ολοκληρώθηκε', 'Καθυστερεί']),
     assignedTo: z.string().optional(), // Now a string of comma-separated IDs
+    relatedEntityIds: z.string().optional(),
     notes: z.string().optional(),
     startDate: z.date().optional().nullable(),
     endDate: z.date().optional().nullable(),
@@ -67,7 +70,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         defaultValues: {
             id: undefined, name: '', status: 'Εκκρεμεί', assignedTo: '', notes: '',
             startDate: null, endDate: null, deadline: null,
-            documents: '', description: '',
+            documents: '', description: '', relatedEntityIds: '',
         }
     });
 
@@ -113,6 +116,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
             notes: workStage.notes || '',
             assignedTo: workStage.assignedTo?.join(', ') || '',
             documents: workStage.documents?.join(', ') || '',
+            relatedEntityIds: (workStage as any).relatedEntityIds?.join(', ') || '',
             startDate: workStage.startDate?.toDate() || null,
             endDate: workStage.endDate?.toDate() || null,
             deadline: workStage.deadline?.toDate() || null,
@@ -152,12 +156,13 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         const rawData: any = {
             name: data.name, description: data.description || '', status: data.status,
             assignedTo: data.assignedTo ? data.assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [],
+            relatedEntityIds: data.relatedEntityIds ? data.relatedEntityIds.split(',').map(s => s.trim()).filter(Boolean) : [],
             notes: data.notes || '', startDate: data.startDate,
             endDate: data.endDate, deadline: data.deadline,
             documents: data.documents ? data.documents.split(',').map(s => s.trim()).filter(Boolean) : [],
         };
         
-        const finalData = Object.fromEntries(Object.entries(rawData).filter(([_, v]) => v !== undefined && v !== null));
+        const finalData = Object.fromEntries(Object.entries(rawData).filter(([_, v]) => v !== undefined && v !== null && v !== ''));
         
         if (finalData.startDate) finalData.startDate = Timestamp.fromDate(finalData.startDate as Date);
         if (finalData.endDate) finalData.endDate = Timestamp.fromDate(finalData.endDate as Date);
@@ -216,7 +221,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                 {isLoadingWorkStages ? (
                     <div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
                 ) : workStages.length > 0 ? (
-                    <WorkStageTable
+                    <WorkStageAccordion
                         workStages={workStages}
                         companies={companies}
                         onAddWorkSubstage={handleAddWorkSubstage}
@@ -227,6 +232,19 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                     <p className="text-center text-muted-foreground py-8">Δεν υπάρχουν καταχωρημένα στάδια εργασίας για αυτό το έργο.</p>
                 )}
             </CardContent>
+            <CardFooter>
+                 <div className="w-full space-y-2">
+                    <h4 className="text-sm font-medium">Προσθήκη Σχολίου</h4>
+                     <Textarea placeholder="Γράψτε το σχόλιό σας..." className="w-full"/>
+                     <div className="flex justify-between items-center">
+                        <Input type="file" className="max-w-xs text-xs" multiple/>
+                         <Button size="sm">
+                             <MessageSquare className="mr-2"/>
+                             Υποβολή
+                         </Button>
+                     </div>
+                 </div>
+            </CardFooter>
             <WorkStageFormDialog 
                 open={isWorkStageDialogOpen}
                 onOpenChange={handleWorkStageDialogOpenChange}
