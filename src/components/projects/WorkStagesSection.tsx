@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -10,6 +11,7 @@ import { WorkStageFormDialog } from './work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from './work-stages/WorkStageAccordion';
 import type { Project, WorkStage } from '@/app/projects/[id]/page';
 import { WorkStagesEmptyState } from './work-stages/WorkStagesEmptyState';
+import { useAuth } from '@/hooks/use-auth';
 
 interface WorkStagesSectionProps {
     project: Project;
@@ -18,6 +20,7 @@ interface WorkStagesSectionProps {
 }
 
 export function WorkStagesSection({ project, companies, isLoadingCompanies }: WorkStagesSectionProps) {
+    const { isEditor } = useAuth();
     const {
         workStages,
         isLoadingWorkStages,
@@ -72,7 +75,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                          <Button size="sm" variant="outline" onClick={handleExport} disabled={isLoadingWorkStages || workStages.length === 0}>
                             <Download className="mr-2"/>Εξαγωγή Αναφοράς
                         </Button>
-                        <Button size="sm" onClick={handleAddNewStage}><PlusCircle className="mr-2"/>Νέο Στάδιο Εργασίας</Button>
+                        {isEditor && <Button size="sm" onClick={handleAddNewStage}><PlusCircle className="mr-2"/>Νέο Στάδιο Εργασίας</Button>}
                     </div>
                 </div>
             </CardHeader>
@@ -97,7 +100,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                 )}
             </CardContent>
             
-            <WorkStageFormDialog 
+            {isEditor && <WorkStageFormDialog 
                 open={isWorkStageDialogOpen}
                 onOpenChange={closeDialog}
                 form={form}
@@ -106,7 +109,9 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                 editingWorkStage={editingWorkStage}
                 companies={companies}
                 isLoadingCompanies={isLoadingCompanies}
-            />
+            />}
         </Card>
     );
 }
+
+    
