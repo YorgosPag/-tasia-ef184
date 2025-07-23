@@ -35,12 +35,13 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2, Link as LinkIcon } from 'lucide-react';
+import { PlusCircle, Loader2, Link as LinkIcon, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDataStore, Company } from '@/hooks/use-data-store';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { exportToJson } from '@/lib/exporter';
 
 
 const companySchema = z.object({
@@ -111,134 +112,144 @@ export default function CompaniesPage() {
     }
   };
 
+  const handleExport = () => {
+    exportToJson(companies, 'companies');
+  };
+
   return (
     <div className="flex flex-col gap-8">
        <div className="flex items-center justify-between">
          <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Εταιρείες
         </h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" />
-              Νέα Εταιρεία
+        <div className="flex items-center gap-2">
+            <Button onClick={handleExport} variant="outline" disabled={isLoading || companies.length === 0}>
+                <Download className="mr-2"/>
+                Εξαγωγή σε JSON
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Δημιουργία Νέας Εταιρείας</DialogTitle>
-              <DialogDescription>
-                Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε μια νέα εταιρεία.
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-                 <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Όνομα Εταιρείας</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Παπαδόπουλος Α.Ε." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="logoUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL Λογοτύπου</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/logo.png" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Website</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="contactInfo.address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Διεύθυνση</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Αριστοτέλους 1, Αθήνα" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="contactInfo.afm"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ΑΦΜ</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. 123456789" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="contactInfo.phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Τηλέφωνο</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. 2101234567" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="contactInfo.email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. contact@papadopoulos.gr" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmitting}>
-                      Ακύρωση
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                <PlusCircle className="mr-2" />
+                Νέα Εταιρεία
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                <DialogTitle>Δημιουργία Νέας Εταιρείας</DialogTitle>
+                <DialogDescription>
+                    Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε μια νέα εταιρεία.
+                </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
+                    <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Όνομα Εταιρείας</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. Παπαδόπουλος Α.Ε." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="logoUrl"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>URL Λογοτύπου</FormLabel>
+                        <FormControl>
+                            <Input placeholder="https://example.com/logo.png" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="website"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Website</FormLabel>
+                        <FormControl>
+                            <Input placeholder="https://example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="contactInfo.address"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Διεύθυνση</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. Αριστοτέλους 1, Αθήνα" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="contactInfo.afm"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>ΑΦΜ</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. 123456789" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="contactInfo.phone"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Τηλέφωνο</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. 2101234567" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="contactInfo.email"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. contact@papadopoulos.gr" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline" disabled={isSubmitting}>
+                        Ακύρωση
+                        </Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isSubmitting || isLoading}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Δημιουργία
                     </Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={isSubmitting || isLoading}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Δημιουργία
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                    </DialogFooter>
+                </form>
+                </Form>
+            </DialogContent>
+            </Dialog>
+        </div>
       </div>
 
       <Card>

@@ -44,11 +44,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2 } from 'lucide-react';
+import { PlusCircle, Loader2, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { useDataStore } from '@/hooks/use-data-store';
+import { exportToJson } from '@/lib/exporter';
 
 
 const buildingSchema = z.object({
@@ -196,6 +197,14 @@ export default function BuildingsPage() {
     return projects.find(p => p.id === projectId)?.title || projectId;
   };
 
+  const handleExport = () => {
+    const dataToExport = buildings.map(b => ({
+      ...b,
+      projectTitle: getProjectTitle(b.projectId),
+      createdAt: formatDate(b.createdAt),
+    }));
+    exportToJson(dataToExport, 'buildings');
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -203,120 +212,126 @@ export default function BuildingsPage() {
          <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Κτίρια
         </h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" />
-              Νέο Κτίριο
+        <div className="flex items-center gap-2">
+            <Button onClick={handleExport} variant="outline" disabled={isLoading || buildings.length === 0}>
+                <Download className="mr-2"/>
+                Εξαγωγή σε JSON
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Δημιουργία Νέου Κτιρίου</DialogTitle>
-              <DialogDescription>
-                Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε ένα νέο κτίριο.
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-                 <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Διεύθυνση</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Αριστοτέλους 1, Αθήνα" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Τύπος</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Πολυκατοικία" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="photoUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/photo.jpg" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Σημειώσεις για το κτίριο..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="projectId"
-                  render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Αντιστοίχιση σε Έργο (Προαιρετικό)</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Επιλέξτε έργο..." />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="">
-                                    <em>Κανένα</em>
-                                </SelectItem>
-                                {isLoadingProjects ? (
-                                    <div className="flex items-center justify-center p-2">
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    </div>
-                                ) : (
-                                    projects.map(project => (
-                                        <SelectItem key={project.id} value={project.id}>{project.title}</SelectItem>
-                                    ))
-                                )}
-                            </SelectContent>
-                        </Select>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                <PlusCircle className="mr-2" />
+                Νέο Κτίριο
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                <DialogTitle>Δημιουργία Νέου Κτιρίου</DialogTitle>
+                <DialogDescription>
+                    Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε ένα νέο κτίριο.
+                </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
+                    <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Διεύθυνση</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. Αριστοτέλους 1, Αθήνα" {...field} />
+                        </FormControl>
                         <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmitting}>
-                      Ακύρωση
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Τύπος</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. Πολυκατοικία" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="photoUrl"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="https://example.com/photo.jpg" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
+                        <FormControl>
+                            <Textarea placeholder="Σημειώσεις για το κτίριο..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="projectId"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Αντιστοίχιση σε Έργο (Προαιρετικό)</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Επιλέξτε έργο..." />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="">
+                                        <em>Κανένα</em>
+                                    </SelectItem>
+                                    {isLoadingProjects ? (
+                                        <div className="flex items-center justify-center p-2">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        </div>
+                                    ) : (
+                                        projects.map(project => (
+                                            <SelectItem key={project.id} value={project.id}>{project.title}</SelectItem>
+                                        ))
+                                    )}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline" disabled={isSubmitting}>
+                        Ακύρωση
+                        </Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Δημιουργία
                     </Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Δημιουργία
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                    </DialogFooter>
+                </form>
+                </Form>
+            </DialogContent>
+            </Dialog>
+        </div>
       </div>
 
       <Card>
@@ -357,5 +372,3 @@ export default function BuildingsPage() {
     </div>
   );
 }
-
-    

@@ -13,12 +13,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
+import { exportToJson } from '@/lib/exporter';
 
 interface Unit {
   id: string;
@@ -88,6 +90,13 @@ export default function UnitsPage() {
     });
   }, [units, searchQuery]);
 
+  const handleExport = () => {
+    const dataToExport = filteredUnits.map(u => ({
+      ...u,
+      createdAt: formatDate(u.createdAt),
+    }));
+    exportToJson(dataToExport, 'units');
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -95,6 +104,10 @@ export default function UnitsPage() {
          <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Ακίνητα (Units)
         </h1>
+        <Button onClick={handleExport} variant="outline" disabled={isLoading || filteredUnits.length === 0}>
+            <Download className="mr-2"/>
+            Εξαγωγή σε JSON
+        </Button>
       </div>
 
        <div className="relative">
