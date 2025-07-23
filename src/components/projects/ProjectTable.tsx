@@ -29,10 +29,58 @@ import { Company } from '@/hooks/use-data-store';
 import {
   formatDate,
   getCompanyName,
-  getPhaseStatusBadge,
 } from '@/lib/project-helpers';
 import type { ProjectWithPhaseSummary } from '@/hooks/use-projects-page';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Timestamp } from 'firebase/firestore';
+
+
+interface PhaseStatusBadgeProps {
+    status: 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Εκκρεμεί' | 'Καθυστερεί' | undefined;
+    currentPhaseName: string | undefined;
+    deadline: Timestamp | Date;
+}
+
+function PhaseStatusBadge({ status, currentPhaseName, deadline }: PhaseStatusBadgeProps) {
+    let variant: "default" | "secondary" | "destructive" | "outline" = 'outline';
+    let label = 'Προπώληση';
+
+    switch(status) {
+        case 'Σε εξέλιξη':
+            variant = 'secondary';
+            label = 'Σε κατασκευή';
+            break;
+        case 'Καθυστερεί':
+            variant = 'destructive';
+            label = 'Σε καθυστέρηση';
+            break;
+        case 'Ολοκληρώθηκε':
+            variant = 'default';
+            label = 'Ολοκληρωμένο';
+            break;
+        case 'Εκκρεμεί':
+        default:
+            variant = 'outline';
+            label = 'Προπώληση';
+            break;
+    }
+    
+    const summary = `Τρέχουσα φάση: ${currentPhaseName || 'N/A'}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline)}`;
+
+    return (
+        <div className="flex items-center gap-2">
+            <Badge variant={variant}>{label}</Badge>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Info className="h-4 w-4 text-muted-foreground cursor-help"/>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{summary}</p>
+                </TooltipContent>
+            </Tooltip>
+        </div>
+    )
+}
 
 interface ProjectTableProps {
   projects: ProjectWithPhaseSummary[];
@@ -89,7 +137,11 @@ export function ProjectTable({
                 </TableCell>
                 <TableCell className="text-muted-foreground">{project.location}</TableCell>
                 <TableCell>
-                    {getPhaseStatusBadge(project.phaseSummary?.overallStatus, project.phaseSummary?.currentPhaseName, project.deadline)}
+                   <PhaseStatusBadge
+                        status={project.phaseSummary?.overallStatus}
+                        currentPhaseName={project.phaseSummary?.currentPhaseName}
+                        deadline={project.deadline}
+                    />
                 </TableCell>
                 {isEditor && (
                     <TableCell className="text-right">
