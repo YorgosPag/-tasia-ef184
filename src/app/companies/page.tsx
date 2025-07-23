@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,7 +38,7 @@ import { z } from 'zod';
 import { PlusCircle, Loader2, Link as LinkIcon, Download, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDataStore, Company } from '@/hooks/use-data-store';
+import { Company, useDataStore } from '@/hooks/use-data-store';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { exportToJson } from '@/lib/exporter';
@@ -59,7 +59,9 @@ const companySchema = z.object({
 type CompanyFormValues = z.infer<typeof companySchema>;
 
 export default function CompaniesPage() {
-  const { companies, isLoading, addCompany } = useDataStore();
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const { addCompany } = useDataStore();
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,6 +81,19 @@ export default function CompaniesPage() {
       }
     },
   });
+  
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'companies'), (snapshot) => {
+        const companiesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company));
+        setCompanies(companiesData);
+        setIsLoading(false);
+    }, (error) => {
+        console.error("Failed to fetch companies:", error);
+        toast({ variant: 'destructive', title: 'Error fetching companies' });
+        setIsLoading(false);
+    });
+    return () => unsubscribe();
+  }, [toast]);
 
   // Effect to reset form when dialog is closed
   useEffect(() => {
@@ -353,5 +368,3 @@ export default function CompaniesPage() {
     </div>
   );
 }
-
-    

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { Timestamp, doc, updateDoc, deleteDoc, onSnapshot, collection } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
@@ -64,7 +64,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
-import { useDataStore, Project } from '@/hooks/use-data-store';
+import { useDataStore, Project, Company } from '@/hooks/use-data-store';
 import { logActivity } from '@/lib/logger';
 import { exportToJson } from '@/lib/exporter';
 
@@ -86,7 +86,10 @@ const projectSchema = z.object({
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 export default function ProjectsPage() {
-  const { projects, companies, isLoading, addProject, isEditor } = useDataStore();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const { addProject, isEditor } = useDataStore();
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -107,6 +110,22 @@ export default function ProjectsPage() {
       tags: '',
     },
   });
+
+  useEffect(() => {
+    setIsLoading(true);
+    const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
+        setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
+        setIsLoading(false);
+    });
+    const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
+        setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
+    });
+
+    return () => {
+        unsubProjects();
+        unsubCompanies();
+    }
+  }, []);
 
   const handleDialogOpenChange = (open: boolean) => {
     setIsDialogOpen(open);
@@ -583,5 +602,3 @@ export default function ProjectsPage() {
     </div>
   );
 }
-
-    
