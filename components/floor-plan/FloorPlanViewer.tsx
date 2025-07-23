@@ -19,6 +19,7 @@ export interface Unit {
 interface FloorPlanViewerProps {
   pdfUrl: string;
   units: Unit[];
+  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   onUnitClick: (unitId: string) => void;
   onUnitDelete: (unitId: string) => void;
   onPolygonDrawn: (points: { x: number; y: number }[]) => void;
@@ -29,6 +30,7 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
   const {
     pdfUrl,
     units,
+    setUnits,
     onPolygonDrawn,
     onUnitPointsUpdate,
     onUnitClick,
@@ -44,8 +46,6 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
     setIsLocked,
     isEditMode,
     toggleEditMode,
-    localUnits,
-    setLocalUnits,
     draggingPoint,
     setDraggingPoint,
     drawingPolygon,
@@ -56,13 +56,14 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
     lastMouseEvent,
     zoom,
     pdfContainerRef,
-  } = useFloorPlanState({ units, onPolygonDrawn });
+  } = useFloorPlanState({ onPolygonDrawn });
 
   return (
     <div className="flex flex-col items-center gap-2">
       <PdfCanvas
         pdfUrl={pdfUrl}
-        units={localUnits}
+        units={units}
+        setUnits={setUnits}
         statusVisibility={statusVisibility}
         isLocked={isLocked}
         isEditMode={isEditMode}
@@ -76,7 +77,6 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
         setPageDimensions={setPageDimensions}
         setDrawingPolygon={setDrawingPolygon}
         setDraggingPoint={setDraggingPoint}
-        setLocalUnits={setLocalUnits}
         onUnitPointsUpdate={onUnitPointsUpdate}
         onUnitClick={onUnitClick}
         onUnitDelete={onUnitDelete}
