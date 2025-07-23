@@ -160,9 +160,9 @@ export function useFloorPlanDataManager({ floorId, initialUnits }: UseFloorPlanD
       createdAt: serverTimestamp(),
     };
     
-    if (buildingData.projectId && buildingData.originalId) {
+    if (buildingData.projectId && buildingData.originalId && floorData.originalId) {
         const subCollectionUnitRef = doc(collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floorData.originalId, 'units'));
-        batch.set(subCollectionUnitRef, finalUnitData);
+        batch.set(subCollectionUnitRef, { ...finalUnitData, topLevelId: topLevelUnitRef.id });
         batch.set(topLevelUnitRef, { ...finalUnitData, originalId: subCollectionUnitRef.id });
     } else {
         batch.set(topLevelUnitRef, { ...finalUnitData, originalId: topLevelUnitRef.id });
@@ -210,7 +210,7 @@ export function useFloorPlanDataManager({ floorId, initialUnits }: UseFloorPlanD
     const floorData = floorDoc.data();
     if(floorData?.buildingId) {
         const buildingDoc = await getDoc(doc(db, 'buildings', floorData.buildingId));
-        if(buildingDoc.exists() && buildingDoc.data().projectId) {
+        if(buildingDoc.exists() && buildingDoc.data().projectId && floorData.originalId) {
             const subRef = doc(db, 'projects', buildingDoc.data().projectId, 'buildings', buildingDoc.data().originalId, 'floors', floorData.originalId, 'units', unitToDelete.originalId);
             if((await getDoc(subRef)).exists()) batch.delete(subRef);
         }
@@ -228,9 +228,9 @@ export function useFloorPlanDataManager({ floorId, initialUnits }: UseFloorPlanD
     const unitToClone = units.find(u => u.id === unitId);
     if (!unitToClone) return;
 
-    const { id, originalId, createdAt, identifier, name, ...clonedData } = unitToClone;
+    const { id, originalId, createdAt, identifier, name, ...clonedData } = unitToClone as any;
     const newFormValues = {
-        ...(clonedData as any),
+        ...clonedData,
         identifier: `${identifier} (Copy)`, name: `${name} (Copy)`,
         polygonPoints: JSON.stringify(clonedData.polygonPoints || [], null, 2),
     };
@@ -243,12 +243,9 @@ export function useFloorPlanDataManager({ floorId, initialUnits }: UseFloorPlanD
     const unit = units.find(u => u.id === unitId);
     if (!unit || !unit.polygonPoints) return;
     
-    const updatedPoints = [...unit.polygonPoints];
-    updatedPoints[newPoints[0].pointIndex] = { x: newPoints[0].x, y: newPoints[0].y };
-
-    setUnits(prev => prev.map(u => u.id === unitId ? { ...u, polygonPoints: updatedPoints } : u));
+    setUnits(prev => prev.map(u => u.id === unitId ? { ...u, polygonPoints: newPoints } : u));
     
-    const success = await updateUnitInFirestore(unitId, { polygonPoints: updatedPoints });
+    const success = await updateUnitInFirestore(unitId, { polygonPoints: newPoints });
     if(success) toast({ title: "Το σχήμα ενημερώθηκε", description: "Οι νέες συντεταγμένες αποθηκεύτηκαν." });
   }, [units, toast]);
 
