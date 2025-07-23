@@ -1,4 +1,5 @@
 
+
 # Τεχνική Τεκμηρίωση Εφαρμογής TASIA
 
 ## 1. Επισκόπηση Εφαρμογής
@@ -38,19 +39,14 @@
 
 **Company** -> **Project** -> **Building** -> **Floor** -> **Unit** -> **Attachment**
 
-Και παράλληλα: **Project** -> **WorkStage** -> **WorkSubstage**
-
 ### Το "Πάντρεμα" των Δεδομένων στο Firestore:
 
 Για να επιτύχουμε γρήγορες αναγνώσεις τόσο σε επίπεδο έργου (π.χ. "δείξε μου όλα τα κτίρια αυτού του έργου") όσο και σε συνολικό επίπεδο (π.χ. "δείξε μου όλα τα κτίρια ανεξαρτήτως έργου"), χρησιμοποιούμε μια **dual-write strategy**:
 
 1.  **Nested Subcollections**: Τα δεδομένα αποθηκεύονται στην κανονική τους ιεραρχία. Για παράδειγμα, ένα `building` αποθηκεύεται ως έγγραφο μέσα στη subcollection `buildings` ενός συγκεκριμένου `project`.
     - `projects/{projectId}/buildings/{buildingId}/floors/{floorId}/units/{unitId}`
-    - `projects/{projectId}/workStages/{workStageId}/workSubstages/{workSubstageId}`
 
 2.  **Top-Level Collections (Denormalization)**: Ταυτόχρονα, κάθε οντότητα (π.χ. `building`, `floor`, `unit`) αποθηκεύεται και σε μια "επίπεδη" (flat) top-level collection.
-    - `/companies/{companyId}`
-    - `/projects/{projectId}`
     - `/buildings/{buildingId}`
     - `/floors/{floorId}`
     - `/units/{unitId}`
@@ -70,103 +66,7 @@
 
 ---
 
-## 4. Schemas Οντοτήτων στο Firestore
-
-### Collection: `companies`
-- **name**: `string` - Επωνυμία εταιρείας.
-- **contactInfo**: `map` - Object με `email`, `phone`, `address`, `afm`.
-- **logoUrl**: `string` (optional) - URL του λογότυπου.
-- **website**: `string` (optional) - URL της ιστοσελίδας.
-- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
-
-### Collection: `projects`
-- **title**: `string` - Τίτλος έργου.
-- **companyId**: `string` - Αναφορά στην `companies` collection.
-- **location**: `string` - Τοποθεσία του έργου.
-- **description**: `string` (optional) - Περιγραφή του έργου.
-- **deadline**: `timestamp` - Προθεσμία ολοκλήρωσης.
-- **status**: `string` - (`Ενεργό`, `Σε εξέλιξη`, `Ολοκληρωμένο`).
-- **photoUrl**: `string` (optional) - URL της κύριας φωτογραφίας/μακέτας.
-- **tags**: `array` of `string` (optional) - Κατηγοριοποίηση (π.χ. "residential", "commercial").
-- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
-
-#### Subcollection: `projects/{projectId}/workStages`
-- **name**: `string` - (π.χ. “Εκσκαφές”, “Τοιχοποιία”).
-- **description**: `string` (optional) - Περιγραφή του σταδίου.
-- **status**: `string` - (`Εκκρεμεί`, `Σε εξέλιξη`, `Ολοκληρώθηκε`, `Καθυστερεί`).
-- **startDate**: `timestamp` (optional) - Ημερομηνία έναρξης.
-- **endDate**: `timestamp` (optional) - Ημερομηνία λήξης.
-- **deadline**: `timestamp` (optional) - Προθεσμία.
-- **assignedTo**: `array` of `string` (optional) - Λίστα με IDs επαφών/συνεργείων/εταιρειών.
-- **documents**: `array` of `string` (optional) - Λίστα με URLs σχετικών εγγράφων.
-- **notes**: `string` (optional) - Σημειώσεις.
-- **relatedEntityIds**: `array` of `string` (optional) - Λίστα με IDs από κτίρια, ορόφους, ακίνητα.
-- **checklist**: `array` of `map` (optional) - Λίστα αντικειμένων με `{ task: string, completed: boolean }`.
-- **budgetedCost**: `number` (optional) - Προϋπολογισμένο κόστος.
-- **actualCost**: `number` (optional) - Πραγματικό κόστος.
-- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
-
-##### Subcollection: `projects/{projectId}/workStages/{workStageId}/workSubstages`
-- **Schema**: Το ίδιο με τη `workStages` collection.
-
-### Collection: `buildings`
-- **address**: `string` - Διεύθυνση.
-- **type**: `string` - Τύπος κτιρίου.
-- **description**: `string` (optional) - Περιγραφή / Σημειώσεις.
-- **photoUrl**: `string` (optional) - URL φωτογραφίας.
-- **floorsCount**: `number` (optional) - Συνολικό πλήθος ορόφων.
-- **constructionYear**: `number` (optional) - Έτος κατασκευής.
-- **tags**: `array` of `string` (optional) - Ειδικά χαρακτηριστικά (π.χ. "νεόδμητο", "πρόσοψη").
-- **projectId**: `string` - Αναφορά στην `projects` collection.
-- **originalId**: `string` - Το ID του εγγράφου στη subcollection.
-- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
-
-### Collection: `floors`
-- **level**: `string` - Επίπεδο ορόφου (π.χ. "1", "Ισόγειο").
-- **description**: `string` (optional) - Περιγραφή.
-- **floorPlanUrl**: `string` (optional) - URL του PDF της κάτοψης.
-- **buildingId**: `string` - Αναφορά στην `buildings` collection.
-- **originalId**: `string` - Το ID του εγγράφου στη subcollection.
-- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
-
-### Collection: `units`
-- **identifier**: `string` - Κωδικός ακινήτου (π.χ. "Α1").
-- **name**: `string` - Όνομα/Περιγραφή ακινήτου.
-- **type**: `string` (optional) - Τύπος (π.χ. "Δυάρι").
-- **status**: `string` - (`Διαθέσιμο`, `Κρατημένο`, `Πωλημένο`, `Οικοπεδούχος`).
-- **area**: `number` (optional) - Εμβαδόν σε τ.μ.
-- **price**: `number` (optional) - Τιμή πώλησης/ενοικίασης.
-- **bedrooms**: `number` (optional) - Αριθμός υπνοδωματίων.
-- **bathrooms**: `number` (optional) - Αριθμός λουτρών/WC.
-- **orientation**: `string` (optional) - Προσανατολισμός.
-- **amenities**: `array` of `string` (optional) - Λίστα με παροχές.
-- **polygonPoints**: `array` of `map` - Οι συντεταγμένες `{x, y}` του πολυγώνου.
-- **levelSpan**: `string` (optional) - Περιγραφικό string για μονάδες πολλαπλών ορόφων (π.χ. "Ισόγειο-1ος").
-- **originalId**: `string` - Το ID του εγγράφου στη subcollection.
-- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
-- **Σημείωση για Denormalization**: Για λόγους απόδοσης, κάθε `unit` περιέχει και τα IDs των γονικών του οντοτήτων:
-  - **floorIds**: `array` of `string` - Αναφορά στην `floors` collection. Υποστηρίζει πολλαπλούς ορόφους (π.χ. για μεζονέτες).
-  - **buildingId**: `string` - Αναφορά στην `buildings` collection.
-  - **projectId**: `string` (optional) - Αναφορά στην `projects` collection.
-  - **companyId**: `string` (optional) - Αναφορά στην `companies` collection.
-  - Αυτή η τεχνική αποτρέπει τα πολλαπλά, διαδοχικά queries (deep lookups) κατά την κατασκευή των breadcrumbs ή σε άλλες λειτουργίες που απαιτούν την πλήρη ιεραρχία, βελτιώνοντας σημαντικά την ταχύτητα της εφαρμογής.
-
-### Collection: `attachments`
-- **type**: `string` - (`parking` ή `storage`).
-- **details**: `string` (optional) - Λεπτομέρειες (π.χ. "P-1").
-- **area**: `number` (optional) - Εμβαδόν σε τ.μ.
-- **price**: `number` (optional) - Τιμή.
-- **photoUrl**: `string` (optional) - URL φωτογραφίας.
-- **unitId**: `string` - Αναφορά στην `units` collection.
-- **sharePercentage**: `number` (optional) - Το ποσοστό συνιδιοκτησίας (π.χ. 2.5 για 2.5%).
-- **isBundle**: `boolean` (optional) - True αν το παρακολούθημα "ανήκει πακέτο" στο unit.
-- **bundleUnitId**: `string` (optional) - Το ID του unit με το οποίο είναι "δεμένο".
-- **isStandalone**: `boolean` (optional) - True αν μπορεί να πωληθεί/μεταβιβαστεί ξεχωριστά.
-- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
-
----
-
-## 5. Λειτουργικότητα του Floor Plan Viewer
+## 4. Λειτουργικότητα του Floor Plan Viewer
 
 Ο viewer είναι το πιο σύνθετο κομμάτι της εφαρμογής.
 
@@ -186,6 +86,3 @@
 - **Layers & Filtering**: Οι χρήστες μπορούν να φιλτράρουν τα ακίνητα (layers) βάσει του status τους. Το UI επιτρέπει την αλλαγή του χρώματος κάθε layer, και η αλλαγή αυτή αντικατοπτρίζεται δυναμικά σε όλη την εφαρμογή (πολύγωνα, checkboxes, badges).
 
 Αυτή η τεκμηρίωση παρέχει μια σφαιρική εικόνα της εφαρμογής και θα πρέπει να είναι αρκετή για να βοηθήσει οποιονδήποτε νέο developer να κατανοήσει τη δομή και τη ροή της.
-
-
-    

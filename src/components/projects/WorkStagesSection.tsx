@@ -9,7 +9,6 @@ import { Company } from '@/hooks/use-data-store';
 import { useWorkStages } from '@/hooks/use-work-stages';
 import { WorkStageFormDialog } from './work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from './work-stages/WorkStageAccordion';
-import { WorkStageCommentForm } from './work-stages/WorkStageCommentForm';
 import type { Project, WorkStage } from '@/app/projects/[id]/page';
 import { WorkStagesEmptyState } from './work-stages/WorkStagesEmptyState';
 
@@ -33,7 +32,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         handleChecklistItemToggle,
         handleAddChecklistItem,
         setEditingWorkStage,
-        handleCommentSubmit,
+        handlePhotoUpload,
         handleExport,
     } = useWorkStages(project.id, project.title);
 
@@ -88,14 +87,13 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                         onDeleteWorkStage={handleDeleteWorkStage}
                         onChecklistItemToggle={handleChecklistItemToggle}
                         onAddChecklistItem={handleAddChecklistItem}
+                        onPhotoUpload={handlePhotoUpload}
                     />
                 ) : (
                     <WorkStagesEmptyState onAddNewStage={handleAddNewStage}/>
                 )}
             </CardContent>
             
-            <WorkStageCommentForm onSubmit={handleCommentSubmit}/>
-
             <WorkStageFormDialog 
                 open={isWorkStageDialogOpen}
                 onOpenChange={closeDialog}
