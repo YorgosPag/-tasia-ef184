@@ -38,7 +38,7 @@
 
 **Company** -> **Project** -> **Building** -> **Floor** -> **Unit** -> **Attachment**
 
-Και παράλληλα: **Project** -> **Phase**
+Και παράλληλα: **Project** -> **Phase** -> **Subphase**
 
 ### Το "Πάντρεμα" των Δεδομένων στο Firestore:
 
@@ -46,7 +46,7 @@
 
 1.  **Nested Subcollections**: Τα δεδομένα αποθηκεύονται στην κανονική τους ιεραρχία. Για παράδειγμα, ένα `building` αποθηκεύεται ως έγγραφο μέσα στη subcollection `buildings` ενός συγκεκριμένου `project`.
     - `projects/{projectId}/buildings/{buildingId}/floors/{floorId}/units/{unitId}`
-    - `projects/{projectId}/phases/{phaseId}`
+    - `projects/{projectId}/phases/{phaseId}/subphases/{subphaseId}`
 
 2.  **Top-Level Collections (Denormalization)**: Ταυτόχρονα, κάθε οντότητα (π.χ. `building`, `floor`, `unit`) αποθηκεύεται και σε μια "επίπεδη" (flat) top-level collection.
     - `/companies/{companyId}`
@@ -101,6 +101,9 @@
 - **documents**: `array` of `string` (optional) - Λίστα με URLs σχετικών εγγράφων.
 - **notes**: `string` (optional) - Σημειώσεις.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
+
+##### Subcollection: `projects/{projectId}/phases/{phaseId}/subphases`
+- **Schema**: Το ίδιο με τη `phases` collection.
 
 ### Collection: `buildings`
 - **address**: `string` - Διεύθυνση.
