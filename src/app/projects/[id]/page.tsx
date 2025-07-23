@@ -20,6 +20,7 @@ import { ProjectActivityTimeline } from '@/components/projects/ProjectActivityTi
 import { BuildingsSection } from '@/components/projects/BuildingsSection';
 import { MeetingsSection } from '@/components/projects/MeetingsSection';
 import { ContractsSection } from '@/components/projects/ContractsSection';
+import { MaterialsSection } from '@/components/projects/MaterialsSection';
 
 
 // --- TYPES ---
@@ -156,9 +157,10 @@ export default function ProjectDetailsPage() {
       <ProjectHeader project={project} />
       
       <Tabs defaultValue={view} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="index">Ευρετήριο</TabsTrigger>
           <TabsTrigger value="construction">Κατασκευή</TabsTrigger>
+          <TabsTrigger value="materials">Υλικά</TabsTrigger>
           <TabsTrigger value="contracts">Συμβόλαια</TabsTrigger>
           <TabsTrigger value="meetings">Συσκέψεις</TabsTrigger>
           <TabsTrigger value="history">Ιστορικό</TabsTrigger>
@@ -172,6 +174,9 @@ export default function ProjectDetailsPage() {
               companies={companies}
               isLoadingCompanies={isLoadingCompanies}
             />
+        </TabsContent>
+         <TabsContent value="materials" className="mt-4">
+           <MaterialsSection project={project} />
         </TabsContent>
          <TabsContent value="contracts" className="mt-4">
            <ContractsSection project={project} />
