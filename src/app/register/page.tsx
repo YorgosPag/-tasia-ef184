@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, User } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc, collection, getDocs, query, limit } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import {
@@ -49,15 +49,25 @@ const createUserDocument = async (user: User) => {
 
   // Create user document only if it doesn't exist
   if (!userDoc.exists()) {
+    // Check if this is the very first user
+    const usersCollectionRef = collection(db, 'users');
+    const q = query(usersCollectionRef, limit(1));
+    const snapshot = await getDocs(q);
+    const isFirstUser = snapshot.empty;
+    const role = isFirstUser ? 'admin' : 'viewer';
+    
     const { email, photoURL, displayName } = user;
     try {
       await setDoc(userDocRef, {
         email,
         photoURL,
         displayName,
-        role: 'viewer', // Default role
+        role: role, // Assign role dynamically
         createdAt: serverTimestamp(),
       });
+       if(isFirstUser) {
+        console.log(`First user registered with email ${email}. Assigning admin role.`);
+      }
     } catch (error) {
       console.error("Error creating user document:", error);
     }
