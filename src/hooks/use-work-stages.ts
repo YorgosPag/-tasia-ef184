@@ -82,7 +82,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             description: workStage.description || '',
             notes: workStage.notes || '',
             assignedTo: workStage.assignedTo?.[0] || '',
-            documents: workStage.documents?.join(', ') || '',
+            documents: workStage.documents?.join('\\n') || '',
             relatedEntityIds: (workStage as any).relatedEntityIds?.join(', ') || '',
             startDate: workStage.startDate?.toDate() || null,
             endDate: workStage.endDate?.toDate() || null,
@@ -148,7 +148,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             startDate: data.startDate,
             endDate: data.endDate,
             deadline: data.deadline,
-            documents: data.documents ? data.documents.split(',').map(s => s.trim()).filter(Boolean) : [],
+            documents: data.documents ? data.documents.split('\\n').map(s => s.trim()).filter(Boolean) : [],
             budgetedCost: data.budgetedCost ? parseFloat(data.budgetedCost) : undefined,
             actualCost: data.actualCost ? parseFloat(data.actualCost) : undefined,
         };
