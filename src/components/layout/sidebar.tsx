@@ -9,6 +9,7 @@ import {
   Layers,
   LayoutTemplate,
   History,
+  Users,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -22,10 +23,12 @@ import {
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/logo';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { isAdmin } = useAuth();
 
   return (
     <Sidebar>
@@ -82,17 +85,25 @@ export function AppSidebar() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-        <SidebarGroup>
-            <SidebarGroupLabel>System</SidebarGroupLabel>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton href="/audit-log" isActive={pathname.startsWith('/audit-log')}>
-                        <History />
-                        Audit Log
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
+        {isAdmin && (
+          <SidebarGroup>
+              <SidebarGroupLabel>System</SidebarGroupLabel>
+              <SidebarMenu>
+                  <SidebarMenuItem>
+                      <SidebarMenuButton href="/users" isActive={pathname.startsWith('/users')}>
+                          <Users />
+                          Users
+                      </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                      <SidebarMenuButton href="/audit-log" isActive={pathname.startsWith('/audit-log')}>
+                          <History />
+                          Audit Log
+                      </SidebarMenuButton>
+                  </SidebarMenuItem>
+              </SidebarMenu>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );

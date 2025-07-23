@@ -11,11 +11,12 @@ export type ActionType =
     | 'CREATE_FLOOR' | 'UPDATE_FLOOR' | 'DELETE_FLOOR' | 'DUPLICATE_FLOOR'
     | 'CREATE_UNIT' | 'UPDATE_UNIT' | 'DELETE_UNIT' | 'DUPLICATE_UNIT'
     | 'CREATE_ATTACHMENT' | 'UPDATE_ATTACHMENT' | 'DELETE_ATTACHMENT'
-    | 'UPLOAD_FLOORPLAN' | 'UPDATE_UNIT_POLYGON';
+    | 'UPLOAD_FLOORPLAN' | 'UPDATE_UNIT_POLYGON'
+    | 'UPDATE_USER_ROLE';
 
 export interface LogDetails {
     entityId: string;
-    entityType: 'company' | 'project' | 'building' | 'floor' | 'unit' | 'attachment' | 'floorplan';
+    entityType: 'company' | 'project' | 'building' | 'floor' | 'unit' | 'attachment' | 'floorplan' | 'user';
     changes?: Record<string, any>;
     [key: string]: any; // for additional context
 }
