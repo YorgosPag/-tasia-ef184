@@ -5,10 +5,18 @@ import React, { Fragment } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
 
 export interface BreadcrumbItem {
   href: string;
   label: string;
+  tooltip?: string;
 }
 
 interface BreadcrumbsProps {
@@ -18,34 +26,45 @@ interface BreadcrumbsProps {
 
 /**
  * A reusable component for displaying breadcrumb navigation.
- * It takes an array of items and renders them as links with separators.
+ * It takes an array of items and renders them as links with separators and tooltips.
  */
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   return (
-    <nav aria-label="Breadcrumb" className={cn('hidden md:block', className)}>
-      <ol className="flex items-center space-x-1 text-sm text-muted-foreground">
-        {items.map((item, index) => (
-          <Fragment key={`${item.href}-${item.label}`}>
-            <li>
-              <Link
-                href={item.href}
-                className={cn(
-                  'transition-colors hover:text-foreground',
-                  index === items.length - 1 ? 'font-medium text-foreground pointer-events-none' : ''
-                )}
-                aria-current={index === items.length - 1 ? 'page' : undefined}
-              >
-                {item.label}
-              </Link>
-            </li>
-            {index < items.length - 1 && (
+    <TooltipProvider>
+      <nav aria-label="Breadcrumb" className={cn('hidden md:block', className)}>
+        <ol className="flex items-center space-x-1 text-sm text-muted-foreground">
+          {items.map((item, index) => (
+            <Fragment key={`${item.href}-${item.label}`}>
               <li>
-                <ChevronRight className="h-4 w-4" />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        'transition-colors hover:text-foreground',
+                        index === items.length - 1 ? 'font-medium text-foreground pointer-events-none' : ''
+                      )}
+                      aria-current={index === items.length - 1 ? 'page' : undefined}
+                    >
+                      {item.label}
+                    </Link>
+                  </TooltipTrigger>
+                  {item.tooltip && (
+                    <TooltipContent>
+                      <p>{item.tooltip}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
               </li>
-            )}
-          </Fragment>
-        ))}
-      </ol>
-    </nav>
+              {index < items.length - 1 && (
+                <li>
+                  <ChevronRight className="h-4 w-4" />
+                </li>
+              )}
+            </Fragment>
+          ))}
+        </ol>
+      </nav>
+    </TooltipProvider>
   );
 }
