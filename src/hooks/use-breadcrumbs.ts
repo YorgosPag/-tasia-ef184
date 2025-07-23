@@ -100,31 +100,31 @@ export function useBreadcrumbs() {
     }
 
     let tempBreadcrumbs: BreadcrumbItem[] = [];
-
-    // Handle list pages first e.g., /projects, /units
-    if (pathSegments.length === 1 && staticPathLabels[pathSegments[0]]) {
+    const lastSegment = pathSegments[pathSegments.length - 1];
+    
+    // Handle top-level list pages e.g., /projects
+    if (pathSegments.length === 1 && staticPathLabels[lastSegment]) {
         tempBreadcrumbs.push({ 
-            href: `/${pathSegments[0]}`, 
-            label: staticPathLabels[pathSegments[0]],
+            href: `/${lastSegment}`, 
+            label: staticPathLabels[lastSegment],
             tooltip: 'Λίστα',
         });
         setBreadcrumbs(tempBreadcrumbs);
         return;
     }
-
+    
     // Handle details pages e.g., /units/some-id
-    if (pathSegments.length === 2 && collectionNameMap[pathSegments[0]]) {
+    if (pathSegments.length > 1 && collectionNameMap[pathSegments[0]]) {
       const collectionSlug = pathSegments[0];
       const entityId = pathSegments[1];
       const collectionName = collectionNameMap[collectionSlug];
       
       const currentEntity = await getDocFromFirestore(collectionName, entityId);
       if (!currentEntity) {
-        setBreadcrumbs([{ 
-            href: `/${collectionSlug}`, 
-            label: staticPathLabels[collectionSlug],
-            tooltip: 'Λίστα',
-        }]);
+        // Fallback for list pages if direct fetch fails
+        if (staticPathLabels[collectionSlug]) {
+             setBreadcrumbs([{ href: `/${collectionSlug}`, label: staticPathLabels[collectionSlug], tooltip: 'Λίστα' }]);
+        }
         return;
       }
 
@@ -135,42 +135,65 @@ export function useBreadcrumbs() {
       let unit: DocumentData | null = null;
       
       // Build hierarchy upwards from the current entity
-      if (collectionName === 'units') unit = currentEntity;
-      if (unit?.floorIds?.length > 0) {
-        const floors = await getDocsFromFirestore('floors', unit.floorIds);
-        if (floors.length > 0) floor = floors[0];
+      switch(collectionName) {
+        case 'units':
+            unit = currentEntity;
+            if (unit?.floorIds?.length > 0) {
+                const floors = await getDocsFromFirestore('floors', unit.floorIds);
+                if (floors.length > 0) floor = floors[0];
+            }
+            if (unit?.buildingId) building = await getDocFromFirestore('buildings', unit.buildingId);
+            if (unit?.projectId) project = await getDocFromFirestore('projects', unit.projectId);
+            if (unit?.companyId) company = await getDocFromFirestore('companies', unit.companyId);
+            break;
+        case 'floors':
+            floor = currentEntity;
+            if (floor?.buildingId) building = await getDocFromFirestore('buildings', floor.buildingId);
+            if (building?.projectId) project = await getDocFromFirestore('projects', building.projectId);
+            if (project?.companyId) company = await getDocFromFirestore('companies', project.companyId);
+            break;
+        case 'buildings':
+            building = currentEntity;
+            if (building?.projectId) project = await getDocFromFirestore('projects', building.projectId);
+            if (project?.companyId) company = await getDocFromFirestore('companies', project.companyId);
+            break;
+        case 'projects':
+            project = currentEntity;
+            if (project?.companyId) company = await getDocFromFirestore('companies', project.companyId);
+            break;
+        case 'companies':
+            company = currentEntity;
+            break;
       }
-      
-      if (collectionName === 'floors') floor = currentEntity;
-      if (floor?.buildingId) building = await getDocFromFirestore('buildings', floor.buildingId);
-      
-      if (collectionName === 'buildings') building = currentEntity;
-      if (building?.projectId) project = await getDocFromFirestore('projects', building.projectId);
-
-      if (collectionName === 'projects') project = currentEntity;
-      if (project?.companyId) company = await getDocFromFirestore('companies', project.companyId);
 
       // Assemble breadcrumbs from the fetched hierarchy
       if (company) {
         tempBreadcrumbs.push({ 
             href: `/companies`, 
-            label: company.name,
-            tooltip: 'Εταιρεία',
+            label: 'Εταιρείες',
         });
       }
 
       if (project) {
         tempBreadcrumbs.push({ 
+            href: `/projects`, 
+            label: 'Έργα',
+        });
+        tempBreadcrumbs.push({ 
             href: `/projects/${project.id}`, 
             label: project.title,
-            tooltip: 'Έργο',
+            tooltip: project.title,
         });
       }
       if (building) {
         tempBreadcrumbs.push({ 
+            href: `/buildings`, 
+            label: 'Κτίρια',
+        });
+        tempBreadcrumbs.push({ 
             href: `/buildings/${building.id}`, 
             label: building.address,
-            tooltip: 'Κτίριο',
+            tooltip: building.address,
         });
       }
       if (floor) {
@@ -182,6 +205,10 @@ export function useBreadcrumbs() {
             floorLabel = "Όροφοι: " + floorsData.map(f => f.level).join(', ');
         }
         tempBreadcrumbs.push({ 
+            href: `/floors`, 
+            label: 'Όροφοι',
+        });
+        tempBreadcrumbs.push({ 
             href: `/floors/${floor.id}`, 
             label: floorLabel,
             tooltip: 'Όροφος/οι',
@@ -189,6 +216,10 @@ export function useBreadcrumbs() {
       }
 
       if (unit) {
+        tempBreadcrumbs.push({ 
+            href: `/units`, 
+            label: 'Ακίνητα',
+        });
         tempBreadcrumbs.push({ 
             href: `/units/${unit.id}`, 
             label: unit.name,

@@ -26,19 +26,11 @@ import { Skeleton } from '../ui/skeleton';
 export function AppHeader() {
   const isMobile = useIsMobile();
   const router = useRouter();
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading: isAuthLoading } = useAuth();
   const pathname = usePathname();
   const breadcrumbs = useBreadcrumbs();
+  
   const showBreadcrumbs = breadcrumbs.length > 0 && !pathname.startsWith('/login') && !pathname.startsWith('/register') && pathname !== '/';
-
-
-  // The useAuth hook doesn't provide a loading state,
-  // so we manage it locally to prevent UI flicker on initial load.
-  // Once the user object is determined (either a user or null), loading is complete.
-  useEffect(() => {
-    setIsLoading(user === undefined);
-  }, [user]);
 
 
   const handleLogout = async () => {
@@ -65,7 +57,7 @@ export function AppHeader() {
         )}
       </div>
       <div className="flex items-center gap-4">
-        {isLoading ? (
+        {isAuthLoading ? (
           <Skeleton className="h-8 w-20 rounded-md" />
         ) : user ? (
           <DropdownMenu>
