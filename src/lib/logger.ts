@@ -71,7 +71,7 @@ export const logActivity = async (action: ActionType, details: LogDetails) => {
       return;
     }
 
-    const logEntry = {
+    const logEntry: Record<string, any> = {
       action,
       ...details,
       userId: user.uid,
@@ -79,13 +79,21 @@ export const logActivity = async (action: ActionType, details: LogDetails) => {
       timestamp: serverTimestamp(),
     };
     
-    // For transfers, add source/destination info
-    if (action === 'ASSIGN_ATTACHMENT' || action === 'UNASSIGN_ATTACHMENT') {
-        if(details.unitId) {
-            const unitDoc = await getDoc(doc(db, 'units', details.unitId));
-            if(unitDoc.exists()) {
-                logEntry.details = { ...logEntry.details, unitName: unitDoc.data().name };
+    // For assignments or status changes, add more context to the details
+    if (action.includes('UPDATE') && details.changes) {
+        if (details.changes.status) {
+             logEntry.details = { ...logEntry.details, statusChange: `Status changed to ${details.changes.status}` };
+        }
+        if (details.changes.assignedTo) {
+            const assignedToId = details.changes.assignedTo[0];
+            let assignedToName = 'N/A';
+            if (assignedToId) {
+                const companyDoc = await getDoc(doc(db, 'companies', assignedToId));
+                if(companyDoc.exists()) {
+                    assignedToName = companyDoc.data().name;
+                }
             }
+             logEntry.details = { ...logEntry.details, assignmentChange: `Assigned to ${assignedToName}` };
         }
     }
 
