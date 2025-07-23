@@ -169,7 +169,7 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
 
         const finalData = {
             name: data.name, description: data.description || '', status: data.status,
-            assignedTo: data.assignedTo || undefined, // Store Company ID
+            assignedTo: data.assignedTo === 'none' ? undefined : data.assignedTo,
             notes: data.notes || '', startDate: data.startDate ? Timestamp.fromDate(data.startDate) : undefined,
             endDate: data.endDate ? Timestamp.fromDate(data.endDate) : undefined,
             deadline: data.deadline ? Timestamp.fromDate(data.deadline) : undefined,
@@ -314,4 +314,3 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
         </Card>
     );
 }
-

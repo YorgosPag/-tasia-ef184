@@ -79,7 +79,7 @@ export function PhaseFormDialog({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value=""><em>Καμία</em></SelectItem>
+                                            <SelectItem value="none"><em>Κανένα</em></SelectItem>
                                             {isLoadingCompanies ? <Loader2 className="animate-spin" /> : companies.map(c => (
                                                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                                             ))}
@@ -106,4 +106,3 @@ export function PhaseFormDialog({
         </Dialog>
     );
 }
-
