@@ -10,6 +10,7 @@ import {
   LayoutTemplate,
   History,
   Users,
+  Paperclip,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -81,6 +82,12 @@ export function AppSidebar() {
               <SidebarMenuButton href="/units" isActive={pathname.startsWith('/units')}>
                 <LayoutTemplate />
                 Ακίνητα
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton href="/attachments" isActive={pathname.startsWith('/attachments')}>
+                <Paperclip />
+                Παρακολουθήματα
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
