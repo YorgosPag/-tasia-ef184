@@ -110,7 +110,7 @@ export function UnitsListTable({
                     <TableHead>Λεπτομέρειες</TableHead>
                     <TableHead>Εμβαδόν</TableHead>
                     <TableHead>Τιμή</TableHead>
-                    <TableHead>%</TableHead>
+                    <TableHead>% Συνιδιοκτησίας</TableHead>
                     <TableHead>Ανεξάρτητο</TableHead>
                 </>
             ) : (
