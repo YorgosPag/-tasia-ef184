@@ -14,7 +14,7 @@ export function MaterialsSection({ project }: MaterialsSectionProps) {
     
     // Placeholder data and state
     const orders: any[] = [];
-    const isLoading = true;
+    const isLoading = false;
     
     return (
         <Card>
