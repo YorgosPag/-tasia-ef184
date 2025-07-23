@@ -254,8 +254,8 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
                             </TableHeader>
                             <TableBody>
                                 {phases.map(phase => (
-                                    <>
-                                    <TableRow key={phase.id} className="group bg-muted/20">
+                                    <React.Fragment key={phase.id}>
+                                    <TableRow className="group bg-muted/20">
                                         <TableCell className="font-bold">{phase.name}</TableCell>
                                         <TableCell><Badge variant={getStatusVariant(phase.status)}>{phase.status}</Badge></TableCell>
                                         <TableCell>{getCompanyName(phase.assignedTo)}</TableCell>
@@ -294,7 +294,7 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
                                             </TableCell>
                                         </TableRow>
                                     ))}
-                                    </>
+                                    </React.Fragment>
                                 ))}
                             </TableBody>
                         </Table>
