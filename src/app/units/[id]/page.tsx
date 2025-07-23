@@ -194,14 +194,17 @@ export default function UnitDetailsPage() {
      
      setIsSubmitting(true);
      
-     const finalData = {
+     const finalData: any = {
          type: data.type,
          details: data.details,
          area: data.area ? parseFloat(data.area) : undefined,
          price: data.price ? parseFloat(data.price) : undefined,
-         photoUrl: data.photoUrl?.trim() || undefined,
          unitId: unitId,
      };
+     
+     if (data.photoUrl && data.photoUrl.trim()) {
+        finalData.photoUrl = data.photoUrl.trim();
+     }
 
      try {
        if (data.id) { // This is an update
