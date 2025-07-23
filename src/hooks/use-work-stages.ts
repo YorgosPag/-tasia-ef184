@@ -330,6 +330,35 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         toast({ variant: 'destructive', title: "Σφάλμα", description: "Το ανέβασμα των φωτογραφιών απέτυχε." });
       }
     };
+    
+    const handleCommentSubmit = async (stage: WorkStage, comment: string, isSubstage: boolean) => {
+        if (!projectId || !user?.email) return;
+
+        const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
+        if (isSubstage && !parentId) return;
+
+        const docRef = parentId
+            ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id)
+            : doc(db, 'projects', projectId, 'workStages', stage.id);
+
+        const newComment = {
+            id: doc(collection(db, 'dummy')).id, // Generate a unique ID client-side
+            text: comment,
+            authorId: user.uid,
+            authorEmail: user.email,
+            createdAt: Timestamp.now(),
+            type: user.photoURL === 'client' ? 'client' : 'internal', // Placeholder for role check
+        };
+        
+        const batch = writeBatch(db);
+        batch.update(docRef, { comments: arrayUnion(newComment) });
+        const topLevelId = (stage as any).topLevelId;
+        if (topLevelId) {
+            const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
+            batch.update(topLevelRef, { comments: arrayUnion(newComment) });
+        }
+        await batch.commit();
+    };
 
     const handleExport = useCallback(() => {
         const flatData = workStages.flatMap(stage => {
@@ -381,6 +410,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         handleAddChecklistItem,
         handleInspectionNotesChange,
         handlePhotoUpload,
+        handleCommentSubmit,
         handleExport,
     };
 }
