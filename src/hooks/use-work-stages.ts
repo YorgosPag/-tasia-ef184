@@ -80,7 +80,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             ...workStage,
             description: workStage.description || '',
             notes: workStage.notes || '',
-            assignedTo: workStage.assignedTo?.join(', ') || '',
+            assignedTo: workStage.assignedTo?.[0] || '',
             documents: workStage.documents?.join(', ') || '',
             relatedEntityIds: (workStage as any).relatedEntityIds?.join(', ') || '',
             startDate: workStage.startDate?.toDate() || null,
@@ -108,6 +108,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             entityId: workStage.id,
             entityType: parentId ? 'workSubstage' : 'workStage',
             details: { name: workStage.name, parentId: parentId },
+            projectId: projectId,
           });
         } catch (error) {
           console.error("Error deleting work stage/substage:", error);
@@ -121,7 +122,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
 
         const rawData: any = {
             name: data.name, description: data.description || '', status: data.status,
-            assignedTo: data.assignedTo ? data.assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [],
+            assignedTo: data.assignedTo ? [data.assignedTo] : [],
             relatedEntityIds: data.relatedEntityIds ? data.relatedEntityIds.split(',').map(s => s.trim()).filter(Boolean) : [],
             notes: data.notes || '',
             startDate: data.startDate,
@@ -154,6 +155,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                     entityId: workStageId,
                     entityType: parentId ? 'workSubstage' : 'workStage',
                     changes: finalData,
+                    projectId: projectId,
                 });
 
             } else {
@@ -167,6 +169,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                     entityId: newDocRef.id,
                     entityType: isSubstage ? 'workSubstage' : 'workStage',
                     details: finalData,
+                    projectId: projectId,
                 });
             }
             // Manually close dialog from parent by resetting state

@@ -138,6 +138,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                 entityId: buildingToDelete.topLevelId,
                 entityType: 'building',
                 details: { address: buildingToDelete.address },
+                projectId: project.id,
             });
         } catch (error) {
             console.error("Error deleting building:", error);
@@ -165,6 +166,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                     entityId: editingBuilding.topLevelId,
                     entityType: 'building',
                     changes: finalData,
+                    projectId: project.id,
                 });
             } else {
                 const batch = writeBatch(db);
@@ -178,6 +180,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                     entityId: topLevelRef.id,
                     entityType: 'building',
                     details: finalData,
+                    projectId: project.id,
                 });
             }
             handleDialogOpenChange(false);
