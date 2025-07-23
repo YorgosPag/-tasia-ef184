@@ -15,6 +15,7 @@ import {
   CalendarDays,
   ClipboardList,
   SquareKanban,
+  FilePen,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -79,6 +80,12 @@ export function AppSidebar() {
                 <SidebarMenuButton href="/construction/calendar" isActive={pathname.startsWith('/construction/calendar')}>
                     <CalendarDays />
                     Ημερολόγιο
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton href="/architect-dashboard" isActive={pathname.startsWith('/architect-dashboard')}>
+                    <FilePen />
+                    Architect's Dashboard
                 </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
