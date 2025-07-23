@@ -18,6 +18,7 @@ import {
   FilePen,
   MessageSquare,
   Package,
+  FileText,
 } from 'lucide-react';
 import {
   Sidebar,
