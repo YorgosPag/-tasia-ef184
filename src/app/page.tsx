@@ -4,13 +4,37 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { seedDatabase, clearDatabase } from "@/lib/seed";
-import { Loader2, Database, Trash2, FileUp } from "lucide-react";
+import { Loader2, Database, Trash2, FileUp, Home as HomeIcon, Link as LinkIcon, Link2Off, Wallet, CheckCircle, Clock, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { processImportFile } from "@/lib/importer";
 import { useAuth } from "@/hooks/use-auth";
+import { collection, getDocs, query } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useQuery } from "@tanstack/react-query";
+import Link from 'next/link';
 
+// --- Interfaces ---
+interface Unit {
+  id: string;
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
+}
+interface Attachment {
+  id: string;
+  unitId?: string;
+}
+
+// --- Data Fetching ---
+async function fetchDashboardData(): Promise<{ units: Unit[], attachments: Attachment[] }> {
+    const unitsSnapshot = await getDocs(query(collection(db, 'units')));
+    const units = unitsSnapshot.docs.map(doc => doc.data() as Unit);
+
+    const attachmentsSnapshot = await getDocs(query(collection(db, 'attachments')));
+    const attachments = attachmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Attachment));
+
+    return { units, attachments };
+}
 
 export default function Home() {
   const [isSeeding, setIsSeeding] = useState(false);
@@ -19,6 +43,46 @@ export default function Home() {
   const [importFile, setImportFile] = useState<File | null>(null);
   const { toast } = useToast();
   const { isAdmin } = useAuth();
+  
+  const { data: dashboardData, isLoading, isError } = useQuery({
+      queryKey: ['dashboardStats'],
+      queryFn: fetchDashboardData,
+  });
+
+  const stats = useMemo(() => {
+    if (!dashboardData) {
+        return {
+            units: { 'Διαθέσιμο': 0, 'Κρατημένο': 0, 'Πωλημένο': 0, 'Οικοπεδούχος': 0, total: 0 },
+            attachments: { linked: 0, unlinked: 0, total: 0 }
+        };
+    }
+    const unitStats = dashboardData.units.reduce((acc, unit) => {
+        acc[unit.status] = (acc[unit.status] || 0) + 1;
+        return acc;
+    }, {} as Record<Unit['status'], number>);
+    
+    const attachmentStats = dashboardData.attachments.reduce((acc, attachment) => {
+        if (attachment.unitId) acc.linked++;
+        else acc.unlinked++;
+        return acc;
+    }, { linked: 0, unlinked: 0 });
+
+    return {
+        units: { 
+            'Διαθέσιμο': unitStats['Διαθέσιμο'] || 0,
+            'Κρατημένο': unitStats['Κρατημένο'] || 0,
+            'Πωλημένο': unitStats['Πωλημένο'] || 0,
+            'Οικοπεδούχος': unitStats['Οικοπεδούχος'] || 0,
+            total: dashboardData.units.length,
+        },
+        attachments: { 
+            ...attachmentStats,
+            total: dashboardData.attachments.length,
+        }
+    }
+
+  }, [dashboardData]);
+
 
   const handleSeedAndClear = async () => {
     if (!confirm("Είστε σίγουροι; Αυτή η ενέργεια θα διαγράψει ΟΛΑ τα υπάρχοντα δεδομένα και θα τα αντικαταστήσει με νέα δείγματα.")) {
@@ -123,9 +187,69 @@ export default function Home() {
           Your premier real estate index. Navigate properties with ease.
         </p>
       </div>
+      
+      {isLoading ? (
+        <div className="flex justify-center items-center h-40">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : isError ? (
+        <p className="text-center text-destructive py-8">Σφάλμα κατά τη φόρτωση των στατιστικών.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Διαθέσιμα Ακίνητα</CardTitle>
+                    <CheckCircle className="h-4 w-4 text-muted-foreground"/>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats.units['Διαθέσιμο']}</div>
+                    <Link href="/units?status=available" className="text-xs text-muted-foreground hover:underline">
+                        Προβολή λίστας
+                    </Link>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Κρατημένα Ακίνητα</CardTitle>
+                    <Clock className="h-4 w-4 text-muted-foreground"/>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats.units['Κρατημένο']}</div>
+                     <Link href="/units?status=reserved" className="text-xs text-muted-foreground hover:underline">
+                        Προβολή λίστας
+                    </Link>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Πωλημένα Ακίνητα</CardTitle>
+                    <XCircle className="h-4 w-4 text-muted-foreground"/>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats.units['Πωλημένο']}</div>
+                    <Link href="/units?status=sold" className="text-xs text-muted-foreground hover:underline">
+                        Προβολή λίστας
+                    </Link>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Παρακολουθήματα</CardTitle>
+                    <HomeIcon className="h-4 w-4 text-muted-foreground"/>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats.attachments.total}</div>
+                    <p className="text-xs text-muted-foreground">
+                        <span className="font-semibold text-green-600">{stats.attachments.linked}</span> συνδεδεμένα, <span className="font-semibold text-orange-600">{stats.attachments.unlinked}</span> ανεξάρτητα
+                    </p>
+                </CardContent>
+            </Card>
+        </div>
+      )}
+
 
       {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
           <Card>
             <CardHeader>
               <CardTitle>Διαχείριση Δειγμάτων</CardTitle>

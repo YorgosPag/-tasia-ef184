@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { collection, Timestamp, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
@@ -17,7 +18,6 @@ import { Loader2, Search, Download, ListFilter, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { exportToJson } from '@/lib/exporter';
@@ -61,18 +61,39 @@ export function useUnits() {
 
 
 export default function UnitsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
-    status: ALL_STATUSES,
+    status: [] as Unit['status'][],
     minPrice: '',
     maxPrice: '',
     minArea: '',
     maxArea: '',
     amenities: '',
   });
-  const router = useRouter();
 
   const { data: units = [], isLoading, isError } = useUnits();
+
+  useEffect(() => {
+    const statusParam = searchParams.get('status');
+    if (statusParam) {
+      const statusMap = {
+        available: 'Διαθέσιμο',
+        reserved: 'Κρατημένο',
+        sold: 'Πωλημένο',
+        landowner: 'Οικοπεδούχος'
+      };
+      const validStatuses = Object.values(statusMap);
+      // @ts-ignore
+      if (statusMap[statusParam]) {
+        // @ts-ignore
+        setFilters(prev => ({ ...prev, status: [statusMap[statusParam]] }));
+      }
+    } else {
+        setFilters(prev => ({...prev, status: ALL_STATUSES}))
+    }
+  }, [searchParams]);
 
   const handleFilterChange = (key: keyof typeof filters, value: string | string[]) => {
       setFilters(prev => ({ ...prev, [key]: value }));
@@ -95,6 +116,7 @@ export default function UnitsPage() {
         maxArea: '',
         amenities: '',
     });
+    router.push('/units');
   }
 
 
@@ -309,5 +331,3 @@ export default function UnitsPage() {
     </div>
   );
 }
-
-    
