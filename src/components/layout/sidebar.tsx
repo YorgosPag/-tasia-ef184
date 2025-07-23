@@ -11,6 +11,7 @@ import {
   History,
   Users,
   Paperclip,
+  Construction,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -51,6 +52,18 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
         
+         <SidebarGroup>
+          <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
+          <SidebarMenu>
+             <SidebarMenuItem>
+                <SidebarMenuButton href="/projects" isActive={pathname.startsWith('/projects')}>
+                    <Construction />
+                    Έργα
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
           <SidebarMenu>
@@ -58,12 +71,6 @@ export function AppSidebar() {
                 <SidebarMenuButton href="/companies" isActive={pathname.startsWith('/companies')}>
                     <Building2 />
                     Εταιρείες
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton href="/projects" isActive={pathname.startsWith('/projects')}>
-                    <Briefcase />
-                    Έργα
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
