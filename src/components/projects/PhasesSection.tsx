@@ -130,8 +130,10 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
         setEditingPhase(parentId ? { ...phase, parentId } as any : phase);
         form.reset({
             ...phase,
-            assignedTo: phase.assignedTo,
-            documents: phase.documents?.join(', '),
+            description: phase.description || '',
+            notes: phase.notes || '',
+            assignedTo: phase.assignedTo || 'none',
+            documents: phase.documents?.join(', ') || '',
             startDate: phase.startDate?.toDate(),
             endDate: phase.endDate?.toDate(),
             deadline: phase.deadline?.toDate(),
@@ -141,7 +143,7 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
     
     const handleAddSubphase = (parentId: string) => {
         setEditingPhase({ parentId });
-        form.reset({ status: 'Εκκρεμεί' });
+        form.reset({ status: 'Εκκρεμεί', name: '', description: '', notes: '', documents: '', assignedTo: 'none' });
         setIsPhaseDialogOpen(true);
     };
 
@@ -242,7 +244,7 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle>Φάσεις Κατασκευής</CardTitle>
-                    <Button size="sm" onClick={() => setIsPhaseDialogOpen(true)}><PlusCircle className="mr-2"/>Νέα Φάση</Button>
+                    <Button size="sm" onClick={() => handlePhaseDialogOpenChange(true)}><PlusCircle className="mr-2"/>Νέα Φάση</Button>
                 </div>
             </CardHeader>
             <CardContent>
