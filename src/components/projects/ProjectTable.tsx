@@ -30,18 +30,18 @@ import {
   formatDate,
   getCompanyName,
 } from '@/lib/project-helpers';
-import type { ProjectWithPhaseSummary } from '@/hooks/use-projects-page';
+import type { ProjectWithWorkStageSummary } from '@/hooks/use-projects-page';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { Timestamp } from 'firebase/firestore';
 
 
-interface PhaseStatusBadgeProps {
+interface WorkStageStatusBadgeProps {
     status: 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Εκκρεμεί' | 'Καθυστερεί' | undefined;
-    currentPhaseName: string | undefined;
+    currentWorkStageName: string | undefined;
     deadline: Timestamp | Date;
 }
 
-function PhaseStatusBadge({ status, currentPhaseName, deadline }: PhaseStatusBadgeProps) {
+function WorkStageStatusBadge({ status, currentWorkStageName, deadline }: WorkStageStatusBadgeProps) {
     let variant: "default" | "secondary" | "destructive" | "outline" = 'outline';
     let label = 'Προπώληση';
 
@@ -65,7 +65,7 @@ function PhaseStatusBadge({ status, currentPhaseName, deadline }: PhaseStatusBad
             break;
     }
     
-    const summary = `Τρέχουσα φάση: ${currentPhaseName || 'N/A'}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline)}`;
+    const summary = `Τρέχον στάδιο: ${currentWorkStageName || 'N/A'}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline)}`;
 
     return (
         <div className="flex items-center gap-2">
@@ -83,10 +83,10 @@ function PhaseStatusBadge({ status, currentPhaseName, deadline }: PhaseStatusBad
 }
 
 interface ProjectTableProps {
-  projects: ProjectWithPhaseSummary[];
+  projects: ProjectWithWorkStageSummary[];
   companies: Company[];
   isEditor: boolean;
-  onEdit: (project: ProjectWithPhaseSummary) => void;
+  onEdit: (project: ProjectWithWorkStageSummary) => void;
   onDuplicate: (projectId: string) => void;
   onDelete: (projectId: string) => void;
 }
@@ -137,9 +137,9 @@ export function ProjectTable({
                 </TableCell>
                 <TableCell className="text-muted-foreground">{project.location}</TableCell>
                 <TableCell>
-                   <PhaseStatusBadge
-                        status={project.phaseSummary?.overallStatus}
-                        currentPhaseName={project.phaseSummary?.currentPhaseName}
+                   <WorkStageStatusBadge
+                        status={project.workStageSummary?.overallStatus}
+                        currentWorkStageName={project.workStageSummary?.currentWorkStageName}
                         deadline={project.deadline}
                     />
                 </TableCell>

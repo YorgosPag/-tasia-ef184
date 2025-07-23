@@ -14,19 +14,19 @@ import { exportToJson } from '@/lib/exporter';
 import { ProjectFormValues, projectSchema } from '@/components/projects/ProjectDialogForm';
 import { formatDate } from '@/lib/project-helpers';
 import { useAuth } from './use-auth';
-import type { Phase } from '@/app/projects/[id]/page';
+import type { WorkStage } from '@/app/projects/[id]/page';
 
 
-export interface ProjectWithPhaseSummary extends Project {
-    phaseSummary?: {
-        currentPhaseName: string;
+export interface ProjectWithWorkStageSummary extends Project {
+    workStageSummary?: {
+        currentWorkStageName: string;
         overallStatus: 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Εκκρεμεί' | 'Καθυστερεί';
     }
 }
 
 
 export function useProjectsPage() {
-  const [projects, setProjects] = useState<ProjectWithPhaseSummary[]>([]);
+  const [projects, setProjects] = useState<ProjectWithWorkStageSummary[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const { user, isEditor, isLoading: isAuthLoading } = useAuth();
   const { addProject } = useDataStore();
@@ -66,41 +66,41 @@ export function useProjectsPage() {
         setIsLoading(true);
         const projectsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
         
-        // Fetch phase summaries for all projects
+        // Fetch workStage summaries for all projects
         const projectsWithSummaries = await Promise.all(projectsData.map(async (project) => {
-            const phasesQuery = query(collection(db, 'projects', project.id, 'phases'), orderBy('createdAt', 'asc'));
-            const phasesSnapshot = await getDocs(phasesQuery);
-            const phases = phasesSnapshot.docs.map(doc => doc.data() as Phase);
+            const workStagesQuery = query(collection(db, 'projects', project.id, 'workStages'), orderBy('createdAt', 'asc'));
+            const workStagesSnapshot = await getDocs(workStagesQuery);
+            const workStages = workStagesSnapshot.docs.map(doc => doc.data() as WorkStage);
             
-            if (phases.length === 0) {
-                return { ...project, phaseSummary: undefined };
+            if (workStages.length === 0) {
+                return { ...project, workStageSummary: undefined };
             }
             
-            const completedPhases = phases.filter(p => p.status === 'Ολοκληρώθηκε').length;
-            const inProgressPhase = phases.find(p => p.status === 'Σε εξέλιξη');
-            const delayedPhase = phases.find(p => p.status === 'Καθυστερεί');
+            const completedWorkStages = workStages.filter(p => p.status === 'Ολοκληρώθηκε').length;
+            const inProgressWorkStage = workStages.find(p => p.status === 'Σε εξέλιξη');
+            const delayedWorkStage = workStages.find(p => p.status === 'Καθυστερεί');
 
-            let overallStatus: ProjectWithPhaseSummary['phaseSummary']['overallStatus'] = 'Εκκρεμεί';
-            let currentPhaseName = "Έναρξη έργου";
+            let overallStatus: ProjectWithWorkStageSummary['workStageSummary']['overallStatus'] = 'Εκκρεμεί';
+            let currentWorkStageName = "Έναρξη έργου";
             
-            if (delayedPhase) {
+            if (delayedWorkStage) {
                 overallStatus = 'Καθυστερεί';
-                currentPhaseName = delayedPhase.name;
-            } else if (inProgressPhase) {
+                currentWorkStageName = delayedWorkStage.name;
+            } else if (inProgressWorkStage) {
                 overallStatus = 'Σε εξέλιξη';
-                currentPhaseName = inProgressPhase.name;
-            } else if (completedPhases === phases.length) {
+                currentWorkStageName = inProgressWorkStage.name;
+            } else if (completedWorkStages === workStages.length) {
                 overallStatus = 'Ολοκληρώθηκε';
-                currentPhaseName = "Ολοκληρώθηκε";
-            } else if (phases.length > 0) {
-                // If no phase is in progress/delayed but not all are complete, it's pending the next phase.
-                const lastCompletedIndex = phases.map(p => p.status).lastIndexOf('Ολοκληρώθηκε');
-                currentPhaseName = phases[lastCompletedIndex + 1]?.name || "Επόμενη φάση";
+                currentWorkStageName = "Ολοκληρώθηκε";
+            } else if (workStages.length > 0) {
+                // If no workStage is in progress/delayed but not all are complete, it's pending the next workStage.
+                const lastCompletedIndex = workStages.map(p => p.status).lastIndexOf('Ολοκληρώθηκε');
+                currentWorkStageName = workStages[lastCompletedIndex + 1]?.name || "Επόμενο στάδιο";
             }
             
             return {
                 ...project,
-                phaseSummary: { currentPhaseName, overallStatus }
+                workStageSummary: { currentWorkStageName, overallStatus }
             };
         }));
         
@@ -147,7 +147,7 @@ export function useProjectsPage() {
       return;
     }
     try {
-      const { id, createdAt, phaseSummary, ...clonedData } = projectToClone;
+      const { id, createdAt, workStageSummary, ...clonedData } = projectToClone;
       clonedData.title = `${clonedData.title} (Copy)`;
       const newId = await addProject({
         ...clonedData,

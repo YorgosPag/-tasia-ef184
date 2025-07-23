@@ -14,7 +14,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useDataStore } from '@/hooks/use-data-store';
 import { ProjectHeader } from '@/components/projects/ProjectHeader';
-import { PhasesSection } from '@/components/projects/PhasesSection';
+import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
 import { BuildingsSection } from '@/components/projects/BuildingsSection';
 
 
@@ -40,7 +40,7 @@ export interface Building {
   topLevelId: string; // This will be the ID from the top-level collection
 }
 
-export interface Phase {
+export interface WorkStage {
   id: string;
   name: string;
   description?: string;
@@ -54,8 +54,8 @@ export interface Phase {
   createdAt: Timestamp;
 }
 
-export interface PhaseWithSubphases extends Phase {
-    subphases: Phase[];
+export interface WorkStageWithSubstages extends WorkStage {
+    workSubstages: WorkStage[];
 }
 
 export default function ProjectDetailsPage() {
@@ -107,7 +107,7 @@ export default function ProjectDetailsPage() {
       <ProjectHeader project={project} />
       
       {view === 'construction' ? (
-         <PhasesSection 
+         <WorkStagesSection 
             project={project}
             companies={companies}
             isLoadingCompanies={isLoadingCompanies}

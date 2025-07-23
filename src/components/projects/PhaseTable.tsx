@@ -27,14 +27,14 @@ import { Edit, Trash2, GitMerge } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Company } from '@/hooks/use-data-store';
-import type { Phase, PhaseWithSubphases } from '@/app/projects/[id]/page';
+import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
 
-interface PhaseTableProps {
-    phases: PhaseWithSubphases[];
+interface WorkStageTableProps {
+    workStages: WorkStageWithSubstages[];
     companies: Company[];
-    onAddSubphase: (parentId: string) => void;
-    onEditPhase: (phase: Phase, parentId?: string) => void;
-    onDeletePhase: (phase: Phase, parentId?: string) => void;
+    onAddWorkSubstage: (parentId: string) => void;
+    onEditWorkStage: (workStage: WorkStage, parentId?: string) => void;
+    onDeleteWorkStage: (workStage: WorkStage, parentId?: string) => void;
 }
 
 const formatDate = (timestamp?: Timestamp | Date) => {
@@ -43,7 +43,7 @@ const formatDate = (timestamp?: Timestamp | Date) => {
     return format(date, 'dd/MM/yyyy');
 };
   
-const getStatusVariant = (status: Phase['status']) => {
+const getStatusVariant = (status: WorkStage['status']) => {
     switch (status) {
         case 'Ολοκληρώθηκε': return 'default';
         case 'Σε εξέλιξη': return 'secondary';
@@ -57,19 +57,19 @@ const getCompanyNames = (companyIds: string[] = [], companies: Company[]) => {
     return companyIds.map(id => companies.find(c => c.id === id)?.name || id).join(', ');
 };
 
-export function PhaseTable({
-    phases,
+export function WorkStageTable({
+    workStages,
     companies,
-    onAddSubphase,
-    onEditPhase,
-    onDeletePhase,
-}: PhaseTableProps) {
+    onAddWorkSubstage,
+    onEditWorkStage,
+    onDeleteWorkStage,
+}: WorkStageTableProps) {
     return (
         <div className="w-full overflow-x-auto">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Φάση / Υποφάση</TableHead>
+                        <TableHead>Στάδιο / Υποστάδιο Εργασίας</TableHead>
                         <TableHead>Κατάσταση</TableHead>
                         <TableHead>Υπεύθυνος</TableHead>
                         <TableHead>Έναρξη</TableHead>
@@ -79,41 +79,41 @@ export function PhaseTable({
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {phases.map(phase => (
-                        <React.Fragment key={phase.id}>
+                    {workStages.map(workStage => (
+                        <React.Fragment key={workStage.id}>
                         <TableRow className="group bg-muted/20">
-                            <TableCell className="font-bold">{phase.name}</TableCell>
-                            <TableCell><Badge variant={getStatusVariant(phase.status)}>{phase.status}</Badge></TableCell>
-                            <TableCell>{getCompanyNames(phase.assignedTo, companies)}</TableCell>
-                            <TableCell>{formatDate(phase.startDate)}</TableCell>
-                            <TableCell>{formatDate(phase.endDate)}</TableCell>
-                            <TableCell>{formatDate(phase.deadline)}</TableCell>
+                            <TableCell className="font-bold">{workStage.name}</TableCell>
+                            <TableCell><Badge variant={getStatusVariant(workStage.status)}>{workStage.status}</Badge></TableCell>
+                            <TableCell>{getCompanyNames(workStage.assignedTo, companies)}</TableCell>
+                            <TableCell>{formatDate(workStage.startDate)}</TableCell>
+                            <TableCell>{formatDate(workStage.endDate)}</TableCell>
+                            <TableCell>{formatDate(workStage.deadline)}</TableCell>
                             <TableCell className="text-right">
                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
-                                    <Button variant="ghost" size="icon" title="Προσθήκη Υποφάσης" onClick={() => onAddSubphase(phase.id)}><GitMerge className="h-4 w-4" /><span className="sr-only">Προσθήκη Υποφάσης</span></Button>
-                                    <Button variant="ghost" size="icon" title="Επεξεργασία Φάσης" onClick={() => onEditPhase(phase)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Φάσης</span></Button>
-                                    <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Φάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Φάσης</span></Button></AlertDialogTrigger>
-                                        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά τη φάση "{phase.name}" και όλες τις υποφάσεις της.</AlertDialogDescription></AlertDialogHeader>
-                                            <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeletePhase(phase)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                    <Button variant="ghost" size="icon" title="Προσθήκη Υποσταδίου" onClick={() => onAddWorkSubstage(workStage.id)}><GitMerge className="h-4 w-4" /><span className="sr-only">Προσθήκη Υποσταδίου</span></Button>
+                                    <Button variant="ghost" size="icon" title="Επεξεργασία Σταδίου" onClick={() => onEditWorkStage(workStage)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Σταδίου</span></Button>
+                                    <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Σταδίου" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Σταδίου</span></Button></AlertDialogTrigger>
+                                        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το στάδιο "{workStage.name}" και όλες τις υποφάσεις του.</AlertDialogDescription></AlertDialogHeader>
+                                            <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(workStage)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
                                 </div>
                             </TableCell>
                         </TableRow>
-                        {phase.subphases.map(subphase => (
-                            <TableRow key={subphase.id} className="group">
-                                <TableCell className="pl-8 text-muted-foreground"><span className="mr-2">└</span> {subphase.name}</TableCell>
-                                <TableCell><Badge variant={getStatusVariant(subphase.status)}>{subphase.status}</Badge></TableCell>
-                                <TableCell>{getCompanyNames(subphase.assignedTo, companies)}</TableCell>
-                                <TableCell>{formatDate(subphase.startDate)}</TableCell>
-                                <TableCell>{formatDate(subphase.endDate)}</TableCell>
-                                <TableCell>{formatDate(subphase.deadline)}</TableCell>
+                        {workStage.workSubstages.map(substage => (
+                            <TableRow key={substage.id} className="group">
+                                <TableCell className="pl-8 text-muted-foreground"><span className="mr-2">└</span> {substage.name}</TableCell>
+                                <TableCell><Badge variant={getStatusVariant(substage.status)}>{substage.status}</Badge></TableCell>
+                                <TableCell>{getCompanyNames(substage.assignedTo, companies)}</TableCell>
+                                <TableCell>{formatDate(substage.startDate)}</TableCell>
+                                <TableCell>{formatDate(substage.endDate)}</TableCell>
+                                <TableCell>{formatDate(substage.deadline)}</TableCell>
                                 <TableCell className="text-right">
                                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                                        <Button variant="ghost" size="icon" title="Επεξεργασία Υποφάσης" onClick={() => onEditPhase(subphase, phase.id)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Υποφάσης</span></Button>
-                                        <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Υποφάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Υποφάσης</span></Button></AlertDialogTrigger>
-                                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά την υποφάση "{subphase.name}".</AlertDialogDescription></AlertDialogHeader>
-                                                <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeletePhase(subphase, phase.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                        <Button variant="ghost" size="icon" title="Επεξεργασία Υποσταδίου" onClick={() => onEditWorkStage(substage, workStage.id)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Υποσταδίου</span></Button>
+                                        <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Υποσταδίου" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Υποσταδίου</span></Button></AlertDialogTrigger>
+                                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το υποστάδιο "{substage.name}".</AlertDialogDescription></AlertDialogHeader>
+                                                <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(substage, workStage.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>
                                     </div>

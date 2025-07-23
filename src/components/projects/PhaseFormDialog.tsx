@@ -29,37 +29,37 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { Company } from '@/hooks/use-data-store';
-import type { PhaseFormValues } from './PhasesSection';
-import type { Phase } from '@/app/projects/[id]/page';
+import type { WorkStageFormValues } from './WorkStagesSection';
+import type { WorkStage } from '@/app/projects/[id]/page';
 
-interface PhaseFormDialogProps {
+interface WorkStageFormDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    form: UseFormReturn<PhaseFormValues>;
+    form: UseFormReturn<WorkStageFormValues>;
     onSubmit: (e: React.FormEvent) => void;
     isSubmitting: boolean;
-    editingPhase: Phase | { parentId: string } | null;
+    editingWorkStage: WorkStage | { parentId: string } | null;
     companies: Company[];
     isLoadingCompanies: boolean;
 }
 
-export function PhaseFormDialog({
+export function WorkStageFormDialog({
     open,
     onOpenChange,
     form,
     onSubmit,
     isSubmitting,
-    editingPhase,
+    editingWorkStage,
     companies,
     isLoadingCompanies,
-}: PhaseFormDialogProps) {
-    const isSubphase = editingPhase && 'parentId' in editingPhase;
+}: WorkStageFormDialogProps) {
+    const isSubstage = editingWorkStage && 'parentId' in editingWorkStage;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{editingPhase && 'id' in editingPhase ? 'Επεξεργασία' : 'Νέα'} {isSubphase ? 'Υποφάση' : 'Φάση'}</DialogTitle>
+                    <DialogTitle>{editingWorkStage && 'id' in editingWorkStage ? 'Επεξεργασία' : 'Νέο'} {isSubstage ? 'Υποστάδιο Εργασίας' : 'Στάδιο Εργασίας'}</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={onSubmit} className="grid max-h-[80vh] gap-4 overflow-y-auto py-4 pr-4">
