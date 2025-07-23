@@ -71,10 +71,28 @@ export function WorkStageFormDialog({
                             name="assignedTo"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Ανάθεση (IDs εταιρειών/συνεργατών με κόμμα)</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} placeholder="π.χ. ID εταιρείας, ID συνεργάτη..." />
-                                    </FormControl>
+                                    <FormLabel>Ανάθεση σε</FormLabel>
+                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                            <SelectValue placeholder="Επιλέξτε υπεύθυνο..." />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="">
+                                                <em>Κανένας</em>
+                                            </SelectItem>
+                                            {isLoadingCompanies ? (
+                                                <div className="flex items-center justify-center p-2">
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                </div>
+                                            ) : (
+                                                companies.map(company => (
+                                                    <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                                                ))
+                                            )}
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
