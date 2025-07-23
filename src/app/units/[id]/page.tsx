@@ -52,6 +52,12 @@ const attachmentSchema = z.object({
   sharePercentage: z.string().transform(v => v.trim()).refine(val => val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0), { message: "Το ποσοστό πρέπει να είναι θετικός αριθμός." }).optional(),
   isBundle: z.boolean().default(false),
   isStandalone: z.boolean().default(false),
+}).refine(data => {
+    // A unit cannot be both a bundle and standalone.
+    return !(data.isBundle && data.isStandalone);
+}, {
+    message: "Cannot be both a bundle and standalone.",
+    path: ["isStandalone"], // specify which field the error should be attached to
 });
 
 const unitSchema = z.object({
@@ -423,8 +429,14 @@ export default function UnitDetailsPage() {
                 <FormField control={attachmentForm.control} name="area" render={({ field }) => (<FormItem><FormLabel>Εμβαδόν (τ.μ.)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 <FormField control={attachmentForm.control} name="price" render={({ field }) => (<FormItem><FormLabel>Τιμή (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 <FormField control={attachmentForm.control} name="sharePercentage" render={({ field }) => (<FormItem><FormLabel>Ποσοστό (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                <FormField control={attachmentForm.control} name="isBundle" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Πακέτο με το Unit</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)}/>
-                <FormField control={attachmentForm.control} name="isStandalone" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Ανεξάρτητο</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)}/>
+                <FormField control={attachmentForm.control} name="isBundle" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Πακέτο με το Unit</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={(checked) => {
+                    field.onChange(checked);
+                    if (checked) attachmentForm.setValue('isStandalone', false);
+                }} /></FormControl></FormItem>)}/>
+                <FormField control={attachmentForm.control} name="isStandalone" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>Ανεξάρτητο</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={(checked) => {
+                    field.onChange(checked);
+                    if (checked) attachmentForm.setValue('isBundle', false);
+                }} /></FormControl></FormItem>)}/>
 
                  <DialogFooter>
                     <Button type="button" variant="ghost" onClick={() => handleAttachmentDialogChange(false)}>Ακύρωση</Button>
