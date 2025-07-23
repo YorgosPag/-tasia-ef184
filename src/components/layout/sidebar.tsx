@@ -10,7 +10,6 @@ import {
   LayoutTemplate,
   History,
   Users,
-  ChevronDown,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -29,17 +28,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Logo } from '@/components/logo';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useDataStore } from '@/hooks/use-data-store';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
 
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { isAdmin } = useAuth();
   const { companies, projects, isLoading } = useDataStore();
 
