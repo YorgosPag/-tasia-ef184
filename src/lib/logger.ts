@@ -32,7 +32,13 @@ export type ActionType =
   | 'UNASSIGN_ATTACHMENT'
   | 'UPLOAD_FLOORPLAN'
   | 'UPDATE_UNIT_POLYGON'
-  | 'UPDATE_USER_ROLE';
+  | 'UPDATE_USER_ROLE'
+  | 'CREATE_PHASE'
+  | 'UPDATE_PHASE'
+  | 'DELETE_PHASE'
+  | 'CREATE_SUBPHASE'
+  | 'UPDATE_SUBPHASE'
+  | 'DELETE_SUBPHASE';
 
 export interface LogDetails {
   entityId: string;
@@ -44,7 +50,9 @@ export interface LogDetails {
     | 'unit'
     | 'attachment'
     | 'floorplan'
-    | 'user';
+    | 'user'
+    | 'phase'
+    | 'subphase';
   changes?: Record<string, any>;
   [key: string]: any; // for additional context
 }
