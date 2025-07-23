@@ -13,7 +13,8 @@ import {
   Paperclip,
   Construction,
   CalendarDays,
-  ClipboardUser,
+  ClipboardList,
+  SquareKanban,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -70,7 +71,7 @@ export function AppSidebar() {
             </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton href="/assignments" isActive={pathname.startsWith('/assignments')}>
-                    <ClipboardUser />
+                    <ClipboardList />
                     Οι Αναθέσεις μου
                 </SidebarMenuButton>
             </SidebarMenuItem>
@@ -129,6 +130,12 @@ export function AppSidebar() {
           <SidebarGroup>
               <SidebarGroupLabel>System</SidebarGroupLabel>
               <SidebarMenu>
+                  <SidebarMenuItem>
+                      <SidebarMenuButton href="/templates/work-stages" isActive={pathname.startsWith('/templates/work-stages')}>
+                          <SquareKanban />
+                          Πρότυπα Σταδίων
+                      </SidebarMenuButton>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                       <SidebarMenuButton href="/users" isActive={pathname.startsWith('/users')}>
                           <Users />
