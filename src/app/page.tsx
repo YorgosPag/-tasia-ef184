@@ -3,73 +3,126 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Building, Building2, Briefcase } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Search, ArrowRight, Star } from "lucide-react";
 import Link from 'next/link';
+import Image from 'next/image';
+import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center gap-8 text-center pt-10">
+    <div className="flex flex-col items-center gap-12 py-10 px-4">
       
-      <div className="flex flex-col items-center gap-4">
-        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl font-headline">
-          Ευρετήριο Ακινήτων TASIA
+      {/* Hero Section */}
+      <div className="flex flex-col items-center gap-4 text-center max-w-3xl">
+        <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl font-headline">
+           Τα έργα μας – τα σπίτια του αύριο σήμερα
         </h1>
-        <p className="max-w-2xl text-lg text-muted-foreground">
-          Ανακαλύψτε μοναδικά ακίνητα στα έργα μας. Βρείτε τον χώρο που σας ταιριάζει με ευκολία και ακρίβεια.
+        <p className="max-w-xl text-lg text-muted-foreground">
+          Ανακαλύψτε μοναδικά ακίνητα στα πιο σύγχρονα έργα μας. Βρείτε τον χώρο που σας ταιριάζει με ευκολία και ακρίβεια.
         </p>
-         <Button asChild size="lg" className="mt-4">
-          <Link href="/units">
-            Έναρξη Αναζήτησης
-            <ArrowRight className="ml-2" />
-          </Link>
-        </Button>
+        <div className="mt-4 w-full max-w-md">
+           <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Τι ψάχνετε; π.χ. 'Δυάρι στο Μαρούσι'"
+                className="pl-12 h-12 text-base"
+              />
+           </div>
+           <Button asChild size="lg" className="mt-4 w-full">
+            <Link href="/units">
+              Βρες το σπίτι σου
+              <ArrowRight className="ml-2" />
+            </Link>
+          </Button>
+        </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mt-10">
-        <Card className="text-left">
-          <CardHeader>
-            <Briefcase className="h-8 w-8 text-primary mb-2" />
-            <CardTitle>Εξερεύνηση Έργων</CardTitle>
-            <CardDescription>
-              Δείτε τα ολοκληρωμένα και μελλοντικά μας έργα.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Button asChild variant="outline">
-                <Link href="/projects">Προβολή Έργων</Link>
-             </Button>
-          </CardContent>
-        </Card>
-        
-         <Card className="text-left">
-          <CardHeader>
-            <Building className="h-8 w-8 text-primary mb-2" />
-            <CardTitle>Αναλυτικά τα Κτίρια</CardTitle>
-            <CardDescription>
-              Περιηγηθείτε στα κτίρια και τις προδιαγραφές τους.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Button asChild variant="outline">
-                <Link href="/buildings">Προβολή Κτιρίων</Link>
-             </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="text-left">
-          <CardHeader>
-            <Building2 className="h-8 w-8 text-primary mb-2" />
-            <CardTitle>Οι Εταιρείες μας</CardTitle>
-            <CardDescription>
-              Γνωρίστε τις κατασκευαστικές εταιρείες πίσω από τα έργα.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Featured Properties Section */}
+      <div className="w-full max-w-6xl">
+        <h2 className="text-3xl font-bold tracking-tight text-center mb-8">
+            Διαθέσιμα Ακίνητα
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Static Property Card 1 */}
+          <Card className="overflow-hidden group">
+             <Link href="/units">
+                <div className="relative">
+                    <Image 
+                        src="https://placehold.co/600x400.png"
+                        alt="Modern Apartment"
+                        width={600}
+                        height={400}
+                        className="object-cover w-full h-48 transition-transform duration-300 group-hover:scale-105"
+                        data-ai-hint="modern apartment"
+                    />
+                     <Badge className="absolute top-2 right-2" variant="default">Διαθέσιμο</Badge>
+                </div>
+                <CardHeader>
+                  <CardTitle>Νεόδμητο Διαμέρισμα</CardTitle>
+                  <CardDescription>Γλυφάδα, Αθήνα</CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-between items-center font-semibold">
+                    <span>120 τ.μ.</span>
+                    <span>€ 450.000</span>
+                </CardContent>
+             </Link>
+          </Card>
+          {/* Static Property Card 2 */}
+          <Card className="overflow-hidden group">
+             <Link href="/units">
+                <div className="relative">
+                    <Image 
+                        src="https://placehold.co/600x400.png"
+                        alt="Suburban Villa"
+                        width={600}
+                        height={400}
+                        className="object-cover w-full h-48 transition-transform duration-300 group-hover:scale-105"
+                        data-ai-hint="suburban villa"
+                    />
+                     <Badge className="absolute top-2 right-2" variant="default">Διαθέσιμο</Badge>
+                </div>
+                <CardHeader>
+                  <CardTitle>Πολυτελής Μεζονέτα</CardTitle>
+                  <CardDescription>Κηφισιά, Αθήνα</CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-between items-center font-semibold">
+                    <span>250 τ.μ.</span>
+                    <span>€ 850.000</span>
+                </CardContent>
+             </Link>
+          </Card>
+          {/* Static Property Card 3 */}
+          <Card className="overflow-hidden group">
+             <Link href="/units">
+                <div className="relative">
+                    <Image 
+                        src="https://placehold.co/600x400.png"
+                        alt="City Loft"
+                        width={600}
+                        height={400}
+                        className="object-cover w-full h-48 transition-transform duration-300 group-hover:scale-105"
+                        data-ai-hint="city loft"
+                    />
+                     <Badge className="absolute top-2 right-2" variant="default">Διαθέσιμο</Badge>
+                </div>
+                <CardHeader>
+                  <CardTitle>Μοντέρνο Loft</CardTitle>
+                  <CardDescription>Κέντρο, Θεσσαλονίκη</CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-between items-center font-semibold">
+                    <span>85 τ.μ.</span>
+                    <span>€ 280.000</span>
+                </CardContent>
+             </Link>
+          </Card>
+        </div>
+         <div className="text-center mt-8">
             <Button asChild variant="outline">
-              <Link href="/companies">Προβολή Εταιρειών</Link>
+                <Link href="/units">Δείτε Όλα τα Ακίνητα <ArrowRight className="ml-2" /></Link>
             </Button>
-          </CardContent>
-        </Card>
+        </div>
       </div>
 
     </div>
