@@ -41,7 +41,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         defaultValues: {
             id: undefined, name: '', status: 'Εκκρεμεί', assignedTo: '', notes: '',
             startDate: null, endDate: null, deadline: null,
-            documents: '', description: '', relatedEntityIds: '',
+            documents: '', description: '', relatedEntityIds: '', dependsOn: '',
             budgetedCost: '', actualCost: '',
         }
     });
@@ -84,6 +84,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             assignedTo: workStage.assignedTo?.[0] || '',
             documents: workStage.documents?.join('\\n') || '',
             relatedEntityIds: (workStage as any).relatedEntityIds?.join(', ') || '',
+            dependsOn: workStage.dependsOn?.join(', ') || '',
             startDate: workStage.startDate?.toDate() || null,
             endDate: workStage.endDate?.toDate() || null,
             deadline: workStage.deadline?.toDate() || null,
@@ -144,6 +145,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             name: data.name, description: data.description || '', status: data.status,
             assignedTo: data.assignedTo ? [data.assignedTo] : [],
             relatedEntityIds: data.relatedEntityIds ? data.relatedEntityIds.split(',').map(s => s.trim()).filter(Boolean) : [],
+            dependsOn: data.dependsOn ? data.dependsOn.split(',').map(s => s.trim()).filter(Boolean) : [],
             notes: data.notes || '',
             startDate: data.startDate,
             endDate: data.endDate,

@@ -4,7 +4,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical, DollarSign, AlertCircle } from 'lucide-react';
+import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical, DollarSign, AlertCircle, Link2 } from 'lucide-react';
 import { Company } from '@/hooks/use-data-store';
 import {
     AlertDialog,
@@ -74,6 +74,7 @@ export function WorkStageDetails({
                 <DetailItem icon={DollarSign} label="Budget">{formatCurrency(stage.budgetedCost)}</DetailItem>
                 <DetailItem icon={DollarSign} label="Actual">{formatCurrency(stage.actualCost)}</DetailItem>
                 <DetailItem icon={Briefcase} label="Σχετίζεται με">{(stage as any).relatedEntityIds?.join(', ') || '-'}</DetailItem>
+                <DetailItem icon={Link2} label="Εξαρτάται από">{stage.dependsOn?.join(', ') || '-'}</DetailItem>
                 {stage.notes && <div className="col-span-full"><DetailItem icon={GripVertical} label="Σημειώσεις">{stage.notes}</DetailItem></div>}
             </div>
             <Checklist 

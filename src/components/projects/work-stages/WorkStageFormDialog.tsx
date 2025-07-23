@@ -115,6 +115,19 @@ export function WorkStageFormDialog({
                                 </FormItem>
                             )}
                         />
+                         <FormField
+                            control={form.control}
+                            name="dependsOn"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Εξαρτάται από (IDs σταδίων με κόμμα)</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} placeholder="π.χ. ID σταδίου, ID υποσταδίου..." />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                          <FormField 
                             control={form.control} 
                             name="documents" 

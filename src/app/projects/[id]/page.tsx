@@ -58,6 +58,7 @@ export interface WorkStage {
   endDate?: Timestamp;
   deadline?: Timestamp;
   documents?: string[];
+  dependsOn?: string[];
   createdAt: Timestamp;
   checklist?: ChecklistItem[];
   budgetedCost?: number;
