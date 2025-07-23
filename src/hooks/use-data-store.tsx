@@ -46,7 +46,6 @@ export interface Project {
 
 interface DataStoreContextType {
   companies: Company[];
-  projects: Project[];
   isLoading: boolean;
   isEditor: boolean;
   addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<string | null>;
@@ -55,7 +54,6 @@ interface DataStoreContextType {
 
 const DataStoreContext = createContext<DataStoreContextType>({
   companies: [],
-  projects: [],
   isLoading: true,
   isEditor: false,
   addCompany: async () => null,
@@ -65,7 +63,6 @@ const DataStoreContext = createContext<DataStoreContextType>({
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user, isEditor } = useAuth();
   const [companies, setCompanies] = useState<Company[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // This effect now only handles the loading state, data is fetched in pages.
@@ -129,7 +126,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
 
   return (
-    <DataStoreContext.Provider value={{ companies, projects, isLoading, isEditor, addCompany, addProject }}>
+    <DataStoreContext.Provider value={{ companies, isLoading, isEditor, addCompany, addProject }}>
       {children}
     </DataStoreContext.Provider>
   );
