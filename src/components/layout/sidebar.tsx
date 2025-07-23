@@ -24,12 +24,17 @@ import {
   SidebarMenuButton
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/logo';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const view = searchParams.get('view');
   const { isAdmin } = useAuth();
+
+  const isConstructionView = pathname.startsWith('/projects') && view === 'construction';
+  const isIndexView = pathname.startsWith('/projects') && (view === 'index' || view === null);
 
   return (
     <Sidebar>
@@ -56,9 +61,9 @@ export function AppSidebar() {
           <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
           <SidebarMenu>
              <SidebarMenuItem>
-                <SidebarMenuButton href="/projects" isActive={pathname.startsWith('/projects')}>
+                <SidebarMenuButton href="/projects?view=construction" isActive={isConstructionView}>
                     <Construction />
-                    Έργα
+                    Κατασκευή
                 </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -74,7 +79,7 @@ export function AppSidebar() {
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
-                <SidebarMenuButton href="/projects" isActive={pathname.startsWith('/projects')}>
+                <SidebarMenuButton href="/projects?view=index" isActive={isIndexView}>
                     <Briefcase />
                     Έργα
                 </SidebarMenuButton>
