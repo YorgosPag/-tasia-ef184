@@ -44,20 +44,18 @@ export function useProjectsPage() {
   });
 
   useEffect(() => {
-    // Wait until authentication is fully resolved
     if (isAuthLoading) {
       return;
     }
-    // If no user, stop loading and do nothing.
     if (!user) {
         setIsLoading(false);
+        setProjects([]);
+        setCompanies([]);
         return;
     }
 
-    // Set up the Firestore listeners only once when the user is available.
     const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
-      const projectsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Project));
-      setProjects(projectsData); // CRITICAL FIX: Replace state, don't append
+      setProjects(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Project)));
       setIsLoading(false);
     }, (error) => {
         console.error("Failed to fetch projects:", error);
@@ -65,16 +63,14 @@ export function useProjectsPage() {
     });
 
     const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
-      const companiesData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Company));
-      setCompanies(companiesData);
+      setCompanies(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Company)));
     });
 
-    // Cleanup function to unsubscribe when the component unmounts or dependencies change
     return () => {
       unsubProjects();
       unsubCompanies();
     };
-  }, [user, isAuthLoading]); // Depend only on user and auth loading state
+  }, [user, isAuthLoading]);
 
   const handleDialogOpenChange = useCallback((open: boolean) => {
     setIsDialogOpen(open);

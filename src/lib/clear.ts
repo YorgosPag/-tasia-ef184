@@ -69,6 +69,11 @@ export async function clearDatabase() {
             await clearCollection(`projects/${projectDoc.id}/buildings/${buildingDoc.id}/floors`);
         }
         await clearCollection(`projects/${projectDoc.id}/buildings`);
+
+        const phasesSnapshot = await getDocs(collection(projectDoc.ref, 'phases'));
+        for(const phaseDoc of phasesSnapshot.docs) {
+            await clearCollection(`projects/${projectDoc.id}/phases/${phaseDoc.id}/subphases`);
+        }
         await clearCollection(`projects/${projectDoc.id}/phases`);
     }
 
