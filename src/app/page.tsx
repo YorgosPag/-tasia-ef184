@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useMemo } from "react";
-import { seedDatabase, clearDatabase } from "@/lib/seed";
+import { seedDatabase } from "@/lib/seed";
+import { clearDatabase } from "@/lib/clear";
 import { Loader2, Database, Trash2, FileUp, Home as HomeIcon, Link as LinkIcon, Link2Off, Wallet, CheckCircle, Clock, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { processImportFile } from "@/lib/importer";
