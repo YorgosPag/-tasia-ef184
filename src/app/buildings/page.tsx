@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, writeBatch, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -44,7 +44,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2, Download } from 'lucide-react';
+import { PlusCircle, Loader2, Download, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
@@ -72,6 +72,7 @@ export default function BuildingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   const router = useRouter();
   const { projects, isLoading: isLoadingProjects } = useDataStore();
@@ -196,9 +197,24 @@ export default function BuildingsPage() {
     if (!projectId) return 'N/A';
     return projects.find(p => p.id === projectId)?.title || projectId;
   };
+  
+  const filteredBuildings = useMemo(() => {
+    if (!buildings) return [];
+    return buildings.filter(building => {
+      const query = searchQuery.toLowerCase();
+      const projectTitle = getProjectTitle(building.projectId).toLowerCase();
+      return (
+        building.address.toLowerCase().includes(query) ||
+        building.type.toLowerCase().includes(query) ||
+        (building.description && building.description.toLowerCase().includes(query)) ||
+        projectTitle.includes(query)
+      );
+    });
+  }, [buildings, searchQuery, projects]);
+
 
   const handleExport = () => {
-    const dataToExport = buildings.map(b => ({
+    const dataToExport = filteredBuildings.map(b => ({
       ...b,
       projectTitle: getProjectTitle(b.projectId),
       createdAt: formatDate(b.createdAt),
@@ -213,7 +229,7 @@ export default function BuildingsPage() {
           Κτίρια
         </h1>
         <div className="flex items-center gap-2">
-            <Button onClick={handleExport} variant="outline" disabled={isLoading || buildings.length === 0}>
+            <Button onClick={handleExport} variant="outline" disabled={isLoading || filteredBuildings.length === 0}>
                 <Download className="mr-2"/>
                 Εξαγωγή σε JSON
             </Button>
@@ -333,17 +349,27 @@ export default function BuildingsPage() {
             </Dialog>
         </div>
       </div>
+       <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+              type="search"
+              placeholder="Αναζήτηση σε διεύθυνση, τύπο, έργο..."
+              className="pl-10 w-full md:w-1/3"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+          />
+       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Λίστα Κτιρίων</CardTitle>
+          <CardTitle>Λίστα Κτιρίων ({filteredBuildings.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : buildings.length > 0 ? (
+          ) : filteredBuildings.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -354,7 +380,7 @@ export default function BuildingsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {buildings.map((building) => (
+                {filteredBuildings.map((building) => (
                   <TableRow key={building.id} onClick={() => handleRowClick(building.id)} className="cursor-pointer">
                     <TableCell className="font-medium">{building.address}</TableCell>
                     <TableCell className="text-muted-foreground">{building.type}</TableCell>
@@ -365,10 +391,14 @@ export default function BuildingsPage() {
               </TableBody>
             </Table>
           ) : (
-             <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν κτίρια.</p>
+             <p className="text-center text-muted-foreground py-8">
+                {searchQuery ? 'Δεν βρέθηκαν κτίρια που να ταιριάζουν με την αναζήτηση.' : 'Δεν βρέθηκαν κτίρια.'}
+            </p>
           )}
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    

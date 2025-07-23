@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2, Link as LinkIcon, Download } from 'lucide-react';
+import { PlusCircle, Loader2, Link as LinkIcon, Download, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDataStore, Company } from '@/hooks/use-data-store';
@@ -62,6 +62,7 @@ export default function CompaniesPage() {
   const { companies, isLoading, addCompany } = useDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
   const form = useForm<CompanyFormValues>({
@@ -112,8 +113,22 @@ export default function CompaniesPage() {
     }
   };
 
+  const filteredCompanies = useMemo(() => {
+    if (!companies) return [];
+    return companies.filter(company => {
+      const query = searchQuery.toLowerCase();
+      return (
+        company.name.toLowerCase().includes(query) ||
+        (company.contactInfo?.email && company.contactInfo.email.toLowerCase().includes(query)) ||
+        (company.contactInfo?.phone && company.contactInfo.phone.toLowerCase().includes(query)) ||
+        (company.contactInfo?.afm && company.contactInfo.afm.toLowerCase().includes(query)) ||
+        (company.contactInfo?.address && company.contactInfo.address.toLowerCase().includes(query))
+      );
+    });
+  }, [companies, searchQuery]);
+
   const handleExport = () => {
-    exportToJson(companies, 'companies');
+    exportToJson(filteredCompanies, 'companies');
   };
 
   return (
@@ -123,7 +138,7 @@ export default function CompaniesPage() {
           Εταιρείες
         </h1>
         <div className="flex items-center gap-2">
-            <Button onClick={handleExport} variant="outline" disabled={isLoading || companies.length === 0}>
+            <Button onClick={handleExport} variant="outline" disabled={isLoading || filteredCompanies.length === 0}>
                 <Download className="mr-2"/>
                 Εξαγωγή σε JSON
             </Button>
@@ -251,17 +266,27 @@ export default function CompaniesPage() {
             </Dialog>
         </div>
       </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+              type="search"
+              placeholder="Αναζήτηση σε όνομα, ΑΦΜ, email..."
+              className="pl-10 w-full md:w-1/3"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+          />
+       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Λίστα Εταιρειών</CardTitle>
+          <CardTitle>Λίστα Εταιρειών ({filteredCompanies.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : companies.length > 0 ? (
+          ) : filteredCompanies.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -275,7 +300,7 @@ export default function CompaniesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {companies.map((company) => (
+                  {filteredCompanies.map((company) => (
                     <TableRow key={company.id}>
                       <TableCell>
                         <Avatar title={company.name}>
@@ -319,10 +344,14 @@ export default function CompaniesPage() {
               </Table>
             </div>
           ) : (
-             <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν εταιρείες.</p>
+             <p className="text-center text-muted-foreground py-8">
+                {searchQuery ? 'Δεν βρέθηκαν εταιρείες που να ταιριάζουν στην αναζήτηση.' : 'Δεν βρέθηκαν εταιρείες.'}
+             </p>
           )}
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
@@ -57,7 +57,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2, CalendarIcon, Edit, Trash2, Copy, Download } from 'lucide-react';
+import { PlusCircle, Loader2, CalendarIcon, Edit, Trash2, Copy, Download, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -90,6 +90,7 @@ export default function ProjectsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   const router = useRouter();
 
@@ -261,8 +262,23 @@ export default function ProjectsPage() {
     return companies.find(c => c.id === companyId)?.name || companyId;
   };
 
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+    return projects.filter(project => {
+      const query = searchQuery.toLowerCase();
+      const companyName = getCompanyName(project.companyId).toLowerCase();
+      return (
+        project.title.toLowerCase().includes(query) ||
+        (project.location && project.location.toLowerCase().includes(query)) ||
+        (project.description && project.description.toLowerCase().includes(query)) ||
+        companyName.includes(query) ||
+        (project.tags && project.tags.some(tag => tag.toLowerCase().includes(query)))
+      );
+    });
+  }, [projects, searchQuery, companies]);
+
   const handleExport = () => {
-    const dataToExport = projects.map(p => ({
+    const dataToExport = filteredProjects.map(p => ({
       ...p,
       companyName: getCompanyName(p.companyId),
       deadline: formatDate(p.deadline),
@@ -278,7 +294,7 @@ export default function ProjectsPage() {
           Έργα
         </h1>
         <div className="flex items-center gap-2">
-            <Button onClick={handleExport} variant="outline" disabled={isLoading || projects.length === 0}>
+            <Button onClick={handleExport} variant="outline" disabled={isLoading || filteredProjects.length === 0}>
                 <Download className="mr-2"/>
                 Εξαγωγή σε JSON
             </Button>
@@ -471,17 +487,27 @@ export default function ProjectsPage() {
             )}
         </div>
       </div>
+       <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+              type="search"
+              placeholder="Αναζήτηση σε τίτλο, τοποθεσία, εταιρεία..."
+              className="pl-10 w-full md:w-1/3"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+          />
+       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Λίστα Έργων</CardTitle>
+          <CardTitle>Λίστα Έργων ({filteredProjects.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : projects.length > 0 ? (
+          ) : filteredProjects.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -495,7 +521,7 @@ export default function ProjectsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {projects.map((project) => (
+                  {filteredProjects.map((project) => (
                     <TableRow key={project.id} onClick={(e) => handleRowClick(e, project.id)} className="cursor-pointer group">
                       <TableCell className="font-medium">{project.title}</TableCell>
                       <TableCell className="text-muted-foreground">{getCompanyName(project.companyId)}</TableCell>
@@ -548,10 +574,14 @@ export default function ProjectsPage() {
               </Table>
             </div>
           ) : (
-             <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν έργα.</p>
+             <p className="text-center text-muted-foreground py-8">
+                {searchQuery ? 'Δεν βρέθηκαν έργα που να ταιριάζουν με την αναζήτηση.' : 'Δεν βρέθηκαν έργα.'}
+             </p>
           )}
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    
