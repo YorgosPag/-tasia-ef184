@@ -12,11 +12,11 @@ import { ProjectDialogForm, ProjectFormValues } from './ProjectDialogForm';
 import { Company } from '@/hooks/use-data-store';
 import { UseFormReturn } from 'react-hook-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProjectWithPhaseSummary } from '@/hooks/use-projects-page';
+import type { ProjectWithWorkStageSummary } from '@/hooks/use-projects-page';
 
 
 interface ProjectsPageViewProps {
-  filteredProjects: ProjectWithPhaseSummary[];
+  filteredProjects: ProjectWithWorkStageSummary[];
   companies: Company[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -24,13 +24,14 @@ interface ProjectsPageViewProps {
   isEditor: boolean;
   isDialogOpen: boolean;
   isSubmitting: boolean;
-  editingProject: ProjectWithPhaseSummary | null;
+  editingProject: ProjectWithWorkStageSummary | null;
   form: UseFormReturn<ProjectFormValues>;
   view: string;
+  router: any;
   handleExport: () => void;
   handleDialogOpenChange: (open: boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
-  handleEditClick: (project: ProjectWithPhaseSummary) => void;
+  handleEditClick: (project: ProjectWithWorkStageSummary) => void;
   handleDuplicateProject: (projectId: string) => void;
   handleDeleteProject: (projectId: string) => void;
 }
@@ -47,6 +48,7 @@ export function ProjectsPageView({
   editingProject,
   form,
   view,
+  router,
   handleExport,
   handleDialogOpenChange,
   onSubmit,
@@ -54,7 +56,6 @@ export function ProjectsPageView({
   handleDuplicateProject,
   handleDeleteProject,
 }: ProjectsPageViewProps) {
-  const router = useRouter();
 
   const handleTabChange = (value: string) => {
     router.push(`/projects?view=${value}`);

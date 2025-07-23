@@ -54,6 +54,7 @@ export interface LogDetails {
     | 'workStage'
     | 'workSubstage';
   changes?: Record<string, any>;
+  projectId?: string; // Added to filter activity by project
   [key: string]: any; // for additional context
 }
 

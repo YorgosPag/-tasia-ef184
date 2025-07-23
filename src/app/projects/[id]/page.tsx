@@ -14,8 +14,10 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useDataStore } from '@/hooks/use-data-store';
 import { ProjectHeader } from '@/components/projects/ProjectHeader';
-import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
+import { WorkStagesSection } from '@/components/projects/work-stages/WorkStagesSection';
 import { BuildingsSection } from '@/components/projects/BuildingsSection';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProjectActivityTimeline } from '@/components/projects/ProjectActivityTimeline';
 
 
 // --- TYPES ---
@@ -58,6 +60,8 @@ export interface WorkStage {
   documents?: string[];
   createdAt: Timestamp;
   checklist?: ChecklistItem[];
+  budgetedCost?: number;
+  actualCost?: number;
 }
 
 export interface WorkStageWithSubstages extends WorkStage {
@@ -68,7 +72,7 @@ export default function ProjectDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const view = searchParams.get('view') || 'index'; // Default to index view
+  const view = searchParams.get('view') || 'index';
 
   const projectId = params.id as string;
 
@@ -76,6 +80,10 @@ export default function ProjectDetailsPage() {
   const [isLoadingProject, setIsLoadingProject] = useState(true);
   const { toast } = useToast();
   const { companies, isLoading: isLoadingCompanies } = useDataStore();
+
+  const handleTabChange = (value: string) => {
+    router.push(`/projects/${projectId}?view=${value}`);
+  }
 
 
   // --- DATA FETCHING ---
@@ -112,15 +120,26 @@ export default function ProjectDetailsPage() {
 
       <ProjectHeader project={project} />
       
-      {view === 'construction' ? (
-         <WorkStagesSection 
-            project={project}
-            companies={companies}
-            isLoadingCompanies={isLoadingCompanies}
-          />
-      ) : (
-        <BuildingsSection project={project}/>
-      )}
+      <Tabs defaultValue={view} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="index">Ευρετήριο</TabsTrigger>
+          <TabsTrigger value="construction">Κατασκευή</TabsTrigger>
+          <TabsTrigger value="history">Ιστορικό</TabsTrigger>
+        </TabsList>
+        <TabsContent value="index" className="mt-4">
+           <BuildingsSection project={project}/>
+        </TabsContent>
+        <TabsContent value="construction" className="mt-4">
+           <WorkStagesSection 
+              project={project}
+              companies={companies}
+              isLoadingCompanies={isLoadingCompanies}
+            />
+        </TabsContent>
+         <TabsContent value="history" className="mt-4">
+           <ProjectActivityTimeline projectId={projectId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

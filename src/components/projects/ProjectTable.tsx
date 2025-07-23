@@ -145,7 +145,7 @@ export function ProjectTable({
                         variant="ghost"
                         size="icon"
                         title="Αντιγραφή"
-                        onClick={() => onDuplicate(project.id)}
+                        onClick={(e) => { e.stopPropagation(); onDuplicate(project.id)}}
                         >
                         <Copy className="h-4 w-4" />
                         <span className="sr-only">Αντιγραφή</span>
@@ -154,7 +154,7 @@ export function ProjectTable({
                         variant="ghost"
                         size="icon"
                         title="Επεξεργασία"
-                        onClick={() => onEdit(project)}
+                         onClick={(e) => { e.stopPropagation(); onEdit(project)}}
                         >
                         <Edit className="h-4 w-4" />
                         <span className="sr-only">Επεξεργασία</span>
@@ -166,6 +166,7 @@ export function ProjectTable({
                             size="icon"
                             title="Διαγραφή"
                             className="text-destructive hover:text-destructive"
+                            onClick={(e) => e.stopPropagation()}
                             >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Διαγραφή</span>

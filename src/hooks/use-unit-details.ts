@@ -36,6 +36,7 @@ export interface Unit {
   levelSpan?: string;
   originalId: string;
   createdAt: Timestamp;
+  projectId?: string;
   area?: number;
   price?: number;
   bedrooms?: number;
@@ -147,6 +148,7 @@ export function useUnitDetails() {
           entityId: unit.id,
           entityType: 'unit',
           changes: data,
+          projectId: unit.projectId
         });
     } catch(error) {
         console.error("Failed to save unit:", error);
@@ -172,11 +174,11 @@ export function useUnitDetails() {
             const attRef = doc(db, 'attachments', editingAttachment.id);
             await updateDoc(attRef, finalAttData);
             toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα ενημερώθηκε.' });
-            await logActivity('UPDATE_ATTACHMENT', { entityId: editingAttachment.id, entityType: 'attachment', changes: finalAttData });
+            await logActivity('UPDATE_ATTACHMENT', { entityId: editingAttachment.id, entityType: 'attachment', changes: finalAttData, projectId: unit.projectId });
         } else {
             const newAttRef = await addDoc(collection(db, 'attachments'), { ...finalAttData, createdAt: serverTimestamp() });
             toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα δημιουργήθηκε.' });
-            await logActivity('CREATE_ATTACHMENT', { entityId: newAttRef.id, entityType: 'attachment', details: finalAttData });
+            await logActivity('CREATE_ATTACHMENT', { entityId: newAttRef.id, entityType: 'attachment', details: finalAttData, projectId: unit.projectId });
         }
         handleAttachmentDialogChange(false);
     } catch(error) {
@@ -194,7 +196,7 @@ export function useUnitDetails() {
           const attData = attDoc.data();
           await deleteDoc(attRef);
           toast({title: 'Επιτυχία', description: 'Το παρακολούθημα διαγράφηκε.'});
-          await logActivity('DELETE_ATTACHMENT', { entityId: attachmentId, entityType: 'attachment', details: attData });
+          await logActivity('DELETE_ATTACHMENT', { entityId: attachmentId, entityType: 'attachment', details: attData, projectId: unit?.projectId });
       } catch (error) {
           console.error("Error deleting attachment:", error);
           toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });

@@ -38,6 +38,7 @@ export function useProjectsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const view = searchParams.get('view') || 'index';
 
   const form = useForm<ProjectFormValues>({
@@ -284,6 +285,7 @@ export function useProjectsPage() {
     isSubmitting,
     editingProject,
     form,
+    router,
     view,
     handleExport,
     handleDialogOpenChange,

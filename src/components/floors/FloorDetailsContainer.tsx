@@ -50,6 +50,7 @@ export interface Unit extends Omit<UnitFormValues, 'polygonPoints' | 'existingUn
   status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
   originalId: string;
   floorId: string;
+  projectId?: string;
 }
 
 /**
@@ -262,6 +263,7 @@ export function FloorDetailsContainer() {
             ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
             floorId: floor.id,
             buildingId: floor.buildingId,
+            projectId: buildingData.projectId,
             createdAt: serverTimestamp(),
           };
 
@@ -280,6 +282,7 @@ export function FloorDetailsContainer() {
             entityId: topLevelUnitRef.id,
             entityType: 'unit',
             name: finalUnitData.name,
+            projectId: buildingData.projectId,
           });
           return topLevelUnitRef.id;
       } catch (error) {
@@ -313,12 +316,14 @@ export function FloorDetailsContainer() {
           entityId: editingUnit.id,
           entityType: 'unit',
           changes: unitData,
+          projectId: editingUnit.projectId,
         });
       }
     
     // Case 2: Linking a new polygon to an existing unit
     } else if (drawingPolygon && data.existingUnitId !== 'new') {
         const unitId = data.existingUnitId;
+        const linkedUnit = units.find(u => u.id === unitId);
         success = await updateUnitInFirestore(unitId, { polygonPoints: parsedPolygonPoints });
         if (success) {
             toast({ title: 'Επιτυχία', description: 'Το πολύγωνο συνδέθηκε με το ακίνητο.' });
@@ -326,6 +331,7 @@ export function FloorDetailsContainer() {
                 entityId: unitId,
                 entityType: 'unit',
                 details: `Updated polygon for unit ${unitId}`,
+                projectId: linkedUnit?.projectId,
             });
         }
     
@@ -393,7 +399,8 @@ export function FloorDetailsContainer() {
       await logActivity('DELETE_UNIT', {
         entityId: unitId,
         entityType: 'unit',
-        name: unitToDelete.name
+        name: unitToDelete.name,
+        projectId: unitToDelete.projectId,
       });
     } catch (error) {
       console.error('Error deleting unit:', error);
@@ -402,6 +409,7 @@ export function FloorDetailsContainer() {
   };
   
   const handleUnitPointsUpdate = useCallback(async (unitId: string, newPoints: { x: number; y: number }[]) => {
+    const unit = units.find(u => u.id === unitId);
     const success = await updateUnitInFirestore(unitId, { polygonPoints: newPoints });
     
     if (success) {
@@ -410,6 +418,7 @@ export function FloorDetailsContainer() {
         entityId: unitId,
         entityType: 'unit',
         details: `Updated polygon for unit ${unitId}`,
+        projectId: unit?.projectId,
       });
     }
   }, [units, toast, floor]);
@@ -452,6 +461,7 @@ export function FloorDetailsContainer() {
         entityId: floorId,
         entityType: 'floorplan',
         details: `Uploaded ${selectedFile.name} for floor ${floorId}`,
+        projectId: unit?.projectId,
       });
       setSelectedFile(null);
     } catch (error: any) {
@@ -518,5 +528,3 @@ export function FloorDetailsContainer() {
     </div>
   );
 }
-
-    
