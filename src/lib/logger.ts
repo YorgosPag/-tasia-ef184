@@ -1,7 +1,7 @@
 
 'use an strict';
 
-import { addDoc, collection, serverTimestamp, getDoc, doc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 export type ActionType =
@@ -71,32 +71,13 @@ export const logActivity = async (action: ActionType, details: LogDetails) => {
       return;
     }
 
-    const logEntry: Record<string, any> = {
+    const logEntry = {
       action,
       ...details,
       userId: user.uid,
       userEmail: user.email,
       timestamp: serverTimestamp(),
     };
-    
-    // For assignments or status changes, add more context to the details
-    if (action.includes('UPDATE') && details.changes) {
-        if (details.changes.status) {
-             logEntry.details = { ...logEntry.details, statusChange: `Status changed to ${details.changes.status}` };
-        }
-        if (details.changes.assignedTo) {
-            const assignedToId = details.changes.assignedTo[0];
-            let assignedToName = 'N/A';
-            if (assignedToId) {
-                const companyDoc = await getDoc(doc(db, 'companies', assignedToId));
-                if(companyDoc.exists()) {
-                    assignedToName = companyDoc.data().name;
-                }
-            }
-             logEntry.details = { ...logEntry.details, assignmentChange: `Assigned to ${assignedToName}` };
-        }
-    }
-
 
     await addDoc(collection(db, 'auditLogs'), logEntry);
   } catch (error) {

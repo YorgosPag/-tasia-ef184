@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Timestamp, doc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,32 +14,24 @@ import { exportToJson } from '@/lib/exporter';
 import { ProjectFormValues, projectSchema } from '@/components/projects/ProjectDialogForm';
 import { formatDate } from '@/lib/project-helpers';
 import { useAuth } from './use-auth';
-import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
 
-
-export interface ProjectWithWorkStageSummary extends Project {
-    workStageSummary?: {
-        currentWorkStageName: string;
-        overallStatus: 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Εκκρεμεί' | 'Καθυστερεί';
+export interface ProjectWithPhaseSummary extends Project {
+    phaseSummary?: {
+        currentPhase: string;
         progress: number;
     }
 }
 
 
 export function useProjectsPage() {
-  const [projects, setProjects] = useState<ProjectWithWorkStageSummary[]>([]);
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const { user, isEditor, isLoading: isAuthLoading } = useAuth();
-  const { addProject } = useDataStore();
-  const [isLoading, setIsLoading] = useState(true);
+  const { projects, companies, isLoading, addProject } = useDataStore();
+  const { isEditor } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] = useState<ProjectWithPhaseSummary | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const view = searchParams.get('view') || 'index';
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -55,77 +47,6 @@ export function useProjectsPage() {
     },
   });
 
-  useEffect(() => {
-    if (isAuthLoading || !user) {
-        setIsLoading(false);
-        setProjects([]);
-        setCompanies([]);
-        return;
-    }
-
-    const projectsQuery = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
-    const unsubProjects = onSnapshot(projectsQuery, async (snapshot) => {
-        setIsLoading(true);
-        const projectsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
-        
-        // Fetch workStage summaries for all projects
-        const projectsWithSummaries = await Promise.all(projectsData.map(async (project) => {
-            const workStagesQuery = query(collection(db, 'projects', project.id, 'workStages'), orderBy('createdAt', 'asc'));
-            const workStagesSnapshot = await getDocs(workStagesQuery);
-            const workStages = workStagesSnapshot.docs.map(doc => doc.data() as WorkStage);
-            
-            if (workStages.length === 0) {
-                return { ...project, workStageSummary: undefined };
-            }
-            
-            const completedWorkStages = workStages.filter(p => p.status === 'Ολοκληρώθηκε').length;
-            const inProgressWorkStage = workStages.find(p => p.status === 'Σε εξέλιξη');
-            const delayedWorkStage = workStages.find(p => p.status === 'Καθυστερεί');
-
-            let overallStatus: ProjectWithWorkStageSummary['workStageSummary']['overallStatus'] = 'Εκκρεμεί';
-            let currentWorkStageName = "Έναρξη έργου";
-            
-            if (delayedWorkStage) {
-                overallStatus = 'Καθυστερεί';
-                currentWorkStageName = delayedWorkStage.name;
-            } else if (inProgressWorkStage) {
-                overallStatus = 'Σε εξέλιξη';
-                currentWorkStageName = inProgressWorkStage.name;
-            } else if (completedWorkStages === workStages.length) {
-                overallStatus = 'Ολοκληρώθηκε';
-                currentWorkStageName = "Ολοκληρώθηκε";
-            } else if (workStages.length > 0) {
-                // If no workStage is in progress/delayed but not all are complete, it's pending the next workStage.
-                const lastCompletedIndex = workStages.map(p => p.status).lastIndexOf('Ολοκληρώθηκε');
-                currentWorkStageName = workStages[lastCompletedIndex + 1]?.name || "Επόμενο στάδιο";
-            }
-
-            const progress = workStages.length > 0 ? (completedWorkStages / workStages.length) * 100 : 0;
-            
-            return {
-                ...project,
-                workStageSummary: { currentWorkStageName, overallStatus, progress }
-            };
-        }));
-        
-        setProjects(projectsWithSummaries);
-        setIsLoading(false);
-    }, (error) => {
-        console.error("Failed to fetch projects:", error);
-        setIsLoading(false);
-    });
-
-    const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
-      setCompanies(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Company)));
-    });
-
-    return () => {
-      unsubProjects();
-      unsubCompanies();
-    };
-}, [user, isAuthLoading]);
-
-
   const handleDialogOpenChange = useCallback((open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
@@ -134,7 +55,7 @@ export function useProjectsPage() {
     }
   }, [form]);
 
-  const handleEditClick = useCallback((project: Project) => {
+  const handleEditClick = useCallback((project: ProjectWithPhaseSummary) => {
     setEditingProject(project);
     form.reset({
       ...project,
@@ -151,7 +72,7 @@ export function useProjectsPage() {
       return;
     }
     try {
-      const { id, createdAt, workStageSummary, ...clonedData } = projectToClone;
+      const { id, createdAt, phaseSummary, ...clonedData } = projectToClone;
       clonedData.title = `${clonedData.title} (Copy)`;
       const newId = await addProject({
         ...clonedData,
@@ -159,12 +80,12 @@ export function useProjectsPage() {
         deadline: clonedData.deadline instanceof Timestamp ? clonedData.deadline.toDate() : clonedData.deadline,
       });
       toast({ title: 'Επιτυχία', description: `Το έργο '${projectToClone.title}' αντιγράφηκε.` });
-      if (newId) {
+      if(newId) {
         await logActivity('DUPLICATE_PROJECT', {
-          entityId: newId,
-          entityType: 'project',
-          sourceEntityId: projectId,
-          name: clonedData.title,
+            entityId: newId,
+            entityType: 'project',
+            sourceEntityId: projectId,
+            name: clonedData.title,
         });
       }
     } catch (error) {
@@ -175,15 +96,15 @@ export function useProjectsPage() {
 
   const handleDeleteProject = useCallback(async (projectId: string) => {
     try {
-      const projectToDelete = projects.find((p) => p.id === projectId);
+      const projectToDelete = projects.find(p => p.id === projectId);
       await deleteDoc(doc(db, 'projects', projectId));
       toast({ title: 'Επιτυχία', description: 'Το έργο διαγράφηκε.' });
 
       if (projectToDelete) {
         await logActivity('DELETE_PROJECT', {
-          entityId: projectId,
-          entityType: 'project',
-          title: projectToDelete.title,
+            entityId: projectId,
+            entityType: 'project',
+            title: projectToDelete.title,
         });
       }
     } catch (error) {
@@ -207,20 +128,21 @@ export function useProjectsPage() {
         await updateDoc(projectRef, updateData);
         toast({ title: 'Επιτυχία', description: 'Το έργο ενημερώθηκε.' });
         await logActivity('UPDATE_PROJECT', {
-          entityId: editingProject.id,
-          entityType: 'project',
-          title: updateData.title,
-          changes: updateData,
+            entityId: editingProject.id,
+            entityType: 'project',
+            title: updateData.title,
+            changes: updateData,
         });
+
       } else {
         const newProjectId = await addProject(data);
         toast({ title: 'Επιτυχία', description: 'Το έργο προστέθηκε.' });
         if (newProjectId) {
-          await logActivity('CREATE_PROJECT', {
-            entityId: newProjectId,
-            entityType: 'project',
-            title: data.title,
-          });
+            await logActivity('CREATE_PROJECT', {
+                entityId: newProjectId,
+                entityType: 'project',
+                title: data.title,
+            });
         }
       }
       handleDialogOpenChange(false);
@@ -242,16 +164,7 @@ export function useProjectsPage() {
 
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
-
-    let viewFilteredProjects = projects;
-
-    if (view === 'construction') {
-        // Show all projects
-    } else { // Default to 'index' view
-      // No filter needed, status is now dynamic
-    }
-
-    return viewFilteredProjects.filter((project) => {
+    return projects.filter((project) => {
       const query = searchQuery.toLowerCase();
       const companyName = getCompanyName(project.companyId).toLowerCase();
       return (
@@ -262,7 +175,7 @@ export function useProjectsPage() {
         (project.tags && project.tags.some((tag) => tag.toLowerCase().includes(query)))
       );
     });
-  }, [projects, searchQuery, getCompanyName, view]);
+  }, [projects, searchQuery, getCompanyName]);
 
   const handleExport = useCallback(() => {
     const dataToExport = filteredProjects.map((p) => ({
@@ -279,14 +192,13 @@ export function useProjectsPage() {
     companies,
     searchQuery,
     setSearchQuery,
-    isLoading: isLoading || isAuthLoading,
+    isLoading,
     isEditor,
     isDialogOpen,
     isSubmitting,
     editingProject,
     form,
     router,
-    view,
     handleExport,
     handleDialogOpenChange,
     onSubmit: form.handleSubmit(onSubmit),
