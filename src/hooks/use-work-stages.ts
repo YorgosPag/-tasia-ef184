@@ -25,7 +25,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { logActivity } from '@/lib/logger';
 import { WorkStageFormValues, workStageSchema } from '@/components/projects/work-stages/workStageSchema';
-import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
+import type { WorkStage, WorkStageWithSubstages, Inspection } from '@/app/projects/[id]/page';
 import { exportToJson } from '@/lib/exporter';
 import { formatDate } from '@/components/projects/work-stages/utils';
 import { useAuth } from './use-auth';
@@ -167,6 +167,22 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         if (finalData.endDate) finalData.endDate = Timestamp.fromDate(finalData.endDate as Date);
         if (finalData.deadline) finalData.deadline = Timestamp.fromDate(finalData.deadline as Date);
 
+        // Auto-generate checklist items from documents
+        if (finalData.documents && Array.isArray(finalData.documents)) {
+            const documentTasks = finalData.documents.map((docName: string) => ({
+                task: docName,
+                completed: false,
+            }));
+            // We need to merge with existing checklist items if editing
+            const existingChecklist = editingWorkStage && 'checklist' in editingWorkStage ? (editingWorkStage.checklist || []) : [];
+            const existingDocumentTasks = existingChecklist.filter(item => finalData.documents.includes(item.task));
+            const newDocumentTasks = documentTasks.filter(item => !existingChecklist.some(ex => ex.task === item.task));
+            const otherTasks = existingChecklist.filter(item => !finalData.documents.includes(item.task));
+            
+            finalData.checklist = [...otherTasks, ...existingDocumentTasks, ...newDocumentTasks];
+        }
+
+
         try {
             const isSubstage = editingWorkStage && 'parentId' in editingWorkStage;
             const isEditing = editingWorkStage && 'id' in editingWorkStage;
@@ -196,7 +212,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                  const topLevelRef = parentId ? doc(collection(db, 'workSubstages')) : doc(collection(db, 'workStages'));
                  const subRef = doc(collection(db, 'projects', projectId, parentId ? `workStages/${parentId}/workSubstages` : 'workStages'));
 
-                 batch.set(subRef, { ...finalData, createdAt: serverTimestamp(), checklist: [], inspections: [], photos: [], comments: [], topLevelId: topLevelRef.id });
+                 batch.set(subRef, { ...finalData, createdAt: serverTimestamp(), inspections: [], photos: [], comments: [], topLevelId: topLevelRef.id });
                  batch.set(topLevelRef, { ...finalData, projectId, parentStageId: parentId, assignedToId: finalData.assignedTo?.[0] || null, createdAt: serverTimestamp(), originalId: subRef.id });
                 
                 toast({ title: 'Επιτυχία', description: `Το ${isSubstage ? 'υποστάδιο' : 'στάδιο'} προστέθηκε.` });
@@ -241,30 +257,6 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             batch.update(topLevelRef, { checklist: newChecklist });
         }
         await batch.commit();
-    };
-
-    const handleInspectionNotesChange = async (stage: WorkStage, itemIndex: number, notes: string, isSubstage: boolean) => {
-        if (!projectId) return;
-        const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
-        if (isSubstage && !parentId) return;
-
-        const docRef = parentId 
-            ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id)
-            : doc(db, 'projects', projectId, 'workStages', stage.id);
-
-        const newChecklist = [...(stage.checklist || [])];
-        newChecklist[itemIndex] = { ...newChecklist[itemIndex], inspectionNotes: notes };
-
-        const batch = writeBatch(db);
-        batch.update(docRef, { checklist: newChecklist });
-        const topLevelId = (stage as any).topLevelId;
-        if (topLevelId) {
-            const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
-            batch.update(topLevelRef, { checklist: newChecklist });
-        }
-        
-        await batch.commit();
-        toast({ title: "Οι παρατηρήσεις αποθηκεύτηκαν." });
     };
 
     const handleAddChecklistItem = async (stage: WorkStage, task: string, isSubstage: boolean) => {
@@ -360,6 +352,33 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         await batch.commit();
     };
 
+    const handleInspectionNotesChange = async (stage: WorkStage, inspectionId: string, notes: string, isSubstage: boolean) => {
+        if (!projectId) return;
+        const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
+        if (isSubstage && !parentId) return;
+
+        const docRef = parentId 
+            ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id)
+            : doc(db, 'projects', projectId, 'workStages', stage.id);
+
+        const newInspections = [...(stage.inspections || [])];
+        const inspectionIndex = newInspections.findIndex(insp => insp.id === inspectionId);
+        if (inspectionIndex === -1) return;
+
+        newInspections[inspectionIndex] = { ...newInspections[inspectionIndex], text: notes };
+
+        const batch = writeBatch(db);
+        batch.update(docRef, { inspections: newInspections });
+        const topLevelId = (stage as any).topLevelId;
+        if (topLevelId) {
+            const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
+            batch.update(topLevelRef, { inspections: newInspections });
+        }
+        
+        await batch.commit();
+        toast({ title: "Οι παρατηρήσεις αποθηκεύτηκαν." });
+    };
+
     const handleExport = useCallback(() => {
         const flatData = workStages.flatMap(stage => {
             const baseStage = {
@@ -371,7 +390,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                 deadline: formatDate(stage.deadline),
                 budgetedCost: stage.budgetedCost,
                 actualCost: stage.actualCost,
-                checklist: stage.checklist?.map(c => `${c.task} (${c.completed ? '✓' : '✗'})`).join('; ')
+                inspections: stage.inspections?.map(i => `${i.text} (Status: ${i.status})`).join('; ')
             };
             if (stage.workSubstages.length === 0) {
                 return [baseStage];
@@ -385,7 +404,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                 deadline: formatDate(substage.deadline),
                 budgetedCost: substage.budgetedCost,
                 actualCost: substage.actualCost,
-                checklist: substage.checklist?.map(c => `${c.task} (${c.completed ? '✓' : '✗'})`).join('; ')
+                inspections: substage.inspections?.map(i => `${i.text} (Status: ${i.status})`).join('; ')
             }));
             return [baseStage, ...substages];
         });
@@ -414,5 +433,3 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         handleExport,
     };
 }
-
-    
