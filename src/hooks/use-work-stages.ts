@@ -24,9 +24,11 @@ import { useToast } from '@/hooks/use-toast';
 import { logActivity } from '@/lib/logger';
 import { WorkStageFormValues, workStageSchema } from '@/components/projects/work-stages/workStageSchema';
 import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
+import { exportToJson } from '@/lib/exporter';
+import { formatDate } from '@/components/projects/work-stages/utils';
 
 
-export function useWorkStages(projectId: string) {
+export function useWorkStages(projectId: string, projectTitle: string) {
     const { toast } = useToast();
     const [workStages, setWorkStages] = useState<WorkStageWithSubstages[]>([]);
     const [isLoadingWorkStages, setIsLoadingWorkStages] = useState(true);
@@ -216,6 +218,40 @@ export function useWorkStages(projectId: string) {
             description: "Η υποβολή σχολίων δεν έχει υλοποιηθεί ακόμη."
         });
     }, [toast]);
+
+    const handleExport = useCallback(() => {
+        const flatData = workStages.flatMap(stage => {
+            const baseStage = {
+                level: 'Στάδιο Εργασίας',
+                name: stage.name,
+                status: stage.status,
+                startDate: formatDate(stage.startDate),
+                endDate: formatDate(stage.endDate),
+                deadline: formatDate(stage.deadline),
+                budgetedCost: stage.budgetedCost,
+                actualCost: stage.actualCost,
+                checklist: stage.checklist?.map(c => `${c.task} (${c.completed ? '✓' : '✗'})`).join('; ')
+            };
+            if (stage.workSubstages.length === 0) {
+                return [baseStage];
+            }
+            const substages = stage.workSubstages.map(substage => ({
+                level: 'Υποστάδιο Εργασίας',
+                name: `${stage.name} > ${substage.name}`,
+                status: substage.status,
+                startDate: formatDate(substage.startDate),
+                endDate: formatDate(substage.endDate),
+                deadline: formatDate(substage.deadline),
+                budgetedCost: substage.budgetedCost,
+                actualCost: substage.actualCost,
+                checklist: substage.checklist?.map(c => `${c.task} (${c.completed ? '✓' : '✗'})`).join('; ')
+            }));
+            return [baseStage, ...substages];
+        });
+
+        const fileName = `report-${projectTitle.toLowerCase().replace(/\s+/g, '-')}`;
+        exportToJson(flatData, fileName);
+    }, [workStages, projectTitle]);
       
 
     return {
@@ -232,5 +268,6 @@ export function useWorkStages(projectId: string) {
         handleChecklistItemToggle,
         handleAddChecklistItem,
         handleCommentSubmit,
+        handleExport,
     };
 }
