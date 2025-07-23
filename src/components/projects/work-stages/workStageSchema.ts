@@ -12,7 +12,7 @@ export const workStageSchema = z.object({
     startDate: z.date().optional().nullable(),
     endDate: z.date().optional().nullable(),
     deadline: z.date().optional().nullable(),
-    documents: z.string().optional(), // URLs separated by comma
+    documents: z.string().optional(), // New: list of required document names, one per line
     budgetedCost: z.string().optional(),
     actualCost: z.string().optional(),
 });

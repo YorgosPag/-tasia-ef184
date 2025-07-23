@@ -13,6 +13,7 @@ import {
 import {
     Form,
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -114,7 +115,20 @@ export function WorkStageFormDialog({
                                 </FormItem>
                             )}
                         />
-                        <FormField control={form.control} name="documents" render={({field}) => (<FormItem><FormLabel>Έγγραφα (URL με κόμμα)</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                         <FormField 
+                            control={form.control} 
+                            name="documents" 
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Απαιτούμενα Έγγραφα</FormLabel>
+                                    <FormControl>
+                                        <Textarea {...field} placeholder="π.χ. Σχέδια, Άδεια Δόμησης..." rows={3} />
+                                    </FormControl>
+                                    <FormDescription>Καταχωρήστε ένα όνομα εγγράφου ανά γραμμή.</FormDescription>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
                         <FormField control={form.control} name="notes" render={({field}) => (<FormItem><FormLabel>Σημειώσεις</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <FormField control={form.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Έναρξη</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, 'P', {locale: el}) : <span>Επιλογή</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus/></PopoverContent></Popover><FormMessage /></FormItem>)}/>

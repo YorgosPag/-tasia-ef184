@@ -4,7 +4,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical, DollarSign } from 'lucide-react';
+import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical, DollarSign, AlertCircle } from 'lucide-react';
 import { Company } from '@/hooks/use-data-store';
 import {
     AlertDialog,
@@ -20,6 +20,7 @@ import {
 import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
 import { Checklist } from './Checklist';
 import { formatDate, getCompanyNames, formatCurrency, getStatusVariant } from './utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const DetailItem = ({ icon, label, children }: { icon: React.ElementType, label: string, children: React.ReactNode }) => (
     <div className="flex items-start gap-2 text-sm">
@@ -49,8 +50,22 @@ export function WorkStageDetails({
     onDeleteWorkStage: (workStage: WorkStage, parentId?: string) => void;
     isSubstage: boolean;
 }) {
+
+    const allDocumentsUploaded = stage.documents?.every(docName => 
+        stage.checklist?.some(item => item.task === docName && item.completed)
+    );
+
     return (
         <div className="space-y-4 py-4">
+             {stage.status !== 'Ολοκληρώθηκε' && stage.documents && stage.documents.length > 0 && !allDocumentsUploaded && (
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Εκκρεμή Έγγραφα</AlertTitle>
+                    <AlertDescription>
+                        Το στάδιο δεν μπορεί να ολοκληρωθεί. Παρακαλώ ανεβάστε όλα τα απαιτούμενα έγγραφα.
+                    </AlertDescription>
+                </Alert>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2">
                 <DetailItem icon={User} label="Ανάθεση">{getCompanyNames(stage.assignedTo, companies)}</DetailItem>
                 <DetailItem icon={Calendar} label="Έναρξη">{formatDate(stage.startDate)}</DetailItem>
@@ -58,12 +73,6 @@ export function WorkStageDetails({
                 <DetailItem icon={Clock} label="Προθεσμία">{formatDate(stage.deadline)}</DetailItem>
                 <DetailItem icon={DollarSign} label="Budget">{formatCurrency(stage.budgetedCost)}</DetailItem>
                 <DetailItem icon={DollarSign} label="Actual">{formatCurrency(stage.actualCost)}</DetailItem>
-                <DetailItem icon={FileText} label="Έγγραφα">
-                    {stage.documents && stage.documents.length > 0
-                        ? stage.documents.map((doc, i) => <a key={i} href={doc} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{`Έγγραφο ${i+1}`}</a>).reduce((prev, curr) => <>{prev}, {curr}</>)
-                        : 'Κανένα'
-                    }
-                </DetailItem>
                 <DetailItem icon={Briefcase} label="Σχετίζεται με">{(stage as any).relatedEntityIds?.join(', ') || '-'}</DetailItem>
                 {stage.notes && <div className="col-span-full"><DetailItem icon={GripVertical} label="Σημειώσεις">{stage.notes}</DetailItem></div>}
             </div>

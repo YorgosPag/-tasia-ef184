@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import type { WorkStage } from '@/app/projects/[id]/page';
 import { calculateChecklistProgress } from './utils';
 
@@ -31,9 +31,13 @@ export function Checklist({ stage, onToggle, onAdd }: ChecklistProps) {
         }
     }
 
+    const isDocument = (taskName: string) => {
+        return stage.documents?.includes(taskName);
+    }
+
     return (
         <div className="mt-4 space-y-3">
-            <h4 className="font-semibold">Checklist Εργασιών</h4>
+            <h4 className="font-semibold">Checklist Εργασιών & Εγγράφων</h4>
              {stage.checklist && stage.checklist.length > 0 && (
                 <div>
                     <Progress value={progress} className="w-full h-2"/>
@@ -47,14 +51,18 @@ export function Checklist({ stage, onToggle, onAdd }: ChecklistProps) {
                             id={`task-${stage.id}-${index}`} 
                             checked={item.completed} 
                             onCheckedChange={(checked) => onToggle(index, !!checked)}
+                            disabled={isDocument(item.task)}
                         />
-                        <Label htmlFor={`task-${stage.id}-${index}`} className={`flex-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}>{item.task}</Label>
+                         <Label htmlFor={`task-${stage.id}-${index}`} className={`flex-1 flex items-center gap-2 ${item.completed ? 'line-through text-muted-foreground' : ''}`}>
+                            {isDocument(item.task) && <FileText className="h-4 w-4 text-muted-foreground" />}
+                            {item.task}
+                        </Label>
                     </div>
                 ))}
             </div>
             <div className="flex items-center gap-2">
                 <Input value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="Νέα εργασία..." onKeyDown={(e) => e.key === 'Enter' && handleAddTask()} />
-                <Button size="sm" onClick={handleAddTask}><Plus className="mr-2 h-4 w-4"/>Προσθήκη</Button>
+                <Button size="sm" onClick={handleAddTask}><Plus className="mr-2 h-4 w-4"/>Προσθήκη Εργασίας</Button>
             </div>
         </div>
     )
