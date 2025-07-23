@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { collection, Timestamp, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Download } from 'lucide-react';
+import { Loader2, Search, Download, ListFilter, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -21,6 +21,14 @@ import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { exportToJson } from '@/lib/exporter';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ALL_STATUSES } from '@/components/floor-plan/utils';
 
 interface Unit {
   id: string;
@@ -32,6 +40,9 @@ interface Unit {
   levelSpan?: string;
   buildingId: string;
   createdAt: any;
+  area?: number;
+  price?: number;
+  amenities?: string[];
 }
 
 async function fetchUnits(): Promise<Unit[]> {
@@ -51,9 +62,41 @@ export function useUnits() {
 
 export default function UnitsPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    status: ALL_STATUSES,
+    minPrice: '',
+    maxPrice: '',
+    minArea: '',
+    maxArea: '',
+    amenities: '',
+  });
   const router = useRouter();
 
   const { data: units = [], isLoading, isError } = useUnits();
+
+  const handleFilterChange = (key: keyof typeof filters, value: string | string[]) => {
+      setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleStatusChange = (status: Unit['status'], checked: boolean) => {
+    const newStatus = checked
+        ? [...filters.status, status]
+        : filters.status.filter(s => s !== status);
+    handleFilterChange('status', newStatus);
+  };
+  
+  const clearFilters = () => {
+    setSearchQuery('');
+    setFilters({
+        status: ALL_STATUSES,
+        minPrice: '',
+        maxPrice: '',
+        minArea: '',
+        maxArea: '',
+        amenities: '',
+    });
+  }
+
 
   const handleRowClick = (unitId: string) => {
     router.push(`/units/${unitId}`);
@@ -79,16 +122,47 @@ export default function UnitsPage() {
   
   const filteredUnits = useMemo(() => {
     if (!units) return [];
+    
+    const minPrice = parseFloat(filters.minPrice);
+    const maxPrice = parseFloat(filters.maxPrice);
+    const minArea = parseFloat(filters.minArea);
+    const maxArea = parseFloat(filters.maxArea);
+    const amenitiesQuery = filters.amenities.toLowerCase().split(',').map(a => a.trim()).filter(Boolean);
+
     return units.filter((unit) => {
         const query = searchQuery.toLowerCase();
-        return (
+        
+        // General Search Query
+        const matchesSearch = (
             unit.name.toLowerCase().includes(query) ||
             (unit.type && unit.type.toLowerCase().includes(query)) ||
-            unit.status.toLowerCase().includes(query) ||
             unit.identifier.toLowerCase().includes(query)
         );
+
+        // Status Filter
+        const matchesStatus = filters.status.includes(unit.status);
+        
+        // Price Filter
+        const matchesPrice = (
+            (isNaN(minPrice) || (unit.price && unit.price >= minPrice)) &&
+            (isNaN(maxPrice) || (unit.price && unit.price <= maxPrice))
+        );
+        
+        // Area Filter
+        const matchesArea = (
+            (isNaN(minArea) || (unit.area && unit.area >= minArea)) &&
+            (isNaN(maxArea) || (unit.area && unit.area <= maxArea))
+        );
+        
+        // Amenities Filter
+        const matchesAmenities = amenitiesQuery.length === 0 || 
+            amenitiesQuery.every(amenity => 
+                unit.amenities?.some(ua => ua.toLowerCase().includes(amenity))
+            );
+
+        return matchesSearch && matchesStatus && matchesPrice && matchesArea && matchesAmenities;
     });
-  }, [units, searchQuery]);
+  }, [units, searchQuery, filters]);
 
   const handleExport = () => {
     const dataToExport = filteredUnits.map(u => ({
@@ -110,20 +184,77 @@ export default function UnitsPage() {
         </Button>
       </div>
 
-       <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-              type="search"
-              placeholder="Αναζήτηση βάση ονόματος, τύπου, κατάστασης..."
-              className="pl-10 w-full md:w-1/3"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-          />
+       <div className="space-y-4 p-4 border rounded-lg">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+                type="search"
+                placeholder="Αναζήτηση βάση ονόματος, τύπου, κωδικού..."
+                className="pl-10 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="text-sm">
+                    <ListFilter className="mr-2 h-4 w-4"/>
+                    Προηγμένα Φίλτρα
+                </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-4 space-y-6 animate-in fade-in-0">
+                <div className="space-y-2">
+                    <Label>Κατάσταση</Label>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                        {ALL_STATUSES.map(status => (
+                            <div key={status} className="flex items-center gap-2">
+                                <Checkbox
+                                    id={`status-${status}`}
+                                    checked={filters.status.includes(status)}
+                                    onCheckedChange={(checked) => handleStatusChange(status, !!checked)}
+                                />
+                                <Label htmlFor={`status-${status}`} className="font-normal">{status}</Label>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="minPrice">Ελάχιστη Τιμή (€)</Label>
+                        <Input id="minPrice" type="number" placeholder="π.χ. 100000" value={filters.minPrice} onChange={e => handleFilterChange('minPrice', e.target.value)} />
+                     </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="maxPrice">Μέγιστη Τιμή (€)</Label>
+                        <Input id="maxPrice" type="number" placeholder="π.χ. 500000" value={filters.maxPrice} onChange={e => handleFilterChange('maxPrice', e.target.value)} />
+                     </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="minArea">Ελάχιστο Εμβαδόν (τμ)</Label>
+                        <Input id="minArea" type="number" placeholder="π.χ. 50" value={filters.minArea} onChange={e => handleFilterChange('minArea', e.target.value)} />
+                     </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="maxArea">Μέγιστο Εμβαδόν (τμ)</Label>
+                        <Input id="maxArea" type="number" placeholder="π.χ. 150" value={filters.maxArea} onChange={e => handleFilterChange('maxArea', e.target.value)} />
+                     </div>
+                </div>
+                
+                <div className="space-y-2">
+                    <Label htmlFor="amenities">Παροχές (χωρισμένες με κόμμα)</Label>
+                    <Input id="amenities" placeholder="π.χ. τζάκι, κήπος" value={filters.amenities} onChange={e => handleFilterChange('amenities', e.target.value)}/>
+                </div>
+                
+                <Button variant="secondary" size="sm" onClick={clearFilters}>
+                    <X className="mr-2 h-4 w-4" />
+                    Καθαρισμός Φίλτρων
+                </Button>
+            </CollapsibleContent>
+          </Collapsible>
        </div>
+
 
       <Card>
         <CardHeader>
-          <CardTitle>Λίστα Όλων των Ακινήτων</CardTitle>
+          <CardTitle>Αποτελέσματα ({filteredUnits.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -167,7 +298,10 @@ export default function UnitsPage() {
             </Table>
           ) : (
              <p className="text-center text-muted-foreground py-8">
-                {searchQuery ? 'Δεν βρέθηκαν ακίνητα που να ταιριάζουν με την αναζήτηση.' : 'Δεν βρέθηκαν ακίνητα.'}
+                {searchQuery || Object.values(filters).some(v => Array.isArray(v) ? v.length < ALL_STATUSES.length : !!v) 
+                    ? 'Δεν βρέθηκαν ακίνητα που να ταιριάζουν με τα φίλτρα.' 
+                    : 'Δεν βρέθηκαν ακίνητα.'
+                }
              </p>
           )}
         </CardContent>
@@ -175,3 +309,5 @@ export default function UnitsPage() {
     </div>
   );
 }
+
+    
