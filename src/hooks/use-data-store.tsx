@@ -10,8 +10,8 @@ import { logActivity } from '@/lib/logger';
 
 /**
  * useDataStore: A custom hook that serves as a central data hub for the application.
- * It fetches, caches, and provides real-time updates for top-level collections
- * like 'companies' and 'projects' from Firestore. It also exposes memoized
+ * It provides real-time updates for top-level collections
+ * from Firestore. It also exposes memoized
  * functions for adding new documents, abstracting away the direct Firestore calls
  * from the UI components. This hook is designed to be used within the DataProvider.
  */
@@ -64,61 +64,19 @@ const DataStoreContext = createContext<DataStoreContextType>({
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user, isEditor } = useAuth();
-  const { toast } = useToast();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch initial data
+  // This effect now only handles the loading state, data is fetched in pages.
   useEffect(() => {
     if (!user) {
-        setCompanies([]);
-        setProjects([]);
         setIsLoading(false);
         return;
     };
-
-    const fetchAllData = async () => {
-        setIsLoading(true);
-        try {
-            const companiesSnapshot = await getDocs(collection(db, 'companies'));
-            const companiesData = companiesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company));
-            setCompanies(companiesData);
-
-            const projectsSnapshot = await getDocs(collection(db, 'projects'));
-            const projectsData = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
-            setProjects(projectsData);
-
-        } catch (error) {
-            console.error("Failed to fetch initial data:", error);
-            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των δεδομένων.' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    fetchAllData();
-  }, [user, toast]);
-  
-  // Real-time listener for updates (optional, can be enabled if needed)
-  useEffect(() => {
-    if (!user) return;
-
-    const unsubCompanies = onSnapshot(collection(db, 'companies'), snapshot => {
-        setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
-    }, error => {
-      console.error("Company listener error:", error);
-    });
-
-    const unsubProjects = onSnapshot(collection(db, 'projects'), snapshot => {
-        setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
-    }, error => {
-      console.error("Project listener error:", error);
-    });
-
-    return () => {
-        unsubCompanies();
-        unsubProjects();
-    }
+    // The loading state is now managed within each page's data fetching hooks/effects.
+    // This provider just gives access to the auth state and add methods.
+    setIsLoading(false);
   }, [user]);
 
 
