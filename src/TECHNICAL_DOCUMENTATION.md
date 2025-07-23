@@ -119,11 +119,11 @@
 - **orientation**: `string` (optional) - Προσανατολισμός.
 - **amenities**: `array` of `string` (optional) - Λίστα με παροχές.
 - **polygonPoints**: `array` of `map` - Οι συντεταγμένες `{x, y}` του πολυγώνου.
-- **floorIds**: `array` of `string` - Αναφορά στην `floors` collection. Υποστηρίζει πολλαπλούς ορόφους (π.χ. για μεζονέτες).
 - **levelSpan**: `string` (optional) - Περιγραφικό string για μονάδες πολλαπλών ορόφων (π.χ. "Ισόγειο-1ος").
 - **originalId**: `string` - Το ID του εγγράφου στη subcollection.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 - **Σημείωση για Denormalization**: Για λόγους απόδοσης, κάθε `unit` περιέχει και τα IDs των γονικών του οντοτήτων:
+  - **floorIds**: `array` of `string` - Αναφορά στην `floors` collection. Υποστηρίζει πολλαπλούς ορόφους (π.χ. για μεζονέτες).
   - **buildingId**: `string` - Αναφορά στην `buildings` collection.
   - **projectId**: `string` (optional) - Αναφορά στην `projects` collection.
   - **companyId**: `string` (optional) - Αναφορά στην `companies` collection.
@@ -136,6 +136,10 @@
 - **price**: `number` (optional) - Τιμή.
 - **photoUrl**: `string` (optional) - URL φωτογραφίας.
 - **unitId**: `string` - Αναφορά στην `units` collection.
+- **sharePercentage**: `number` (optional) - Το ποσοστό συνιδιοκτησίας (π.χ. 2.5 για 2.5%).
+- **isBundle**: `boolean` (optional) - True αν το παρακολούθημα "ανήκει πακέτο" στο unit.
+- **bundleUnitId**: `string` (optional) - Το ID του unit με το οποίο είναι "δεμένο".
+- **isStandalone**: `boolean` (optional) - True αν μπορεί να πωληθεί/μεταβιβαστεί ξεχωριστά.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
 ---

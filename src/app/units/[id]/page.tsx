@@ -67,6 +67,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { logActivity } from '@/lib/logger';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const attachmentSchema = z.object({
   id: z.string().optional(), // Used to know if we are editing
@@ -77,6 +79,9 @@ const attachmentSchema = z.object({
   area: z.string().transform(v => v.trim()).refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Το εμβαδόν πρέπει να είναι αριθμός." }).optional(),
   price: z.string().transform(v => v.trim()).refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Η τιμή πρέπει να είναι αριθμός." }).optional(),
   photoUrl: z.string().url({ message: "Το URL της φωτογραφίας δεν είναι έγκυρο." }).or(z.literal('')).optional(),
+  sharePercentage: z.string().transform(v => v.trim()).refine(val => val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0), { message: "Το ποσοστό πρέπει να είναι θετικός αριθμός." }).optional(),
+  isBundle: z.boolean().default(false),
+  isStandalone: z.boolean().default(false),
 });
 
 type AttachmentFormValues = z.infer<typeof attachmentSchema>;
@@ -109,6 +114,9 @@ interface Attachment {
   area?: number;
   price?: number;
   photoUrl?: string;
+  sharePercentage?: number;
+  isBundle?: boolean;
+  isStandalone?: boolean;
 }
 
 export default function UnitDetailsPage() {
@@ -133,6 +141,9 @@ export default function UnitDetailsPage() {
       area: '',
       price: '',
       photoUrl: '',
+      sharePercentage: '',
+      isBundle: false,
+      isStandalone: false,
     },
   });
 
@@ -146,6 +157,9 @@ export default function UnitDetailsPage() {
         area: '',
         price: '',
         photoUrl: '',
+        sharePercentage: '',
+        isBundle: false,
+        isStandalone: false,
       });
     }
   };
@@ -194,17 +208,22 @@ export default function UnitDetailsPage() {
      
      setIsSubmitting(true);
      
-     const finalData: any = {
+     const finalData = {
          type: data.type,
          details: data.details,
          area: data.area ? parseFloat(data.area) : undefined,
          price: data.price ? parseFloat(data.price) : undefined,
+         sharePercentage: data.sharePercentage ? parseFloat(data.sharePercentage) : undefined,
+         isBundle: data.isBundle,
+         bundleUnitId: data.isBundle ? unitId : undefined,
+         isStandalone: data.isStandalone,
+         photoUrl: data.photoUrl?.trim() ? data.photoUrl.trim() : undefined,
          unitId: unitId,
      };
      
-     if (data.photoUrl && data.photoUrl.trim()) {
-        finalData.photoUrl = data.photoUrl.trim();
-     }
+     // Remove undefined fields to comply with Firestore
+     Object.keys(finalData).forEach(key => finalData[key as keyof typeof finalData] === undefined && delete finalData[key as keyof typeof finalData]);
+
 
      try {
        if (data.id) { // This is an update
@@ -266,6 +285,9 @@ export default function UnitDetailsPage() {
           area: attachment.area?.toString() || '',
           price: attachment.price?.toString() || '',
           photoUrl: attachment.photoUrl || '',
+          sharePercentage: attachment.sharePercentage?.toString() || '',
+          isBundle: attachment.isBundle || false,
+          isStandalone: attachment.isStandalone || false,
       });
       setIsDialogOpen(true);
   };
@@ -364,13 +386,13 @@ export default function UnitDetailsPage() {
         <h2 className="text-2xl font-bold tracking-tight text-foreground">Παρακολουθήματα Ακινήτου</h2>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild><Button><PlusCircle className="mr-2" />Νέο Παρακολούθημα</Button></DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>{form.getValues('id') ? 'Επεξεργασία' : 'Προσθήκη'} Παρακολουθήματος</DialogTitle>
               <DialogDescription>Συμπληρώστε τις πληροφορίες.</DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitAttachment)} className="grid gap-4 py-4">
+              <form onSubmit={form.handleSubmit(onSubmitAttachment)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
                 <FormField
                   control={form.control}
                   name="type"
@@ -399,34 +421,75 @@ export default function UnitDetailsPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                    control={form.control}
-                    name="area"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Εμβαδόν (τ.μ.)</FormLabel>
-                        <FormControl><Input type="number" placeholder="π.χ. 12.5" {...field} /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="area"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Εμβαδόν (τ.μ.)</FormLabel>
+                            <FormControl><Input type="number" placeholder="π.χ. 12.5" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Τιμή (€)</FormLabel>
+                            <FormControl><Input type="number" placeholder="π.χ. 15000" {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                </div>
                  <FormField
                     control={form.control}
-                    name="price"
+                    name="sharePercentage"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Τιμή (€)</FormLabel>
-                        <FormControl><Input type="number" placeholder="π.χ. 15000" {...field} /></FormControl>
+                        <FormLabel>Ποσοστό Συνιδιοκτησίας (%)</FormLabel>
+                        <FormControl><Input type="number" placeholder="π.χ. 2.5" {...field} /></FormControl>
                         <FormMessage />
                     </FormItem>
                     )}
                 />
+                <div className="flex items-center space-x-4 rounded-md border p-4">
+                    <FormField
+                        control={form.control}
+                        name="isBundle"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between w-full">
+                                <div className="space-y-0.5">
+                                    <FormLabel>Πακέτο με το Unit</FormLabel>
+                                    <FormMessage />
+                                </div>
+                                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                            </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="isStandalone"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between w-full">
+                                <div className="space-y-0.5">
+                                    <FormLabel>Ανεξάρτητο</FormLabel>
+                                    <FormMessage />
+                                </div>
+                                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                            </FormItem>
+                        )}
+                    />
+                </div>
                 <FormField
                   control={form.control}
                   name="photoUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL Φωτογραφίας</FormLabel>
+                      <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
                       <FormControl>
                         <Input placeholder="https://example.com/storage.jpg" {...field} />
                       </FormControl>
