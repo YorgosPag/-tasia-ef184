@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -120,7 +121,7 @@ export default function UnitsPage() {
   const clearFilters = () => {
     setSearchQuery('');
     setFilters({
-        status: [],
+        status: ALL_STATUSES,
         minPrice: '',
         maxPrice: '',
         minArea: '',
@@ -163,7 +164,7 @@ export default function UnitsPage() {
         );
 
         // Status Filter
-        const matchesStatus = filters.status.length === 0 || filters.status.includes(unit.status);
+        const matchesStatus = filters.status.length === 0 || filters.status.length === ALL_STATUSES.length || filters.status.includes(unit.status);
         
         // Price Filter
         const matchesPrice = (
@@ -231,15 +232,23 @@ export default function UnitsPage() {
             />
           </div>
           <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-            <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="text-sm">
-                    <ListFilter className="mr-2 h-4 w-4"/>
-                    Προηγμένα Φίλτρα
-                    {activeFilterCount > 0 && (
-                        <Badge variant="secondary" className="ml-2">{activeFilterCount}</Badge>
-                    )}
-                </Button>
-            </CollapsibleTrigger>
+            <div className="flex items-center justify-between">
+                <CollapsibleTrigger asChild>
+                    <Button variant="ghost" className="text-sm">
+                        <ListFilter className="mr-2 h-4 w-4"/>
+                        Προηγμένα Φίλτρα
+                        {activeFilterCount > 0 && (
+                            <Badge variant="secondary" className="ml-2">{activeFilterCount}</Badge>
+                        )}
+                    </Button>
+                </CollapsibleTrigger>
+                {activeFilterCount > 0 && (
+                    <Button variant="secondary" size="sm" onClick={clearFilters}>
+                        <X className="mr-2 h-4 w-4" />
+                        Καθαρισμός ({activeFilterCount})
+                    </Button>
+                )}
+            </div>
             <CollapsibleContent className="mt-4 space-y-6 animate-in fade-in-0">
                 <div className="space-y-2">
                     <Label>Κατάσταση</Label>
@@ -280,11 +289,6 @@ export default function UnitsPage() {
                     <Label htmlFor="amenities">Παροχές (χωρισμένες με κόμμα)</Label>
                     <Input id="amenities" placeholder="π.χ. τζάκι, κήπος" value={filters.amenities} onChange={e => handleFilterChange('amenities', e.target.value)}/>
                 </div>
-                
-                <Button variant="secondary" size="sm" onClick={clearFilters}>
-                    <X className="mr-2 h-4 w-4" />
-                    Καθαρισμός Φίλτρων
-                </Button>
             </CollapsibleContent>
           </Collapsible>
        </div>
