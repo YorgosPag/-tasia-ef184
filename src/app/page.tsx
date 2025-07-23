@@ -9,6 +9,7 @@ import { seedDatabase, clearDatabase } from "@/lib/seed";
 import { Loader2, Database, Trash2, FileUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { processImportFile } from "@/lib/importer";
+import { useAuth } from "@/hooks/use-auth";
 
 
 export default function Home() {
@@ -17,6 +18,7 @@ export default function Home() {
   const [isImporting, setIsImporting] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
 
   const handleSeedAndClear = async () => {
     if (!confirm("Είστε σίγουροι; Αυτή η ενέργεια θα διαγράψει ΟΛΑ τα υπάρχοντα δεδομένα και θα τα αντικαταστήσει με νέα δείγματα.")) {
@@ -122,61 +124,63 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Διαχείριση Δειγμάτων</CardTitle>
-            <CardDescription>Χρησιμοποιήστε τα παρακάτω κουμπιά για να διαχειριστείτε τα δεδομένα της βάσης.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-4">
-               <div>
-                  <Button onClick={handleSeedAndClear} disabled={isClearing || isSeeding || isImporting} variant="destructive">
-                      {isClearing ? <Loader2 className="mr-2 animate-spin" /> : <Trash2 className="mr-2" />}
-                      {isClearing ? 'Διαγραφή & Γέμισμα...' : 'Καθαρισμός & Γέμισμα Βάσης'}
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
-                      ΠΡΟΣΟΧΗ: Διαγράφει τα πάντα και εισάγει νέα δείγματα.
-                  </p>
-               </div>
+      {isAdmin && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Διαχείριση Δειγμάτων</CardTitle>
+              <CardDescription>Χρησιμοποιήστε τα παρακάτω κουμπιά για να διαχειριστείτε τα δεδομένα της βάσης.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-4">
                 <div>
-                  <Button onClick={handleAppendSeed} disabled={isSeeding || isClearing || isImporting}>
-                      {isSeeding ? <Loader2 className="mr-2 animate-spin" /> : <Database className="mr-2" />}
-                      {isSeeding ? 'Προσθήκη...' : 'Προσθήκη Δειγμάτων'}
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
-                      Προσθέτει δείγματα στα υπάρχοντα δεδομένα.
-                  </p>
+                    <Button onClick={handleSeedAndClear} disabled={isClearing || isSeeding || isImporting} variant="destructive">
+                        {isClearing ? <Loader2 className="mr-2 animate-spin" /> : <Trash2 className="mr-2" />}
+                        {isClearing ? 'Διαγραφή & Γέμισμα...' : 'Καθαρισμός & Γέμισμα Βάσης'}
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">
+                        ΠΡΟΣΟΧΗ: Διαγράφει τα πάντα και εισάγει νέα δείγματα.
+                    </p>
                 </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Μαζική Εισαγωγή</CardTitle>
-            <CardDescription>Ανεβάστε ένα αρχείο Excel (.xlsx) ή CSV για μαζική εισαγωγή δεδομένων.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Input 
-                id="import-file-input"
-                type="file" 
-                accept=".xlsx, .csv"
-                onChange={handleFileChange}
-                disabled={isImporting}
-              />
-               <p className="text-xs text-muted-foreground">
-                Απαιτούμενες στήλες: `projectTitle`, `buildingAddress`, `floorLevel`, `unitIdentifier`.
-              </p>
-            </div>
-            <Button onClick={handleImport} disabled={!importFile || isImporting}>
-                {isImporting ? <Loader2 className="mr-2 animate-spin" /> : <FileUp className="mr-2" />}
-                {isImporting ? 'Γίνεται Εισαγωγή...' : 'Έναρξη Εισαγωγής'}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+                  <div>
+                    <Button onClick={handleAppendSeed} disabled={isSeeding || isClearing || isImporting}>
+                        {isSeeding ? <Loader2 className="mr-2 animate-spin" /> : <Database className="mr-2" />}
+                        {isSeeding ? 'Προσθήκη...' : 'Προσθήκη Δειγμάτων'}
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">
+                        Προσθέτει δείγματα στα υπάρχοντα δεδομένα.
+                    </p>
+                  </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Μαζική Εισαγωγή</CardTitle>
+              <CardDescription>Ανεβάστε ένα αρχείο Excel (.xlsx) ή CSV για μαζική εισαγωγή δεδομένων.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Input 
+                  id="import-file-input"
+                  type="file" 
+                  accept=".xlsx, .csv"
+                  onChange={handleFileChange}
+                  disabled={isImporting}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Απαιτούμενες στήλες: `projectTitle`, `buildingAddress`, `floorLevel`, `unitIdentifier`.
+                </p>
+              </div>
+              <Button onClick={handleImport} disabled={!importFile || isImporting}>
+                  {isImporting ? <Loader2 className="mr-2 animate-spin" /> : <FileUp className="mr-2" />}
+                  {isImporting ? 'Γίνεται Εισαγωγή...' : 'Έναρξη Εισαγωγής'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
     </div>
   );

@@ -1,7 +1,10 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { useState, useMemo } from 'react';
 import { collection, query, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
@@ -19,6 +22,7 @@ import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 interface LogEntry {
   id: string;
@@ -57,6 +61,16 @@ function useAuditLogs() {
 export default function AuditLogPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const { data: logs = [], isLoading, isError } = useAuditLogs();
+  const { isAdmin, isLoading: isAuthLoading } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!isAuthLoading && !isAdmin) {
+      toast({ variant: 'destructive', title: 'Access Denied' });
+      router.push('/');
+    }
+  }, [isAdmin, isAuthLoading, router, toast]);
 
   const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return 'N/A';
@@ -80,12 +94,23 @@ export default function AuditLogPage() {
   }, [logs, searchQuery]);
   
   const getActionVariant = (action: string) => {
-    if (action.startsWith('CREATE')) return 'default';
+    if (action.startsWith('CREATE') || action.startsWith('DUPLICATE')) return 'default';
     if (action.startsWith('UPDATE') || action.startsWith('UPLOAD')) return 'secondary';
     if (action.startsWith('DELETE')) return 'destructive';
     return 'outline';
   }
 
+  if (isAuthLoading || isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null; // Fallback while redirecting
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -112,11 +137,7 @@ export default function AuditLogPage() {
           <CardDescription>Καταγραφή όλων των αλλαγών που έχουν γίνει στην εφαρμογή.</CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center h-40">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : isError ? (
+          {isError ? (
              <p className="text-center text-destructive py-8">Σφάλμα κατά τη φόρτωση του ιστορικού.</p>
           ) : filteredLogs.length > 0 ? (
             <Table>

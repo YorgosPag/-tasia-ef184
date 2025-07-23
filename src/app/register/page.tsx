@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, User } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -40,6 +41,30 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
+// Function to create a user document in Firestore
+const createUserDocument = async (user: User) => {
+  if (!user) return;
+  const userDocRef = doc(db, 'users', user.uid);
+  const userDoc = await getDoc(userDocRef);
+
+  // Create user document only if it doesn't exist
+  if (!userDoc.exists()) {
+    const { email, photoURL, displayName } = user;
+    try {
+      await setDoc(userDocRef, {
+        email,
+        photoURL,
+        displayName,
+        role: 'viewer', // Default role
+        createdAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error creating user document:", error);
+    }
+  }
+};
+
+
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -62,6 +87,7 @@ export default function RegisterPage() {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
+          await createUserDocument(result.user);
           router.push('/');
         }
       } catch (error: any) {
@@ -82,6 +108,7 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      await createUserDocument(userCredential.user);
       await sendEmailVerification(userCredential.user);
 
       toast({
@@ -115,7 +142,8 @@ export default function RegisterPage() {
       if (isMobile) {
         await signInWithRedirect(auth, provider);
       } else {
-        await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, provider);
+        await createUserDocument(result.user);
         router.push('/');
       }
     } catch (error: any) {
