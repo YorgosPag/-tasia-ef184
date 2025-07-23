@@ -14,7 +14,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useDataStore } from '@/hooks/use-data-store';
 import { ProjectHeader } from '@/components/projects/ProjectHeader';
-import { WorkStagesSection } from '@/components/projects/work-stages/WorkStagesSection';
+import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
 import { BuildingsSection } from '@/components/projects/BuildingsSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProjectActivityTimeline } from '@/components/projects/ProjectActivityTimeline';
