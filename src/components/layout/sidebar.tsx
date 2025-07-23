@@ -16,6 +16,7 @@ import {
   ClipboardList,
   SquareKanban,
   FilePen,
+  MessageSquare,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -74,6 +75,12 @@ export function AppSidebar() {
                 <SidebarMenuButton href="/assignments" isActive={pathname.startsWith('/assignments')}>
                     <ClipboardList />
                     Οι Αναθέσεις μου
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton href="/meetings" isActive={pathname.startsWith('/meetings')}>
+                    <MessageSquare />
+                    Συσκέψεις
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
