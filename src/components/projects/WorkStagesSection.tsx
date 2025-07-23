@@ -31,6 +31,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         onSubmitWorkStage,
         handleChecklistItemToggle,
         handleAddChecklistItem,
+        handleInspectionNotesChange,
         setEditingWorkStage,
         handlePhotoUpload,
         handleExport,
@@ -87,6 +88,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                         onDeleteWorkStage={handleDeleteWorkStage}
                         onChecklistItemToggle={handleChecklistItemToggle}
                         onAddChecklistItem={handleAddChecklistItem}
+                        onInspectionNotesChange={handleInspectionNotesChange}
                         onPhotoUpload={handlePhotoUpload}
                     />
                 ) : (

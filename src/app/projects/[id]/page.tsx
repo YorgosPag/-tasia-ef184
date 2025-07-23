@@ -45,6 +45,9 @@ export interface Building {
 export interface ChecklistItem {
     task: string;
     completed: boolean;
+    inspectionNotes?: string;
+    completionDate?: Timestamp;
+    completedBy?: string;
 }
 
 export interface WorkStagePhoto {

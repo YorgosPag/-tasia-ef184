@@ -17,9 +17,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
+import type { WorkStage, WorkStageWithSubstages, ChecklistItem } from '@/app/projects/[id]/page';
 import { Checklist } from './Checklist';
-import { formatDate, getCompanyNames, formatCurrency, getStatusVariant } from './utils';
+import { formatDate, getCompanyNames, formatCurrency, getStatusVariant, calculateChecklistProgress } from './utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { WorkStagePhotoGallery } from './WorkStagePhotoGallery';
 
@@ -41,6 +41,7 @@ export function WorkStageDetails({
     onEditWorkStage,
     onDeleteWorkStage,
     onPhotoUpload,
+    onInspectionNotesChange,
     isSubstage
 }: {
     stage: WorkStageWithSubstages;
@@ -51,21 +52,21 @@ export function WorkStageDetails({
     onEditWorkStage: (workStage: WorkStage, parentId?: string) => void;
     onDeleteWorkStage: (workStage: WorkStage, parentId?: string) => void;
     onPhotoUpload: (stage: WorkStage, files: FileList, isSubstage: boolean) => void;
+    onInspectionNotesChange: (stage: WorkStage, itemIndex: number, notes: string, isSubstage: boolean) => void;
     isSubstage: boolean;
 }) {
 
-    const allDocumentsUploaded = stage.documents?.every(docName => 
-        stage.checklist?.some(item => item.task === docName && item.completed)
-    );
+    const checklistProgress = calculateChecklistProgress(stage.checklist);
+    const canCompleteStage = checklistProgress === 100;
 
     return (
         <div className="space-y-4 py-4">
-             {stage.status !== 'Ολοκληρώθηκε' && stage.documents && stage.documents.length > 0 && !allDocumentsUploaded && (
+             {stage.status !== 'Ολοκληρώθηκε' && !canCompleteStage && (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Εκκρεμή Έγγραφα</AlertTitle>
+                    <AlertTitle>Εκκρεμείς Επιθεωρήσεις</AlertTitle>
                     <AlertDescription>
-                        Το στάδιο δεν μπορεί να ολοκληρωθεί. Παρακαλώ ανεβάστε όλα τα απαιτούμενα έγγραφα.
+                        Το στάδιο δεν μπορεί να ολοκληρωθεί. Παρακαλώ ολοκληρώστε όλα τα αντικείμενα του checklist επιθεώρησης.
                     </AlertDescription>
                 </Alert>
             )}
@@ -90,6 +91,7 @@ export function WorkStageDetails({
                 stage={stage} 
                 onToggle={(index, completed) => onChecklistItemToggle(stage, index, completed, isSubstage)} 
                 onAdd={(task) => onAddChecklistItem(stage, task, isSubstage)} 
+                onNotesChange={(index, notes) => onInspectionNotesChange(stage, index, notes, isSubstage)}
             />
 
             {stage.workSubstages && stage.workSubstages.length > 0 && (
@@ -116,6 +118,7 @@ export function WorkStageDetails({
                                 onEditWorkStage={onEditWorkStage}
                                 onDeleteWorkStage={onDeleteWorkStage}
                                 onPhotoUpload={onPhotoUpload}
+                                onInspectionNotesChange={onInspectionNotesChange}
                                 isSubstage={true}
                            />
                         </div>
