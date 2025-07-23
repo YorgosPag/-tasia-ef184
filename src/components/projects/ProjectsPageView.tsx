@@ -9,13 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Loader2, Download, Search } from 'lucide-react';
 import { ProjectTable } from './ProjectTable';
 import { ProjectDialogForm, ProjectFormValues } from './ProjectDialogForm';
-import { Company, Project } from '@/hooks/use-data-store';
+import { Company } from '@/hooks/use-data-store';
 import { UseFormReturn } from 'react-hook-form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { ProjectWithPhaseSummary } from '@/hooks/use-projects-page';
 
 
 interface ProjectsPageViewProps {
-  filteredProjects: Project[];
+  filteredProjects: ProjectWithPhaseSummary[];
   companies: Company[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -23,13 +24,13 @@ interface ProjectsPageViewProps {
   isEditor: boolean;
   isDialogOpen: boolean;
   isSubmitting: boolean;
-  editingProject: Project | null;
+  editingProject: ProjectWithPhaseSummary | null;
   form: UseFormReturn<ProjectFormValues>;
   view: string;
   handleExport: () => void;
   handleDialogOpenChange: (open: boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
-  handleEditClick: (project: Project) => void;
+  handleEditClick: (project: ProjectWithPhaseSummary) => void;
   handleDuplicateProject: (projectId: string) => void;
   handleDeleteProject: (projectId: string) => void;
 }

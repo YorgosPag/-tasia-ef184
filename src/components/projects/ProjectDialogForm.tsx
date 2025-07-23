@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -36,7 +37,8 @@ import { Loader2, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
-import { Company, Project } from '@/hooks/use-data-store';
+import { Company } from '@/hooks/use-data-store';
+import type { ProjectWithPhaseSummary } from '@/hooks/use-projects-page';
 
 export const projectSchema = z.object({
   id: z.string().optional(),
@@ -61,7 +63,7 @@ interface ProjectDialogFormProps {
   onSubmit: (e: React.FormEvent) => void;
   isSubmitting: boolean;
   isLoading: boolean;
-  editingProject: Project | null;
+  editingProject: ProjectWithPhaseSummary | null;
   companies: Company[];
 }
 
@@ -223,7 +225,7 @@ export function ProjectDialogForm({
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Κατάσταση</FormLabel>
+                  <FormLabel>Κατάσταση (Εμπορική)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
