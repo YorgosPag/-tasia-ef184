@@ -91,28 +91,18 @@ export function useBreadcrumbs() {
               return;
           }
           
+          let company: DocumentData | null = null;
           let project: DocumentData | null = null;
           let building: DocumentData | null = null;
           let floor: DocumentData | null = null;
           let unit: DocumentData | null = null;
-          let attachment: DocumentData | null = null;
           
           switch (collectionName) {
-              case 'attachments':
-                  attachment = currentEntity;
-                  if (attachment?.unitId) unit = await getDocFromFirestore('units', attachment.unitId);
-                  // The rest of the chain is built from the unit
-                  if (unit) {
-                    if (unit?.floorIds?.length > 0) floor = await getDocFromFirestore('floors', unit.floorIds[0]);
-                    if (unit?.buildingId) building = await getDocFromFirestore('buildings', unit.buildingId);
-                  }
-                  if (building?.projectId) project = await getDocFromFirestore('projects', building.projectId);
-                  break;
               case 'units':
                   unit = currentEntity;
                   if (unit?.floorIds?.length > 0) floor = await getDocFromFirestore('floors', unit.floorIds[0]);
                   if (unit?.buildingId) building = await getDocFromFirestore('buildings', unit.buildingId);
-                  if (building?.projectId) project = await getDocFromFirestore('projects', building.projectId);
+                  if (unit?.projectId) project = await getDocFromFirestore('projects', unit.projectId);
                   break;
               case 'floors':
                   floor = currentEntity;
@@ -128,8 +118,16 @@ export function useBreadcrumbs() {
                   break;
           }
           
+          if(project?.companyId) {
+            company = await getDocFromFirestore('companies', project.companyId);
+          }
+
           const newCrumbs: BreadcrumbItem[] = [];
 
+          if (company) {
+              newCrumbs.push({ href: `/companies`, label: 'Εταιρείες' });
+              newCrumbs.push({ href: `/companies`, label: company.name }); // Not a real page, but good for context
+          }
           if (project) {
               newCrumbs.push({ href: `/projects`, label: 'Έργα' });
               newCrumbs.push({ href: `/projects/${project.id}`, label: project.title });
@@ -145,11 +143,6 @@ export function useBreadcrumbs() {
           if (unit) {
               newCrumbs.push({ href: `/units`, label: 'Ακίνητα' });
               newCrumbs.push({ href: `/units/${unit.id}`, label: unit.name });
-          }
-          if (attachment) {
-               newCrumbs.push({ href: `/units/${attachment.unitId}`, label: 'Παρακολουθήματα' });
-               const label = `${attachment.details || attachment.type}${!attachment.unitId ? ' (Ανεξάρτητο)' : ''}`;
-               newCrumbs.push({ href: `/attachments/${attachment.id}`, label: label });
           }
 
           setBreadcrumbs(newCrumbs);
