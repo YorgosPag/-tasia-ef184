@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   doc,
   onSnapshot,
@@ -61,6 +61,9 @@ export interface PhaseWithSubphases extends Phase {
 export default function ProjectDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const view = searchParams.get('view') || 'index'; // Default to index view
+
   const projectId = params.id as string;
 
   const [project, setProject] = useState<Project | null>(null);
@@ -102,14 +105,16 @@ export default function ProjectDetailsPage() {
       <Button variant="outline" size="sm" className="w-fit" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" />Επιστροφή στα Έργα</Button>
 
       <ProjectHeader project={project} />
-
-      <PhasesSection 
-        project={project}
-        companies={companies}
-        isLoadingCompanies={isLoadingCompanies}
-      />
       
-      <BuildingsSection project={project}/>
+      {view === 'construction' ? (
+         <PhasesSection 
+            project={project}
+            companies={companies}
+            isLoadingCompanies={isLoadingCompanies}
+          />
+      ) : (
+        <BuildingsSection project={project}/>
+      )}
     </div>
   );
 }

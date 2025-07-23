@@ -1,7 +1,8 @@
+
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -51,12 +52,15 @@ export function ProjectTable({
   onDelete,
 }: ProjectTableProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const view = searchParams.get('view') || 'index';
 
   const handleRowClick = (e: React.MouseEvent, projectId: string) => {
+    // Prevent navigation if a button inside the row was clicked
     if ((e.target as HTMLElement).closest('[data-action-button]')) {
       return;
     }
-    router.push(`/projects/${projectId}`);
+    router.push(`/projects/${projectId}?view=${view}`);
   };
 
   return (

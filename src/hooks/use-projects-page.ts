@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Timestamp, doc, updateDoc, deleteDoc, onSnapshot, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
@@ -23,6 +24,8 @@ export function useProjectsPage() {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const view = searchParams.get('view') || 'index';
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -204,6 +207,7 @@ export function useProjectsPage() {
     isSubmitting,
     editingProject,
     form,
+    view,
     handleExport,
     handleDialogOpenChange,
     onSubmit: form.handleSubmit(onSubmit),
