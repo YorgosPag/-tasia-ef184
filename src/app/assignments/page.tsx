@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { collectionGroup, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/use-auth';
 import { useQuery } from '@tanstack/react-query';
@@ -25,8 +25,9 @@ interface WorkStage {
 async function fetchAssignments(companyId: string): Promise<WorkStage[]> {
     if (!companyId) return [];
     
-    const stagesQuery = query(collectionGroup(db, 'workStages'), where('assignedToId', '==', companyId));
-    const subStagesQuery = query(collectionGroup(db, 'workSubstages'), where('assignedToId', '==', companyId));
+    // Query top-level collections directly instead of using collectionGroup
+    const stagesQuery = query(collection(db, 'workStages'), where('assignedTo', 'array-contains', companyId));
+    const subStagesQuery = query(collection(db, 'workSubstages'), where('assignedTo', 'array-contains', companyId));
 
     const [stagesSnapshot, subStagesSnapshot] = await Promise.all([
         getDocs(stagesQuery),
@@ -41,11 +42,9 @@ async function fetchAssignments(companyId: string): Promise<WorkStage[]> {
 }
 
 export default function AssignmentsPage() {
-    const { user } = useAuth(); // Assuming useAuth provides the user's company ID or similar
+    const { user } = useAuth(); 
     const router = useRouter();
-    // This is a placeholder. In a real app, you'd get the companyId from the user's profile.
-    // For now, we assume one-to-one mapping of user to a company for simplicity.
-    // In a multi-company user scenario, you might have a dropdown to select the company.
+    // In a real app, this might come from a user profile that has a companyId field
     const companyIdForAssignments = user?.uid; 
 
     const { data: assignments = [], isLoading, isError } = useQuery({
