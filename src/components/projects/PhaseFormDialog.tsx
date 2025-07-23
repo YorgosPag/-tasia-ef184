@@ -71,9 +71,22 @@ export function WorkStageFormDialog({
                             name="assignedTo"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Ανάθεση (IDs χωρισμένα με κόμμα)</FormLabel>
+                                    <FormLabel>Ανάθεση (IDs εταιρειών/συνεργατών με κόμμα)</FormLabel>
                                     <FormControl>
                                         <Input {...field} placeholder="π.χ. ID εταιρείας, ID συνεργάτη..." />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <FormField
+                            control={form.control}
+                            name="relatedEntityIds"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Αφορά (IDs κτιρίων/ορόφων/ακινήτων με κόμμα)</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} placeholder="π.χ. ID κτιρίου, ID ακινήτου..." />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
