@@ -66,6 +66,7 @@ import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
+import { logActivity } from '@/lib/logger';
 
 const attachmentSchema = z.object({
   id: z.string().optional(), // Used to know if we are editing
@@ -207,12 +208,24 @@ export default function UnitDetailsPage() {
           const attachmentRef = doc(db, 'attachments', data.id);
           await updateDoc(attachmentRef, finalData);
           toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα ενημερώθηκε.' });
+          await logActivity('UPDATE_ATTACHMENT', {
+            entityId: data.id,
+            entityType: 'attachment',
+            changes: finalData,
+            parentUnitId: unitId,
+          });
        } else { // This is a new document
-          await addDoc(collection(db, 'attachments'), {
+          const docRef = await addDoc(collection(db, 'attachments'), {
               ...finalData,
               createdAt: serverTimestamp(),
           });
           toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα προστέθηκε.' });
+          await logActivity('CREATE_ATTACHMENT', {
+            entityId: docRef.id,
+            entityType: 'attachment',
+            details: finalData.details || 'N/A',
+            parentUnitId: unitId,
+          });
        }
        handleDialogOpenChange(false);
      } catch (error) {
@@ -225,8 +238,17 @@ export default function UnitDetailsPage() {
 
   const handleDeleteAttachment = async (attachmentId: string) => {
     try {
+        const attToDelete = attachments.find(a => a.id === attachmentId);
         await deleteDoc(doc(db, 'attachments', attachmentId));
         toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα διαγράφηκε.' });
+        if (attToDelete) {
+          await logActivity('DELETE_ATTACHMENT', {
+            entityId: attachmentId,
+            entityType: 'attachment',
+            details: attToDelete.details,
+            parentUnitId: unitId,
+          });
+        }
     } catch (error) {
         console.error('Error deleting attachment: ', error);
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η διαγραφή.' });

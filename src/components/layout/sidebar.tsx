@@ -7,7 +7,8 @@ import {
   Briefcase,
   Building2,
   Layers,
-  LayoutTemplate
+  LayoutTemplate,
+  History,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -80,6 +81,17 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup>
+            <SidebarGroupLabel>System</SidebarGroupLabel>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton href="/audit-log" isActive={pathname.startsWith('/audit-log')}>
+                        <History />
+                        Audit Log
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>

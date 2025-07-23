@@ -66,6 +66,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import Image from 'next/image';
+import { logActivity } from '@/lib/logger';
 
 
 // Schema for the building form
@@ -221,6 +222,11 @@ export default function ProjectDetailsPage() {
             await batch.commit();
 
             toast({ title: 'Επιτυχία', description: 'Το κτίριο ενημερώθηκε.' });
+            await logActivity('UPDATE_BUILDING', { 
+                entityId: buildingToUpdate.topLevelId,
+                entityType: 'building',
+                changes: finalData
+            });
 
         } else {
             // --- CREATE LOGIC ---
@@ -242,6 +248,12 @@ export default function ProjectDetailsPage() {
             await batch.commit();
 
             toast({ title: 'Επιτυχία', description: 'Το κτίριο προστέθηκε.' });
+            await logActivity('CREATE_BUILDING', { 
+                entityId: topLevelBuildingRef.id,
+                entityType: 'building',
+                address: finalData.address,
+                parentProjectId: projectId
+            });
         }
         handleDialogOpenChange(false);
     } catch (error) {
@@ -268,6 +280,11 @@ export default function ProjectDetailsPage() {
         
         await batch.commit();
         toast({ title: "Επιτυχία", description: "Το κτίριο διαγράφηκε." });
+        await logActivity('DELETE_BUILDING', { 
+            entityId: buildingToDelete.topLevelId,
+            entityType: 'building',
+            address: buildingToDelete.address
+        });
     } catch (error) {
         console.error("Error deleting building:", error);
         toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν ήταν δυνατή η διαγραφή του κτιρίου." });

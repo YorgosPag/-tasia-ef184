@@ -29,6 +29,7 @@ import { FloorPlanCard } from './FloorPlanCard';
 import { UnitsListTable } from './UnitsListTable';
 import { UnitDialogForm, UnitFormValues, unitSchema } from '@/components/units/UnitDialogForm';
 import { useFloorPlanState } from '@/hooks/floor-plan/useFloorPlanState';
+import { logActivity } from '@/lib/logger';
 
 
 // --- Interfaces & Schemas ---
@@ -260,13 +261,27 @@ export function FloorDetailsContainer() {
           ...(parsedPolygonPoints !== undefined && { polygonPoints: parsedPolygonPoints }),
       };
       success = await updateUnitInFirestore(editingUnit.id, unitData);
-      if (success) toast({ title: 'Επιτυχία', description: 'Το ακίνητο ενημερώθηκε.' });
+      if (success) {
+        toast({ title: 'Επιτυχία', description: 'Το ακίνητο ενημερώθηκε.' });
+        await logActivity('UPDATE_UNIT', {
+          entityId: editingUnit.id,
+          entityType: 'unit',
+          changes: unitData,
+        });
+      }
     
     // Case 2: Linking a new polygon to an existing unit
     } else if (drawingPolygon && data.existingUnitId !== 'new') {
         const unitId = data.existingUnitId;
         success = await updateUnitInFirestore(unitId, { polygonPoints: parsedPolygonPoints });
-        if (success) toast({ title: 'Επιτυχία', description: 'Το πολύγωνο συνδέθηκε με το ακίνητο.' });
+        if (success) {
+            toast({ title: 'Επιτυχία', description: 'Το πολύγωνο συνδέθηκε με το ακίνητο.' });
+            await logActivity('UPDATE_UNIT_POLYGON', {
+                entityId: unitId,
+                entityType: 'unit',
+                details: `Updated polygon for unit ${unitId}`,
+            });
+        }
     
     // Case 3: Creating a new unit (either from a polygon or from scratch)
     } else {
@@ -300,6 +315,11 @@ export function FloorDetailsContainer() {
           await batch.commit();
 
           toast({ title: 'Επιτυχία', description: 'Το ακίνητο προστέθηκε.' });
+          await logActivity('CREATE_UNIT', {
+            entityId: topLevelUnitRef.id,
+            entityType: 'unit',
+            name: finalUnitData.name,
+          });
           success = true;
         } catch (error) {
           console.error('Error adding unit:', error);
@@ -331,6 +351,11 @@ export function FloorDetailsContainer() {
       attachmentsSnapshot.forEach(attachmentDoc => batch.delete(attachmentDoc.ref));
       await batch.commit();
       toast({ title: "Επιτυχία", description: "Το ακίνητο διαγράφηκε." });
+      await logActivity('DELETE_UNIT', {
+        entityId: unitId,
+        entityType: 'unit',
+        name: unitToDelete.name
+      });
     } catch (error) {
       console.error('Error deleting unit:', error);
       toast({ variant: 'destructive', title: 'Σφάλμα Διαγραφής', description: 'Δεν ήταν δυνατή η διαγραφή.' });
@@ -342,6 +367,11 @@ export function FloorDetailsContainer() {
     
     if (success) {
       toast({ title: "Το σχήμα ενημερώθηκε", description: "Οι νέες συντεταγμένες αποθηκεύτηκαν." });
+      await logActivity('UPDATE_UNIT_POLYGON', {
+        entityId: unitId,
+        entityType: 'unit',
+        details: `Updated polygon for unit ${unitId}`,
+      });
     }
   }, [units, toast, floor]);
 
@@ -379,6 +409,11 @@ export function FloorDetailsContainer() {
       }
       await batch.commit();
       toast({ title: 'Επιτυχία', description: 'Η κάτοψη ανέβηκε.' });
+      await logActivity('UPLOAD_FLOORPLAN', {
+        entityId: floorId,
+        entityType: 'floorplan',
+        details: `Uploaded ${selectedFile.name} for floor ${floorId}`,
+      });
       setSelectedFile(null);
     } catch (error: any) {
       console.error("Upload error:", error);
