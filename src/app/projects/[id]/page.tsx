@@ -468,7 +468,7 @@ export default function ProjectDetailsPage() {
           <CardTitle>{project.title}</CardTitle>
           <CardDescription>{project.location} | Προθεσμία: {formatDate(project.deadline)} | Κατάσταση: {project.status}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col md:flex-row gap-6">
+        <CardContent className="flex flex-col gap-6 md:flex-row">
             {project.photoUrl && (
                 <div className="md:w-1/3"><Image src={project.photoUrl} alt={`Photo of ${project.title}`} width={400} height={300} className="rounded-lg object-cover aspect-[4/3]" loading="lazy"/></div>
             )}
@@ -495,7 +495,7 @@ export default function ProjectDetailsPage() {
                             <DialogTitle>{editingPhase ? 'Επεξεργασία' : 'Νέα'} {editingPhase && 'parentId' in editingPhase ? 'Υποφάση' : 'Φάση'}</DialogTitle>
                         </DialogHeader>
                         <Form {...phaseForm}>
-                            <form onSubmit={phaseForm.handleSubmit(onSubmitPhase)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
+                            <form onSubmit={phaseForm.handleSubmit(onSubmitPhase)} className="grid max-h-[80vh] gap-4 overflow-y-auto py-4 pr-4">
                                 <FormField control={phaseForm.control} name="name" render={({field}) => (<FormItem><FormLabel>Όνομα</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="description" render={({field}) => (<FormItem><FormLabel>Περιγραφή</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="status" render={({field}) => (<FormItem><FormLabel>Κατάσταση</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Εκκρεμεί">Εκκρεμεί</SelectItem><SelectItem value="Σε εξέλιξη">Σε εξέλιξη</SelectItem><SelectItem value="Ολοκληρώθηκε">Ολοκληρώθηκε</SelectItem><SelectItem value="Καθυστερεί">Καθυστερεί</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
@@ -524,7 +524,7 @@ export default function ProjectDetailsPage() {
                                 />
                                 <FormField control={phaseForm.control} name="documents" render={({field}) => (<FormItem><FormLabel>Έγγραφα (URL με κόμμα)</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="notes" render={({field}) => (<FormItem><FormLabel>Σημειώσεις</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                     <FormField control={phaseForm.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Έναρξη</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, 'P', {locale: el}) : <span>Επιλογή</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus/></PopoverContent></Popover><FormMessage /></FormItem>)}/>
                                     <FormField control={phaseForm.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>Λήξη</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, 'P', {locale: el}) : <span>Επιλογή</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus/></PopoverContent></Popover><FormMessage /></FormItem>)}/>
                                     <FormField control={phaseForm.control} name="deadline" render={({ field }) => (<FormItem><FormLabel>Προθεσμία</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, 'P', {locale: el}) : <span>Επιλογή</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus/></PopoverContent></Popover><FormMessage /></FormItem>)}/>
@@ -542,56 +542,58 @@ export default function ProjectDetailsPage() {
         <CardContent>
             {isLoadingPhases ? (<div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>)
             : phases.length > 0 ? (
-                <Table>
-                    <TableHeader>
-                        <TableRow><TableHead>Φάση / Υποφάση</TableHead><TableHead>Κατάσταση</TableHead><TableHead>Υπεύθυνος</TableHead><TableHead>Έναρξη</TableHead><TableHead>Λήξη</TableHead><TableHead>Προθεσμία</TableHead><TableHead className="text-right">Ενέργειες</TableHead></TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {phases.map(phase => (
-                            <>
-                            <TableRow key={phase.id} className="group bg-muted/20">
-                                <TableCell className="font-bold">{phase.name}</TableCell>
-                                <TableCell><Badge variant={getStatusVariant(phase.status)}>{phase.status}</Badge></TableCell>
-                                <TableCell>{getCompanyName(phase.assignedTo)}</TableCell>
-                                <TableCell>{formatDate(phase.startDate)}</TableCell>
-                                <TableCell>{formatDate(phase.endDate)}</TableCell>
-                                <TableCell>{formatDate(phase.deadline)}</TableCell>
-                                <TableCell className="text-right">
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
-                                        <Button variant="ghost" size="icon" title="Προσθήκη Υποφάσης" onClick={() => handleAddSubphase(phase.id)}><GitMerge className="h-4 w-4" /><span className="sr-only">Προσθήκη Υποφάσης</span></Button>
-                                        <Button variant="ghost" size="icon" title="Επεξεργασία Φάσης" onClick={() => handleEditPhase(phase)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Φάσης</span></Button>
-                                        <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Φάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Φάσης</span></Button></AlertDialogTrigger>
-                                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά τη φάση "{phase.name}" και όλες τις υποφάσεις της.</AlertDialogDescription></AlertDialogHeader>
-                                                <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(phase)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                            {phase.subphases.map(subphase => (
-                                <TableRow key={subphase.id} className="group">
-                                    <TableCell className="pl-8 text-muted-foreground"><span className="mr-2">└</span> {subphase.name}</TableCell>
-                                    <TableCell><Badge variant={getStatusVariant(subphase.status)}>{subphase.status}</Badge></TableCell>
-                                    <TableCell>{getCompanyName(subphase.assignedTo)}</TableCell>
-                                    <TableCell>{formatDate(subphase.startDate)}</TableCell>
-                                    <TableCell>{formatDate(subphase.endDate)}</TableCell>
-                                    <TableCell>{formatDate(subphase.deadline)}</TableCell>
+                <div className="w-full overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow><TableHead>Φάση / Υποφάση</TableHead><TableHead>Κατάσταση</TableHead><TableHead>Υπεύθυνος</TableHead><TableHead>Έναρξη</TableHead><TableHead>Λήξη</TableHead><TableHead>Προθεσμία</TableHead><TableHead className="text-right">Ενέργειες</TableHead></TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {phases.map(phase => (
+                                <>
+                                <TableRow key={phase.id} className="group bg-muted/20">
+                                    <TableCell className="font-bold">{phase.name}</TableCell>
+                                    <TableCell><Badge variant={getStatusVariant(phase.status)}>{phase.status}</Badge></TableCell>
+                                    <TableCell>{getCompanyName(phase.assignedTo)}</TableCell>
+                                    <TableCell>{formatDate(phase.startDate)}</TableCell>
+                                    <TableCell>{formatDate(phase.endDate)}</TableCell>
+                                    <TableCell>{formatDate(phase.deadline)}</TableCell>
                                     <TableCell className="text-right">
-                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" title="Επεξεργασία Υποφάσης" onClick={() => handleEditPhase(subphase, phase.id)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Υποφάσης</span></Button>
-                                            <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Υποφάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Υποφάσης</span></Button></AlertDialogTrigger>
-                                                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά την υποφάση "{subphase.name}".</AlertDialogDescription></AlertDialogHeader>
-                                                    <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(subphase, phase.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
+                                            <Button variant="ghost" size="icon" title="Προσθήκη Υποφάσης" onClick={() => handleAddSubphase(phase.id)}><GitMerge className="h-4 w-4" /><span className="sr-only">Προσθήκη Υποφάσης</span></Button>
+                                            <Button variant="ghost" size="icon" title="Επεξεργασία Φάσης" onClick={() => handleEditPhase(phase)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Φάσης</span></Button>
+                                            <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Φάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Φάσης</span></Button></AlertDialogTrigger>
+                                                <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά τη φάση "{phase.name}" και όλες τις υποφάσεις της.</AlertDialogDescription></AlertDialogHeader>
+                                                    <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(phase)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                                 </AlertDialogContent>
                                             </AlertDialog>
                                         </div>
                                     </TableCell>
                                 </TableRow>
+                                {phase.subphases.map(subphase => (
+                                    <TableRow key={subphase.id} className="group">
+                                        <TableCell className="pl-8 text-muted-foreground"><span className="mr-2">└</span> {subphase.name}</TableCell>
+                                        <TableCell><Badge variant={getStatusVariant(subphase.status)}>{subphase.status}</Badge></TableCell>
+                                        <TableCell>{getCompanyName(subphase.assignedTo)}</TableCell>
+                                        <TableCell>{formatDate(subphase.startDate)}</TableCell>
+                                        <TableCell>{formatDate(subphase.endDate)}</TableCell>
+                                        <TableCell>{formatDate(subphase.deadline)}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
+                                                <Button variant="ghost" size="icon" title="Επεξεργασία Υποφάσης" onClick={() => handleEditPhase(subphase, phase.id)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία Υποφάσης</span></Button>
+                                                <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Υποφάσης" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή Υποφάσης</span></Button></AlertDialogTrigger>
+                                                    <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά την υποφάση "{subphase.name}".</AlertDialogDescription></AlertDialogHeader>
+                                                        <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(subphase, phase.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                </>
                             ))}
-                            </>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableBody>
+                    </Table>
+                </div>
             ) : (<p className="text-center text-muted-foreground py-8">Δεν υπάρχουν καταχωρημένες φάσεις για αυτό το έργο.</p>)}
         </CardContent>
       </Card>
@@ -606,7 +608,7 @@ export default function ProjectDetailsPage() {
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader><DialogTitle>{editingBuildingId ? 'Επεξεργασία' : 'Προσθήκη Νέου'} Κτιρίου</DialogTitle><DialogDescription>Συμπληρώστε τις πληροφορίες για το κτίριο του έργου.</DialogDescription></DialogHeader>
                     <Form {...buildingForm}>
-                        <form onSubmit={buildingForm.handleSubmit(onSubmitBuilding)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
+                        <form onSubmit={buildingForm.handleSubmit(onSubmitBuilding)} className="grid max-h-[80vh] gap-4 overflow-y-auto py-4 pr-4">
                             <FormField control={buildingForm.control} name="address" render={({ field }) => (<FormItem><FormLabel>Διεύθυνση</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                             <FormField control={buildingForm.control} name="type" render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                             <div className="grid grid-cols-2 gap-4">
@@ -629,30 +631,32 @@ export default function ProjectDetailsPage() {
         <CardContent>
           {isLoadingBuildings ? (<div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>)
           : buildings.length > 0 ? (
-            <Table>
-              <TableHeader><TableRow><TableHead className="w-[60px]">Φωτο</TableHead><TableHead>Διεύθυνση</TableHead><TableHead>Τύπος</TableHead><TableHead>Ημ/νία Δημ.</TableHead><TableHead className="text-right">Ενέργειες</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {buildings.map((building) => (
-                  <TableRow key={building.id} className="group" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>
-                    <TableCell><div className="cursor-pointer">{building.photoUrl ? (<Image src={building.photoUrl} alt={building.address} width={40} height={40} className="rounded-md object-cover"/>) : (<div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>)}</div></TableCell>
-                    <TableCell className="font-medium cursor-pointer">{building.address}</TableCell>
-                    <TableCell className="text-muted-foreground cursor-pointer">{building.type}</TableCell>
-                    <TableCell className="cursor-pointer">{formatDate(building.createdAt)}</TableCell>
-                    <TableCell className="text-right">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={(e) => { e.stopPropagation(); handleEditBuilding(building); }}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία</span></Button>
-                            <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή</span></Button></AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το κτίριο "{building.address}".</AlertDialogDescription></AlertDialogHeader>
-                                    <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteBuilding(building.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="w-full overflow-x-auto">
+                <Table>
+                <TableHeader><TableRow><TableHead className="w-[60px]">Φωτο</TableHead><TableHead>Διεύθυνση</TableHead><TableHead>Τύπος</TableHead><TableHead>Ημ/νία Δημ.</TableHead><TableHead className="text-right">Ενέργειες</TableHead></TableRow></TableHeader>
+                <TableBody>
+                    {buildings.map((building) => (
+                    <TableRow key={building.id} className="group cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>
+                        <TableCell><div className="cursor-pointer">{building.photoUrl ? (<Image src={building.photoUrl} alt={building.address} width={40} height={40} className="rounded-md object-cover"/>) : (<div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>)}</div></TableCell>
+                        <TableCell className="font-medium cursor-pointer">{building.address}</TableCell>
+                        <TableCell className="text-muted-foreground cursor-pointer">{building.type}</TableCell>
+                        <TableCell className="cursor-pointer">{formatDate(building.createdAt)}</TableCell>
+                        <TableCell className="text-right">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
+                                <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={(e) => { e.stopPropagation(); handleEditBuilding(building); }}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία</span></Button>
+                                <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή</span></Button></AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το κτίριο "{building.address}".</AlertDialogDescription></AlertDialogHeader>
+                                        <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteBuilding(building.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                    ))}
+                </TableBody>
+                </Table>
+            </div>
           ) : (<p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν κτίρια για αυτό το έργο.</p>)}
         </CardContent>
       </Card>
