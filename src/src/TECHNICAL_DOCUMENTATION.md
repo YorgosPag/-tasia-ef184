@@ -100,6 +100,8 @@
 - **assignedTo**: `array` of `string` (optional) - Λίστα με IDs επαφών/συνεργείων/εταιρειών.
 - **documents**: `array` of `string` (optional) - Λίστα με URLs σχετικών εγγράφων.
 - **notes**: `string` (optional) - Σημειώσεις.
+- **relatedEntityIds**: `array` of `string` (optional) - Λίστα με IDs από κτίρια, ορόφους, ακίνητα.
+- **checklist**: `array` of `map` (optional) - Λίστα αντικειμένων με `{ task: string, completed: boolean }`.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
 ##### Subcollection: `projects/{projectId}/workStages/{workStageId}/workSubstages`

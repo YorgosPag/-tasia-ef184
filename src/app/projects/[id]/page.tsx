@@ -40,6 +40,10 @@ export interface Building {
   topLevelId: string; // This will be the ID from the top-level collection
 }
 
+export interface ChecklistItem {
+    task: string;
+    completed: boolean;
+}
 export interface WorkStage {
   id: string;
   name: string;
@@ -53,6 +57,7 @@ export interface WorkStage {
   deadline?: Timestamp;
   documents?: string[];
   createdAt: Timestamp;
+  checklist?: ChecklistItem[];
 }
 
 export interface WorkStageWithSubstages extends WorkStage {
