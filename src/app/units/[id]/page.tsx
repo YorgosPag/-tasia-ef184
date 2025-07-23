@@ -8,45 +8,16 @@ import {
   getDoc,
   collection,
   onSnapshot,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  serverTimestamp,
   Timestamp,
+  writeBatch,
   query,
   where,
+  deleteDoc,
+  addDoc,
+  updateDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from '@/components/ui/dialog';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import {
   Form,
   FormControl,
@@ -56,10 +27,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, Home, BedDouble, Bath, Compass, Tag, Euro, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Home, BedDouble, Bath, Compass, Tag, Euro, Trash2, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
@@ -68,13 +39,12 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { logActivity } from '@/lib/logger';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 
 const attachmentSchema = z.object({
-  id: z.string().optional(), // Used to know if we are editing
-  type: z.enum(['parking', 'storage'], {
-    required_error: 'Ο τύπος είναι υποχρεωτικός.'
-  }),
+  id: z.string().optional(),
+  type: z.enum(['parking', 'storage'], { required_error: 'Ο τύπος είναι υποχρεωτικός.' }),
   details: z.string().optional(),
   area: z.string().transform(v => v.trim()).refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Το εμβαδόν πρέπει να είναι αριθμός." }).optional(),
   price: z.string().transform(v => v.trim()).refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Η τιμή πρέπει να είναι αριθμός." }).optional(),
@@ -84,6 +54,21 @@ const attachmentSchema = z.object({
   isStandalone: z.boolean().default(false),
 });
 
+const unitSchema = z.object({
+  identifier: z.string().min(1, "Identifier is required"),
+  name: z.string().min(1, "Name is required"),
+  type: z.string().optional(),
+  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
+  area: z.string().optional(),
+  price: z.string().optional(),
+  bedrooms: z.string().optional(),
+  bathrooms: z.string().optional(),
+  orientation: z.string().optional(),
+  amenities: z.string().optional(),
+  attachments: z.array(attachmentSchema).optional(),
+});
+
+type UnitFormValues = z.infer<typeof unitSchema>;
 type AttachmentFormValues = z.infer<typeof attachmentSchema>;
 
 interface Unit {
@@ -95,7 +80,7 @@ interface Unit {
   buildingId: string;
   floorIds: string[];
   levelSpan?: string;
-  originalId: string; // The ID in the subcollection
+  originalId: string;
   createdAt: Timestamp;
   area?: number;
   price?: number;
@@ -105,200 +90,166 @@ interface Unit {
   amenities?: string[];
 }
 
-interface Attachment {
-  id: string;
-  type: 'parking' | 'storage';
-  details?: string;
-  unitId: string;
-  createdAt: any;
-  area?: number;
-  price?: number;
-  photoUrl?: string;
-  sharePercentage?: number;
-  isBundle?: boolean;
-  isStandalone?: boolean;
-}
-
 export default function UnitDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const unitId = params.id as string;
-
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [isLoadingUnit, setIsLoadingUnit] = useState(true);
-  const [isLoadingAttachments, setIsLoadingAttachments] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<AttachmentFormValues>({
-    resolver: zodResolver(attachmentSchema),
+  const [unit, setUnit] = useState<Unit | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<UnitFormValues>({
+    resolver: zodResolver(unitSchema),
     defaultValues: {
-      id: undefined,
-      type: 'parking',
-      details: '',
-      area: '',
-      price: '',
-      photoUrl: '',
-      sharePercentage: '',
-      isBundle: false,
-      isStandalone: false,
+      identifier: '',
+      name: '',
+      attachments: [],
     },
   });
 
-  const handleDialogOpenChange = (open: boolean) => {
-    setIsDialogOpen(open);
-    if (!open) {
-      form.reset({
-        id: undefined,
-        type: 'parking',
-        details: '',
-        area: '',
-        price: '',
-        photoUrl: '',
-        sharePercentage: '',
-        isBundle: false,
-        isStandalone: false,
-      });
-    }
-  };
+  const { fields, append, remove, update } = useFieldArray({
+    control: form.control,
+    name: "attachments",
+  });
+  
+  const attachments = useWatch({
+      control: form.control,
+      name: 'attachments'
+  });
 
-
-  // Fetch unit details from top-level collection
+  // Fetch unit details and attachments
   useEffect(() => {
     if (!unitId) return;
-    const docRef = doc(db, 'units', unitId);
-    const getUnitData = async () => {
-      setIsLoadingUnit(true);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const unitData = { id: docSnap.id, ...docSnap.data() } as Unit;
-        setUnit(unitData);
-      } else {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Το ακίνητο δεν βρέθηκε.' });
-        router.push('/units');
-      }
-      setIsLoadingUnit(false);
-    };
-    getUnitData();
-  }, [unitId, router, toast]);
-
-  // Listen for attachments that belong to this unit
-  useEffect(() => {
-    if (!unitId) return;
-
-    const attachmentsQuery = query(collection(db, 'attachments'), where('unitId', '==', unitId));
     
-    const unsubscribe = onSnapshot(attachmentsQuery, (snapshot) => {
-        const data: Attachment[] = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Attachment));
-        setAttachments(data);
-        setIsLoadingAttachments(false);
-    }, (error) => {
-        console.error('Error fetching attachments: ', error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των παρακολουθημάτων.' });
-        setIsLoadingAttachments(false);
+    const fetchAllData = async () => {
+        setIsLoading(true);
+        try {
+            const unitDocRef = doc(db, 'units', unitId);
+            const unitDocSnap = await getDoc(unitDocRef);
+
+            if (!unitDocSnap.exists()) {
+              toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Το ακίνητο δεν βρέθηκε.' });
+              router.push('/units');
+              return;
+            }
+
+            const unitData = { id: unitDocSnap.id, ...unitDocSnap.data() } as Unit;
+            setUnit(unitData);
+
+            const attachmentsQuery = query(collection(db, 'attachments'), where('unitId', '==', unitId));
+            const attachmentsSnapshot = await getDocs(attachmentsQuery);
+            const attachmentsData = attachmentsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AttachmentFormValues));
+
+            form.reset({
+              identifier: unitData.identifier,
+              name: unitData.name,
+              type: unitData.type || '',
+              status: unitData.status,
+              area: unitData.area?.toString() || '',
+              price: unitData.price?.toString() || '',
+              bedrooms: unitData.bedrooms?.toString() || '',
+              bathrooms: unitData.bathrooms?.toString() || '',
+              orientation: unitData.orientation || '',
+              amenities: unitData.amenities?.join(', ') || '',
+              attachments: attachmentsData,
+            });
+
+        } catch (error) {
+            console.error("Error fetching unit details:", error);
+            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Failed to load unit data.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    fetchAllData();
+  }, [unitId, router, toast, form]);
+
+  const onSubmit = async (data: UnitFormValues) => {
+    if (!unit) return;
+    setIsSubmitting(true);
+    const batch = writeBatch(db);
+    
+    // --- 1. Update Unit ---
+    const unitDocRef = doc(db, 'units', unit.id);
+    const unitDataToUpdate = {
+        ...getUnitDataFromForm(data),
+    };
+    batch.update(unitDocRef, unitDataToUpdate);
+    
+    // --- 2. Handle Attachments ---
+    // First, find attachments that were removed in the form
+    const formAttachmentIds = new Set(data.attachments?.map(a => a.id).filter(Boolean));
+    const initialAttachments = (form.formState.defaultValues.attachments || []);
+    for (const initialAtt of initialAttachments) {
+        if (initialAtt.id && !formAttachmentIds.has(initialAtt.id)) {
+            // This attachment was removed, delete it
+            batch.delete(doc(db, 'attachments', initialAtt.id));
+        }
+    }
+
+    // Then, iterate through form attachments to add or update
+    data.attachments?.forEach(formData => {
+        const finalAttData: any = {
+            ...getAttachmentDataFromForm(formData),
+            unitId: unit.id, // Ensure it's linked
+            bundleUnitId: formData.isBundle ? unit.id : undefined,
+        };
+        Object.keys(finalAttData).forEach(key => finalAttData[key] === undefined && delete finalAttData[key]);
+
+        if(formData.id) {
+            // Update existing attachment
+            batch.update(doc(db, 'attachments', formData.id), finalAttData);
+        } else {
+            // Create new attachment
+            const newAttRef = doc(collection(db, 'attachments'));
+            batch.set(newAttRef, {...finalAttData, createdAt: serverTimestamp()});
+        }
     });
 
-    return () => unsubscribe();
-  }, [unitId, toast]);
+    try {
+        await batch.commit();
+        toast({ title: 'Επιτυχία', description: 'Οι αλλαγές στο ακίνητο αποθηκεύτηκαν.' });
+        await logActivity('UPDATE_UNIT', {
+          entityId: unit.id,
+          entityType: 'unit',
+          changes: data,
+        });
+    } catch (error) {
+        console.error("Failed to save unit and attachments:", error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η αποθήκευση απέτυχε.' });
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
   
-  const onSubmitAttachment = async (data: AttachmentFormValues) => {
-     if (!unitId) return;
-     
-     setIsSubmitting(true);
-     
-     const finalData: Omit<Partial<Attachment>, 'id' | 'createdAt'> = {
+  const getUnitDataFromForm = (data: UnitFormValues) => {
+    return {
+      identifier: data.identifier,
+      name: data.name,
+      type: data.type || '',
+      status: data.status,
+      area: data.area ? parseFloat(data.area) : undefined,
+      price: data.price ? parseFloat(data.price) : undefined,
+      bedrooms: data.bedrooms ? parseInt(data.bedrooms, 10) : undefined,
+      bathrooms: data.bathrooms ? parseInt(data.bathrooms, 10) : undefined,
+      orientation: data.orientation || '',
+      amenities: data.amenities ? data.amenities.split(',').map(a => a.trim()).filter(Boolean) : [],
+    };
+  };
+
+  const getAttachmentDataFromForm = (data: AttachmentFormValues) => {
+      return {
          type: data.type,
          details: data.details,
          area: data.area ? parseFloat(data.area) : undefined,
          price: data.price ? parseFloat(data.price) : undefined,
          sharePercentage: data.sharePercentage ? parseFloat(data.sharePercentage) : undefined,
          isBundle: data.isBundle,
-         bundleUnitId: data.isBundle ? unitId : undefined,
          isStandalone: data.isStandalone,
          photoUrl: data.photoUrl?.trim() || undefined,
-         unitId: unitId,
      };
-     
-     // Remove undefined fields to comply with Firestore
-     Object.keys(finalData).forEach(key => finalData[key as keyof typeof finalData] === undefined && delete finalData[key as keyof typeof finalData]);
-
-     try {
-       if (data.id) { // This is an update
-          const attachmentRef = doc(db, 'attachments', data.id);
-          await updateDoc(attachmentRef, finalData);
-          toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα ενημερώθηκε.' });
-          await logActivity('UPDATE_ATTACHMENT', {
-            entityId: data.id,
-            entityType: 'attachment',
-            changes: finalData,
-            parentUnitId: unitId,
-          });
-       } else { // This is a new document
-          const docRef = await addDoc(collection(db, 'attachments'), {
-              ...finalData,
-              createdAt: serverTimestamp(),
-          });
-          toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα προστέθηκε.' });
-          await logActivity('CREATE_ATTACHMENT', {
-            entityId: docRef.id,
-            entityType: 'attachment',
-            details: finalData.details || 'N/A',
-            parentUnitId: unitId,
-          });
-       }
-       handleDialogOpenChange(false);
-     } catch (error) {
-       console.error('Error submitting attachment: ', error);
-       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η υποβολή.' });
-     } finally {
-       setIsSubmitting(false);
-     }
-  };
-
-  const handleDeleteAttachment = async (attachmentId: string) => {
-    try {
-        const attToDelete = attachments.find(a => a.id === attachmentId);
-        await deleteDoc(doc(db, 'attachments', attachmentId));
-        toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα διαγράφηκε.' });
-        if (attToDelete) {
-          await logActivity('DELETE_ATTACHMENT', {
-            entityId: attachmentId,
-            entityType: 'attachment',
-            details: attToDelete.details,
-            parentUnitId: unitId,
-          });
-        }
-    } catch (error) {
-        console.error('Error deleting attachment: ', error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η διαγραφή.' });
-    }
-  };
-
-  const handleEditAttachment = (attachment: Attachment) => {
-      form.reset({
-          id: attachment.id,
-          type: attachment.type,
-          details: attachment.details || '',
-          area: attachment.area?.toString() || '',
-          price: attachment.price?.toString() || '',
-          photoUrl: attachment.photoUrl || '',
-          sharePercentage: attachment.sharePercentage?.toString() || '',
-          isBundle: attachment.isBundle || false,
-          isStandalone: attachment.isStandalone || false,
-      });
-      setIsDialogOpen(true);
-  };
-
-
-  const formatDate = (timestamp: Timestamp | undefined) => {
-    if (!timestamp) return 'Άγνωστο';
-    return format(timestamp.toDate(), 'dd/MM/yyyy');
-  };
-  
-  const getAttachmentTypeLabel = (type: string) => {
-    return type === 'parking' ? 'Θέση Στάθμευσης' : 'Αποθήκη';
   };
 
   const getStatusClass = (status: Unit['status'] | undefined) => {
@@ -329,261 +280,121 @@ export default function UnitDetailsPage() {
         </div>
     );
   };
-
-  if (isLoadingUnit) {
+  
+  if (isLoading || !unit) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
   }
 
-  if (!unit) {
-    return null;
-  }
-
   return (
-    <div className="flex flex-col gap-8">
-      <Button variant="outline" size="sm" className="w-fit" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" />Επιστροφή</Button>
-
-      <Card>
-        <CardHeader>
-            <div className="flex justify-between items-start">
-                <div>
-                    <CardTitle>Ακίνητο: {unit.name} ({unit.identifier})</CardTitle>
-                    <CardDescription>
-                        Τύπος: {unit.type || 'N/A'} | 
-                        {unit.levelSpan ? ` Όροφοι: ${unit.levelSpan}` : ` ID Ορόφου: ${unit.floorIds?.join(', ')}`}
-                    </CardDescription>
-                </div>
-                <Badge variant="default" className={getStatusClass(unit.status)}>
-                    {unit.status}
-                </Badge>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="flex flex-col gap-8">
+            <div className="flex justify-between items-center">
+                 <Button variant="outline" size="sm" className="w-fit" type="button" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" />Επιστροφή</Button>
+                 <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Αποθήκευση Αλλαγών
+                 </Button>
             </div>
-        </CardHeader>
-        <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-y-4 gap-x-2 border-t pt-4">
-                <UnitStat icon={Home} label="Εμβαδόν" value={unit.area ? `${unit.area} τ.μ.` : undefined} />
-                <UnitStat icon={Euro} label="Τιμή" value={formatPrice(unit.price)} />
-                <UnitStat icon={BedDouble} label="Υπνοδωμάτια" value={unit.bedrooms} />
-                <UnitStat icon={Bath} label="Μπάνια" value={unit.bathrooms} />
-                <UnitStat icon={Compass} label="Προσανατολισμός" value={unit.orientation} />
-            </div>
-            {unit.amenities && unit.amenities.length > 0 && (
-                <div className="mt-4 border-t pt-4">
-                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                        <Tag className="h-4 w-4 text-muted-foreground" />
-                        Παροχές
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                        {unit.amenities.map((amenity, index) => (
-                            <Badge key={index} variant="secondary">{amenity}</Badge>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </CardContent>
-      </Card>
-      
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Παρακολουθήματα Ακινήτου</h2>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-          <DialogTrigger asChild><Button><PlusCircle className="mr-2" />Νέο Παρακολούθημα</Button></DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>{form.getValues('id') ? 'Επεξεργασία' : 'Προσθήκη'} Παρακολουθήματος</DialogTitle>
-              <DialogDescription>Συμπληρώστε τις πληροφορίες.</DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitAttachment)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Τύπος</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε τύπο" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="parking">Θέση Στάθμευσης</SelectItem>
-                          <SelectItem value="storage">Αποθήκη</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="details"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Λεπτομέρειες (Προαιρετικό)</FormLabel>
-                      <FormControl><Input placeholder="π.χ. Υπόγειο, Νο. 5" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                        control={form.control}
-                        name="area"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Εμβαδόν (τ.μ.)</FormLabel>
-                            <FormControl><Input type="number" placeholder="π.χ. 12.5" {...field} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="price"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Τιμή (€)</FormLabel>
-                            <FormControl><Input type="number" placeholder="π.χ. 15000" {...field} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                </div>
-                 <FormField
-                    control={form.control}
-                    name="sharePercentage"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Ποσοστό Συνιδιοκτησίας (%)</FormLabel>
-                        <FormControl><Input type="number" placeholder="π.χ. 2.5" {...field} /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <div className="flex items-center space-x-4 rounded-md border p-4">
-                    <FormField
-                        control={form.control}
-                        name="isBundle"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between w-full">
-                                <div className="space-y-0.5">
-                                    <FormLabel>Πακέτο με το Unit</FormLabel>
-                                    <FormMessage />
-                                </div>
-                                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                            </FormItem>
-                        )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="isStandalone"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between w-full">
-                                <div className="space-y-0.5">
-                                    <FormLabel>Ανεξάρτητο</FormLabel>
-                                    <FormMessage />
-                                </div>
-                                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                            </FormItem>
-                        )}
-                    />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="photoUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/storage.jpg" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                   <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
-                   <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {form.getValues('id') ? 'Αποθήκευση' : 'Προσθήκη'}
-                   </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </div>
 
-      <Card>
-        <CardHeader><CardTitle>Λίστα Παρακολουθημάτων</CardTitle></CardHeader>
-        <CardContent>
-          {isLoadingAttachments ? (
-            <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-          ) : attachments.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Φωτογραφία</TableHead>
-                  <TableHead>Τύπος</TableHead>
-                  <TableHead>Λεπτομέρειες</TableHead>
-                  <TableHead>Εμβαδόν</TableHead>
-                  <TableHead>Τιμή</TableHead>
-                  <TableHead className="text-right">Ενέργειες</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {attachments.map((att) => (
-                  <TableRow key={att.id} className="group">
-                     <TableCell>
-                      {att.photoUrl ? (
-                        <Image
-                          src={att.photoUrl}
-                          alt={att.details || 'Attachment'}
-                          width={40}
-                          height={40}
-                          className="rounded-md object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">{getAttachmentTypeLabel(att.type)}</TableCell>
-                    <TableCell className="text-muted-foreground">{att.details || 'N/A'}</TableCell>
-                    <TableCell className="text-muted-foreground">{att.area ? `${att.area} τ.μ.` : 'N/A'}</TableCell>
-                    <TableCell className="text-muted-foreground">{formatPrice(att.price)}</TableCell>
-                    <TableCell className="text-right">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleEditAttachment(att)}>
-                                <Edit className="h-4 w-4" />
-                                <span className="sr-only">Επεξεργασία</span>
-                            </Button>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                        <Trash2 className="h-4 w-4" />
-                                        <span className="sr-only">Διαγραφή</span>
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το παρακολούθημα.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteAttachment(att.id)} className="bg-destructive hover:bg-destructive/90">
-                                            Διαγραφή
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+            <Card>
+                <CardHeader>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <CardTitle>Επεξεργασία Ακινήτου: {unit.name} ({unit.identifier})</CardTitle>
+                            <CardDescription>
+                                Τύπος: {unit.type || 'N/A'} | 
+                                {unit.levelSpan ? ` Όροφοι: ${unit.levelSpan}` : ` ID Ορόφου: ${unit.floorIds?.join(', ')}`}
+                            </CardDescription>
                         </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν παρακολουθήματα για αυτό το ακίνητο.</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                         <FormField
+                            control={form.control}
+                            name="status"
+                            render={({ field }) => (
+                                <FormItem>
+                                     <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className={`w-[180px] ${getStatusClass(field.value)}`}>
+                                                <SelectValue placeholder="Επιλέξτε κατάσταση" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
+                                            <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
+                                            <SelectItem value="Πωλημένο">Πωλημένο</SelectItem>
+                                            <SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                            )}
+                         />
+                    </div>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="identifier" render={({ field }) => (<FormItem><FormLabel>Κωδικός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Όνομα/Αναγνωριστικό</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="orientation" render={({ field }) => (<FormItem><FormLabel>Προσανατολισμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="area" render={({ field }) => (<FormItem><FormLabel>Εμβαδόν (τ.μ.)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>Τιμή (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Υπνοδωμάτια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Μπάνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                     <div className="md:col-span-2">
+                        <FormField control={form.control} name="amenities" render={({ field }) => (<FormItem><FormLabel>Παροχές (με κόμμα)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+                     </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <CardTitle>Παρακολουθήματα</CardTitle>
+                        <Button type="button" size="sm" variant="outline" onClick={() => append({ type: 'parking', details: '', area: '', price: '', photoUrl: '', sharePercentage: '', isBundle: true, isStandalone: false })}>
+                            <PlusCircle className="mr-2" />
+                            Προσθήκη
+                        </Button>
+                    </div>
+                    <CardDescription>Διαχειριστείτε τις θέσεις στάθμευσης, αποθήκες κ.λπ. που συνδέονται με αυτό το ακίνητο.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {fields.map((field, index) => (
+                        <div key={field.id} className="p-4 border rounded-lg space-y-4 relative">
+                            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => remove(index)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <FormField control={form.control} name={`attachments.${index}.type`} render={({ field }) => (
+                                    <FormItem><FormLabel>Τύπος</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="parking">Θέση Στάθμευσης</SelectItem>
+                                            <SelectItem value="storage">Αποθήκη</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                 <FormField control={form.control} name={`attachments.${index}.details`} render={({ field }) => (<FormItem><FormLabel>Λεπτομέρειες</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={form.control} name={`attachments.${index}.area`} render={({ field }) => (<FormItem><FormLabel>Εμβαδόν (τ.μ.)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={form.control} name={`attachments.${index}.price`} render={({ field }) => (<FormItem><FormLabel>Τιμή (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={form.control} name={`attachments.${index}.sharePercentage`} render={({ field }) => (<FormItem><FormLabel>Ποσοστό (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                            </div>
+                             <div className="flex items-center space-x-4 rounded-md border p-4">
+                                <FormField control={form.control} name={`attachments.${index}.isBundle`} render={({ field }) => (<FormItem className="flex flex-row items-center justify-between w-full"><div className="space-y-0.5"><FormLabel>Πακέτο με το Unit</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)}/>
+                                <FormField control={form.control} name={`attachments.${index}.isStandalone`} render={({ field }) => (<FormItem className="flex flex-row items-center justify-between w-full"><div className="space-y-0.5"><FormLabel>Ανεξάρτητο</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)}/>
+                             </div>
+                        </div>
+                    ))}
+                    {fields.length === 0 && (
+                        <p className="text-sm text-center text-muted-foreground py-8">Δεν υπάρχουν παρακολουθήματα για αυτό το ακίνητο.</p>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+      </form>
+    </Form>
   );
 }
+
+    
