@@ -24,7 +24,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, Edit, Trash2, Copy } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { getStatusClass } from '@/components/floor-plan/utils';
@@ -47,6 +47,7 @@ interface UnitsListTableProps {
   onEditUnit: (unitId: string) => void;
   onDeleteUnit: (unitId: string) => void;
   onViewUnit: (unitId: string) => void;
+  onDuplicateUnit: (unitId: string) => void;
 }
 
 const formatDate = (timestamp: Timestamp | undefined) => {
@@ -66,6 +67,7 @@ export function UnitsListTable({
   onEditUnit,
   onDeleteUnit,
   onViewUnit,
+  onDuplicateUnit,
 }: UnitsListTableProps) {
   return (
     <>
@@ -115,13 +117,17 @@ export function UnitsListTable({
                       <TableCell>{formatDate(unit.createdAt)}</TableCell>
                       <TableCell className="text-right">
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => onEditUnit(unit.id)}>
+                           <Button variant="ghost" size="icon" title="Αντιγραφή" onClick={() => onDuplicateUnit(unit.id)}>
+                              <Copy className="h-4 w-4" />
+                              <span className="sr-only">Αντιγραφή</span>
+                          </Button>
+                          <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={() => onEditUnit(unit.id)}>
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Επεξεργασία</span>
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                              <Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive">
                                 <Trash2 className="h-4 w-4" />
                                 <span className="sr-only">Διαγραφή</span>
                               </Button>

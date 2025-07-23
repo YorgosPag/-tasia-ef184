@@ -244,6 +244,51 @@ export function FloorDetailsContainer() {
     }
   };
 
+  const createNewUnit = async (data: UnitFormValues, parsedPolygonPoints?: any[]) => {
+      if (!floor || !floor.buildingId || !floor.originalId) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε γονικός όροφος/κτίριο.' });
+        return false;
+      }
+      try {
+          const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+          if (!buildingDoc.exists()) throw new Error("Parent building not found");
+          const buildingData = buildingDoc.data();
+          
+          const batch = writeBatch(db);
+          const topLevelUnitRef = doc(collection(db, 'units'));
+          
+          const finalUnitData: any = {
+            ...getUnitDataFromForm(data),
+            ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
+            floorId: floor.id,
+            buildingId: floor.buildingId,
+            createdAt: serverTimestamp(),
+          };
+
+          if (buildingData.projectId && buildingData.originalId) {
+            const subCollectionUnitRef = doc(collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units'));
+            batch.set(subCollectionUnitRef, finalUnitData);
+            batch.set(topLevelUnitRef, { ...finalUnitData, originalId: subCollectionUnitRef.id });
+          } else {
+             batch.set(topLevelUnitRef, { ...finalUnitData, originalId: topLevelUnitRef.id });
+          }
+
+          await batch.commit();
+
+          toast({ title: 'Επιτυχία', description: 'Το ακίνητο προστέθηκε.' });
+          await logActivity('CREATE_UNIT', {
+            entityId: topLevelUnitRef.id,
+            entityType: 'unit',
+            name: finalUnitData.name,
+          });
+          return true;
+      } catch (error) {
+          console.error('Error adding unit:', error);
+          toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη του ακινήτου.' });
+          return false;
+      }
+  };
+
   const onSubmitUnit = async (data: UnitFormValues) => {
     setIsSubmitting(true);
     const parsedPolygonPoints = getParsedPolygonPoints(data);
@@ -285,47 +330,7 @@ export function FloorDetailsContainer() {
     
     // Case 3: Creating a new unit (either from a polygon or from scratch)
     } else {
-      if (!floor || !floor.buildingId || !floor.originalId) {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε γονικός όροφος/κτίριο.' });
-      } else {
-        try {
-          const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-          if (!buildingDoc.exists()) throw new Error("Parent building not found");
-          const buildingData = buildingDoc.data();
-          
-          const batch = writeBatch(db);
-          const topLevelUnitRef = doc(collection(db, 'units'));
-          
-          const finalUnitData: any = {
-            ...getUnitDataFromForm(data),
-            ...(parsedPolygonPoints && { polygonPoints: parsedPolygonPoints }),
-            floorId: floor.id,
-            buildingId: floor.buildingId,
-            createdAt: serverTimestamp(),
-          };
-
-          if (buildingData.projectId && buildingData.originalId) {
-            const subCollectionUnitRef = doc(collection(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId, 'units'));
-            batch.set(subCollectionUnitRef, finalUnitData);
-            batch.set(topLevelUnitRef, { ...finalUnitData, originalId: subCollectionUnitRef.id });
-          } else {
-             batch.set(topLevelUnitRef, { ...finalUnitData, originalId: topLevelUnitRef.id });
-          }
-
-          await batch.commit();
-
-          toast({ title: 'Επιτυχία', description: 'Το ακίνητο προστέθηκε.' });
-          await logActivity('CREATE_UNIT', {
-            entityId: topLevelUnitRef.id,
-            entityType: 'unit',
-            name: finalUnitData.name,
-          });
-          success = true;
-        } catch (error) {
-          console.error('Error adding unit:', error);
-          toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη του ακινήτου.' });
-        }
-      }
+        success = await createNewUnit(data, parsedPolygonPoints);
     }
 
     setIsSubmitting(false);
@@ -333,6 +338,36 @@ export function FloorDetailsContainer() {
       handleDialogOpenChange(false);
     }
   };
+
+  const handleDuplicateUnit = async (unitId: string) => {
+    const unitToClone = units.find(u => u.id === unitId);
+    if (!unitToClone) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το ακίνητο προς αντιγραφή.' });
+        return;
+    }
+    
+    const { id, originalId, createdAt, identifier, name, ...clonedData } = unitToClone;
+
+    const newFormValues: UnitFormValues = {
+        ...clonedData,
+        identifier: `${identifier} (Copy)`,
+        name: `${name} (Copy)`,
+        polygonPoints: JSON.stringify(clonedData.polygonPoints || [], null, 2),
+        area: clonedData.area?.toString(),
+        price: clonedData.price?.toString(),
+        bedrooms: clonedData.bedrooms?.toString(),
+        bathrooms: clonedData.bathrooms?.toString(),
+        amenities: clonedData.amenities?.join(', '),
+    };
+
+    const success = await createNewUnit(newFormValues, clonedData.polygonPoints);
+
+    if (success) {
+        toast({ title: 'Επιτυχία', description: `Το ακίνητο '${name}' αντιγράφηκε.` });
+        // The createNewUnit function already logs the creation.
+    }
+  };
+
 
   const handleDeleteUnit = async (unitId: string) => {
     const unitToDelete = units.find(u => u.id === unitId);
@@ -469,6 +504,7 @@ export function FloorDetailsContainer() {
         onEditUnit={handleUnitSelectForEdit}
         onDeleteUnit={handleDeleteUnit}
         onViewUnit={(unitId) => router.push(`/units/${unitId}`)}
+        onDuplicateUnit={handleDuplicateUnit}
       />
       <UnitDialogForm
         open={isDialogOpen}
