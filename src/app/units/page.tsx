@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Download, ListFilter, X } from 'lucide-react';
+import { Loader2, Search, Download, ListFilter, X, LayoutGrid, List } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -30,6 +30,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ALL_STATUSES } from '@/components/floor-plan/utils';
 import { getStatusClass } from '@/lib/unit-helpers';
+import { UnitCard } from '@/components/units/UnitCard';
 
 interface Unit {
   id: string;
@@ -43,7 +44,11 @@ interface Unit {
   createdAt: any;
   area?: number;
   price?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  orientation?: string;
   amenities?: string[];
+  photoUrl?: string; // Add photoUrl for the card view
 }
 
 async function fetchUnits(): Promise<Unit[]> {
@@ -66,6 +71,7 @@ export default function UnitsPage() {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'gallery' | 'list'>('gallery');
   const [filters, setFilters] = useState({
     status: ALL_STATUSES,
     minPrice: '',
@@ -221,18 +227,24 @@ export default function UnitsPage() {
       </div>
 
        <div className="space-y-4 p-4 border rounded-lg">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-                type="search"
-                placeholder="Αναζήτηση βάση ονόματος, τύπου, κωδικού..."
-                className="pl-10 w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                  type="search"
+                  placeholder="Αναζήτηση βάση ονόματος, τύπου, κωδικού..."
+                  className="pl-10 w-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant={viewMode === 'gallery' ? 'default' : 'outline'} onClick={() => setViewMode('gallery')}><LayoutGrid className="mr-2"/>Gallery</Button>
+              <Button variant={viewMode === 'list' ? 'default' : 'outline'} onClick={() => setViewMode('list')}><List className="mr-2"/>List</Button>
+            </div>
           </div>
           <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-2">
                 <CollapsibleTrigger asChild>
                     <Button variant="ghost" className="text-sm">
                         <ListFilter className="mr-2 h-4 w-4"/>
@@ -306,40 +318,48 @@ export default function UnitsPage() {
           ) : isError ? (
              <p className="text-center text-destructive py-8">Σφάλμα κατά τη φόρτωση των δεδομένων.</p>
           ) : filteredUnits.length > 0 ? (
-            <div className="overflow-x-auto">
-                <Table>
-                <TableHeader>
-                    <TableRow>
-                    <TableHead>Κωδικός</TableHead>
-                    <TableHead>Όνομα/ID</TableHead>
-                    <TableHead>Τύπος</TableHead>
-                    <TableHead>Κατάσταση</TableHead>
-                    <TableHead>Όροφοι</TableHead>
-                    <TableHead>ID Κτιρίου</TableHead>
-                    <TableHead>Ημ/νία Δημιουργίας</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {filteredUnits.map((unit) => (
-                    <TableRow key={unit.id} onClick={() => handleRowClick(unit.id)} className="cursor-pointer">
-                        <TableCell className="font-medium">{unit.identifier}</TableCell>
-                        <TableCell className="font-medium">{unit.name}</TableCell>
-                        <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
-                        <TableCell>
-                            <Badge
-                                variant="default" 
-                                className={getStatusClass(unit.status)}>
-                                {unit.status}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">{unit.levelSpan || unit.floorIds?.join(', ')}</TableCell>
-                        <TableCell className="text-muted-foreground">{unit.buildingId}</TableCell>
-                        <TableCell className="text-muted-foreground">{formatDate(unit.createdAt)}</TableCell>
-                    </TableRow>
-                    ))}
-                </TableBody>
-                </Table>
-            </div>
+            viewMode === 'list' ? (
+                <div className="overflow-x-auto">
+                    <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead>Κωδικός</TableHead>
+                        <TableHead>Όνομα/ID</TableHead>
+                        <TableHead>Τύπος</TableHead>
+                        <TableHead>Κατάσταση</TableHead>
+                        <TableHead>Όροφοι</TableHead>
+                        <TableHead>ID Κτιρίου</TableHead>
+                        <TableHead>Ημ/νία Δημιουργίας</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredUnits.map((unit) => (
+                        <TableRow key={unit.id} onClick={() => handleRowClick(unit.id)} className="cursor-pointer">
+                            <TableCell className="font-medium">{unit.identifier}</TableCell>
+                            <TableCell className="font-medium">{unit.name}</TableCell>
+                            <TableCell className="text-muted-foreground">{unit.type || 'N/A'}</TableCell>
+                            <TableCell>
+                                <Badge
+                                    variant="default" 
+                                    className={getStatusClass(unit.status)}>
+                                    {unit.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">{unit.levelSpan || unit.floorIds?.join(', ')}</TableCell>
+                            <TableCell className="text-muted-foreground">{unit.buildingId}</TableCell>
+                            <TableCell className="text-muted-foreground">{formatDate(unit.createdAt)}</TableCell>
+                        </TableRow>
+                        ))}
+                    </TableBody>
+                    </Table>
+                </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredUnits.map(unit => (
+                  <UnitCard key={unit.id} unit={unit} />
+                ))}
+              </div>
+            )
           ) : (
              <p className="text-center text-muted-foreground py-8">
                 {searchQuery || Object.values(filters).some(v => Array.isArray(v) ? v.length > 0 && v.length < ALL_STATUSES.length : !!v) 
@@ -353,3 +373,5 @@ export default function UnitsPage() {
     </div>
   );
 }
+
+  
