@@ -3,12 +3,13 @@
 
 import { useUnitDetails } from '@/hooks/use-unit-details';
 import { UnitDetailsPageView } from '@/components/units/UnitDetailsPageView';
+import { Loader2 } from 'lucide-react';
 
 export default function UnitDetailsPage() {
   const viewProps = useUnitDetails();
 
   if (viewProps.isLoading || !viewProps.unit) {
-    return <div className="flex justify-center items-center h-full">{viewProps.loader}</div>;
+    return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
   }
   
   return <UnitDetailsPageView {...viewProps} />;

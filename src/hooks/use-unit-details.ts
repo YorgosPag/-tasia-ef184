@@ -23,7 +23,6 @@ import { logActivity } from '@/lib/logger';
 import { UnitFormValues, unitSchema } from '@/components/units/UnitDetailsForm';
 import { AttachmentFormValues, attachmentSchema } from '@/components/units/AttachmentDialog';
 import { getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/lib/unit-helpers';
-import { Loader2 } from 'lucide-react';
 
 export interface Unit {
   id: string;
@@ -232,7 +231,6 @@ export function useUnitDetails() {
     isSubmitting,
     isAttachmentDialogOpen,
     editingAttachment,
-    loader: <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />,
     unitForm,
     attachmentForm,
     onUnitSubmit: unitForm.handleSubmit(onUnitSubmit),
