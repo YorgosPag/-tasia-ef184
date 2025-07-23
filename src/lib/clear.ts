@@ -5,6 +5,7 @@ import {
   collection,
   writeBatch,
   getDocs,
+  query,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -16,42 +17,66 @@ const BATCH_LIMIT = 499; // Firestore batch limit is 500
  */
 async function clearCollection(collectionName: string) {
     const collectionRef = collection(db, collectionName);
-    const snapshot = await getDocs(collectionRef);
-    if (snapshot.empty) {
-        console.log(`Collection "${collectionName}" is already empty.`);
-        return;
-    }
-
-    let batch = writeBatch(db);
-    let count = 0;
+    const q = query(collectionRef);
     
-    for (const doc of snapshot.docs) {
-        batch.delete(doc.ref);
-        count++;
-        if (count >= BATCH_LIMIT) {
-            await batch.commit();
-            console.log(`Committed a batch of ${count} deletions from "${collectionName}".`);
-            batch = writeBatch(db);
-            count = 0;
+    let snapshot = await getDocs(q);
+    while (snapshot.size > 0) {
+        console.log(`Found ${snapshot.size} documents in "${collectionName}". Preparing to delete...`);
+        let batch = writeBatch(db);
+        let count = 0;
+        
+        for (const doc of snapshot.docs) {
+            batch.delete(doc.ref);
+            count++;
+            if (count >= BATCH_LIMIT) {
+                await batch.commit();
+                console.log(`Committed a batch of ${count} deletions from "${collectionName}".`);
+                batch = writeBatch(db);
+                count = 0;
+            }
         }
-    }
 
-    if (count > 0) {
-        await batch.commit();
-        console.log(`Committed final batch of ${count} deletions from "${collectionName}".`);
+        if (count > 0) {
+            await batch.commit();
+            console.log(`Committed final batch of ${count} deletions from "${collectionName}".`);
+        }
+        
+        // Check if there are more documents to delete in a subsequent pass
+        snapshot = await getDocs(q);
     }
 
     console.log(`Successfully cleared collection "${collectionName}".`);
 }
 
+
 /**
- * Clears all managed collections from the database.
+ * Clears all managed collections from the database by deleting all documents within them.
+ * It also clears nested subcollections where applicable.
  */
 export async function clearDatabase() {
     console.log('Starting database cleanup...');
-    const collectionsToClear = ['attachments', 'units', 'floors', 'buildings', 'projects', 'companies', 'auditLogs'];
+    
+    // Clear subcollections first to avoid orphaned data issues if needed,
+    // although our current structure with top-level collections is robust.
+    const projectsSnapshot = await getDocs(collection(db, 'projects'));
+    for (const projectDoc of projectsSnapshot.docs) {
+        const buildingsSnapshot = await getDocs(collection(projectDoc.ref, 'buildings'));
+        for (const buildingDoc of buildingsSnapshot.docs) {
+            const floorsSnapshot = await getDocs(collection(buildingDoc.ref, 'floors'));
+            for (const floorDoc of floorsSnapshot.docs) {
+                await clearCollection(`projects/${projectDoc.id}/buildings/${buildingDoc.id}/floors/${floorDoc.id}/units`);
+            }
+            await clearCollection(`projects/${projectDoc.id}/buildings/${buildingDoc.id}/floors`);
+        }
+        await clearCollection(`projects/${projectDoc.id}/buildings`);
+        await clearCollection(`projects/${projectDoc.id}/phases`);
+    }
+
+    // Clear all top-level collections
+    const collectionsToClear = ['attachments', 'units', 'floors', 'buildings', 'projects', 'companies', 'auditLogs', 'users'];
     for (const collectionName of collectionsToClear) {
         await clearCollection(collectionName);
     }
+    
     console.log('Database cleanup finished successfully!');
 }
