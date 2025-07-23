@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical, Plus } from 'lucide-react';
+import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical, Plus, DollarSign } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Company } from '@/hooks/use-data-store';
@@ -60,6 +60,11 @@ const getCompanyNames = (companyIds: string[] = [], companies: Company[]) => {
     if (!companyIds || companyIds.length === 0) return 'Κανένας';
     return companyIds.map(id => companies.find(c => c.id === id)?.name || id).join(', ');
 };
+
+const formatCurrency = (value?: number) => {
+    if (value === undefined || value === null) return '-';
+    return `€${value.toLocaleString('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
 const DetailItem = ({ icon, label, children }: { icon: React.ElementType, label: string, children: React.ReactNode }) => (
     <div className="flex items-start gap-2 text-sm">
@@ -122,6 +127,8 @@ const StageDetails = ({ stage, companies, onChecklistItemToggle, onAddChecklistI
             <DetailItem icon={Calendar} label="Έναρξη">{formatDate(stage.startDate)}</DetailItem>
             <DetailItem icon={CheckCircle} label="Λήξη">{formatDate(stage.endDate)}</DetailItem>
             <DetailItem icon={Clock} label="Προθεσμία">{formatDate(stage.deadline)}</DetailItem>
+            <DetailItem icon={DollarSign} label="Budget">{formatCurrency(stage.budgetedCost)}</DetailItem>
+            <DetailItem icon={DollarSign} label="Actual">{formatCurrency(stage.actualCost)}</DetailItem>
             <DetailItem icon={FileText} label="Έγγραφα">
                 {stage.documents && stage.documents.length > 0
                     ? stage.documents.map((doc, i) => <a key={i} href={doc} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{`Έγγραφο ${i+1}`}</a>).reduce((prev, curr) => <>{prev}, {curr}</>)
@@ -212,3 +219,5 @@ export function WorkStageAccordion({
         </Accordion>
     );
 }
+
+    

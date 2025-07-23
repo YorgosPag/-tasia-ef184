@@ -47,6 +47,8 @@ const workStageSchema = z.object({
     endDate: z.date().optional().nullable(),
     deadline: z.date().optional().nullable(),
     documents: z.string().optional(), // URLs separated by comma
+    budgetedCost: z.string().optional(),
+    actualCost: z.string().optional(),
 });
 
 export type WorkStageFormValues = z.infer<typeof workStageSchema>;
@@ -72,6 +74,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
             id: undefined, name: '', status: 'Εκκρεμεί', assignedTo: '', notes: '',
             startDate: null, endDate: null, deadline: null,
             documents: '', description: '', relatedEntityIds: '',
+            budgetedCost: '', actualCost: '',
         }
     });
 
@@ -121,6 +124,8 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
             startDate: workStage.startDate?.toDate() || null,
             endDate: workStage.endDate?.toDate() || null,
             deadline: workStage.deadline?.toDate() || null,
+            budgetedCost: workStage.budgetedCost?.toString() || '',
+            actualCost: workStage.actualCost?.toString() || '',
         });
         setIsWorkStageDialogOpen(true);
     }
@@ -158,9 +163,13 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
             name: data.name, description: data.description || '', status: data.status,
             assignedTo: data.assignedTo ? data.assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [],
             relatedEntityIds: data.relatedEntityIds ? data.relatedEntityIds.split(',').map(s => s.trim()).filter(Boolean) : [],
-            notes: data.notes || '', startDate: data.startDate,
-            endDate: data.endDate, deadline: data.deadline,
+            notes: data.notes || '',
+            startDate: data.startDate,
+            endDate: data.endDate,
+            deadline: data.deadline,
             documents: data.documents ? data.documents.split(',').map(s => s.trim()).filter(Boolean) : [],
+            budgetedCost: data.budgetedCost ? parseFloat(data.budgetedCost) : undefined,
+            actualCost: data.actualCost ? parseFloat(data.actualCost) : undefined,
         };
         
         const finalData = Object.fromEntries(Object.entries(rawData).filter(([_, v]) => v !== undefined && v !== null && v !== ''));
@@ -290,3 +299,5 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         </Card>
     );
 }
+
+    

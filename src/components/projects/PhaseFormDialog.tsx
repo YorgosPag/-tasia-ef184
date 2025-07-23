@@ -66,6 +66,10 @@ export function WorkStageFormDialog({
                         <FormField control={form.control} name="name" render={({field}) => (<FormItem><FormLabel>Όνομα</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                         <FormField control={form.control} name="description" render={({field}) => (<FormItem><FormLabel>Περιγραφή</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
                         <FormField control={form.control} name="status" render={({field}) => (<FormItem><FormLabel>Κατάσταση</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Εκκρεμεί">Εκκρεμεί</SelectItem><SelectItem value="Σε εξέλιξη">Σε εξέλιξη</SelectItem><SelectItem value="Ολοκληρώθηκε">Ολοκληρώθηκε</SelectItem><SelectItem value="Καθυστερεί">Καθυστερεί</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <FormField control={form.control} name="budgetedCost" render={({ field }) => (<FormItem><FormLabel>Προϋπολογισμένο Κόστος (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="actualCost" render={({ field }) => (<FormItem><FormLabel>Πραγματικό Κόστος (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        </div>
                         <FormField
                             control={form.control}
                             name="assignedTo"
@@ -127,3 +131,5 @@ export function WorkStageFormDialog({
         </Dialog>
     );
 }
+
+    
