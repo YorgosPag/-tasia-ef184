@@ -73,22 +73,29 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
 
     useEffect(() => {
         if (!project.id) return;
+        
         const phasesQuery = query(collection(db, 'projects', project.id, 'phases'), orderBy('createdAt', 'asc'));
         
-        const unsubscribe = onSnapshot(phasesQuery, async (phasesSnapshot) => {
-            const phasesDataPromises = phasesSnapshot.docs.map(async (phaseDoc) => {
-                const phase = { id: phaseDoc.id, ...phaseDoc.data() } as Phase;
-                
-                const subphasesQuery = query(collection(db, 'projects', project.id, 'phases', phase.id, 'subphases'), orderBy('createdAt', 'asc'));
-                const subphasesSnapshot = await getDocs(subphasesQuery);
-                const subphases = subphasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Phase));
-
-                return { ...phase, subphases };
-            });
-
-            const phasesWithSubphases = await Promise.all(phasesDataPromises);
-            setPhases(phasesWithSubphases);
+        const unsubscribe = onSnapshot(phasesQuery, (phasesSnapshot) => {
+            const phasesData = phasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), subphases: [] } as PhaseWithSubphases));
+            setPhases(phasesData);
             setIsLoadingPhases(false);
+
+            // For each phase, set up a real-time listener for its subphases
+            phasesData.forEach((phase, index) => {
+                const subphasesQuery = query(collection(db, 'projects', project.id, 'phases', phase.id, 'subphases'), orderBy('createdAt', 'asc'));
+                onSnapshot(subphasesQuery, (subphasesSnapshot) => {
+                    const subphases = subphasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Phase));
+                    
+                    setPhases(currentPhases => {
+                        const newPhases = [...currentPhases];
+                        if (newPhases[index]) {
+                            newPhases[index].subphases = subphases;
+                        }
+                        return newPhases;
+                    });
+                });
+            });
         },
         (error) => {
             console.error("Error fetching phases:", error);
@@ -153,14 +160,19 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
         const rawData: any = {
             name: data.name, description: data.description || '', status: data.status,
             assignedTo: data.assignedTo === 'none' ? undefined : data.assignedTo,
-            notes: data.notes || '', startDate: data.startDate ? Timestamp.fromDate(data.startDate) : undefined,
-            endDate: data.endDate ? Timestamp.fromDate(data.endDate) : undefined,
-            deadline: data.deadline ? Timestamp.fromDate(data.deadline) : undefined,
+            notes: data.notes || '', startDate: data.startDate,
+            endDate: data.endDate, deadline: data.deadline,
             documents: data.documents ? data.documents.split(',').map(s => s.trim()).filter(Boolean) : [],
         };
         
         // Remove undefined fields to prevent Firestore errors
-        const finalData = Object.fromEntries(Object.entries(rawData).filter(([_, v]) => v !== undefined));
+        const finalData = Object.fromEntries(Object.entries(rawData).filter(([_, v]) => v !== undefined && v !== null));
+        
+        // Convert dates to Timestamps
+        if (finalData.startDate) finalData.startDate = Timestamp.fromDate(finalData.startDate as Date);
+        if (finalData.endDate) finalData.endDate = Timestamp.fromDate(finalData.endDate as Date);
+        if (finalData.deadline) finalData.deadline = Timestamp.fromDate(finalData.deadline as Date);
+
 
         try {
             const isSubphase = editingPhase && 'parentId' in editingPhase;
