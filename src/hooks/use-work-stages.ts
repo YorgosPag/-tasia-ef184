@@ -108,13 +108,13 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             if (parentId) {
                 // Deleting a substage
                 const subStageSubRef = doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', workStage.id);
-                const subStageTopRef = doc(db, 'workSubstages', workStage.id);
+                const subStageTopRef = doc(db, 'workSubstages', (workStage as any).topLevelId);
                 batch.delete(subStageSubRef);
                 batch.delete(subStageTopRef);
             } else {
                 // Deleting a main stage and all its substages
                 const mainStageSubRef = doc(db, 'projects', projectId, 'workStages', workStage.id);
-                const mainStageTopRef = doc(db, 'workStages', workStage.id);
+                const mainStageTopRef = doc(db, 'workStages', (workStage as any).topLevelId);
                 batch.delete(mainStageSubRef);
                 batch.delete(mainStageTopRef);
 
@@ -122,7 +122,10 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                 const subStagesSnapshot = await getDocs(collection(mainStageSubRef, 'workSubstages'));
                 for (const subDoc of subStagesSnapshot.docs) {
                     batch.delete(subDoc.ref);
-                    batch.delete(doc(db, 'workSubstages', subDoc.id));
+                    const topLevelId = subDoc.data().topLevelId;
+                    if (topLevelId) {
+                      batch.delete(doc(db, 'workSubstages', topLevelId));
+                    }
                 }
             }
           await batch.commit();
@@ -171,7 +174,13 @@ export function useWorkStages(projectId: string, projectTitle: string) {
             if (isEditing) {
                 const parentId = (editingWorkStage as any).parentId;
                 const workStageId = (editingWorkStage as WorkStage).id;
-                const topLevelRef = parentId ? doc(db, 'workSubstages', workStageId) : doc(db, 'workStages', workStageId);
+                const topLevelId = (editingWorkStage as any).topLevelId;
+
+                if (!topLevelId) {
+                    throw new Error("topLevelId is missing for editing.");
+                }
+
+                const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
                 const subRef = parentId
                     ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', workStageId)
                     : doc(db, 'projects', projectId, 'workStages', workStageId);
@@ -184,8 +193,8 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                  const parentId = isSubstage ? (editingWorkStage as { parentId: string }).parentId : null;
                  if (isSubstage && !parentId) throw new Error("Parent ID is missing for substage creation.");
 
-                 const subRef = parentId ? doc(collection(db, 'projects', projectId, 'workStages', parentId, 'workSubstages')) : doc(collection(db, 'projects', projectId, 'workStages'));
-                 const topLevelRef = parentId ? doc(db, 'workSubstages', subRef.id) : doc(db, 'workStages', subRef.id);
+                 const topLevelRef = parentId ? doc(collection(db, 'workSubstages')) : doc(collection(db, 'workStages'));
+                 const subRef = doc(collection(db, 'projects', projectId, parentId ? `workStages/${parentId}/workSubstages` : 'workStages'));
 
                  batch.set(subRef, { ...finalData, createdAt: serverTimestamp(), checklist: [], photos: [], topLevelId: topLevelRef.id });
                  batch.set(topLevelRef, { ...finalData, projectId, parentStageId: parentId, assignedToId: finalData.assignedTo?.[0] || null, createdAt: serverTimestamp(), originalId: subRef.id });
@@ -226,8 +235,11 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         const batch = writeBatch(db);
         batch.update(docRef, { checklist: newChecklist });
         // Also update top-level doc
-        const topLevelRef = parentId ? doc(db, 'workSubstages', stage.id) : doc(db, 'workStages', stage.id);
-        batch.update(topLevelRef, { checklist: newChecklist });
+        const topLevelId = (stage as any).topLevelId;
+        if (topLevelId) {
+            const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
+            batch.update(topLevelRef, { checklist: newChecklist });
+        }
         await batch.commit();
     };
 
@@ -245,8 +257,11 @@ export function useWorkStages(projectId: string, projectTitle: string) {
 
         const batch = writeBatch(db);
         batch.update(docRef, { checklist: newChecklist });
-        const topLevelRef = parentId ? doc(db, 'workSubstages', stage.id) : doc(db, 'workStages', stage.id);
-        batch.update(topLevelRef, { checklist: newChecklist });
+        const topLevelId = (stage as any).topLevelId;
+        if (topLevelId) {
+            const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
+            batch.update(topLevelRef, { checklist: newChecklist });
+        }
         
         await batch.commit();
         toast({ title: "Οι παρατηρήσεις αποθηκεύτηκαν." });
@@ -265,8 +280,11 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         
         const batch = writeBatch(db);
         batch.update(docRef, { checklist: arrayUnion(newItem) });
-        const topLevelRef = parentId ? doc(db, 'workSubstages', stage.id) : doc(db, 'workStages', stage.id);
-        batch.update(topLevelRef, { checklist: arrayUnion(newItem) });
+        const topLevelId = (stage as any).topLevelId;
+        if (topLevelId) {
+            const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
+            batch.update(topLevelRef, { checklist: arrayUnion(newItem) });
+        }
         
         await batch.commit();
     };
@@ -299,8 +317,11 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         
         const batch = writeBatch(db);
         batch.update(docRef, { photos: arrayUnion(...newPhotos) });
-        const topLevelRef = parentId ? doc(db, 'workSubstages', stage.id) : doc(db, 'workStages', stage.id);
-        batch.update(topLevelRef, { photos: arrayUnion(...newPhotos) });
+        const topLevelId = (stage as any).topLevelId;
+        if (topLevelId) {
+            const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
+            batch.update(topLevelRef, { photos: arrayUnion(...newPhotos) });
+        }
         await batch.commit();
     
         toast({ title: "Επιτυχία", description: "Οι φωτογραφίες ανέβηκαν επιτυχώς." });
