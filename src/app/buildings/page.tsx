@@ -195,6 +195,7 @@ export default function BuildingsPage() {
 
   const getProjectTitle = (projectId: string | undefined) => {
     if (!projectId) return 'N/A';
+    if (!projects) return 'Loading...'; // Defensive check
     return projects.find(p => p.id === projectId)?.title || projectId;
   };
   
