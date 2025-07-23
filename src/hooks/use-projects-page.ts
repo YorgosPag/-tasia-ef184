@@ -13,11 +13,13 @@ import { logActivity } from '@/lib/logger';
 import { exportToJson } from '@/lib/exporter';
 import { ProjectFormValues, projectSchema } from '@/components/projects/ProjectDialogForm';
 import { formatDate } from '@/lib/project-helpers';
+import { useAuth } from './use-auth';
 
 export function useProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
-  const { addProject, isEditor } = useDataStore();
+  const { isEditor, isLoading: isAuthLoading } = useAuth();
+  const { addProject } = useDataStore();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -42,11 +44,16 @@ export function useProjectsPage() {
   });
 
   useEffect(() => {
-    setIsLoading(true);
+    // Only subscribe when auth is no longer loading and user is determined
+    if (isAuthLoading) {
+      return;
+    }
+
     const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
       setProjects(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Project)));
       setIsLoading(false);
     });
+
     const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
       setCompanies(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Company)));
     });
@@ -55,7 +62,7 @@ export function useProjectsPage() {
       unsubProjects();
       unsubCompanies();
     };
-  }, []);
+  }, [isAuthLoading]);
 
   const handleDialogOpenChange = useCallback((open: boolean) => {
     setIsDialogOpen(open);
@@ -208,7 +215,7 @@ export function useProjectsPage() {
     companies,
     searchQuery,
     setSearchQuery,
-    isLoading,
+    isLoading: isLoading || isAuthLoading,
     isEditor,
     isDialogOpen,
     isSubmitting,
