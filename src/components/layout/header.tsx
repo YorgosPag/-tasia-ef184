@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Breadcrumbs } from './breadcrumbs';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { Skeleton } from '../ui/skeleton';
+import { ModeToggle } from './mode-toggle';
 
 export function AppHeader() {
   const isMobile = useIsMobile();
@@ -57,6 +58,7 @@ export function AppHeader() {
         )}
       </div>
       <div className="flex items-center gap-4">
+        <ModeToggle />
         {isAuthLoading ? (
           <Skeleton className="h-8 w-20 rounded-md" />
         ) : user ? (
