@@ -6,14 +6,14 @@ export const workStageSchema = z.object({
     name: z.string().min(1, 'Το όνομα είναι υποχρεωτικό.'),
     description: z.string().optional(),
     status: z.enum(['Εκκρεμεί', 'Σε εξέλιξη', 'Ολοκληρώθηκε', 'Καθυστερεί']),
-    assignedTo: z.string().optional(), // Now a string of comma-separated IDs
+    assignedTo: z.string().optional(),
     relatedEntityIds: z.string().optional(),
-    dependsOn: z.string().optional(), // Comma-separated IDs of stages this stage depends on
+    dependsOn: z.string().optional(),
     notes: z.string().optional(),
     startDate: z.date().optional().nullable(),
     endDate: z.date().optional().nullable(),
     deadline: z.date().optional().nullable(),
-    documents: z.string().optional(), // New: list of required document names, one per line
+    documents: z.string().optional(), 
     budgetedCost: z.string().optional(),
     actualCost: z.string().optional(),
 });
