@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { Unit } from './FloorPlanViewer';
-import { STATUS_COLOR_MAP, getStatusClass } from './utils';
+import { STATUS_COLOR_MAP, getTextColorForBackground } from './utils';
 
 interface PolygonPopoverProps {
   unit: Unit;
@@ -123,5 +123,3 @@ export function PolygonPopover({
     </Popover>
   );
 }
-
-    

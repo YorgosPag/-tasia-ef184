@@ -21,7 +21,7 @@ export const STATUS_COLOR_MAP: Record<Unit['status'], string> = {
  * @param hexColor The background color in hex format (e.g., "#RRGGBB").
  * @returns 'text-black' for light backgrounds, 'white' for dark backgrounds.
  */
-function getTextColorForBackground(hexColor: string): 'text-black' | 'text-white' {
+export function getTextColorForBackground(hexColor: string): 'text-black' | 'text-white' {
     if (!hexColor.startsWith('#')) {
       // Handle non-hex colors like hsl(var(--...)) by assuming a dark background.
       // This is a safe fallback for the default theme colors. A more robust solution
@@ -55,5 +55,3 @@ function getTextColorForBackground(hexColor: string): 'text-black' | 'text-white
 export const getStatusClass = (backgroundColor: string) => {
   return getTextColorForBackground(backgroundColor);
 };
-
-    
