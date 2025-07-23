@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Package,
   FileText,
+  Mail,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -139,6 +140,12 @@ export function AppSidebar() {
          <SidebarGroup>
             <SidebarGroupLabel>Project Admin</SidebarGroupLabel>
              <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton href="/leads" isActive={pathname.startsWith('/leads')}>
+                        <Mail />
+                        Leads
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton href="/meetings" isActive={pathname.startsWith('/meetings')}>
                       <MessageSquare />
