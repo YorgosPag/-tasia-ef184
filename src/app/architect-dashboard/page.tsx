@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, Search, FilePen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -21,11 +20,11 @@ import {
 } from "@/components/ui/select"
 import { useToast } from '@/hooks/use-toast';
 
-interface FieldNote {
+interface Inspection {
   id: string;
   text: string;
   photoUrl?: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  status: 'Pending' | 'Pass' | 'Fail';
   createdAt: any;
   stageId: string;
   substageId?: string;
@@ -34,8 +33,8 @@ interface FieldNote {
   projectTitle: string;
 }
 
-async function fetchArchitectNotes(): Promise<FieldNote[]> {
-  const notes: FieldNote[] = [];
+async function fetchArchitectInspections(): Promise<Inspection[]> {
+  const notes: Inspection[] = [];
   const projectsSnapshot = await getDocs(query(collection(db, 'projects')));
   const projectsMap = new Map(projectsSnapshot.docs.map(doc => [doc.id, doc.data().title]));
 
@@ -48,7 +47,7 @@ async function fetchArchitectNotes(): Promise<FieldNote[]> {
     const projectId = stageDoc.ref.parent.parent?.id;
     if (!projectId) continue;
 
-    (stageData.fieldNotes || []).forEach((note: any) => {
+    (stageData.inspections || []).forEach((note: any) => {
       notes.push({
         ...note,
         stageId: stageDoc.id,
@@ -62,7 +61,7 @@ async function fetchArchitectNotes(): Promise<FieldNote[]> {
     const substagesSnapshot = await getDocs(collection(stageDoc.ref, 'workSubstages'));
     for (const substageDoc of substagesSnapshot.docs) {
       const substageData = substageDoc.data();
-      (substageData.fieldNotes || []).forEach((note: any) => {
+      (substageData.inspections || []).forEach((note: any) => {
         notes.push({
           ...note,
           stageId: stageDoc.id,
@@ -81,13 +80,13 @@ async function fetchArchitectNotes(): Promise<FieldNote[]> {
 export default function ArchitectDashboardPage() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: notes = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ['architectNotes'],
-    queryFn: fetchArchitectNotes,
+  const { data: inspections = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ['architectInspections'],
+    queryFn: fetchArchitectInspections,
   });
 
-  const filteredNotes = useMemo(() => {
-    return notes.filter(note => {
+  const filteredInspections = useMemo(() => {
+    return inspections.filter(note => {
       const query = searchQuery.toLowerCase();
       return (
         note.text.toLowerCase().includes(query) ||
@@ -96,39 +95,39 @@ export default function ArchitectDashboardPage() {
         note.status.toLowerCase().includes(query)
       );
     });
-  }, [notes, searchQuery]);
+  }, [inspections, searchQuery]);
 
-  const handleStatusChange = async (note: FieldNote, newStatus: FieldNote['status']) => {
+  const handleStatusChange = async (inspection: Inspection, newStatus: Inspection['status']) => {
     try {
-      const path = note.substageId
-        ? `projects/${note.projectId}/workStages/${note.stageId}/workSubstages/${note.substageId}`
-        : `projects/${note.projectId}/workStages/${note.stageId}`;
+      const path = inspection.substageId
+        ? `projects/${inspection.projectId}/workStages/${inspection.stageId}/workSubstages/${inspection.substageId}`
+        : `projects/${inspection.projectId}/workStages/${inspection.stageId}`;
       const stageDocRef = doc(db, path);
       
       // We need to read the document to update the array
-      const stageDoc = await getDocs(query(collectionGroup(db, note.substageId ? 'workSubstages' : 'workStages'), where('__name__', '==', stageDocRef.path)));
+      const stageDoc = await getDocs(query(collectionGroup(db, inspection.substageId ? 'workSubstages' : 'workStages'), where('__name__', '==', stageDocRef.path)));
       if (stageDoc.empty) throw new Error("Stage document not found");
 
       const currentStageData = stageDoc.docs[0].data();
-      const updatedFieldNotes = currentStageData.fieldNotes.map((n: any) => 
-        n.id === note.id ? { ...n, status: newStatus } : n
+      const updatedInspections = currentStageData.inspections.map((n: any) => 
+        n.id === inspection.id ? { ...n, status: newStatus } : n
       );
       
-      await updateDoc(stageDoc.docs[0].ref, { fieldNotes: updatedFieldNotes });
+      await updateDoc(stageDoc.docs[0].ref, { inspections: updatedInspections });
 
-      toast({ title: 'Success', description: `Note status updated to ${newStatus}.` });
+      toast({ title: 'Success', description: `Inspection status updated to ${newStatus}.` });
       refetch(); // Refetch the data to update the UI
     } catch (error) {
-      console.error("Error updating note status:", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update note status.' });
+      console.error("Error updating inspection status:", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update inspection status.' });
     }
   };
 
 
-  const getStatusVariant = (status: FieldNote['status']) => {
+  const getStatusVariant = (status: Inspection['status']) => {
     switch (status) {
-      case 'Approved': return 'default';
-      case 'Rejected': return 'destructive';
+      case 'Pass': return 'default';
+      case 'Fail': return 'destructive';
       default: return 'secondary';
     }
   }
@@ -145,7 +144,7 @@ export default function ArchitectDashboardPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Αναζήτηση σε παρατηρήσεις, έργα, στάδια..."
+          placeholder="Αναζήτηση σε επιθεωρήσεις, έργα, στάδια..."
           className="pl-10 w-full md:w-1/3"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -154,9 +153,9 @@ export default function ArchitectDashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Επισκόπηση Παρατηρήσεων Εργοταξίου</CardTitle>
+          <CardTitle>Επισκόπηση Επιθεωρήσεων Εργοταξίου</CardTitle>
           <CardDescription>
-            Όλες οι παρατηρήσεις που απαιτούν αρχιτεκτονική επίβλεψη, συγκεντρωμένες σε ένα μέρος.
+            Όλες οι επιθεωρήσεις που απαιτούν αρχιτεκτονική επίβλεψη, συγκεντρωμένες σε ένα μέρος.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -165,15 +164,15 @@ export default function ArchitectDashboardPage() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : isError ? (
-            <p className="text-center text-destructive py-8">Σφάλμα κατά τη φόρτωση των παρατηρήσεων.</p>
-          ) : filteredNotes.length > 0 ? (
+            <p className="text-center text-destructive py-8">Σφάλμα κατά τη φόρτωση των επιθεωρήσεων.</p>
+          ) : filteredInspections.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredNotes.map((note) => (
-                <Card key={note.id} className="flex flex-col">
-                  {note.photoUrl && (
+              {filteredInspections.map((inspection) => (
+                <Card key={inspection.id} className="flex flex-col">
+                  {inspection.photoUrl && (
                     <Image
-                      src={note.photoUrl}
-                      alt={`Note for ${note.stageName}`}
+                      src={inspection.photoUrl}
+                      alt={`Inspection for ${inspection.stageName}`}
                       width={400}
                       height={300}
                       className="object-cover w-full rounded-t-lg aspect-video"
@@ -181,25 +180,25 @@ export default function ArchitectDashboardPage() {
                   )}
                   <CardHeader>
                     <CardTitle className="text-base">
-                        <Link href={`/projects/${note.projectId}?view=construction`} className="hover:underline">
-                            {note.projectTitle}
+                        <Link href={`/projects/${inspection.projectId}?view=construction`} className="hover:underline">
+                            {inspection.projectTitle}
                         </Link>
                     </CardTitle>
-                    <CardDescription>{note.stageName}</CardDescription>
+                    <CardDescription>{inspection.stageName}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-grow">
-                    <p className="text-sm">{note.text}</p>
+                    <p className="text-sm">{inspection.text}</p>
                   </CardContent>
                   <CardContent className="flex items-center justify-between gap-2 mt-auto pt-4">
-                    <Badge variant={getStatusVariant(note.status)}>{note.status}</Badge>
-                    <Select onValueChange={(value: FieldNote['status']) => handleStatusChange(note, value)} defaultValue={note.status}>
+                    <Badge variant={getStatusVariant(inspection.status)}>{inspection.status}</Badge>
+                    <Select onValueChange={(value: Inspection['status']) => handleStatusChange(inspection, value)} defaultValue={inspection.status}>
                       <SelectTrigger className="w-[150px] h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Pending">Pending</SelectItem>
-                        <SelectItem value="Approved">Approved</SelectItem>
-                        <SelectItem value="Rejected">Rejected</SelectItem>
+                        <SelectItem value="Pass">Pass</SelectItem>
+                        <SelectItem value="Fail">Fail</SelectItem>
                       </SelectContent>
                     </Select>
                   </CardContent>
@@ -211,7 +210,7 @@ export default function ArchitectDashboardPage() {
                 <FilePen className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="mt-4 text-lg font-medium">Όλα υπό έλεγχο!</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                    Δεν υπάρχουν εκκρεμείς παρατηρήσεις που να απαιτούν την προσοχή σας.
+                    Δεν υπάρχουν εκκρεμείς επιθεωρήσεις που να απαιτούν την προσοχή σας.
                 </p>
             </div>
           )}
@@ -220,3 +219,5 @@ export default function ArchitectDashboardPage() {
     </div>
   );
 }
+
+    

@@ -15,7 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useDataStore } from '@/hooks/use-data-store';
 import { ProjectHeader } from '@/components/projects/ProjectHeader';
 import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
-import { BuildingsSection } from '@/components/projects/BuildingsSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProjectActivityTimeline } from '@/components/projects/ProjectActivityTimeline';
 
@@ -48,6 +47,16 @@ export interface ChecklistItem {
     inspectionNotes?: string;
     completionDate?: Timestamp;
     completedBy?: string;
+}
+
+export interface Inspection {
+  id: string;
+  text: string;
+  photoUrl?: string;
+  status: 'Pending' | 'Pass' | 'Fail';
+  createdAt: any;
+  authorId: string;
+  authorEmail: string;
 }
 
 export interface WorkStagePhoto {
@@ -84,6 +93,7 @@ export interface WorkStage {
   actualCost?: number;
   photos?: WorkStagePhoto[];
   comments?: WorkStageComment[];
+  inspections?: Inspection[];
 }
 
 export interface WorkStageWithSubstages extends WorkStage {
@@ -165,3 +175,5 @@ export default function ProjectDetailsPage() {
     </div>
   );
 }
+
+    

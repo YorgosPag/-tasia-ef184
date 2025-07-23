@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -195,7 +196,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                  const topLevelRef = parentId ? doc(collection(db, 'workSubstages')) : doc(collection(db, 'workStages'));
                  const subRef = doc(collection(db, 'projects', projectId, parentId ? `workStages/${parentId}/workSubstages` : 'workStages'));
 
-                 batch.set(subRef, { ...finalData, createdAt: serverTimestamp(), checklist: [], photos: [], topLevelId: topLevelRef.id });
+                 batch.set(subRef, { ...finalData, createdAt: serverTimestamp(), checklist: [], inspections: [], photos: [], comments: [], topLevelId: topLevelRef.id });
                  batch.set(topLevelRef, { ...finalData, projectId, parentStageId: parentId, assignedToId: finalData.assignedTo?.[0] || null, createdAt: serverTimestamp(), originalId: subRef.id });
                 
                 toast({ title: 'Επιτυχία', description: `Το ${isSubstage ? 'υποστάδιο' : 'στάδιο'} προστέθηκε.` });
@@ -413,3 +414,5 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         handleExport,
     };
 }
+
+    
