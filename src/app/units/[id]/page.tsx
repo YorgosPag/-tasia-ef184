@@ -14,7 +14,8 @@ import {
   where,
   deleteDoc,
   addDoc,
-  updateDoc
+  updateDoc,
+  getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -396,5 +397,3 @@ export default function UnitDetailsPage() {
     </Form>
   );
 }
-
-    
