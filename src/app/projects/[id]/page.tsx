@@ -15,6 +15,8 @@ import {
   writeBatch,
   updateDoc,
   deleteDoc,
+  orderBy,
+  query,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -45,7 +47,6 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Form,
@@ -55,18 +56,23 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, PlusCircle, Loader2, Edit, Trash2, Copy } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Loader2, Edit, Trash2, Copy, CalendarIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { el } from 'date-fns/locale';
 import Image from 'next/image';
 import { logActivity } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
 
 // Schema for the building form
@@ -82,6 +88,21 @@ const buildingSchema = z.object({
 });
 
 type BuildingFormValues = z.infer<typeof buildingSchema>;
+
+// Schema for the phase form
+const phaseSchema = z.object({
+    id: z.string().optional(),
+    name: z.string().min(1, 'Το όνομα είναι υποχρεωτικό.'),
+    status: z.enum(['Εκκρεμεί', 'Σε εξέλιξη', 'Ολοκληρώθηκε']),
+    personInCharge: z.string().optional(),
+    notes: z.string().optional(),
+    startDate: z.date().optional(),
+    endDate: z.date().optional(),
+    deadline: z.date().optional(),
+});
+
+type PhaseFormValues = z.infer<typeof phaseSchema>;
+
 
 interface Project {
   id: string;
@@ -104,6 +125,15 @@ interface Building {
   topLevelId: string; // This will be the ID from the top-level collection
 }
 
+interface Phase extends Omit<PhaseFormValues, 'startDate' | 'endDate' | 'deadline'> {
+  id: string;
+  createdAt: Timestamp;
+  startDate?: Timestamp;
+  endDate?: Timestamp;
+  deadline?: Timestamp;
+}
+
+
 export default function ProjectDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -111,204 +141,139 @@ export default function ProjectDetailsPage() {
 
   const [project, setProject] = useState<Project | null>(null);
   const [buildings, setBuildings] = useState<Building[]>([]);
+  const [phases, setPhases] = useState<Phase[]>([]);
   const [isLoadingProject, setIsLoadingProject] = useState(true);
   const [isLoadingBuildings, setIsLoadingBuildings] = useState(true);
+  const [isLoadingPhases, setIsLoadingPhases] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPhaseDialogOpen, setIsPhaseDialogOpen] = useState(false);
   const [editingBuildingId, setEditingBuildingId] = useState<string | null>(null);
+  const [editingPhase, setEditingPhase] = useState<Phase | null>(null);
+
   const { toast } = useToast();
 
-  const form = useForm<BuildingFormValues>({
+  const buildingForm = useForm<BuildingFormValues>({
     resolver: zodResolver(buildingSchema),
     defaultValues: {
-      id: undefined,
-      address: '',
-      type: '',
-      description: '',
-      photoUrl: '',
-      floorsCount: undefined,
-      constructionYear: undefined,
-      tags: '',
+      id: undefined, address: '', type: '', description: '', photoUrl: '',
+      floorsCount: undefined, constructionYear: undefined, tags: '',
     },
   });
 
-  const handleDialogOpenChange = (open: boolean) => {
+  const phaseForm = useForm<PhaseFormValues>({
+    resolver: zodResolver(phaseSchema),
+    defaultValues: {
+        id: undefined, name: '', status: 'Εκκρεμεί', personInCharge: '', notes: '',
+        startDate: undefined, endDate: undefined, deadline: undefined,
+    }
+  });
+
+
+  // --- DIALOG HANDLERS ---
+  const handleBuildingDialogOpenChange = (open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
-      form.reset();
+      buildingForm.reset();
       setEditingBuildingId(null);
     }
   };
 
-
-  // Fetch project details
-  useEffect(() => {
-    if (!projectId) return;
-    const docRef = doc(db, 'projects', projectId);
-    const getProjectData = async () => {
-      setIsLoadingProject(true);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setProject({ id: docSnap.id, ...docSnap.data() } as Project);
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Σφάλμα',
-          description: 'Το έργο δεν βρέθηκε.',
-        });
-        router.push('/projects');
-      }
-      setIsLoadingProject(false);
-    };
-    getProjectData();
-  }, [projectId, router, toast]);
-
-  // Listen for buildings in the subcollection
-  useEffect(() => {
-    if (!projectId) return;
-    const buildingsColRef = collection(db, 'projects', projectId, 'buildings');
-    const unsubscribe = onSnapshot(
-      buildingsColRef,
-      (snapshot) => {
-        const buildingsData: Building[] = snapshot.docs.map((doc) => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                topLevelId: data.topLevelId,
-                ...data,
-            } as Building
-        });
-        setBuildings(buildingsData);
-        setIsLoadingBuildings(false);
-      },
-      (error) => {
-        console.error('Error fetching buildings: ', error);
-        toast({
-          variant: 'destructive',
-          title: 'Σφάλμα',
-          description: 'Δεν ήταν δυνατή η φόρτωση των κτιρίων.',
-        });
-        setIsLoadingBuildings(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [projectId, toast]);
-
-  const handleDuplicateBuilding = async (buildingId: string) => {
-    const buildingToClone = buildings.find(b => b.id === buildingId);
-    if (!buildingToClone) {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το κτίριο προς αντιγραφή.' });
-        return;
-    }
-
-    try {
-        const topLevelDoc = await getDoc(doc(db, 'buildings', buildingToClone.topLevelId));
-        if (!topLevelDoc.exists()) {
-            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκαν πλήρη δεδομένα για αντιγραφή.' });
-            return;
-        }
-
-        const originalData = topLevelDoc.data();
-        
-        // Remove fields that should not be copied
-        const { originalId, createdAt, ...clonedData } = originalData;
-
-        clonedData.address += ' (Copy)';
-        
-        // Use the regular "add" logic but with pre-filled data
-        const batch = writeBatch(db);
-        const newTopLevelRef = doc(collection(db, 'buildings'));
-        const newSubCollectionRef = doc(collection(db, 'projects', projectId, 'buildings'));
-
-        batch.set(newTopLevelRef, {
-            ...clonedData,
-            projectId: projectId,
-            originalId: newSubCollectionRef.id,
-            createdAt: serverTimestamp(),
-        });
-        batch.set(newSubCollectionRef, {
-            ...clonedData,
-            topLevelId: newTopLevelRef.id,
-            createdAt: serverTimestamp(),
-        });
-
-        await batch.commit();
-        toast({ title: 'Επιτυχία', description: `Το κτίριο '${originalData.address}' αντιγράφηκε.` });
-        await logActivity('DUPLICATE_BUILDING', {
-            entityId: newTopLevelRef.id,
-            entityType: 'building',
-            sourceEntityId: buildingToClone.topLevelId,
-            name: clonedData.address,
-        });
-    } catch (error) {
-        console.error('Error duplicating building:', error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η αντιγραφή απέτυχε.' });
+  const handlePhaseDialogOpenChange = (open: boolean) => {
+    setIsPhaseDialogOpen(open);
+    if(!open) {
+        phaseForm.reset();
+        setEditingPhase(null);
     }
   };
 
 
+  // --- DATA FETCHING ---
+  useEffect(() => {
+    if (!projectId) return;
+    const docRef = doc(db, 'projects', projectId);
+    const unsubscribe = onSnapshot(docRef,
+      (docSnap) => {
+        setIsLoadingProject(true);
+        if (docSnap.exists()) {
+          setProject({ id: docSnap.id, ...docSnap.data() } as Project);
+        } else {
+          toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Το έργο δεν βρέθηκε.' });
+          router.push('/projects');
+        }
+        setIsLoadingProject(false);
+      },
+      (error) => {
+        console.error("Error fetching project:", error);
+        setIsLoadingProject(false);
+      }
+    );
+    return () => unsubscribe();
+  }, [projectId, router, toast]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    const subcollectionRef = collection(db, 'projects', projectId, 'buildings');
+    const unsubscribe = onSnapshot(subcollectionRef,
+      (snapshot) => {
+        setBuildings(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Building)));
+        setIsLoadingBuildings(false);
+      },
+      (error) => {
+        console.error('Error fetching buildings: ', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των κτιρίων.' });
+        setIsLoadingBuildings(false);
+      }
+    );
+    return () => unsubscribe();
+  }, [projectId, toast]);
+
+  useEffect(() => {
+    if(!projectId) return;
+    const phasesQuery = query(collection(db, 'projects', projectId, 'phases'), orderBy('createdAt', 'asc'));
+    const unsubscribe = onSnapshot(phasesQuery, 
+        (snapshot) => {
+            setPhases(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Phase)));
+            setIsLoadingPhases(false);
+        },
+        (error) => {
+            console.error("Error fetching phases:", error);
+            setIsLoadingPhases(false);
+        }
+    );
+    return () => unsubscribe();
+  }, [projectId]);
+
+
+  // --- SUBMISSION LOGIC ---
   const onSubmitBuilding = async (data: BuildingFormValues) => {
     setIsSubmitting(true);
     const finalData = {
-        address: data.address,
-        type: data.type,
-        description: data.description || '',
-        photoUrl: data.photoUrl?.trim() || undefined,
-        floorsCount: data.floorsCount || undefined,
+        address: data.address, type: data.type, description: data.description || '',
+        photoUrl: data.photoUrl?.trim() || undefined, floorsCount: data.floorsCount || undefined,
         constructionYear: data.constructionYear || undefined,
         tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
     }
 
     try {
         if (editingBuildingId) {
-            // --- UPDATE LOGIC ---
             const buildingToUpdate = buildings.find(b => b.id === editingBuildingId);
             if (!buildingToUpdate) throw new Error("Building not found for update");
-            
             const batch = writeBatch(db);
-            const topLevelRef = doc(db, 'buildings', buildingToUpdate.topLevelId);
-            const subCollectionRef = doc(db, 'projects', projectId, 'buildings', buildingToUpdate.id);
-
-            batch.update(topLevelRef, finalData);
-            batch.update(subCollectionRef, finalData);
+            batch.update(doc(db, 'buildings', buildingToUpdate.topLevelId), finalData);
+            batch.update(doc(db, 'projects', projectId, 'buildings', buildingToUpdate.id), finalData);
             await batch.commit();
-
             toast({ title: 'Επιτυχία', description: 'Το κτίριο ενημερώθηκε.' });
-            await logActivity('UPDATE_BUILDING', { 
-                entityId: buildingToUpdate.topLevelId,
-                entityType: 'building',
-                changes: finalData
-            });
-
         } else {
-            // --- CREATE LOGIC ---
             const batch = writeBatch(db);
-            const topLevelBuildingRef = doc(collection(db, 'buildings'));
-            const subCollectionBuildingRef = doc(collection(db, 'projects', projectId, 'buildings'));
-            
-            batch.set(topLevelBuildingRef, {
-                ...finalData,
-                projectId: projectId,
-                originalId: subCollectionBuildingRef.id,
-                createdAt: serverTimestamp(),
-            });
-            batch.set(subCollectionBuildingRef, {
-                ...finalData,
-                topLevelId: topLevelBuildingRef.id,
-                createdAt: serverTimestamp(),
-            });
+            const topLevelRef = doc(collection(db, 'buildings'));
+            const subCollectionRef = doc(collection(db, 'projects', projectId, 'buildings'));
+            batch.set(topLevelRef, { ...finalData, projectId, originalId: subCollectionRef.id, createdAt: serverTimestamp() });
+            batch.set(subCollectionRef, { ...finalData, topLevelId: topLevelRef.id, createdAt: serverTimestamp() });
             await batch.commit();
-
             toast({ title: 'Επιτυχία', description: 'Το κτίριο προστέθηκε.' });
-            await logActivity('CREATE_BUILDING', { 
-                entityId: topLevelBuildingRef.id,
-                entityType: 'building',
-                address: finalData.address,
-                parentProjectId: projectId
-            });
         }
-        handleDialogOpenChange(false);
+        handleBuildingDialogOpenChange(false);
     } catch (error) {
         console.error('Error submitting building: ', error);
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η υποβολή.' });
@@ -317,47 +282,76 @@ export default function ProjectDetailsPage() {
     }
   };
 
-  const handleDeleteBuilding = async (buildingId: string) => {
-    const buildingToDelete = buildings.find(b => b.id === buildingId);
-    if (!buildingToDelete) {
-        toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν βρέθηκε το κτίριο προς διαγραφή." });
-        return;
+  const onSubmitPhase = async (data: PhaseFormValues) => {
+    if(!projectId) return;
+    setIsSubmitting(true);
+    
+    const finalData = {
+      name: data.name,
+      status: data.status,
+      personInCharge: data.personInCharge || '',
+      notes: data.notes || '',
+      startDate: data.startDate ? Timestamp.fromDate(data.startDate) : null,
+      endDate: data.endDate ? Timestamp.fromDate(data.endDate) : null,
+      deadline: data.deadline ? Timestamp.fromDate(data.deadline) : null,
+    };
+
+    try {
+        const phasesColRef = collection(db, 'projects', projectId, 'phases');
+        if (editingPhase) {
+            await updateDoc(doc(phasesColRef, editingPhase.id), finalData);
+            toast({ title: 'Επιτυχία', description: 'Η φάση ενημερώθηκε.' });
+        } else {
+            await addDoc(phasesColRef, { ...finalData, createdAt: serverTimestamp() });
+            toast({ title: 'Επιτυχία', description: 'Η φάση προστέθηκε.' });
+        }
+        handlePhaseDialogOpenChange(false);
+    } catch (error) {
+        console.error("Error submitting phase:", error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η υποβολή της φάσης.' });
+    } finally {
+        setIsSubmitting(false);
     }
+  }
+
+  // --- DELETE & DUPLICATE LOGIC ---
+   const handleDeleteBuilding = async (buildingId: string) => {
+    const buildingToDelete = buildings.find(b => b.id === buildingId);
+    if (!buildingToDelete) return;
     try {
         const batch = writeBatch(db);
-        const topLevelRef = doc(db, 'buildings', buildingToDelete.topLevelId);
-        const subCollectionRef = doc(db, 'projects', projectId, 'buildings', buildingToDelete.id);
-
-        batch.delete(topLevelRef);
-        batch.delete(subCollectionRef);
-        
+        batch.delete(doc(db, 'buildings', buildingToDelete.topLevelId));
+        batch.delete(doc(db, 'projects', projectId, 'buildings', buildingToDelete.id));
         await batch.commit();
         toast({ title: "Επιτυχία", description: "Το κτίριο διαγράφηκε." });
-        await logActivity('DELETE_BUILDING', { 
-            entityId: buildingToDelete.topLevelId,
-            entityType: 'building',
-            address: buildingToDelete.address
-        });
     } catch (error) {
         console.error("Error deleting building:", error);
         toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν ήταν δυνατή η διαγραφή του κτιρίου." });
     }
   };
+  
+  const handleDeletePhase = async (phaseId: string) => {
+    if(!projectId) return;
+    try {
+        await deleteDoc(doc(db, 'projects', projectId, 'phases', phaseId));
+        toast({ title: 'Επιτυχία', description: 'Η φάση διαγράφηκε.'});
+    } catch (error) {
+        console.error("Error deleting phase:", error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
+    }
+  }
 
+
+  // --- FORM PREP & UI HANDLERS ---
   const handleEditBuilding = (building: Building) => {
-    const topLevelId = building.topLevelId;
-    const docRef = doc(db, 'buildings', topLevelId);
+    const docRef = doc(db, 'buildings', building.topLevelId);
     getDoc(docRef).then(docSnap => {
         if(docSnap.exists()){
             const data = docSnap.data();
-            form.reset({
-                id: building.id,
-                address: data.address,
-                type: data.type,
-                description: data.description || '',
-                photoUrl: data.photoUrl || '',
-                floorsCount: data.floorsCount || undefined,
-                constructionYear: data.constructionYear || undefined,
+            buildingForm.reset({
+                id: building.id, address: data.address, type: data.type,
+                description: data.description || '', photoUrl: data.photoUrl || '',
+                floorsCount: data.floorsCount || undefined, constructionYear: data.constructionYear || undefined,
                 tags: (data.tags || []).join(', '),
             });
             setEditingBuildingId(building.id);
@@ -366,289 +360,167 @@ export default function ProjectDetailsPage() {
     })
   };
 
-  const formatDate = (timestamp: Timestamp | undefined) => {
-    if (!timestamp) return '-';
-    return format(timestamp.toDate(), 'dd/MM/yyyy');
-  };
-
-  const handleBuildingRowClick = (building: Building) => {
-    router.push(`/buildings/${building.topLevelId}`);
-  };
-
-
-  if (isLoadingProject) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
-      </div>
-    );
+  const handleEditPhase = (phase: Phase) => {
+    setEditingPhase(phase);
+    phaseForm.reset({
+        ...phase,
+        startDate: phase.startDate?.toDate(),
+        endDate: phase.endDate?.toDate(),
+        deadline: phase.deadline?.toDate(),
+    });
+    setIsPhaseDialogOpen(true);
   }
 
-  if (!project) {
-    return null; // or a not-found component
+  const formatDate = (timestamp?: Timestamp | Date) => {
+    if (!timestamp) return '-';
+    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
+    return format(date, 'dd/MM/yyyy');
+  };
+
+  if (isLoadingProject || !project) {
+    return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
   }
 
   return (
     <div className="flex flex-col gap-8">
-      <Button variant="outline" size="sm" className="w-fit" onClick={() => router.back()}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Επιστροφή στα Έργα
-      </Button>
+      <Button variant="outline" size="sm" className="w-fit" onClick={() => router.back()}><ArrowLeft className="mr-2 h-4 w-4" />Επιστροφή στα Έργα</Button>
 
+      {/* Project Details Card */}
       <Card>
         <CardHeader>
           <CardTitle>{project.title}</CardTitle>
-          <CardDescription>
-            {project.location} | Προθεσμία: {formatDate(project.deadline)} | Κατάσταση: {project.status}
-          </CardDescription>
+          <CardDescription>{project.location} | Προθεσμία: {formatDate(project.deadline)} | Κατάσταση: {project.status}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row gap-6">
             {project.photoUrl && (
-                <div className="md:w-1/3">
-                    <Image
-                        src={project.photoUrl}
-                        alt={`Photo of ${project.title}`}
-                        width={400}
-                        height={300}
-                        className="rounded-lg object-cover aspect-[4/3]"
-                        loading="lazy"
-                    />
-                </div>
+                <div className="md:w-1/3"><Image src={project.photoUrl} alt={`Photo of ${project.title}`} width={400} height={300} className="rounded-lg object-cover aspect-[4/3]" loading="lazy"/></div>
             )}
             <div className="flex-1 space-y-4">
-                {project.description && (
-                    <p className="text-sm text-muted-foreground">{project.description}</p>
-                )}
+                {project.description && <p className="text-sm text-muted-foreground">{project.description}</p>}
                 {project.tags && project.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                        {project.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary">{tag}</Badge>
-                        ))}
-                    </div>
+                    <div className="flex flex-wrap gap-2">{project.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}</div>
                 )}
             </div>
         </CardContent>
       </Card>
       
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          Κτίρια του Έργου
-        </h2>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" />
-              Νέο Κτίριο
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>{editingBuildingId ? 'Επεξεργασία' : 'Προσθήκη Νέου'} Κτιρίου</DialogTitle>
-              <DialogDescription>
-                Συμπληρώστε τις πληροφορίες για το κτίριο του έργου.
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitBuilding)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Διεύθυνση Κτιρίου</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Πατησίων 100, Αθήνα" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Τύπος Κτιρίου</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Πολυκατοικία" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="floorsCount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Αριθμός Ορόφων</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="π.χ. 5" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="constructionYear"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Έτος Κατασκευής</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="π.χ. 2023" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="photoUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/photo.jpg" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tags (χωρισμένα με κόμμα)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. νεόδμητο, γωνιακό" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Σημειώσεις για το κτίριο..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                   <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmitting}>
-                      Ακύρωση
-                    </Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {editingBuildingId ? 'Αποθήκευση Αλλαγών' : 'Προσθήκη Κτιρίου'}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
+      {/* Phases Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Λίστα Κτιρίων</CardTitle>
+            <div className="flex items-center justify-between">
+                <CardTitle>Φάσεις Κατασκευής</CardTitle>
+                <Dialog open={isPhaseDialogOpen} onOpenChange={handlePhaseDialogOpenChange}>
+                    <DialogTrigger asChild>
+                        <Button size="sm"><PlusCircle className="mr-2"/>Νέα Φάση</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                            <DialogTitle>{editingPhase ? 'Επεξεργασία' : 'Νέα'} Φάση</DialogTitle>
+                        </DialogHeader>
+                        <Form {...phaseForm}>
+                            <form onSubmit={phaseForm.handleSubmit(onSubmitPhase)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
+                                <FormField control={phaseForm.control} name="name" render={({field}) => (<FormItem><FormLabel>Όνομα Φάσης</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                                <FormField control={phaseForm.control} name="status" render={({field}) => (<FormItem><FormLabel>Κατάσταση</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Εκκρεμεί">Εκκρεμεί</SelectItem><SelectItem value="Σε εξέλιξη">Σε εξέλιξη</SelectItem><SelectItem value="Ολοκληρώθηκε">Ολοκληρώθηκε</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
+                                <FormField control={phaseForm.control} name="personInCharge" render={({field}) => (<FormItem><FormLabel>Υπεύθυνος/Συνεργείο</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                                <FormField control={phaseForm.control} name="notes" render={({field}) => (<FormItem><FormLabel>Σημειώσεις</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <FormField control={phaseForm.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Έναρξη</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, 'P', {locale: el}) : <span>Επιλογή</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus/></PopoverContent></Popover><FormMessage /></FormItem>)}/>
+                                    <FormField control={phaseForm.control} name="endDate" render={({ field }) => (<FormItem><FormLabel>Λήξη</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, 'P', {locale: el}) : <span>Επιλογή</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus/></PopoverContent></Popover><FormMessage /></FormItem>)}/>
+                                    <FormField control={phaseForm.control} name="deadline" render={({ field }) => (<FormItem><FormLabel>Προθεσμία</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, 'P', {locale: el}) : <span>Επιλογή</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus/></PopoverContent></Popover><FormMessage /></FormItem>)}/>
+                                </div>
+                                <DialogFooter>
+                                    <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
+                                    <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Αποθήκευση</Button>
+                                </DialogFooter>
+                            </form>
+                        </Form>
+                    </DialogContent>
+                </Dialog>
+            </div>
         </CardHeader>
         <CardContent>
-          {isLoadingBuildings ? (
-            <div className="flex justify-center items-center h-40">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            {isLoadingPhases ? (<div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>)
+            : phases.length > 0 ? (
+                <Table>
+                    <TableHeader>
+                        <TableRow><TableHead>Φάση</TableHead><TableHead>Κατάσταση</TableHead><TableHead>Υπεύθυνος</TableHead><TableHead>Έναρξη</TableHead><TableHead>Λήξη</TableHead><TableHead>Προθεσμία</TableHead><TableHead className="text-right">Ενέργειες</TableHead></TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {phases.map(phase => (
+                            <TableRow key={phase.id} className="group">
+                                <TableCell className="font-medium">{phase.name}</TableCell>
+                                <TableCell><Badge variant={phase.status === 'Ολοκληρώθηκε' ? 'default' : 'secondary'}>{phase.status}</Badge></TableCell>
+                                <TableCell>{phase.personInCharge || '-'}</TableCell>
+                                <TableCell>{formatDate(phase.startDate)}</TableCell>
+                                <TableCell>{formatDate(phase.endDate)}</TableCell>
+                                <TableCell>{formatDate(phase.deadline)}</TableCell>
+                                <TableCell className="text-right">
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
+                                        <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={() => handleEditPhase(phase)}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία</span></Button>
+                                        <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή</span></Button></AlertDialogTrigger>
+                                            <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά τη φάση "{phase.name}".</AlertDialogDescription></AlertDialogHeader>
+                                                <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeletePhase(phase.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            ) : (<p className="text-center text-muted-foreground py-8">Δεν υπάρχουν καταχωρημένες φάσεις για αυτό το έργο.</p>)}
+        </CardContent>
+      </Card>
+      
+      {/* Buildings Card */}
+      <Card>
+        <CardHeader>
+            <div className="flex items-center justify-between">
+                <CardTitle>Κτίρια του Έργου</CardTitle>
+                <Dialog open={isDialogOpen} onOpenChange={handleBuildingDialogOpenChange}>
+                <DialogTrigger asChild><Button size="sm"><PlusCircle className="mr-2" />Νέο Κτίριο</Button></DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader><DialogTitle>{editingBuildingId ? 'Επεξεργασία' : 'Προσθήκη Νέου'} Κτιρίου</DialogTitle><DialogDescription>Συμπληρώστε τις πληροφορίες για το κτίριο του έργου.</DialogDescription></DialogHeader>
+                    <Form {...buildingForm}>
+                        <form onSubmit={buildingForm.handleSubmit(onSubmitBuilding)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
+                            <FormField control={buildingForm.control} name="address" render={({ field }) => (<FormItem><FormLabel>Διεύθυνση</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                            <FormField control={buildingForm.control} name="type" render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField control={buildingForm.control} name="floorsCount" render={({ field }) => (<FormItem><FormLabel>Αρ. Ορόφων</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}/></FormControl><FormMessage/></FormItem>)}/>
+                                <FormField control={buildingForm.control} name="constructionYear" render={({ field }) => (<FormItem><FormLabel>Έτος Κατασκευής</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}/></FormControl><FormMessage/></FormItem>)}/>
+                            </div>
+                            <FormField control={buildingForm.control} name="photoUrl" render={({ field }) => (<FormItem><FormLabel>URL Φωτογραφίας</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                            <FormField control={buildingForm.control} name="tags" render={({ field }) => (<FormItem><FormLabel>Tags (με κόμμα)</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                            <FormField control={buildingForm.control} name="description" render={({ field }) => (<FormItem><FormLabel>Περιγραφή</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                            <DialogFooter>
+                                <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
+                                <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}{editingBuildingId ? 'Αποθήκευση' : 'Προσθήκη'}</Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                </DialogContent>
+                </Dialog>
             </div>
-          ) : buildings.length > 0 ? (
+        </CardHeader>
+        <CardContent>
+          {isLoadingBuildings ? (<div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>)
+          : buildings.length > 0 ? (
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[60px]">Φωτο</TableHead>
-                  <TableHead>Διεύθυνση</TableHead>
-                  <TableHead>Τύπος</TableHead>
-                  <TableHead>Ημ/νία Δημιουργίας</TableHead>
-                  <TableHead className="text-right">Ενέργειες</TableHead>
-                </TableRow>
-              </TableHeader>
+              <TableHeader><TableRow><TableHead className="w-[60px]">Φωτο</TableHead><TableHead>Διεύθυνση</TableHead><TableHead>Τύπος</TableHead><TableHead>Ημ/νία Δημ.</TableHead><TableHead className="text-right">Ενέργειες</TableHead></TableRow></TableHeader>
               <TableBody>
                 {buildings.map((building) => (
-                  <TableRow key={building.id} className="group">
-                    <TableCell>
-                      <div 
-                        onClick={() => handleBuildingRowClick(building)} 
-                        className="cursor-pointer"
-                      >
-                         {building.photoUrl ? (
-                            <Image
-                            src={building.photoUrl}
-                            alt={building.address}
-                            width={40}
-                            height={40}
-                            className="rounded-md object-cover"
-                            />
-                        ) : (
-                            <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell 
-                      className="font-medium cursor-pointer" 
-                      onClick={() => handleBuildingRowClick(building)}
-                    >
-                      {building.address}
-                    </TableCell>
-                    <TableCell 
-                      className="text-muted-foreground cursor-pointer"
-                      onClick={() => handleBuildingRowClick(building)}
-                    >
-                      {building.type}
-                    </TableCell>
-                    <TableCell 
-                      onClick={() => handleBuildingRowClick(building)}
-                      className="cursor-pointer"
-                    >
-                      {formatDate(building.createdAt)}
-                    </TableCell>
+                  <TableRow key={building.id} className="group" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>
+                    <TableCell><div className="cursor-pointer">{building.photoUrl ? (<Image src={building.photoUrl} alt={building.address} width={40} height={40} className="rounded-md object-cover"/>) : (<div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>)}</div></TableCell>
+                    <TableCell className="font-medium cursor-pointer">{building.address}</TableCell>
+                    <TableCell className="text-muted-foreground cursor-pointer">{building.type}</TableCell>
+                    <TableCell className="cursor-pointer">{formatDate(building.createdAt)}</TableCell>
                     <TableCell className="text-right">
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
-                            <Button variant="ghost" size="icon" title="Αντιγραφή" onClick={() => handleDuplicateBuilding(building.id)}>
-                                <Copy className="h-4 w-4" />
-                                <span className="sr-only">Αντιγραφή</span>
-                            </Button>
-                            <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={() => handleEditBuilding(building)}>
-                                <Edit className="h-4 w-4" />
-                                <span className="sr-only">Επεξεργασία</span>
-                            </Button>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive">
-                                        <Trash2 className="h-4 w-4" />
-                                        <span className="sr-only">Διαγραφή</span>
-                                    </Button>
-                                </AlertDialogTrigger>
+                            <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={(e) => { e.stopPropagation(); handleEditBuilding(building); }}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία</span></Button>
+                            <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή</span></Button></AlertDialogTrigger>
                                 <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το κτίριο "{building.address}".
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteBuilding(building.id)} className="bg-destructive hover:bg-destructive/90">
-                                            Διαγραφή
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
+                                    <AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το κτίριο "{building.address}".</AlertDialogDescription></AlertDialogHeader>
+                                    <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteBuilding(building.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
                         </div>
@@ -657,9 +529,7 @@ export default function ProjectDetailsPage() {
                 ))}
               </TableBody>
             </Table>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν κτίρια για αυτό το έργο.</p>
-          )}
+          ) : (<p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν κτίρια για αυτό το έργο.</p>)}
         </CardContent>
       </Card>
     </div>

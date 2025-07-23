@@ -38,12 +38,15 @@
 
 **Company** -> **Project** -> **Building** -> **Floor** -> **Unit** -> **Attachment**
 
+Και παράλληλα: **Project** -> **Phase**
+
 ### Το "Πάντρεμα" των Δεδομένων στο Firestore:
 
 Για να επιτύχουμε γρήγορες αναγνώσεις τόσο σε επίπεδο έργου (π.χ. "δείξε μου όλα τα κτίρια αυτού του έργου") όσο και σε συνολικό επίπεδο (π.χ. "δείξε μου όλα τα κτίρια ανεξαρτήτως έργου"), χρησιμοποιούμε μια **dual-write strategy**:
 
 1.  **Nested Subcollections**: Τα δεδομένα αποθηκεύονται στην κανονική τους ιεραρχία. Για παράδειγμα, ένα `building` αποθηκεύεται ως έγγραφο μέσα στη subcollection `buildings` ενός συγκεκριμένου `project`.
     - `projects/{projectId}/buildings/{buildingId}/floors/{floorId}/units/{unitId}`
+    - `projects/{projectId}/phases/{phaseId}`
 
 2.  **Top-Level Collections (Denormalization)**: Ταυτόχρονα, κάθε οντότητα (π.χ. `building`, `floor`, `unit`) αποθηκεύεται και σε μια "επίπεδη" (flat) top-level collection.
     - `/companies/{companyId}`
@@ -85,6 +88,16 @@
 - **status**: `string` - (`Ενεργό`, `Σε εξέλιξη`, `Ολοκληρωμένο`).
 - **photoUrl**: `string` (optional) - URL της κύριας φωτογραφίας/μακέτας.
 - **tags**: `array` of `string` (optional) - Κατηγοριοποίηση (π.χ. "residential", "commercial").
+- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
+
+#### Subcollection: `projects/{projectId}/phases`
+- **name**: `string` - (π.χ. “Εκσκαφές”, “Τοιχοποιία”).
+- **status**: `string` - (`Εκκρεμεί`, `Σε εξέλιξη`, `Ολοκληρώθηκε`).
+- **startDate**: `timestamp` (optional) - Ημερομηνία έναρξης.
+- **endDate**: `timestamp` (optional) - Ημερομηνία λήξης.
+- **deadline**: `timestamp` (optional) - Προθεσμία.
+- **personInCharge**: `string` (optional) - Υπεύθυνος/Συνεργείο.
+- **notes**: `string` (optional) - Σημειώσεις.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
 ### Collection: `buildings`
