@@ -37,40 +37,60 @@ export interface Project {
 
 interface DataStoreContextType {
   companies: Company[];
+  projects: Project[];
   isLoading: boolean;
   addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<string | null>;
+  addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }) => Promise<string | null>;
 }
 
 const DataStoreContext = createContext<DataStoreContextType>({
   companies: [],
+  projects: [],
   isLoading: true,
   addCompany: async () => null,
+  addProject: async () => null,
 });
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
         setCompanies([]);
+        setProjects([]);
         setIsLoading(false);
         return;
     }
 
     setIsLoading(true);
     const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
-        const companiesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company));
-        setCompanies(companiesData); // CRITICAL FIX: Replace state, don't append
-        setIsLoading(false);
+        setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
+        checkIfStillLoading();
     }, (error) => {
         console.error("Failed to fetch companies:", error);
-        setIsLoading(false);
+        checkIfStillLoading();
     });
+    
+    const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
+        setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
+        checkIfStillLoading();
+    }, (error) => {
+        console.error("Failed to fetch projects:", error);
+        checkIfStillLoading();
+    });
+
+    const checkIfStillLoading = () => {
+        // A simple way to set loading to false after first fetch attempts.
+        // Could be more robust by tracking individual loading states.
+        setIsLoading(false);
+    }
 
     return () => {
         unsubCompanies();
+        unsubProjects();
     };
   }, [user]);
 
@@ -92,10 +112,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return null;
     }
   }, []);
+  
+  const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }): Promise<string | null> => {
+    try {
+        const { tags, ...restOfData } = projectData;
+        const finalData = {
+            ...restOfData,
+            tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+            deadline: Timestamp.fromDate(projectData.deadline),
+            createdAt: serverTimestamp(),
+        };
+
+        const docRef = await addDoc(collection(db, 'projects'), finalData);
+        await logActivity('CREATE_PROJECT', {
+            entityId: docRef.id,
+            entityType: 'project',
+            name: projectData.title
+        });
+        return docRef.id;
+    } catch(e) {
+        console.error("Error adding project:", e);
+        return null;
+    }
+  }, []);
 
 
   return (
-    <DataStoreContext.Provider value={{ companies, isLoading, addCompany }}>
+    <DataStoreContext.Provider value={{ companies, projects, isLoading, addCompany, addProject }}>
       {children}
     </DataStoreContext.Provider>
   );
