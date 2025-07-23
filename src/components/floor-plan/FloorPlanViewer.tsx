@@ -3,10 +3,13 @@
 
 import React from 'react';
 import { useFloorPlanState } from './hooks/useFloorPlanState';
+import { useFloorPlanDataManager } from './hooks/useFloorPlanDataManager';
 import { Toolbar } from './Toolbar';
 import { InfoPanel } from './InfoPanel';
 import { StatusFilter } from './StatusFilter';
 import { PdfCanvas } from './PdfCanvas';
+import { UnitsListTable } from '../floors/UnitsListTable';
+import { UnitDialogForm, unitSchema } from '../units/UnitDialogForm';
 
 export interface Unit {
   id: string;
@@ -14,28 +17,39 @@ export interface Unit {
   name: string;
   status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
   polygonPoints?: { x: number; y: number }[];
+  floorId: string;
+  originalId: string;
+  projectId?: string;
 }
 
 interface FloorPlanViewerProps {
+  floorId: string;
   pdfUrl: string;
-  units: Unit[];
-  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
-  onUnitClick: (unitId: string) => void;
-  onUnitDelete: (unitId: string) => void;
-  onPolygonDrawn: (points: { x: number; y: number }[]) => void;
-  onUnitPointsUpdate: (unitId: string, newPoints: { x: number; y: number }[]) => void;
+  initialUnits: Unit[];
+  onUnitSelect: (unitId: string) => void;
 }
 
 export function FloorPlanViewer(props: FloorPlanViewerProps) {
+  const { floorId, pdfUrl, initialUnits, onUnitSelect } = props;
+
   const {
-    pdfUrl,
     units,
-    setUnits,
-    onPolygonDrawn,
-    onUnitPointsUpdate,
-    onUnitClick,
-    onUnitDelete,
-  } = props;
+    form,
+    isSubmitting,
+    handleDeleteUnit,
+    handleDuplicateUnit,
+    onSubmitUnit,
+    editingUnit,
+    drawingPolygon,
+    isDialogOpen,
+    setIsDialogOpen,
+    setDrawingPolygon,
+    setEditingUnit,
+    handleUnitPointsUpdate,
+    unitsWithoutPolygon,
+    highlightedUnitId,
+    setHighlightedUnitId,
+  } = useFloorPlanDataManager({ floorId, initialUnits });
 
   const {
     pageDimensions,
@@ -48,26 +62,38 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
     toggleEditMode,
     draggingPoint,
     setDraggingPoint,
-    drawingPolygon,
-    setDrawingPolygon,
+    localDrawingPolygon,
+    setLocalDrawingPolygon,
     completeAndResetDrawing,
     handleUndo,
     isPrecisionZooming,
     lastMouseEvent,
     zoom,
     pdfContainerRef,
-  } = useFloorPlanState({ onPolygonDrawn });
+  } = useFloorPlanState({ onPolygonDrawn: setDrawingPolygon });
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setDrawingPolygon(null);
+      setEditingUnit(null);
+      form.reset({
+        identifier: '', name: '', type: '', status: 'Διαθέσιμο', polygonPoints: '',
+        existingUnitId: 'new',
+        area: '', price: '', bedrooms: '', bathrooms: '', orientation: '', amenities: '',
+      });
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-4 p-2">
       <PdfCanvas
         pdfUrl={pdfUrl}
         units={units}
-        setUnits={setUnits}
         statusVisibility={statusVisibility}
         isLocked={isLocked}
         isEditMode={isEditMode}
-        drawingPolygon={drawingPolygon}
+        drawingPolygon={localDrawingPolygon}
         draggingPoint={draggingPoint}
         lastMouseEvent={lastMouseEvent}
         isPrecisionZooming={isPrecisionZooming}
@@ -75,19 +101,21 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
         pdfContainerRef={pdfContainerRef}
         zoom={zoom}
         setPageDimensions={setPageDimensions}
-        setDrawingPolygon={setDrawingPolygon}
+        setDrawingPolygon={setLocalDrawingPolygon}
         setDraggingPoint={setDraggingPoint}
-        onUnitPointsUpdate={onUnitPointsUpdate}
-        onUnitClick={onUnitClick}
-        onUnitDelete={onUnitDelete}
+        onUnitPointsUpdate={handleUnitPointsUpdate}
+        onUnitClick={(id) => onUnitSelect(id)}
+        onUnitDelete={handleDeleteUnit}
+        highlightedUnitId={highlightedUnitId}
+        setHighlightedUnitId={setHighlightedUnitId}
       />
 
-      <div className="flex w-full flex-col items-center gap-2">
+      <div className="w-full space-y-2">
         <Toolbar
-          numPages={1} // Assuming single page PDFs for now
+          numPages={1}
           isLocked={isLocked}
           isEditMode={isEditMode}
-          drawingPolygon={drawingPolygon}
+          drawingPolygon={localDrawingPolygon}
           scale={zoom.scale}
           rotation={zoom.rotation}
           zoomInput={zoom.zoomInput}
@@ -103,7 +131,6 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
           handleZoomInputBlur={zoom.handleZoomInputBlur}
           handleZoomInputKeyDown={zoom.handleZoomInputKeyDown}
         />
-
         <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2">
           <InfoPanel
             isEditMode={isEditMode}
@@ -116,6 +143,28 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
           />
         </div>
       </div>
+
+      <UnitsListTable
+        units={units}
+        isLoading={false} // Loading is handled by the container now
+        onAddNewUnit={() => setIsDialogOpen(true)}
+        onEditUnit={(unit) => onUnitSelect(unit.id)}
+        onDeleteUnit={handleDeleteUnit}
+        onDuplicateUnit={handleDuplicateUnit}
+        highlightedUnitId={highlightedUnitId}
+        setHighlightedUnitId={setHighlightedUnitId}
+      />
+
+       <UnitDialogForm
+        open={isDialogOpen}
+        onOpenChange={handleDialogOpenChange}
+        onSubmit={form.handleSubmit(onSubmitUnit)}
+        form={form}
+        isSubmitting={isSubmitting}
+        editingUnit={editingUnit}
+        drawingPolygon={drawingPolygon}
+        availableUnits={unitsWithoutPolygon}
+      />
     </div>
   );
 }

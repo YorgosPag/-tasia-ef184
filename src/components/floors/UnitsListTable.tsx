@@ -21,7 +21,6 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, PlusCircle, Edit, Trash2, Copy } from 'lucide-react';
@@ -30,6 +29,7 @@ import { format } from 'date-fns';
 import { getStatusClass } from '@/components/floor-plan/utils';
 import type { Unit as IUnit } from '@/components/floor-plan/FloorPlanViewer';
 import type { AttachmentFormValues } from '@/app/units/[id]/page';
+import { cn } from '@/lib/utils';
 
 interface Unit {
   id: string;
@@ -49,11 +49,13 @@ interface UnitsListTableProps {
   units: (Unit | AttachmentFormValues)[];
   isLoading?: boolean;
   statusColors?: Record<IUnit['status'], string>;
+  highlightedUnitId?: string | null;
   onAddNewUnit?: () => void;
   onEditUnit: (unit: any) => void;
   onDeleteUnit: (unitId: string) => void;
   onViewUnit?: (unitId: string) => void;
   onDuplicateUnit?: (unitId: string) => void;
+  setHighlightedUnitId?: (id: string | null) => void;
 }
 
 const formatDate = (timestamp: Timestamp | undefined) => {
@@ -69,11 +71,13 @@ export function UnitsListTable({
   units,
   isLoading,
   statusColors,
+  highlightedUnitId,
   onAddNewUnit,
   onEditUnit,
   onDeleteUnit,
   onViewUnit,
   onDuplicateUnit,
+  setHighlightedUnitId,
 }: UnitsListTableProps) {
   
   const isAttachmentList = units.length > 0 && units[0].hasOwnProperty('details');
@@ -87,11 +91,16 @@ export function UnitsListTable({
   }
 
   if (units.length === 0) {
-      return <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν εγγραφές.</p>
+      return (
+        <div className="text-center py-8">
+            <p className="text-muted-foreground">Δεν βρέθηκαν εγγραφές.</p>
+            {onAddNewUnit && <Button onClick={onAddNewUnit} className="mt-4"><PlusCircle className="mr-2"/>Προσθήκη</Button>}
+        </div>
+      )
   }
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto border rounded-lg">
         <Table>
         <TableHeader>
             <TableRow>
@@ -113,7 +122,14 @@ export function UnitsListTable({
                     <TableHead>Ημ/νία Δημιουργίας</TableHead>
                 </>
             )}
-            <TableHead className="text-right">Ενέργειες</TableHead>
+            <TableHead className="text-right">
+                {onAddNewUnit && !isAttachmentList && (
+                    <Button variant="ghost" size="sm" onClick={onAddNewUnit}>
+                        <PlusCircle className="mr-2 h-4 w-4"/>
+                        Νέο Ακίνητο
+                    </Button>
+                )}
+            </TableHead>
             </TableRow>
         </TableHeader>
         <TableBody>
@@ -121,8 +137,15 @@ export function UnitsListTable({
             const unit = item as Unit;
             const attachment = item as AttachmentFormValues;
             const color = unit.status && statusColors ? statusColors[unit.status] ?? '#6b7280' : '#6b7280';
+            const isHighlighted = highlightedUnitId === unit.id;
+
             return (
-                <TableRow key={unit.id} className="group">
+                <TableRow 
+                  key={unit.id}
+                  className={cn("group transition-colors", isHighlighted && "bg-primary/10")}
+                  onMouseEnter={() => setHighlightedUnitId?.(unit.id)}
+                  onMouseLeave={() => setHighlightedUnitId?.(null)}
+                >
                 {isAttachmentList ? (
                     <>
                         <TableCell className="font-medium capitalize">{attachment.type}</TableCell>
@@ -153,7 +176,7 @@ export function UnitsListTable({
                 )}
                 <TableCell className="text-right">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
-                    {onDuplicateUnit && (
+                    {onDuplicateUnit && !isAttachmentList && (
                             <Button variant="ghost" size="icon" title="Αντιγραφή" onClick={() => onDuplicateUnit(unit.id)}>
                                 <Copy className="h-4 w-4" />
                                 <span className="sr-only">Αντιγραφή</span>
@@ -185,7 +208,7 @@ export function UnitsListTable({
                         </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-                    {onViewUnit && (
+                    {onViewUnit && !isAttachmentList && (
                         <Button variant="outline" size="sm" onClick={() => onViewUnit(unit.id)}>
                             Προβολή
                         </Button>
