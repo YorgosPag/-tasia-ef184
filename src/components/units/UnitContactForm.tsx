@@ -7,12 +7,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle } from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useParams } from 'next/navigation';
 
 interface UnitContactFormProps {
   unitName: string;
 }
 
 export function UnitContactForm({ unitName }: UnitContactFormProps) {
+  const params = useParams();
+  const unitId = params.id as string;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -20,7 +25,7 @@ export function UnitContactForm({ unitName }: UnitContactFormProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) {
         setError('Τα πεδία "Όνομα" και "Email" είναι υποχρεωτικά.');
@@ -29,11 +34,23 @@ export function UnitContactForm({ unitName }: UnitContactFormProps) {
     setError('');
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-        setIsSubmitting(false);
+    try {
+        await addDoc(collection(db, 'leads'), {
+            name,
+            email,
+            message,
+            unitId,
+            unitName,
+            createdAt: serverTimestamp(),
+            status: 'New' // e.g., New, Contacted, Closed
+        });
         setIsSubmitted(true);
-    }, 1500);
+    } catch (err) {
+        console.error("Failed to submit lead:", err);
+        setError("Η υποβολή απέτυχε. Παρακαλώ δοκιμάστε ξανά.");
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {

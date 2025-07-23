@@ -85,6 +85,15 @@
 - **role**: `string` - Ο ρόλος του χρήστη (`admin`, `editor`, `viewer`).
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
+### Collection: `leads`
+- **name**: `string` - Το όνομα του πελάτη.
+- **email**: `string` - Το email του πελάτη.
+- **message**: `string` (optional) - Το μήνυμα που άφησε.
+- **unitId**: `string` - Το ID του ακινήτου για το οποίο ενδιαφέρεται.
+- **unitName**: `string` - Το όνομα του ακινήτου.
+- **status**: `string` - (`New`, `Contacted`, `Closed`).
+- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
+
 ### Collection: `companies`
 - **name**: `string` - Επωνυμία εταιρείας.
 - **contactInfo**: `map` - Object με `email`, `phone`, `address`, `afm`.
