@@ -104,18 +104,18 @@ export function useBreadcrumbs() {
     let tempBreadcrumbs: BreadcrumbItem[] = [];
     const firstSegment = pathSegments[0];
     
-    // Handle top-level list pages e.g., /projects
+    // Handle top-level list pages e.g., /projects FIRST
     if (pathSegments.length === 1 && staticPathLabels[firstSegment]) {
         tempBreadcrumbs.push({ 
             href: `/${firstSegment}`, 
             label: staticPathLabels[firstSegment],
-            tooltip: 'Λίστα',
+            tooltip: `Λίστα: ${staticPathLabels[firstSegment]}`,
         });
         setBreadcrumbs(tempBreadcrumbs);
         return;
     }
     
-    // Handle details pages e.g., /units/some-id
+    // Then, handle details pages e.g., /units/some-id
     if (pathSegments.length > 1 && collectionNameMap[firstSegment]) {
       const collectionSlug = firstSegment;
       const entityId = pathSegments[1];
@@ -229,6 +229,14 @@ export function useBreadcrumbs() {
         });
       }
 
+    } else {
+       // Catch-all for any other path that was not matched
+       if (staticPathLabels[firstSegment]) {
+         tempBreadcrumbs.push({ 
+            href: `/${firstSegment}`, 
+            label: staticPathLabels[firstSegment],
+         });
+       }
     }
 
     const uniqueCrumbs = tempBreadcrumbs.reduce((acc, current) => {
