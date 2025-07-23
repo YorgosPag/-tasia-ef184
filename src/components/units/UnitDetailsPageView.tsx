@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -11,6 +10,7 @@ import { UnitDetailsForm, UnitFormValues } from './UnitDetailsForm';
 import { AttachmentDialog, AttachmentFormValues } from './AttachmentDialog';
 import { UnitsListTable } from '@/components/floors/UnitsListTable';
 import { Unit } from '@/hooks/use-unit-details';
+import { UnitContactForm } from './UnitContactForm';
 
 interface UnitDetailsPageViewProps {
   unit: Unit;
@@ -48,7 +48,7 @@ export function UnitDetailsPageView({
   getStatusClass,
 }: UnitDetailsPageViewProps) {
   return (
-    <>
+    <div className="flex flex-col gap-8">
       <Form {...unitForm}>
         <form onSubmit={onUnitSubmit}>
           <div className="flex flex-col gap-8">
@@ -71,6 +71,8 @@ export function UnitDetailsPageView({
           </div>
         </form>
       </Form>
+
+      <UnitContactForm unitName={unit.name} />
 
       <Card>
         <CardHeader>
@@ -102,6 +104,6 @@ export function UnitDetailsPageView({
         isSubmitting={isSubmitting}
         editingAttachment={editingAttachment}
       />
-    </>
+    </div>
   );
 }
