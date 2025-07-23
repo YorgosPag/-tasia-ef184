@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PlusCircle, Loader2 } from 'lucide-react';
+import { PlusCircle, Loader2, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Company } from '@/hooks/use-data-store';
@@ -34,7 +34,8 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         handleAddChecklistItem,
         setEditingWorkStage,
         handleCommentSubmit,
-    } = useWorkStages(project.id);
+        handleExport,
+    } = useWorkStages(project.id, project.title);
 
     const [isWorkStageDialogOpen, setIsWorkStageDialogOpen] = useState(false);
 
@@ -67,7 +68,12 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle>Στάδια Εργασίας</CardTitle>
-                    <Button size="sm" onClick={handleAddNewStage}><PlusCircle className="mr-2"/>Νέο Στάδιο Εργασίας</Button>
+                    <div className="flex items-center gap-2">
+                         <Button size="sm" variant="outline" onClick={handleExport} disabled={isLoadingWorkStages || workStages.length === 0}>
+                            <Download className="mr-2"/>Εξαγωγή Αναφοράς
+                        </Button>
+                        <Button size="sm" onClick={handleAddNewStage}><PlusCircle className="mr-2"/>Νέο Στάδιο Εργασίας</Button>
+                    </div>
                 </div>
             </CardHeader>
             <CardContent>
