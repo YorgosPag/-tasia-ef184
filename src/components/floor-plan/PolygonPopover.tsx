@@ -76,8 +76,7 @@ export function PolygonPopover({
               <span className="text-sm font-medium">Κατάσταση:</span>
               <Badge 
                 variant="default"
-                style={{ backgroundColor: polygonColor }}
-                className={getStatusClass(polygonColor)}
+                style={{ backgroundColor: polygonColor, color: getTextColorForBackground(polygonColor) === 'text-white' ? 'white' : 'black' }}
               >
                 {unit.status}
               </Badge>
@@ -124,3 +123,5 @@ export function PolygonPopover({
     </Popover>
   );
 }
+
+    

@@ -10,7 +10,7 @@ export const ALL_STATUSES: Unit['status'][] = [
 
 export const STATUS_COLOR_MAP: Record<Unit['status'], string> = {
   'Πωλημένο': '#ef4444', // red-500
-  'Κρατημένο': '#3b82f6', // blue-500
+  'Κρατημένο': '#eab308', // yellow-500
   'Διαθέσιμο': '#22c55e', // green-500
   'Οικοπεδούχος': '#f97316', // orange-500
 };
@@ -55,3 +55,5 @@ function getTextColorForBackground(hexColor: string): 'text-black' | 'text-white
 export const getStatusClass = (backgroundColor: string) => {
   return getTextColorForBackground(backgroundColor);
 };
+
+    
