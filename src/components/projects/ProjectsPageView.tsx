@@ -1,6 +1,8 @@
+
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +11,8 @@ import { ProjectTable } from './ProjectTable';
 import { ProjectDialogForm, ProjectFormValues } from './ProjectDialogForm';
 import { Company, Project } from '@/hooks/use-data-store';
 import { UseFormReturn } from 'react-hook-form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 
 interface ProjectsPageViewProps {
   filteredProjects: Project[];
@@ -21,6 +25,7 @@ interface ProjectsPageViewProps {
   isSubmitting: boolean;
   editingProject: Project | null;
   form: UseFormReturn<ProjectFormValues>;
+  view: string;
   handleExport: () => void;
   handleDialogOpenChange: (open: boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -40,6 +45,7 @@ export function ProjectsPageView({
   isSubmitting,
   editingProject,
   form,
+  view,
   handleExport,
   handleDialogOpenChange,
   onSubmit,
@@ -47,6 +53,12 @@ export function ProjectsPageView({
   handleDuplicateProject,
   handleDeleteProject,
 }: ProjectsPageViewProps) {
+  const router = useRouter();
+
+  const handleTabChange = (value: string) => {
+    router.push(`/projects?view=${value}`);
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
@@ -68,42 +80,51 @@ export function ProjectsPageView({
           )}
         </div>
       </div>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder="Αναζήτηση σε τίτλο, τοποθεσία, εταιρεία..."
-          className="pl-10 w-full md:w-1/3"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Λίστα Έργων ({filteredProjects.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center h-40">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : filteredProjects.length > 0 ? (
-            <ProjectTable
-              projects={filteredProjects}
-              companies={companies}
-              isEditor={isEditor}
-              onEdit={handleEditClick}
-              onDuplicate={handleDuplicateProject}
-              onDelete={handleDeleteProject}
+      <Tabs defaultValue={view} onValueChange={handleTabChange}>
+        <TabsList className="grid w-full grid-cols-2 md:w-1/3">
+            <TabsTrigger value="index">Ευρετήριο</TabsTrigger>
+            <TabsTrigger value="construction">Κατασκευή</TabsTrigger>
+        </TabsList>
+
+        <div className="relative mt-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+            type="search"
+            placeholder="Αναζήτηση σε τίτλο, τοποθεσία, εταιρεία..."
+            className="pl-10 w-full md:w-1/3"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             />
-          ) : (
-            <p className="text-center text-muted-foreground py-8">
-              {searchQuery ? 'Δεν βρέθηκαν έργα που να ταιριάζουν με την αναζήτηση.' : 'Δεν βρέθηκαν έργα.'}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+        </div>
+
+        <Card className="mt-4">
+            <CardHeader>
+            <CardTitle>Λίστα Έργων ({filteredProjects.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+            {isLoading ? (
+                <div className="flex justify-center items-center h-40">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : filteredProjects.length > 0 ? (
+                <ProjectTable
+                projects={filteredProjects}
+                companies={companies}
+                isEditor={isEditor}
+                onEdit={handleEditClick}
+                onDuplicate={handleDuplicateProject}
+                onDelete={handleDeleteProject}
+                />
+            ) : (
+                <p className="text-center text-muted-foreground py-8">
+                {searchQuery ? 'Δεν βρέθηκαν έργα που να ταιριάζουν με την αναζήτηση.' : 'Δεν βρέθηκαν έργα.'}
+                </p>
+            )}
+            </CardContent>
+        </Card>
+      </Tabs>
+
 
       {isEditor && (
         <ProjectDialogForm
