@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { collection, Timestamp, getDocs } from 'firebase/firestore';
+import { collection, Timestamp, getDocs, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
   Table,
@@ -47,7 +46,7 @@ interface Unit {
 
 async function fetchUnits(): Promise<Unit[]> {
   const unitsCollection = collection(db, 'units');
-  const snapshot = await getDocs(unitsCollection);
+  const snapshot = await getDocs(query(unitsCollection));
   const units = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit));
   return units;
 }
@@ -162,7 +161,7 @@ export default function UnitsPage() {
         );
 
         // Status Filter
-        const matchesStatus = filters.status.includes(unit.status);
+        const matchesStatus = filters.status.length === 0 || filters.status.includes(unit.status);
         
         // Price Filter
         const matchesPrice = (
