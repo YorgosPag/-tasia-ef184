@@ -14,7 +14,7 @@ export function MeetingsSection({ project }: MeetingsSectionProps) {
     
     // Placeholder data and state
     const meetings: any[] = [];
-    const isLoading = true;
+    const isLoading = false;
     
     return (
         <Card>

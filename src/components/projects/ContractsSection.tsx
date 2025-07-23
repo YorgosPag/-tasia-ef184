@@ -14,7 +14,7 @@ export function ContractsSection({ project }: ContractsSectionProps) {
     
     // Placeholder data and state
     const contracts: any[] = [];
-    const isLoading = true;
+    const isLoading = false;
     
     return (
         <Card>
