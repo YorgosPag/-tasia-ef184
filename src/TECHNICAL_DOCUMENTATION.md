@@ -50,6 +50,7 @@
     - `projects/{projectId}/workStages/{workStageId}/workSubstages/{workSubstageId}`
     - `projects/{projectId}/meetings/{meetingId}`
     - `projects/{projectId}/contracts/{contractId}`
+    - `projects/{projectId}/orders/{orderId}/deliveries/{deliveryId}`
 
 2.  **Top-Level Collections (Denormalization)**: Ταυτόχρονα, κάθε οντότητα (π.χ. `building`, `floor`, `unit`) αποθηκεύεται και σε μια "επίπεδη" (flat) top-level collection.
     - `/companies/{companyId}`
@@ -162,6 +163,27 @@
 - **fileUrl**: `string` (optional) - URL του ανεβασμένου αρχείου.
 - **relatedWorkStageId**: `string` (optional) - ID του σχετικού σταδίου εργασίας.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
+
+#### Subcollection: `projects/{projectId}/orders`
+- **itemDescription**: `string` - Περιγραφή είδους.
+- **supplier**: `string` (optional) - Προμηθευτής.
+- **quantityOrdered**: `number` - Ποσότητα παραγγελίας.
+- **unit**: `string` - (π.χ. "kg", "m²", "τεμάχια").
+- **costPerUnit**: `number` (optional) - Κόστος ανά μονάδα.
+- **totalCost**: `number` (optional) - Συνολικό κόστος.
+- **orderDate**: `timestamp` - Ημερομηνία παραγγελίας.
+- **expectedDeliveryDate**: `timestamp` (optional) - Αναμενόμενη ημερομηνία παράδοσης.
+- **status**: `string` - ('Ordered', 'Partially Delivered', 'Delivered', 'Cancelled').
+- **workStageId**: `string` (optional) - ID του σχετικού σταδίου εργασίας.
+- **workSubstageId**: `string` (optional) - ID του σχετικού υποσταδίου.
+- **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
+
+##### Subcollection: `projects/{projectId}/orders/{orderId}/deliveries`
+- **deliveryDate**: `timestamp` - Ημερομηνία παραλαβής.
+- **quantityReceived**: `number` - Ποσότητα που παραλήφθηκε.
+- **receivedBy**: `string` - Email του χρήστη που έκανε την παραλαβή.
+- **notes**: `string` (optional) - Σημειώσεις (π.χ. για διαφορές, προβλήματα).
+- **createdAt**: `timestamp` - Ημερομηνία καταχώρησης.
 
 ### Collection: `buildings`
 - **address**: `string` - Διεύθυνση.

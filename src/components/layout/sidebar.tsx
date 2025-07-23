@@ -17,6 +17,7 @@ import {
   SquareKanban,
   FilePen,
   MessageSquare,
+  Package,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -77,22 +78,16 @@ export function AppSidebar() {
                     Οι Αναθέσεις μου
                 </SidebarMenuButton>
             </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton href="/meetings" isActive={pathname.startsWith('/meetings')}>
-                    <MessageSquare />
-                    Συσκέψεις
+            <SidebarMenuItem>
+                <SidebarMenuButton href="/architect-dashboard" isActive={pathname.startsWith('/architect-dashboard')}>
+                    <FilePen />
+                    Architect's Dashboard
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton href="/construction/calendar" isActive={pathname.startsWith('/construction/calendar')}>
                     <CalendarDays />
                     Ημερολόγιο
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton href="/architect-dashboard" isActive={pathname.startsWith('/architect-dashboard')}>
-                    <FilePen />
-                    Architect's Dashboard
                 </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -138,6 +133,30 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+        </SidebarGroup>
+        
+         <SidebarGroup>
+            <SidebarGroupLabel>Project Admin</SidebarGroupLabel>
+             <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton href="/meetings" isActive={pathname.startsWith('/meetings')}>
+                      <MessageSquare />
+                      Συσκέψεις
+                  </SidebarMenuButton>
+              </SidebarMenuItem>
+               <SidebarMenuItem>
+                  <SidebarMenuButton href="/contracts" isActive={pathname.startsWith('/contracts')}>
+                      <FileText />
+                      Συμβόλαια
+                  </SidebarMenuButton>
+              </SidebarMenuItem>
+               <SidebarMenuItem>
+                  <SidebarMenuButton href="/materials" isActive={pathname.startsWith('/materials')}>
+                      <Package />
+                      Υλικά
+                  </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
         </SidebarGroup>
 
         {isAdmin && (
