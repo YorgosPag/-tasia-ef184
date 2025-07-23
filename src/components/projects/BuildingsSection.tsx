@@ -44,6 +44,7 @@ import Image from 'next/image';
 import { logActivity } from '@/lib/logger';
 import { BuildingFormDialog } from './BuildingFormDialog';
 import type { Project, Building } from '@/app/projects/[id]/page';
+import { useAuth } from '@/hooks/use-auth';
 
 // Schema for the building form
 const buildingSchema = z.object({
@@ -66,6 +67,7 @@ interface BuildingsSectionProps {
 export function BuildingsSection({ project }: BuildingsSectionProps) {
     const router = useRouter();
     const { toast } = useToast();
+    const { isEditor } = useAuth();
 
     const [buildings, setBuildings] = useState<Building[]>([]);
     const [isLoadingBuildings, setIsLoadingBuildings] = useState(true);
@@ -202,7 +204,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle>Κτίρια του Έργου</CardTitle>
-                    <Button size="sm" onClick={() => { setEditingBuilding(null); setIsDialogOpen(true); }}><PlusCircle className="mr-2" />Νέο Κτίριο</Button>
+                    {isEditor && <Button size="sm" onClick={() => { setEditingBuilding(null); setIsDialogOpen(true); }}><PlusCircle className="mr-2" />Νέο Κτίριο</Button>}
                 </div>
             </CardHeader>
             <CardContent>
@@ -219,7 +221,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                             <TableCell className="text-muted-foreground cursor-pointer">{building.type}</TableCell>
                             <TableCell className="cursor-pointer">{formatDate(building.createdAt)}</TableCell>
                             <TableCell className="text-right">
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
+                                {isEditor && <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
                                     <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={(e) => { e.stopPropagation(); handleEditBuilding(building); }}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία</span></Button>
                                     <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή</span></Button></AlertDialogTrigger>
                                         <AlertDialogContent>
@@ -227,7 +229,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                                             <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteBuilding(building.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
-                                </div>
+                                </div>}
                             </TableCell>
                         </TableRow>
                         ))}
@@ -236,14 +238,16 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                 </div>
             ) : (<p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν κτίρια για αυτό το έργο.</p>)}
             </CardContent>
-            <BuildingFormDialog
+            {isEditor && <BuildingFormDialog
                 open={isDialogOpen}
                 onOpenChange={handleDialogOpenChange}
                 form={form}
                 onSubmit={form.handleSubmit(onSubmitBuilding)}
                 isSubmitting={isSubmitting}
                 editingBuilding={editingBuilding}
-            />
+            />}
         </Card>
     )
 }
+
+    
