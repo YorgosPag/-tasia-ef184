@@ -288,6 +288,11 @@ export default function ProjectDetailsPage() {
             batch.update(doc(db, 'projects', projectId, 'buildings', buildingToUpdate.id), finalData);
             await batch.commit();
             toast({ title: 'Επιτυχία', description: 'Το κτίριο ενημερώθηκε.' });
+            await logActivity('UPDATE_BUILDING', {
+                entityId: buildingToUpdate.topLevelId,
+                entityType: 'building',
+                changes: finalData,
+            });
         } else {
             const batch = writeBatch(db);
             const topLevelRef = doc(collection(db, 'buildings'));
@@ -296,6 +301,11 @@ export default function ProjectDetailsPage() {
             batch.set(subCollectionRef, { ...finalData, topLevelId: topLevelRef.id, createdAt: serverTimestamp() });
             await batch.commit();
             toast({ title: 'Επιτυχία', description: 'Το κτίριο προστέθηκε.' });
+            await logActivity('CREATE_BUILDING', {
+                entityId: topLevelRef.id,
+                entityType: 'building',
+                details: finalData,
+            });
         }
         handleBuildingDialogOpenChange(false);
     } catch (error) {
@@ -370,6 +380,11 @@ export default function ProjectDetailsPage() {
         batch.delete(doc(db, 'projects', projectId, 'buildings', buildingToDelete.id));
         await batch.commit();
         toast({ title: "Επιτυχία", description: "Το κτίριο διαγράφηκε." });
+        await logActivity('DELETE_BUILDING', {
+            entityId: buildingToDelete.topLevelId,
+            entityType: 'building',
+            details: { address: buildingToDelete.address },
+        });
     } catch (error) {
         console.error("Error deleting building:", error);
         toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν ήταν δυνατή η διαγραφή του κτιρίου." });
