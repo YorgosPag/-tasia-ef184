@@ -37,7 +37,7 @@ const phaseSchema = z.object({
     name: z.string().min(1, 'Το όνομα είναι υποχρεωτικό.'),
     description: z.string().optional(),
     status: z.enum(['Εκκρεμεί', 'Σε εξέλιξη', 'Ολοκληρώθηκε', 'Καθυστερεί']),
-    assignedTo: z.string().optional(),
+    assignedTo: z.string().optional(), // Now a string of comma-separated IDs
     notes: z.string().optional(),
     startDate: z.date().optional(),
     endDate: z.date().optional(),
@@ -65,7 +65,7 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
     const form = useForm<PhaseFormValues>({
         resolver: zodResolver(phaseSchema),
         defaultValues: {
-            id: undefined, name: '', status: 'Εκκρεμεί', assignedTo: 'none', notes: '',
+            id: undefined, name: '', status: 'Εκκρεμεί', assignedTo: '', notes: '',
             startDate: undefined, endDate: undefined, deadline: undefined,
             documents: '', description: '',
         }
@@ -78,23 +78,19 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
         
         const unsubscribe = onSnapshot(phasesQuery, (phasesSnapshot) => {
             const phasesData = phasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), subphases: [] } as PhaseWithSubphases));
-            setPhases(phasesData);
-            setIsLoadingPhases(false);
-
-            // For each phase, set up a real-time listener for its subphases
-            phasesData.forEach((phase, index) => {
+            
+            // Fetch subphases for each phase
+            const subphasePromises = phasesData.map(phase => {
                 const subphasesQuery = query(collection(db, 'projects', project.id, 'phases', phase.id, 'subphases'), orderBy('createdAt', 'asc'));
-                onSnapshot(subphasesQuery, (subphasesSnapshot) => {
-                    const subphases = subphasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Phase));
-                    
-                    setPhases(currentPhases => {
-                        const newPhases = [...currentPhases];
-                        if (newPhases[index]) {
-                            newPhases[index].subphases = subphases;
-                        }
-                        return newPhases;
-                    });
+                return getDocs(subphasesQuery).then(subphasesSnapshot => {
+                    phase.subphases = subphasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Phase));
+                    return phase;
                 });
+            });
+
+            Promise.all(subphasePromises).then(phasesWithSubphases => {
+                setPhases(phasesWithSubphases);
+                setIsLoadingPhases(false);
             });
         },
         (error) => {
@@ -119,7 +115,7 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
             ...phase,
             description: phase.description || '',
             notes: phase.notes || '',
-            assignedTo: phase.assignedTo || 'none',
+            assignedTo: phase.assignedTo?.join(', ') || '',
             documents: phase.documents?.join(', ') || '',
             startDate: phase.startDate?.toDate(),
             endDate: phase.endDate?.toDate(),
@@ -130,7 +126,7 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
     
     const handleAddSubphase = (parentId: string) => {
         setEditingPhase({ parentId });
-        form.reset({ status: 'Εκκρεμεί', name: '', description: '', notes: '', documents: '', assignedTo: 'none' });
+        form.reset({ status: 'Εκκρεμεί', name: '', description: '', notes: '', documents: '', assignedTo: '' });
         setIsPhaseDialogOpen(true);
     };
 
@@ -159,16 +155,14 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
 
         const rawData: any = {
             name: data.name, description: data.description || '', status: data.status,
-            assignedTo: data.assignedTo === 'none' ? undefined : data.assignedTo,
+            assignedTo: data.assignedTo ? data.assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [],
             notes: data.notes || '', startDate: data.startDate,
             endDate: data.endDate, deadline: data.deadline,
             documents: data.documents ? data.documents.split(',').map(s => s.trim()).filter(Boolean) : [],
         };
         
-        // Remove undefined fields to prevent Firestore errors
         const finalData = Object.fromEntries(Object.entries(rawData).filter(([_, v]) => v !== undefined && v !== null));
         
-        // Convert dates to Timestamps
         if (finalData.startDate) finalData.startDate = Timestamp.fromDate(finalData.startDate as Date);
         if (finalData.endDate) finalData.endDate = Timestamp.fromDate(finalData.endDate as Date);
         if (finalData.deadline) finalData.deadline = Timestamp.fromDate(finalData.deadline as Date);
