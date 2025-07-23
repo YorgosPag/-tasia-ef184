@@ -27,8 +27,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { logActivity } from '@/lib/logger';
 import { Company } from '@/hooks/use-data-store';
-import { WorkStageFormDialog } from './WorkStageFormDialog';
-import { WorkStageTable } from './WorkStageTable';
+import { WorkStageFormDialog } from './PhaseFormDialog';
+import { WorkStageTable } from './PhaseTable';
 import type { Project, WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
 
 // Schema for the work stage form
@@ -133,7 +133,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
             ? doc(db, 'projects', project.id, 'workStages', parentId, 'workSubstages', workStage.id)
             : doc(db, 'projects', project.id, 'workStages', workStage.id);
           await deleteDoc(docPath);
-          toast({ title: 'Επιτυχία', description: 'Η εγγραφή διαγράφηκε.' });
+          toast({ title: 'Επιτυχία', description: 'Το Υποστάδιο Εργασίας διαγράφηκε.' });
           await logActivity(parentId ? 'DELETE_WORK_SUBSTAGE' : 'DELETE_WORK_STAGE', {
             entityId: workStage.id,
             entityType: parentId ? 'workSubstage' : 'workStage',
@@ -175,7 +175,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                     ? doc(db, 'projects', project.id, 'workStages', parentId, 'workSubstages', workStageId)
                     : doc(db, 'projects', project.id, 'workStages', workStageId);
                 await updateDoc(docRef, finalData);
-                toast({ title: 'Επιτυχία', description: 'Η εγγραφή ενημερώθηκε.' });
+                toast({ title: 'Επιτυχία', description: 'Το Στάδιο Εργασίας ενημερώθηκε.' });
                 await logActivity(parentId ? 'UPDATE_WORK_SUBSTAGE' : 'UPDATE_WORK_STAGE', {
                     entityId: workStageId,
                     entityType: parentId ? 'workSubstage' : 'workStage',
