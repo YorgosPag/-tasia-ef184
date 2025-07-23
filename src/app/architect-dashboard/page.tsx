@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { collectionGroup, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,43 +36,53 @@ interface Inspection {
 async function fetchArchitectInspections(): Promise<Inspection[]> {
   const notes: Inspection[] = [];
   const projectsSnapshot = await getDocs(query(collection(db, 'projects')));
-  const projectsMap = new Map(projectsSnapshot.docs.map(doc => [doc.id, doc.data().title]));
+  const projectsMap = new Map(projectsSnapshot.docs.map(doc => [doc.id, { title: doc.data().title }]));
 
-  // Query all workStages collections
-  const stagesQuery = collectionGroup(db, 'workStages');
-  const stagesSnapshot = await getDocs(stagesQuery);
+  // Query all top-level workStages and workSubstages
+  const workStagesQuery = query(collection(db, 'workStages'));
+  const workSubstagesQuery = query(collection(db, 'workSubstages'));
 
+  const [stagesSnapshot, substagesSnapshot] = await Promise.all([
+    getDocs(workStagesQuery),
+    getDocs(workSubstagesQuery),
+  ]);
+
+  const stagesMap = new Map(stagesSnapshot.docs.map(doc => [doc.id, doc.data()]));
+
+  // Process main stages
   for (const stageDoc of stagesSnapshot.docs) {
     const stageData = stageDoc.data();
-    const projectId = stageDoc.ref.parent.parent?.id;
-    if (!projectId) continue;
+    if (!stageData.projectId || !projectsMap.has(stageData.projectId)) continue;
 
     (stageData.inspections || []).forEach((note: any) => {
       notes.push({
         ...note,
         stageId: stageDoc.id,
         stageName: stageData.name,
-        projectId: projectId,
-        projectTitle: projectsMap.get(projectId) || 'Unknown Project'
+        projectId: stageData.projectId,
+        projectTitle: projectsMap.get(stageData.projectId)?.title || 'Unknown Project'
       });
     });
-
-    // Query substages
-    const substagesSnapshot = await getDocs(collection(stageDoc.ref, 'workSubstages'));
-    for (const substageDoc of substagesSnapshot.docs) {
+  }
+  
+  // Process substages
+  for (const substageDoc of substagesSnapshot.docs) {
       const substageData = substageDoc.data();
+      const parentStageData = substageData.parentStageId ? stagesMap.get(substageData.parentStageId) : null;
+      if (!substageData.projectId || !projectsMap.has(substageData.projectId) || !parentStageData) continue;
+      
       (substageData.inspections || []).forEach((note: any) => {
         notes.push({
           ...note,
-          stageId: stageDoc.id,
+          stageId: substageData.parentStageId,
           substageId: substageDoc.id,
-          stageName: `${stageData.name} > ${substageData.name}`,
-          projectId: projectId,
-          projectTitle: projectsMap.get(projectId) || 'Unknown Project'
+          stageName: `${parentStageData.name} > ${substageData.name}`,
+          projectId: substageData.projectId,
+          projectTitle: projectsMap.get(substageData.projectId)?.title || 'Unknown Project'
         });
       });
-    }
   }
+
 
   return notes.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
 }
@@ -99,27 +109,37 @@ export default function ArchitectDashboardPage() {
 
   const handleStatusChange = async (inspection: Inspection, newStatus: Inspection['status']) => {
     try {
-      const path = inspection.substageId
-        ? `projects/${inspection.projectId}/workStages/${inspection.stageId}/workSubstages/${inspection.substageId}`
-        : `projects/${inspection.projectId}/workStages/${inspection.stageId}`;
-      const stageDocRef = doc(db, path);
+        const isSubstage = !!inspection.substageId;
+        const collectionName = isSubstage ? 'workSubstages' : 'workStages';
+        const docId = isSubstage ? inspection.substageId! : inspection.stageId;
       
-      // We need to read the document to update the array
-      const stageDoc = await getDocs(query(collectionGroup(db, inspection.substageId ? 'workSubstages' : 'workStages'), where('__name__', '==', stageDocRef.path)));
-      if (stageDoc.empty) throw new Error("Stage document not found");
+        const stageDocRef = doc(db, collectionName, docId);
+        const stageDoc = await getDoc(stageDocRef);
 
-      const currentStageData = stageDoc.docs[0].data();
-      const updatedInspections = currentStageData.inspections.map((n: any) => 
-        n.id === inspection.id ? { ...n, status: newStatus } : n
-      );
-      
-      await updateDoc(stageDoc.docs[0].ref, { inspections: updatedInspections });
+        if (!stageDoc.exists()) throw new Error("Stage or Substage document not found in top-level collection.");
 
-      toast({ title: 'Success', description: `Inspection status updated to ${newStatus}.` });
-      refetch(); // Refetch the data to update the UI
+        const currentStageData = stageDoc.data();
+        const updatedInspections = currentStageData.inspections.map((n: any) => 
+            n.id === inspection.id ? { ...n, status: newStatus } : n
+        );
+        
+        // Update both the top-level and nested document in a batch
+        const batch = db.batch();
+        batch.update(stageDocRef, { inspections: updatedInspections });
+        
+        const nestedDocPath = isSubstage
+            ? `projects/${inspection.projectId}/workStages/${inspection.stageId}/workSubstages/${inspection.substageId}`
+            : `projects/${inspection.projectId}/workStages/${inspection.stageId}`;
+        const nestedDocRef = doc(db, nestedDocPath);
+        batch.update(nestedDocRef, { inspections: updatedInspections });
+
+        await batch.commit();
+
+        toast({ title: 'Success', description: `Inspection status updated to ${newStatus}.` });
+        refetch(); // Refetch the data to update the UI
     } catch (error) {
-      console.error("Error updating inspection status:", error);
-      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update inspection status.' });
+        console.error("Error updating inspection status:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to update inspection status.' });
     }
   };
 
@@ -219,5 +239,7 @@ export default function ArchitectDashboardPage() {
     </div>
   );
 }
+
+    
 
     
