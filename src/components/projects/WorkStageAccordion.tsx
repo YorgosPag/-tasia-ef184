@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical } from 'lucide-react';
+import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical, Plus } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Company } from '@/hooks/use-data-store';
@@ -25,7 +25,11 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
+import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import type { WorkStage, WorkStageWithSubstages, ChecklistItem } from '@/app/projects/[id]/page';
 
 interface WorkStageAccordionProps {
     workStages: WorkStageWithSubstages[];
@@ -33,6 +37,8 @@ interface WorkStageAccordionProps {
     onAddWorkSubstage: (parentId: string) => void;
     onEditWorkStage: (workStage: WorkStage, parentId?: string) => void;
     onDeleteWorkStage: (workStage: WorkStage, parentId?: string) => void;
+    onChecklistItemToggle: (stage: WorkStage, itemIndex: number, completed: boolean, isSubstage: boolean) => void;
+    onAddChecklistItem: (stage: WorkStage, task: string, isSubstage: boolean) => void;
 }
 
 const formatDate = (timestamp?: Timestamp | Date) => {
@@ -63,20 +69,63 @@ const DetailItem = ({ icon, label, children }: { icon: React.ElementType, label:
     </div>
 );
 
-const StageDetails = ({ stage, companies }: {stage: WorkStage, companies: Company[]}) => (
-     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 py-4">
-        <DetailItem icon={User} label="Ανάθεση">{getCompanyNames(stage.assignedTo, companies)}</DetailItem>
-        <DetailItem icon={Calendar} label="Έναρξη">{formatDate(stage.startDate)}</DetailItem>
-        <DetailItem icon={CheckCircle} label="Λήξη">{formatDate(stage.endDate)}</DetailItem>
-        <DetailItem icon={Clock} label="Προθεσμία">{formatDate(stage.deadline)}</DetailItem>
-        <DetailItem icon={FileText} label="Έγγραφα">
-            {stage.documents && stage.documents.length > 0
-                ? stage.documents.map((doc, i) => <a key={i} href={doc} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{`Έγγραφο ${i+1}`}</a>).reduce((prev, curr) => <>{prev}, {curr}</>)
-                : 'Κανένα'
-            }
-        </DetailItem>
-        <DetailItem icon={Briefcase} label="Σχετίζεται με">{(stage as any).relatedEntityIds?.join(', ') || '-'}</DetailItem>
-        {stage.notes && <div className="col-span-full"><DetailItem icon={GripVertical} label="Σημειώσεις">{stage.notes}</DetailItem></div>}
+const Checklist = ({ stage, onToggle, onAdd, isSubstage }: { stage: WorkStage, onToggle: (itemIndex: number, completed: boolean) => void, onAdd: (task: string) => void, isSubstage: boolean }) => {
+    const [newTask, setNewTask] = useState('');
+    const completedTasks = stage.checklist?.filter(item => item.completed).length || 0;
+    const totalTasks = stage.checklist?.length || 0;
+    const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+    
+    const handleAddTask = () => {
+        if(newTask.trim()) {
+            onAdd(newTask.trim());
+            setNewTask('');
+        }
+    }
+
+    return (
+        <div className="mt-4 space-y-3">
+            <h4 className="font-semibold">Checklist Εργασιών</h4>
+            <div>
+                <Progress value={progress} className="w-full h-2"/>
+                <p className="text-xs text-muted-foreground mt-1 text-right">{completedTasks} / {totalTasks} ολοκληρωμένα</p>
+            </div>
+            <div className="space-y-2">
+                {stage.checklist?.map((item, index) => (
+                    <div key={index} className="flex items-center gap-3 bg-muted/50 p-2 rounded-md">
+                        <Checkbox 
+                            id={`task-${stage.id}-${index}`} 
+                            checked={item.completed} 
+                            onCheckedChange={(checked) => onToggle(index, !!checked)}
+                        />
+                        <Label htmlFor={`task-${stage.id}-${index}`} className={`flex-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}>{item.task}</Label>
+                    </div>
+                ))}
+            </div>
+            <div className="flex items-center gap-2">
+                <Input value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="Νέα εργασία..." onKeyDown={(e) => e.key === 'Enter' && handleAddTask()} />
+                <Button size="sm" onClick={handleAddTask}><Plus className="mr-2 h-4 w-4"/>Προσθήκη</Button>
+            </div>
+        </div>
+    )
+}
+
+const StageDetails = ({ stage, companies, onChecklistItemToggle, onAddChecklistItem, isSubstage = false }: {stage: WorkStage, companies: Company[], onChecklistItemToggle: (stage: WorkStage, itemIndex: number, completed: boolean, isSubstage: boolean) => void, onAddChecklistItem: (stage: WorkStage, task: string, isSubstage: boolean) => void, isSubstage?: boolean}) => (
+     <div className="space-y-4 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2">
+            <DetailItem icon={User} label="Ανάθεση">{getCompanyNames(stage.assignedTo, companies)}</DetailItem>
+            <DetailItem icon={Calendar} label="Έναρξη">{formatDate(stage.startDate)}</DetailItem>
+            <DetailItem icon={CheckCircle} label="Λήξη">{formatDate(stage.endDate)}</DetailItem>
+            <DetailItem icon={Clock} label="Προθεσμία">{formatDate(stage.deadline)}</DetailItem>
+            <DetailItem icon={FileText} label="Έγγραφα">
+                {stage.documents && stage.documents.length > 0
+                    ? stage.documents.map((doc, i) => <a key={i} href={doc} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{`Έγγραφο ${i+1}`}</a>).reduce((prev, curr) => <>{prev}, {curr}</>)
+                    : 'Κανένα'
+                }
+            </DetailItem>
+            <DetailItem icon={Briefcase} label="Σχετίζεται με">{(stage as any).relatedEntityIds?.join(', ') || '-'}</DetailItem>
+            {stage.notes && <div className="col-span-full"><DetailItem icon={GripVertical} label="Σημειώσεις">{stage.notes}</DetailItem></div>}
+        </div>
+        <Checklist stage={stage} onToggle={(index, completed) => onChecklistItemToggle(stage, index, completed, isSubstage)} onAdd={(task) => onAddChecklistItem(stage, task, isSubstage)} isSubstage={isSubstage} />
     </div>
 )
 
@@ -87,6 +136,8 @@ export function WorkStageAccordion({
     onAddWorkSubstage,
     onEditWorkStage,
     onDeleteWorkStage,
+    onChecklistItemToggle,
+    onAddChecklistItem,
 }: WorkStageAccordionProps) {
     return (
         <Accordion type="multiple" className="w-full">
@@ -99,7 +150,7 @@ export function WorkStageAccordion({
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pt-0">
-                       <StageDetails stage={stage} companies={companies} />
+                       <StageDetails stage={stage} companies={companies} onChecklistItemToggle={onChecklistItemToggle} onAddChecklistItem={onAddChecklistItem} isSubstage={false} />
                         {stage.workSubstages.length > 0 && (
                             <div className="ml-4 mt-2 border-l-2 pl-4">
                                 <h4 className="font-semibold mb-2">Υποστάδια:</h4>
@@ -116,7 +167,7 @@ export function WorkStageAccordion({
                                                 <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το υποστάδιο "{substage.name}".</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(substage, stage.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
                                             </div>
                                         </div>
-                                       <StageDetails stage={substage} companies={companies}/>
+                                       <StageDetails stage={substage} companies={companies} onChecklistItemToggle={onChecklistItemToggle} onAddChecklistItem={onAddChecklistItem} isSubstage={true} />
                                     </div>
                                 ))}
                             </div>
@@ -134,4 +185,3 @@ export function WorkStageAccordion({
         </Accordion>
     );
 }
-

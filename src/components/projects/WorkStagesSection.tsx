@@ -16,6 +16,7 @@ import {
   Timestamp,
   addDoc,
   serverTimestamp,
+  arrayUnion,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
@@ -192,7 +193,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                  const collectionPath = parentId
                     ? collection(db, 'projects', project.id, 'workStages', parentId, 'workSubstages')
                     : collection(db, 'projects', project.id, 'workStages');
-                const newDocRef = await addDoc(collectionPath, { ...finalData, createdAt: serverTimestamp() });
+                const newDocRef = await addDoc(collectionPath, { ...finalData, createdAt: serverTimestamp(), checklist: [] });
                 toast({ title: 'Επιτυχία', description: `Το ${isSubstage ? 'υποστάδιο εργασίας' : 'στάδιο εργασίας'} προστέθηκε.` });
                 await logActivity(isSubstage ? 'CREATE_WORK_SUBSTAGE' : 'CREATE_WORK_STAGE', {
                     entityId: newDocRef.id,
@@ -208,6 +209,35 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
             setIsSubmitting(false);
         }
     }
+    
+    const handleChecklistItemToggle = async (stage: WorkStage, itemIndex: number, completed: boolean, isSubstage: boolean) => {
+        if (!project.id) return;
+        const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
+        if (isSubstage && !parentId) return;
+        
+        const docRef = parentId 
+            ? doc(db, 'projects', project.id, 'workStages', parentId, 'workSubstages', stage.id)
+            : doc(db, 'projects', project.id, 'workStages', stage.id);
+        
+        const newChecklist = [...(stage.checklist || [])];
+        newChecklist[itemIndex] = { ...newChecklist[itemIndex], completed };
+        
+        await updateDoc(docRef, { checklist: newChecklist });
+    };
+
+    const handleAddChecklistItem = async (stage: WorkStage, task: string, isSubstage: boolean) => {
+        if (!project.id) return;
+        const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
+        if (isSubstage && !parentId) return;
+
+        const docRef = parentId
+            ? doc(db, 'projects', project.id, 'workStages', parentId, 'workSubstages', stage.id)
+            : doc(db, 'projects', project.id, 'workStages', stage.id);
+            
+        await updateDoc(docRef, {
+            checklist: arrayUnion({ task, completed: false })
+        });
+    };
       
     return (
         <Card>
@@ -227,6 +257,8 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                         onAddWorkSubstage={handleAddWorkSubstage}
                         onEditWorkStage={handleEditWorkStage}
                         onDeleteWorkStage={handleDeleteWorkStage}
+                        onChecklistItemToggle={handleChecklistItemToggle}
+                        onAddChecklistItem={handleAddChecklistItem}
                     />
                 ) : (
                     <p className="text-center text-muted-foreground py-8">Δεν υπάρχουν καταχωρημένα στάδια εργασίας για αυτό το έργο.</p>
