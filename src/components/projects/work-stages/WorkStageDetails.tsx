@@ -24,6 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { WorkStagePhotoGallery } from './WorkStagePhotoGallery';
 import { WorkStageCommentsThread } from './WorkStageCommentsThread';
 import { WorkStageCommentForm } from './WorkStageCommentForm';
+import { WorkStageItem } from './WorkStageItem';
 
 const DetailItem = ({ icon, label, children }: { icon: React.ElementType, label: string, children: React.ReactNode }) => (
     <div className="flex items-start gap-2 text-sm">
@@ -103,17 +104,7 @@ export function WorkStageDetails({
                     <h4 className="font-semibold mb-2">Υποστάδια:</h4>
                     {stage.workSubstages.map(substage => (
                         <div key={substage.id} className="mb-4 p-2 rounded-md hover:bg-muted/30">
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <Badge variant={getStatusVariant(substage.status)}>{substage.status}</Badge>
-                                    <p className="font-semibold">{substage.name}</p>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <Button variant="ghost" size="icon" title="Επεξεργασία Υποσταδίου" onClick={() => onEditWorkStage(substage, stage.id)}><Edit className="h-4 w-4"/></Button>
-                                    <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή Υποσταδίου" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
-                                    <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το υποστάδιο "{substage.name}".</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(substage, stage.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
-                                </div>
-                            </div>
+                           <WorkStageItem stage={substage} isSubstage={true} />
                            <WorkStageDetails
                                 stage={substage}
                                 companies={companies}
