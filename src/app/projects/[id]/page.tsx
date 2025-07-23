@@ -17,6 +17,7 @@ import { ProjectHeader } from '@/components/projects/ProjectHeader';
 import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProjectActivityTimeline } from '@/components/projects/ProjectActivityTimeline';
+import { BuildingsSection } from '@/components/projects/BuildingsSection';
 
 
 // --- TYPES ---
