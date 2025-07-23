@@ -68,9 +68,8 @@ export function useBreadcrumbs() {
       }
       
       const mainSegment = segments[0];
-      const newCrumbs: BreadcrumbItem[] = [];
-
-      // Handle static list pages
+      
+      // Handle static list pages first
       if (segments.length === 1 && STATIC_LABELS[mainSegment]) {
           setBreadcrumbs([{ href: `/${mainSegment}`, label: STATIC_LABELS[mainSegment] }]);
           return;
@@ -83,6 +82,7 @@ export function useBreadcrumbs() {
           const currentEntity = await getDocFromFirestore(collectionName, entityId);
 
           if (!currentEntity) {
+              // Fallback to the list page if the entity is not found
               if (STATIC_LABELS[mainSegment]) {
                   setBreadcrumbs([{ href: `/${mainSegment}`, label: STATIC_LABELS[mainSegment] }]);
               } else {
@@ -102,11 +102,17 @@ export function useBreadcrumbs() {
                   attachment = currentEntity;
                   if (attachment?.unitId) unit = await getDocFromFirestore('units', attachment.unitId);
                   // The rest of the chain is built from the unit
+                  if (unit) {
+                    if (unit?.floorIds?.length > 0) floor = await getDocFromFirestore('floors', unit.floorIds[0]);
+                    if (unit?.buildingId) building = await getDocFromFirestore('buildings', unit.buildingId);
+                  }
+                  if (building?.projectId) project = await getDocFromFirestore('projects', building.projectId);
+                  break;
               case 'units':
-                  if (!unit) unit = currentEntity;
+                  unit = currentEntity;
+                  if (unit?.floorIds?.length > 0) floor = await getDocFromFirestore('floors', unit.floorIds[0]);
                   if (unit?.buildingId) building = await getDocFromFirestore('buildings', unit.buildingId);
                   if (building?.projectId) project = await getDocFromFirestore('projects', building.projectId);
-                  if (unit?.floorIds?.length > 0) floor = await getDocFromFirestore('floors', unit.floorIds[0]);
                   break;
               case 'floors':
                   floor = currentEntity;
@@ -121,6 +127,8 @@ export function useBreadcrumbs() {
                   project = currentEntity;
                   break;
           }
+          
+          const newCrumbs: BreadcrumbItem[] = [];
 
           if (project) {
               newCrumbs.push({ href: `/projects`, label: 'Έργα' });
@@ -139,11 +147,10 @@ export function useBreadcrumbs() {
               newCrumbs.push({ href: `/units/${unit.id}`, label: unit.name });
           }
           if (attachment) {
-               newCrumbs.push({ href: `/attachments`, label: 'Παρακολουθήματα' });
-               const label = `${attachment.details || attachment.type}${attachment.unitId ? '' : ' (Ανεξάρτητο)'}`;
+               newCrumbs.push({ href: `/units/${attachment.unitId}`, label: 'Παρακολουθήματα' });
+               const label = `${attachment.details || attachment.type}${!attachment.unitId ? ' (Ανεξάρτητο)' : ''}`;
                newCrumbs.push({ href: `/attachments/${attachment.id}`, label: label });
           }
-
 
           setBreadcrumbs(newCrumbs);
       } else {
