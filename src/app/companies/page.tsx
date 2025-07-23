@@ -2,8 +2,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { collection, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -59,9 +57,7 @@ const companySchema = z.object({
 type CompanyFormValues = z.infer<typeof companySchema>;
 
 export default function CompaniesPage() {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const { addCompany } = useDataStore();
-  const [isLoading, setIsLoading] = useState(true);
+  const { companies, addCompany, isLoading } = useDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,19 +78,6 @@ export default function CompaniesPage() {
     },
   });
   
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'companies'), (snapshot) => {
-        const companiesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company));
-        setCompanies(companiesData);
-        setIsLoading(false);
-    }, (error) => {
-        console.error("Failed to fetch companies:", error);
-        toast({ variant: 'destructive', title: 'Error fetching companies' });
-        setIsLoading(false);
-    });
-    return () => unsubscribe();
-  }, [toast]);
-
   // Effect to reset form when dialog is closed
   useEffect(() => {
     if (!isDialogOpen) {
