@@ -74,9 +74,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
         return;
     };
+    
+    const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
+        setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
+    });
+
     // The loading state is now managed within each page's data fetching hooks/effects.
     // This provider just gives access to the auth state and add methods.
     setIsLoading(false);
+    
+    return () => {
+        unsubCompanies();
+    }
   }, [user]);
 
 

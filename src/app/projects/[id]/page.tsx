@@ -74,6 +74,7 @@ import { el } from 'date-fns/locale';
 import Image from 'next/image';
 import { logActivity } from '@/lib/logger';
 import { cn } from '@/lib/utils';
+import { Company, useDataStore } from '@/hooks/use-data-store';
 
 
 // Schema for the building form
@@ -128,14 +129,14 @@ interface Building {
   topLevelId: string; // This will be the ID from the top-level collection
 }
 
-interface Phase extends Omit<PhaseFormValues, 'startDate' | 'endDate' | 'deadline' | 'documents' | 'assignedTo' > {
+interface Phase extends Omit<PhaseFormValues, 'startDate' | 'endDate' | 'deadline' | 'documents' > {
   id: string;
   createdAt: Timestamp;
   startDate?: Timestamp;
   endDate?: Timestamp;
   deadline?: Timestamp;
   documents?: string[];
-  assignedTo?: string[];
+  assignedTo?: string; // Storing company ID now
 }
 
 interface PhaseWithSubphases extends Phase {
@@ -161,6 +162,7 @@ export default function ProjectDetailsPage() {
   const [editingPhase, setEditingPhase] = useState<Phase | { parentId: string } | null>(null);
 
   const { toast } = useToast();
+  const { companies, isLoading: isLoadingCompanies } = useDataStore();
 
   const buildingForm = useForm<BuildingFormValues>({
     resolver: zodResolver(buildingSchema),
@@ -309,7 +311,7 @@ export default function ProjectDetailsPage() {
 
         const finalData = {
             name: data.name, description: data.description || '', status: data.status,
-            assignedTo: data.assignedTo ? data.assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [],
+            assignedTo: data.assignedTo || undefined, // Store Company ID
             notes: data.notes || '', startDate: data.startDate ? Timestamp.fromDate(data.startDate) : null,
             endDate: data.endDate ? Timestamp.fromDate(data.endDate) : null,
             deadline: data.deadline ? Timestamp.fromDate(data.deadline) : null,
@@ -415,7 +417,7 @@ export default function ProjectDetailsPage() {
         setEditingPhase(parentId ? { ...phase, parentId } : phase);
         phaseForm.reset({
             ...phase,
-            assignedTo: phase.assignedTo?.join(', '),
+            assignedTo: phase.assignedTo,
             documents: phase.documents?.join(', '),
             startDate: phase.startDate?.toDate(),
             endDate: phase.endDate?.toDate(),
@@ -445,6 +447,12 @@ export default function ProjectDetailsPage() {
       default: return 'outline';
     }
   }
+
+  const getCompanyName = (companyId?: string) => {
+    if (!companyId) return '-';
+    return companies.find(c => c.id === companyId)?.name || 'Άγνωστη εταιρεία';
+  }
+
 
   if (isLoadingProject || !project) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
@@ -491,7 +499,29 @@ export default function ProjectDetailsPage() {
                                 <FormField control={phaseForm.control} name="name" render={({field}) => (<FormItem><FormLabel>Όνομα</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="description" render={({field}) => (<FormItem><FormLabel>Περιγραφή</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="status" render={({field}) => (<FormItem><FormLabel>Κατάσταση</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Εκκρεμεί">Εκκρεμεί</SelectItem><SelectItem value="Σε εξέλιξη">Σε εξέλιξη</SelectItem><SelectItem value="Ολοκληρώθηκε">Ολοκληρώθηκε</SelectItem><SelectItem value="Καθυστερεί">Καθυστερεί</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
-                                <FormField control={phaseForm.control} name="assignedTo" render={({field}) => (<FormItem><FormLabel>Υπεύθυνοι (με κόμμα)</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                                <FormField
+                                    control={phaseForm.control}
+                                    name="assignedTo"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Ανάθεση σε Εταιρεία/Συνεργείο</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Επιλέξτε..." />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value=""><em>Καμία</em></SelectItem>
+                                                    {isLoadingCompanies ? <Loader2 className="animate-spin" /> : companies.map(c => (
+                                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField control={phaseForm.control} name="documents" render={({field}) => (<FormItem><FormLabel>Έγγραφα (URL με κόμμα)</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="notes" render={({field}) => (<FormItem><FormLabel>Σημειώσεις</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -522,7 +552,7 @@ export default function ProjectDetailsPage() {
                             <TableRow key={phase.id} className="group bg-muted/20">
                                 <TableCell className="font-bold">{phase.name}</TableCell>
                                 <TableCell><Badge variant={getStatusVariant(phase.status)}>{phase.status}</Badge></TableCell>
-                                <TableCell>{phase.assignedTo?.join(', ') || '-'}</TableCell>
+                                <TableCell>{getCompanyName(phase.assignedTo)}</TableCell>
                                 <TableCell>{formatDate(phase.startDate)}</TableCell>
                                 <TableCell>{formatDate(phase.endDate)}</TableCell>
                                 <TableCell>{formatDate(phase.deadline)}</TableCell>
@@ -542,7 +572,7 @@ export default function ProjectDetailsPage() {
                                 <TableRow key={subphase.id} className="group">
                                     <TableCell className="pl-8 text-muted-foreground"><span className="mr-2">└</span> {subphase.name}</TableCell>
                                     <TableCell><Badge variant={getStatusVariant(subphase.status)}>{subphase.status}</Badge></TableCell>
-                                    <TableCell>{subphase.assignedTo?.join(', ') || '-'}</TableCell>
+                                    <TableCell>{getCompanyName(subphase.assignedTo)}</TableCell>
                                     <TableCell>{formatDate(subphase.startDate)}</TableCell>
                                     <TableCell>{formatDate(subphase.endDate)}</TableCell>
                                     <TableCell>{formatDate(subphase.deadline)}</TableCell>
