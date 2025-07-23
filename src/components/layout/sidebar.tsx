@@ -74,6 +74,12 @@ export function AppSidebar() {
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
+                <SidebarMenuButton href="/projects" isActive={pathname.startsWith('/projects')}>
+                    <Briefcase />
+                    Έργα
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
               <SidebarMenuButton href="/buildings" isActive={pathname.startsWith('/buildings')}>
                 <Building />
                 Κτίρια
