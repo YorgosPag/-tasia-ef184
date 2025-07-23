@@ -94,14 +94,25 @@ export function useBreadcrumbs() {
 
   const generateBreadcrumbs = useCallback(async () => {
     const pathSegments = pathname.split('/').filter(Boolean);
-    if (pathSegments.length < 1) {
+    if (pathSegments.length === 0) {
         setBreadcrumbs([]);
         return;
     }
 
     let tempBreadcrumbs: BreadcrumbItem[] = [];
 
-    // Check if it's a details page (e.g., /units/some-id)
+    // Handle list pages first e.g., /projects, /units
+    if (pathSegments.length === 1 && staticPathLabels[pathSegments[0]]) {
+        tempBreadcrumbs.push({ 
+            href: `/${pathSegments[0]}`, 
+            label: staticPathLabels[pathSegments[0]],
+            tooltip: 'Λίστα',
+        });
+        setBreadcrumbs(tempBreadcrumbs);
+        return;
+    }
+
+    // Handle details pages e.g., /units/some-id
     if (pathSegments.length === 2 && collectionNameMap[pathSegments[0]]) {
       const collectionSlug = pathSegments[0];
       const entityId = pathSegments[1];
@@ -109,7 +120,11 @@ export function useBreadcrumbs() {
       
       const currentEntity = await getDocFromFirestore(collectionName, entityId);
       if (!currentEntity) {
-        setBreadcrumbs([{ href: `/${collectionSlug}`, label: staticPathLabels[collectionSlug] }]);
+        setBreadcrumbs([{ 
+            href: `/${collectionSlug}`, 
+            label: staticPathLabels[collectionSlug],
+            tooltip: 'Λίστα',
+        }]);
         return;
       }
 
@@ -120,13 +135,12 @@ export function useBreadcrumbs() {
       let unit: DocumentData | null = null;
       
       // Build hierarchy upwards from the current entity
-      if (collectionName === 'units') {
-          unit = currentEntity;
-          if (unit?.floorIds?.length > 0) {
-              const floors = await getDocsFromFirestore('floors', unit.floorIds);
-              if (floors.length > 0) floor = floors[0]; // Base hierarchy on first floor
-          }
+      if (collectionName === 'units') unit = currentEntity;
+      if (unit?.floorIds?.length > 0) {
+        const floors = await getDocsFromFirestore('floors', unit.floorIds);
+        if (floors.length > 0) floor = floors[0];
       }
+      
       if (collectionName === 'floors') floor = currentEntity;
       if (floor?.buildingId) building = await getDocFromFirestore('buildings', floor.buildingId);
       
@@ -137,20 +151,27 @@ export function useBreadcrumbs() {
       if (project?.companyId) company = await getDocFromFirestore('companies', project.companyId);
 
       // Assemble breadcrumbs from the fetched hierarchy
-      tempBreadcrumbs.push({ href: '/companies', label: 'Εταιρείες' });
       if (company) {
-        // No need to add company again if it's the current page
-        if(collectionName !== 'companies' || currentEntity.id !== company.id) {
-           // This was causing duplicate keys. Let's fix it by not adding a separate link for the company if we're on a deeper page.
-           // The "Εταιρείες" link is enough. If we show the company page, it will be the last breadcrumb.
-        }
+        tempBreadcrumbs.push({ 
+            href: `/companies`, 
+            label: company.name,
+            tooltip: 'Εταιρεία',
+        });
       }
 
       if (project) {
-        tempBreadcrumbs.push({ href: `/projects/${project.id}`, label: project.title });
+        tempBreadcrumbs.push({ 
+            href: `/projects/${project.id}`, 
+            label: project.title,
+            tooltip: 'Έργο',
+        });
       }
       if (building) {
-        tempBreadcrumbs.push({ href: `/buildings/${building.id}`, label: building.address });
+        tempBreadcrumbs.push({ 
+            href: `/buildings/${building.id}`, 
+            label: building.address,
+            tooltip: 'Κτίριο',
+        });
       }
       if (floor) {
         let floorLabel = `Όροφος ${floor.level}`;
@@ -160,20 +181,25 @@ export function useBreadcrumbs() {
             const floorsData = await getDocsFromFirestore('floors', unit.floorIds);
             floorLabel = "Όροφοι: " + floorsData.map(f => f.level).join(', ');
         }
-        tempBreadcrumbs.push({ href: `/floors/${floor.id}`, label: floorLabel });
+        tempBreadcrumbs.push({ 
+            href: `/floors/${floor.id}`, 
+            label: floorLabel,
+            tooltip: 'Όροφος/οι',
+        });
       }
 
       if (unit) {
-        tempBreadcrumbs.push({ href: `/units/${unit.id}`, label: unit.name });
+        tempBreadcrumbs.push({ 
+            href: `/units/${unit.id}`, 
+            label: unit.name,
+            tooltip: 'Ακίνητο',
+        });
       }
 
-    } else if (pathSegments.length === 1 && staticPathLabels[pathSegments[0]]) {
-      // Handle simple list pages like /projects, /units etc.
-      tempBreadcrumbs.push({ href: `/${pathSegments[0]}`, label: staticPathLabels[pathSegments[0]] });
     }
 
     const uniqueCrumbs = tempBreadcrumbs.reduce((acc, current) => {
-        if (!acc.find(item => item.href === current.href && item.label === current.label)) {
+        if (!acc.find(item => item.href === current.href)) {
             acc.push(current);
         }
         return acc;
