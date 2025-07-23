@@ -39,9 +39,9 @@ const workStageSchema = z.object({
     status: z.enum(['Εκκρεμεί', 'Σε εξέλιξη', 'Ολοκληρώθηκε', 'Καθυστερεί']),
     assignedTo: z.string().optional(), // Now a string of comma-separated IDs
     notes: z.string().optional(),
-    startDate: z.date().optional(),
-    endDate: z.date().optional(),
-    deadline: z.date().optional(),
+    startDate: z.date().optional().nullable(),
+    endDate: z.date().optional().nullable(),
+    deadline: z.date().optional().nullable(),
     documents: z.string().optional(), // URLs separated by comma
 });
 
@@ -66,7 +66,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         resolver: zodResolver(workStageSchema),
         defaultValues: {
             id: undefined, name: '', status: 'Εκκρεμεί', assignedTo: '', notes: '',
-            startDate: undefined, endDate: undefined, deadline: undefined,
+            startDate: null, endDate: null, deadline: null,
             documents: '', description: '',
         }
     });
@@ -113,9 +113,9 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
             notes: workStage.notes || '',
             assignedTo: workStage.assignedTo?.join(', ') || '',
             documents: workStage.documents?.join(', ') || '',
-            startDate: workStage.startDate?.toDate(),
-            endDate: workStage.endDate?.toDate(),
-            deadline: workStage.deadline?.toDate(),
+            startDate: workStage.startDate?.toDate() || null,
+            endDate: workStage.endDate?.toDate() || null,
+            deadline: workStage.deadline?.toDate() || null,
         });
         setIsWorkStageDialogOpen(true);
     }
@@ -133,7 +133,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
             ? doc(db, 'projects', project.id, 'workStages', parentId, 'workSubstages', workStage.id)
             : doc(db, 'projects', project.id, 'workStages', workStage.id);
           await deleteDoc(docPath);
-          toast({ title: 'Επιτυχία', description: 'Το Υποστάδιο Εργασίας διαγράφηκε.' });
+          toast({ title: 'Επιτυχία', description: 'Το Στάδιο Εργασίας διαγράφηκε.' });
           await logActivity(parentId ? 'DELETE_WORK_SUBSTAGE' : 'DELETE_WORK_STAGE', {
             entityId: workStage.id,
             entityType: parentId ? 'workSubstage' : 'workStage',
