@@ -121,9 +121,13 @@
 - **polygonPoints**: `array` of `map` - Οι συντεταγμένες `{x, y}` του πολυγώνου.
 - **floorIds**: `array` of `string` - Αναφορά στην `floors` collection. Υποστηρίζει πολλαπλούς ορόφους (π.χ. για μεζονέτες).
 - **levelSpan**: `string` (optional) - Περιγραφικό string για μονάδες πολλαπλών ορόφων (π.χ. "Ισόγειο-1ος").
-- **buildingId**: `string` - Αναφορά στην `buildings` collection.
 - **originalId**: `string` - Το ID του εγγράφου στη subcollection.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
+- **Σημείωση για Denormalization**: Για λόγους απόδοσης, κάθε `unit` περιέχει και τα IDs των γονικών του οντοτήτων:
+  - **buildingId**: `string` - Αναφορά στην `buildings` collection.
+  - **projectId**: `string` (optional) - Αναφορά στην `projects` collection.
+  - **companyId**: `string` (optional) - Αναφορά στην `companies` collection.
+  - Αυτή η τεχνική αποτρέπει τα πολλαπλά, διαδοχικά queries (deep lookups) κατά την κατασκευή των breadcrumbs ή σε άλλες λειτουργίες που απαιτούν την πλήρη ιεραρχία, βελτιώνοντας σημαντικά την ταχύτητα της εφαρμογής.
 
 ### Collection: `attachments`
 - **type**: `string` - (`parking` ή `storage`).
