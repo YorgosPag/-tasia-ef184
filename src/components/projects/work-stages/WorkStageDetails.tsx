@@ -21,6 +21,7 @@ import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page
 import { Checklist } from './Checklist';
 import { formatDate, getCompanyNames, formatCurrency, getStatusVariant } from './utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { WorkStagePhotoGallery } from './WorkStagePhotoGallery';
 
 const DetailItem = ({ icon, label, children }: { icon: React.ElementType, label: string, children: React.ReactNode }) => (
     <div className="flex items-start gap-2 text-sm">
@@ -39,6 +40,7 @@ export function WorkStageDetails({
     onAddWorkSubstage,
     onEditWorkStage,
     onDeleteWorkStage,
+    onPhotoUpload,
     isSubstage
 }: {
     stage: WorkStageWithSubstages;
@@ -48,6 +50,7 @@ export function WorkStageDetails({
     onAddWorkSubstage?: (parentId: string) => void;
     onEditWorkStage: (workStage: WorkStage, parentId?: string) => void;
     onDeleteWorkStage: (workStage: WorkStage, parentId?: string) => void;
+    onPhotoUpload: (stage: WorkStage, files: FileList, isSubstage: boolean) => void;
     isSubstage: boolean;
 }) {
 
@@ -77,6 +80,12 @@ export function WorkStageDetails({
                 <DetailItem icon={Link2} label="Εξαρτάται από">{stage.dependsOn?.join(', ') || '-'}</DetailItem>
                 {stage.notes && <div className="col-span-full"><DetailItem icon={GripVertical} label="Σημειώσεις">{stage.notes}</DetailItem></div>}
             </div>
+
+            <WorkStagePhotoGallery 
+                stage={stage} 
+                onPhotoUpload={(files) => onPhotoUpload(stage, files, isSubstage)}
+            />
+
             <Checklist 
                 stage={stage} 
                 onToggle={(index, completed) => onChecklistItemToggle(stage, index, completed, isSubstage)} 
@@ -106,6 +115,7 @@ export function WorkStageDetails({
                                 onAddChecklistItem={onAddChecklistItem}
                                 onEditWorkStage={onEditWorkStage}
                                 onDeleteWorkStage={onDeleteWorkStage}
+                                onPhotoUpload={onPhotoUpload}
                                 isSubstage={true}
                            />
                         </div>

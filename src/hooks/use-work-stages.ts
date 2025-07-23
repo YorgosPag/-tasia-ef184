@@ -18,7 +18,8 @@ import {
   arrayUnion,
   setDoc,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
@@ -27,9 +28,11 @@ import { WorkStageFormValues, workStageSchema } from '@/components/projects/work
 import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
 import { exportToJson } from '@/lib/exporter';
 import { formatDate } from '@/components/projects/work-stages/utils';
+import { useAuth } from './use-auth';
 
 
 export function useWorkStages(projectId: string, projectTitle: string) {
+    const { user } = useAuth();
     const { toast } = useToast();
     const [workStages, setWorkStages] = useState<WorkStageWithSubstages[]>([]);
     const [isLoadingWorkStages, setIsLoadingWorkStages] = useState(true);
@@ -184,7 +187,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                  const subRef = parentId ? doc(collection(db, 'projects', projectId, 'workStages', parentId, 'workSubstages')) : doc(collection(db, 'projects', projectId, 'workStages'));
                  const topLevelRef = parentId ? doc(db, 'workSubstages', subRef.id) : doc(db, 'workStages', subRef.id);
 
-                 batch.set(subRef, { ...finalData, createdAt: serverTimestamp(), checklist: [], topLevelId: topLevelRef.id });
+                 batch.set(subRef, { ...finalData, createdAt: serverTimestamp(), checklist: [], photos: [], topLevelId: topLevelRef.id });
                  batch.set(topLevelRef, { ...finalData, projectId, parentStageId: parentId, assignedToId: finalData.assignedTo?.[0] || null, createdAt: serverTimestamp(), originalId: subRef.id });
                 
                 toast({ title: 'Επιτυχία', description: `Το ${isSubstage ? 'υποστάδιο' : 'στάδιο'} προστέθηκε.` });
@@ -241,14 +244,44 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         await batch.commit();
     };
 
-    const handleCommentSubmit = useCallback((comment: string, files: FileList | null) => {
-        // TODO: Implement file upload to Firebase Storage and add comment to Firestore
-        console.log("Submitting comment:", { comment, files });
-        toast({
-            title: "Λειτουργία υπό κατασκευή",
-            description: "Η υποβολή σχολίων δεν έχει υλοποιηθεί ακόμη."
+    const handlePhotoUpload = async (stage: WorkStage, files: FileList, isSubstage: boolean) => {
+      if (!files.length || !user || !projectId) return;
+    
+      const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
+      if (isSubstage && !parentId) return;
+    
+      const docRef = parentId
+        ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id)
+        : doc(db, 'projects', projectId, 'workStages', stage.id);
+    
+      toast({ title: "Ανέβασμα...", description: `Ανέβασμα ${files.length} φωτογραφιών...` });
+    
+      try {
+        const photoUploadPromises = Array.from(files).map(async (file) => {
+          const photoRef = ref(storage, `work_stages_photos/${projectId}/${stage.id}/${file.name}`);
+          await uploadBytes(photoRef, file);
+          const url = await getDownloadURL(photoRef);
+          return {
+            url,
+            uploadedAt: Timestamp.now(),
+            uploadedBy: user.email || user.uid,
+          };
         });
-    }, [toast]);
+    
+        const newPhotos = await Promise.all(photoUploadPromises);
+        
+        const batch = writeBatch(db);
+        batch.update(docRef, { photos: arrayUnion(...newPhotos) });
+        const topLevelRef = parentId ? doc(db, 'workSubstages', stage.id) : doc(db, 'workStages', stage.id);
+        batch.update(topLevelRef, { photos: arrayUnion(...newPhotos) });
+        await batch.commit();
+    
+        toast({ title: "Επιτυχία", description: "Οι φωτογραφίες ανέβηκαν επιτυχώς." });
+      } catch (error) {
+        console.error("Photo upload failed:", error);
+        toast({ variant: 'destructive', title: "Σφάλμα", description: "Το ανέβασμα των φωτογραφιών απέτυχε." });
+      }
+    };
 
     const handleExport = useCallback(() => {
         const flatData = workStages.flatMap(stage => {
@@ -298,7 +331,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         onSubmitWorkStage,
         handleChecklistItemToggle,
         handleAddChecklistItem,
-        handleCommentSubmit,
+        handlePhotoUpload,
         handleExport,
     };
 }

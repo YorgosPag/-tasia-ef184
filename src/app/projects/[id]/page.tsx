@@ -46,6 +46,13 @@ export interface ChecklistItem {
     task: string;
     completed: boolean;
 }
+
+export interface WorkStagePhoto {
+  url: string;
+  uploadedAt: Timestamp;
+  uploadedBy: string;
+}
+
 export interface WorkStage {
   id: string;
   name: string;
@@ -63,6 +70,7 @@ export interface WorkStage {
   checklist?: ChecklistItem[];
   budgetedCost?: number;
   actualCost?: number;
+  photos?: WorkStagePhoto[];
 }
 
 export interface WorkStageWithSubstages extends WorkStage {
