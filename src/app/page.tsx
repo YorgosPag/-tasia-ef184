@@ -90,12 +90,14 @@ export default function Home() {
             <p>✅ {result.buildingsCreated} νέα κτίρια</p>
             <p>✅ {result.floorsCreated} νέοι όροφοι</p>
             <p>✅ {result.unitsCreated} νέα ακίνητα</p>
-            {result.errors.length > 0 && <p>❌ {result.errors.length} σφάλματα</p>}
+            {result.errors.length > 0 && <p className="font-bold text-destructive">❌ {result.errors.length} σφάλματα (δείτε την κονσόλα)</p>}
           </div>
         ),
         duration: 9000,
       });
-      console.log("Import results:", result);
+      if (result.errors.length > 0) {
+        console.error("Import Errors:", result.errors);
+      }
     } catch (error: any) {
       console.error("Import failed:", error);
       toast({ variant: 'destructive', title: 'Η Εισαγωγή Απέτυχε', description: error.message });
