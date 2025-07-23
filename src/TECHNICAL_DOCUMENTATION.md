@@ -100,6 +100,10 @@
 - **assignedTo**: `array` of `string` (optional) - Λίστα με IDs επαφών/συνεργείων/εταιρειών.
 - **documents**: `array` of `string` (optional) - Λίστα με URLs σχετικών εγγράφων.
 - **notes**: `string` (optional) - Σημειώσεις.
+- **relatedEntityIds**: `array` of `string` (optional) - Λίστα με IDs από κτίρια, ορόφους, ακίνητα.
+- **checklist**: `array` of `map` (optional) - Λίστα αντικειμένων με `{ task: string, completed: boolean }`.
+- **budgetedCost**: `number` (optional) - Προϋπολογισμένο κόστος.
+- **actualCost**: `number` (optional) - Πραγματικό κόστος.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
 ##### Subcollection: `projects/{projectId}/workStages/{workStageId}/workSubstages`
@@ -182,3 +186,6 @@
 - **Layers & Filtering**: Οι χρήστες μπορούν να φιλτράρουν τα ακίνητα (layers) βάσει του status τους. Το UI επιτρέπει την αλλαγή του χρώματος κάθε layer, και η αλλαγή αυτή αντικατοπτρίζεται δυναμικά σε όλη την εφαρμογή (πολύγωνα, checkboxes, badges).
 
 Αυτή η τεκμηρίωση παρέχει μια σφαιρική εικόνα της εφαρμογής και θα πρέπει να είναι αρκετή για να βοηθήσει οποιονδήποτε νέο developer να κατανοήσει τη δομή και τη ροή της.
+
+
+    
