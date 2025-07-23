@@ -3,7 +3,6 @@
 
 import React, { useState } from 'react';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Company } from '@/hooks/use-data-store';
@@ -12,6 +11,7 @@ import { WorkStageFormDialog } from './work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from './work-stages/WorkStageAccordion';
 import { WorkStageCommentForm } from './work-stages/WorkStageCommentForm';
 import type { Project, WorkStage } from '@/app/projects/[id]/page';
+import { WorkStagesEmptyState } from './work-stages/WorkStagesEmptyState';
 
 interface WorkStagesSectionProps {
     project: Project;
@@ -20,7 +20,6 @@ interface WorkStagesSectionProps {
 }
 
 export function WorkStagesSection({ project, companies, isLoadingCompanies }: WorkStagesSectionProps) {
-    const { toast } = useToast();
     const {
         workStages,
         isLoadingWorkStages,
@@ -85,7 +84,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                         onAddChecklistItem={handleAddChecklistItem}
                     />
                 ) : (
-                    <p className="text-center text-muted-foreground py-8">Δεν υπάρχουν καταχωρημένα στάδια εργασίας για αυτό το έργο.</p>
+                    <WorkStagesEmptyState onAddNewStage={handleAddNewStage}/>
                 )}
             </CardContent>
             
