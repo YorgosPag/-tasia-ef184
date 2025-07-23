@@ -40,6 +40,17 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { UnitsListTable } from '@/components/floors/UnitsListTable';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 const attachmentSchema = z.object({
@@ -225,9 +236,24 @@ export default function UnitDetailsPage() {
         if (editingAttachment?.id) {
             // Update
             const attRef = doc(db, 'attachments', editingAttachment.id);
+            const previousState = (await getDoc(attRef)).data();
+            
             await updateDoc(attRef, finalAttData);
+            
             toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα ενημερώθηκε.' });
-            await logActivity('UPDATE_ATTACHMENT', { entityId: editingAttachment.id, entityType: 'attachment', changes: finalAttData });
+            
+            // --- Logging Logic ---
+            const wasStandalone = !previousState?.unitId;
+            const isNowAssigned = !!finalAttData.unitId;
+            
+            if (wasStandalone && isNowAssigned) {
+                 await logActivity('ASSIGN_ATTACHMENT', { entityId: editingAttachment.id, entityType: 'attachment', unitId: finalAttData.unitId });
+            } else if (!wasStandalone && !isNowAssigned) {
+                 await logActivity('UNASSIGN_ATTACHMENT', { entityId: editingAttachment.id, entityType: 'attachment', unitId: previousState?.unitId });
+            } else {
+                 await logActivity('UPDATE_ATTACHMENT', { entityId: editingAttachment.id, entityType: 'attachment', changes: finalAttData });
+            }
+
         } else {
             // Create
             const newAttRef = await addDoc(collection(db, 'attachments'), {
@@ -236,6 +262,9 @@ export default function UnitDetailsPage() {
             });
             toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα δημιουργήθηκε.' });
             await logActivity('CREATE_ATTACHMENT', { entityId: newAttRef.id, entityType: 'attachment', details: finalAttData });
+            if (finalAttData.unitId) {
+                await logActivity('ASSIGN_ATTACHMENT', { entityId: newAttRef.id, entityType: 'attachment', unitId: finalAttData.unitId });
+            }
         }
         handleAttachmentDialogChange(false);
     } catch(error) {
@@ -248,9 +277,13 @@ export default function UnitDetailsPage() {
 
   const handleDeleteAttachment = async (attachmentId: string) => {
       try {
-          await deleteDoc(doc(db, 'attachments', attachmentId));
+          const attRef = doc(db, 'attachments', attachmentId);
+          const attDoc = await getDoc(attRef);
+          const attData = attDoc.data();
+
+          await deleteDoc(attRef);
           toast({title: 'Επιτυχία', description: 'Το παρακολούθημα διαγράφηκε.'});
-          await logActivity('DELETE_ATTACHMENT', { entityId: attachmentId, entityType: 'attachment' });
+          await logActivity('DELETE_ATTACHMENT', { entityId: attachmentId, entityType: 'attachment', details: attData });
       } catch (error) {
           console.error("Error deleting attachment:", error);
           toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
@@ -381,29 +414,29 @@ export default function UnitDetailsPage() {
                      </div>
                 </CardContent>
             </Card>
-            
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle>Παρακολουθήματα</CardTitle>
-                        <Button type="button" size="sm" variant="outline" onClick={handleAddNewAttachment}>
-                            <PlusCircle className="mr-2" />
-                            Προσθήκη
-                        </Button>
-                    </div>
-                    <CardDescription>Διαχειριστείτε τις θέσεις στάθμευσης, αποθήκες κ.λπ. που συνδέονται με αυτό το ακίνητο.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                    <UnitsListTable
-                        units={attachments}
-                        onEditUnit={handleEditAttachment}
-                        onDeleteUnit={handleDeleteAttachment}
-                    />
-                </CardContent>
-            </Card>
         </div>
       </form>
     </Form>
+
+    <Card>
+        <CardHeader>
+            <div className="flex items-center justify-between">
+                <CardTitle>Παρακολουθήματα</CardTitle>
+                <Button type="button" size="sm" variant="outline" onClick={handleAddNewAttachment}>
+                    <PlusCircle className="mr-2" />
+                    Προσθήκη
+                </Button>
+            </div>
+            <CardDescription>Διαχειριστείτε τις θέσεις στάθμευσης, αποθήκες κ.λπ. που συνδέονται με αυτό το ακίνητο.</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+            <UnitsListTable
+                units={attachments}
+                onEditUnit={handleEditAttachment}
+                onDeleteUnit={handleDeleteAttachment}
+            />
+        </CardContent>
+    </Card>
       
       {/* Attachment Dialog */}
       <Dialog open={isAttachmentDialogOpen} onOpenChange={handleAttachmentDialogChange}>
