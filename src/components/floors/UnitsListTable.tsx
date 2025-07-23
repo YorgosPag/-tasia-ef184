@@ -28,7 +28,7 @@ import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { getStatusClass } from '@/components/floor-plan/utils';
 import type { Unit as IUnit } from '@/components/floor-plan/FloorPlanViewer';
-import type { AttachmentFormValues } from '@/app/units/[id]/page';
+import type { AttachmentFormValues } from '@/components/units/AttachmentDialog';
 import { cn } from '@/lib/utils';
 
 interface Unit {
@@ -39,9 +39,9 @@ interface Unit {
   status?: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
   createdAt?: any;
   details?: string;
-  area?: number;
-  price?: number;
-  sharePercentage?: number;
+  area?: number | string;
+  price?: number | string;
+  sharePercentage?: number | string;
   isStandalone?: boolean;
 }
 
