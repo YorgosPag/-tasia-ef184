@@ -70,11 +70,11 @@ export async function clearDatabase() {
         }
         await clearCollection(`projects/${projectDoc.id}/buildings`);
 
-        const phasesSnapshot = await getDocs(collection(projectDoc.ref, 'phases'));
-        for(const phaseDoc of phasesSnapshot.docs) {
-            await clearCollection(`projects/${projectDoc.id}/phases/${phaseDoc.id}/subphases`);
+        const workStagesSnapshot = await getDocs(collection(projectDoc.ref, 'workStages'));
+        for(const workStageDoc of workStagesSnapshot.docs) {
+            await clearCollection(`projects/${projectDoc.id}/workStages/${workStageDoc.id}/workSubstages`);
         }
-        await clearCollection(`projects/${projectDoc.id}/phases`);
+        await clearCollection(`projects/${projectDoc.id}/workStages`);
     }
 
     // Clear all top-level collections

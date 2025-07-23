@@ -38,7 +38,7 @@
 
 **Company** -> **Project** -> **Building** -> **Floor** -> **Unit** -> **Attachment**
 
-Και παράλληλα: **Project** -> **Phase** -> **Subphase**
+Και παράλληλα: **Project** -> **WorkStage** -> **WorkSubstage**
 
 ### Το "Πάντρεμα" των Δεδομένων στο Firestore:
 
@@ -46,7 +46,7 @@
 
 1.  **Nested Subcollections**: Τα δεδομένα αποθηκεύονται στην κανονική τους ιεραρχία. Για παράδειγμα, ένα `building` αποθηκεύεται ως έγγραφο μέσα στη subcollection `buildings` ενός συγκεκριμένου `project`.
     - `projects/{projectId}/buildings/{buildingId}/floors/{floorId}/units/{unitId}`
-    - `projects/{projectId}/phases/{phaseId}/subphases/{subphaseId}`
+    - `projects/{projectId}/workStages/{workStageId}/workSubstages/{workSubstageId}`
 
 2.  **Top-Level Collections (Denormalization)**: Ταυτόχρονα, κάθε οντότητα (π.χ. `building`, `floor`, `unit`) αποθηκεύεται και σε μια "επίπεδη" (flat) top-level collection.
     - `/companies/{companyId}`
@@ -90,20 +90,20 @@
 - **tags**: `array` of `string` (optional) - Κατηγοριοποίηση (π.χ. "residential", "commercial").
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
-#### Subcollection: `projects/{projectId}/phases`
+#### Subcollection: `projects/{projectId}/workStages`
 - **name**: `string` - (π.χ. “Εκσκαφές”, “Τοιχοποιία”).
-- **description**: `string` (optional) - Περιγραφή της φάσης.
+- **description**: `string` (optional) - Περιγραφή του σταδίου.
 - **status**: `string` - (`Εκκρεμεί`, `Σε εξέλιξη`, `Ολοκληρώθηκε`, `Καθυστερεί`).
 - **startDate**: `timestamp` (optional) - Ημερομηνία έναρξης.
 - **endDate**: `timestamp` (optional) - Ημερομηνία λήξης.
 - **deadline**: `timestamp` (optional) - Προθεσμία.
-- **assignedTo**: `array` of `string` (optional) - Λίστα με User IDs ή ονόματα συνεργείων.
+- **assignedTo**: `array` of `string` (optional) - Λίστα με IDs επαφών/συνεργείων/εταιρειών.
 - **documents**: `array` of `string` (optional) - Λίστα με URLs σχετικών εγγράφων.
 - **notes**: `string` (optional) - Σημειώσεις.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
-##### Subcollection: `projects/{projectId}/phases/{phaseId}/subphases`
-- **Schema**: Το ίδιο με τη `phases` collection.
+##### Subcollection: `projects/{projectId}/workStages/{workStageId}/workSubstages`
+- **Schema**: Το ίδιο με τη `workStages` collection.
 
 ### Collection: `buildings`
 - **address**: `string` - Διεύθυνση.

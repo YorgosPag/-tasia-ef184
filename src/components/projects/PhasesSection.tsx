@@ -27,12 +27,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { logActivity } from '@/lib/logger';
 import { Company } from '@/hooks/use-data-store';
-import { PhaseFormDialog } from './PhaseFormDialog';
-import { PhaseTable } from './PhaseTable';
-import type { Project, Phase, PhaseWithSubphases } from '@/app/projects/[id]/page';
+import { WorkStageFormDialog } from './WorkStageFormDialog';
+import { WorkStageTable } from './WorkStageTable';
+import type { Project, WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
 
-// Schema for the phase form
-const phaseSchema = z.object({
+// Schema for the work stage form
+const workStageSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, 'Το όνομα είναι υποχρεωτικό.'),
     description: z.string().optional(),
@@ -45,25 +45,25 @@ const phaseSchema = z.object({
     documents: z.string().optional(), // URLs separated by comma
 });
 
-export type PhaseFormValues = z.infer<typeof phaseSchema>;
+export type WorkStageFormValues = z.infer<typeof workStageSchema>;
 
 
-interface PhasesSectionProps {
+interface WorkStagesSectionProps {
     project: Project;
     companies: Company[];
     isLoadingCompanies: boolean;
 }
 
-export function PhasesSection({ project, companies, isLoadingCompanies }: PhasesSectionProps) {
+export function WorkStagesSection({ project, companies, isLoadingCompanies }: WorkStagesSectionProps) {
     const { toast } = useToast();
-    const [phases, setPhases] = useState<PhaseWithSubphases[]>([]);
-    const [isLoadingPhases, setIsLoadingPhases] = useState(true);
+    const [workStages, setWorkStages] = useState<WorkStageWithSubstages[]>([]);
+    const [isLoadingWorkStages, setIsLoadingWorkStages] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isPhaseDialogOpen, setIsPhaseDialogOpen] = useState(false);
-    const [editingPhase, setEditingPhase] = useState<Phase | { parentId: string } | null>(null);
+    const [isWorkStageDialogOpen, setIsWorkStageDialogOpen] = useState(false);
+    const [editingWorkStage, setEditingWorkStage] = useState<WorkStage | { parentId: string } | null>(null);
 
-    const form = useForm<PhaseFormValues>({
-        resolver: zodResolver(phaseSchema),
+    const form = useForm<WorkStageFormValues>({
+        resolver: zodResolver(workStageSchema),
         defaultValues: {
             id: undefined, name: '', status: 'Εκκρεμεί', assignedTo: '', notes: '',
             startDate: undefined, endDate: undefined, deadline: undefined,
@@ -74,82 +74,78 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
     useEffect(() => {
         if (!project.id) return;
         
-        const phasesQuery = query(collection(db, 'projects', project.id, 'phases'), orderBy('createdAt', 'asc'));
+        const workStagesQuery = query(collection(db, 'projects', project.id, 'workStages'), orderBy('createdAt', 'asc'));
         
-        const unsubscribe = onSnapshot(phasesQuery, (phasesSnapshot) => {
-            const phasesData = phasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), subphases: [] } as PhaseWithSubphases));
-            
-            // Fetch subphases for each phase
-            const subphasePromises = phasesData.map(phase => {
-                const subphasesQuery = query(collection(db, 'projects', project.id, 'phases', phase.id, 'subphases'), orderBy('createdAt', 'asc'));
-                return getDocs(subphasesQuery).then(subphasesSnapshot => {
-                    phase.subphases = subphasesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Phase));
-                    return phase;
-                });
+        const unsubscribe = onSnapshot(workStagesQuery, async (workStagesSnapshot) => {
+            const workStagesDataPromises = workStagesSnapshot.docs.map(async (doc) => {
+                const workStage = { id: doc.id, ...doc.data(), workSubstages: [] } as WorkStageWithSubstages;
+                const workSubstagesQuery = query(collection(db, 'projects', project.id, 'workStages', workStage.id, 'workSubstages'), orderBy('createdAt', 'asc'));
+                const workSubstagesSnapshot = await getDocs(workSubstagesQuery);
+                workStage.workSubstages = workSubstagesSnapshot.docs.map(subDoc => ({ id: subDoc.id, ...subDoc.data() } as WorkStage));
+                return workStage;
             });
 
-            Promise.all(subphasePromises).then(phasesWithSubphases => {
-                setPhases(phasesWithSubphases);
-                setIsLoadingPhases(false);
-            });
+            const workStagesData = await Promise.all(workStagesDataPromises);
+            setWorkStages(workStagesData);
+            setIsLoadingWorkStages(false);
         },
         (error) => {
-            console.error("Error fetching phases:", error);
-            setIsLoadingPhases(false);
+            console.error("Error fetching work stages:", error);
+            setIsLoadingWorkStages(false);
         });
 
         return () => unsubscribe();
     }, [project.id]);
 
-    const handlePhaseDialogOpenChange = (open: boolean) => {
-        setIsPhaseDialogOpen(open);
+    const handleWorkStageDialogOpenChange = (open: boolean) => {
+        setIsWorkStageDialogOpen(open);
         if(!open) {
             form.reset();
-            setEditingPhase(null);
+            setEditingWorkStage(null);
         }
     };
 
-    const handleEditPhase = (phase: Phase, parentId?: string) => {
-        setEditingPhase(parentId ? { ...phase, parentId } as any : phase);
+    const handleEditWorkStage = (workStage: WorkStage, parentId?: string) => {
+        setEditingWorkStage(parentId ? { ...workStage, parentId } as any : workStage);
         form.reset({
-            ...phase,
-            description: phase.description || '',
-            notes: phase.notes || '',
-            assignedTo: phase.assignedTo?.join(', ') || '',
-            documents: phase.documents?.join(', ') || '',
-            startDate: phase.startDate?.toDate(),
-            endDate: phase.endDate?.toDate(),
-            deadline: phase.deadline?.toDate(),
+            ...workStage,
+            description: workStage.description || '',
+            notes: workStage.notes || '',
+            assignedTo: workStage.assignedTo?.join(', ') || '',
+            documents: workStage.documents?.join(', ') || '',
+            startDate: workStage.startDate?.toDate(),
+            endDate: workStage.endDate?.toDate(),
+            deadline: workStage.deadline?.toDate(),
         });
-        setIsPhaseDialogOpen(true);
+        setIsWorkStageDialogOpen(true);
     }
     
-    const handleAddSubphase = (parentId: string) => {
-        setEditingPhase({ parentId });
+    const handleAddWorkSubstage = (parentId: string) => {
+        setEditingWorkStage({ parentId });
         form.reset({ status: 'Εκκρεμεί', name: '', description: '', notes: '', documents: '', assignedTo: '' });
-        setIsPhaseDialogOpen(true);
+        setIsWorkStageDialogOpen(true);
     };
 
-    const handleDeletePhase = async (phase: Phase, parentId?: string) => {
+    const handleDeleteWorkStage = async (workStage: WorkStage, parentId?: string) => {
         if (!project.id) return;
         try {
           const docPath = parentId
-            ? doc(db, 'projects', project.id, 'phases', parentId, 'subphases', phase.id)
-            : doc(db, 'projects', project.id, 'phases', phase.id);
+            ? doc(db, 'projects', project.id, 'workStages', parentId, 'workSubstages', workStage.id)
+            : doc(db, 'projects', project.id, 'workStages', workStage.id);
           await deleteDoc(docPath);
           toast({ title: 'Επιτυχία', description: 'Η εγγραφή διαγράφηκε.' });
-          await logActivity(parentId ? 'DELETE_SUBPHASE' : 'DELETE_PHASE', {
-            entityId: phase.id,
-            entityType: parentId ? 'subphase' : 'phase',
-            details: { name: phase.name, parentId: parentId },
+          await logActivity(parentId ? 'DELETE_WORK_SUBSTAGE' : 'DELETE_WORK_STAGE', {
+            entityId: workStage.id,
+            entityType: parentId ? 'workSubstage' : 'workStage',
+            details: { name: workStage.name, parentId: parentId },
           });
         } catch (error) {
-          console.error("Error deleting phase/subphase:", error);
+          console.error("Error deleting work stage/substage:", error);
           toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
         }
       }
 
-    const onSubmitPhase = async (data: PhaseFormValues) => {
+    const onSubmitWorkStage = async (data: WorkStageFormValues) => {
         if (!project.id) return;
         setIsSubmitting(true);
 
@@ -169,39 +165,39 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
 
 
         try {
-            const isSubphase = editingPhase && 'parentId' in editingPhase;
-            const isEditing = editingPhase && 'id' in editingPhase;
+            const isSubstage = editingWorkStage && 'parentId' in editingWorkStage;
+            const isEditing = editingWorkStage && 'id' in editingWorkStage;
 
             if (isEditing) {
-                const parentId = (editingPhase as any).parentId;
-                const phaseId = (editingPhase as Phase).id;
+                const parentId = (editingWorkStage as any).parentId;
+                const workStageId = (editingWorkStage as WorkStage).id;
                 const docRef = parentId
-                    ? doc(db, 'projects', project.id, 'phases', parentId, 'subphases', phaseId)
-                    : doc(db, 'projects', project.id, 'phases', phaseId);
+                    ? doc(db, 'projects', project.id, 'workStages', parentId, 'workSubstages', workStageId)
+                    : doc(db, 'projects', project.id, 'workStages', workStageId);
                 await updateDoc(docRef, finalData);
                 toast({ title: 'Επιτυχία', description: 'Η εγγραφή ενημερώθηκε.' });
-                await logActivity(parentId ? 'UPDATE_SUBPHASE' : 'UPDATE_PHASE', {
-                    entityId: phaseId,
-                    entityType: parentId ? 'subphase' : 'phase',
+                await logActivity(parentId ? 'UPDATE_WORK_SUBSTAGE' : 'UPDATE_WORK_STAGE', {
+                    entityId: workStageId,
+                    entityType: parentId ? 'workSubstage' : 'workStage',
                     changes: finalData,
                 });
 
             } else {
-                 const parentId = isSubphase ? (editingPhase as { parentId: string }).parentId : null;
+                 const parentId = isSubstage ? (editingWorkStage as { parentId: string }).parentId : null;
                  const collectionPath = parentId
-                    ? collection(db, 'projects', project.id, 'phases', parentId, 'subphases')
-                    : collection(db, 'projects', project.id, 'phases');
+                    ? collection(db, 'projects', project.id, 'workStages', parentId, 'workSubstages')
+                    : collection(db, 'projects', project.id, 'workStages');
                 const newDocRef = await addDoc(collectionPath, { ...finalData, createdAt: serverTimestamp() });
-                toast({ title: 'Επιτυχία', description: `Η ${isSubphase ? 'υποφάση' : 'φάση'} προστέθηκε.` });
-                await logActivity(isSubphase ? 'CREATE_SUBPHASE' : 'CREATE_PHASE', {
+                toast({ title: 'Επιτυχία', description: `Το ${isSubstage ? 'υποστάδιο εργασίας' : 'στάδιο εργασίας'} προστέθηκε.` });
+                await logActivity(isSubstage ? 'CREATE_WORK_SUBSTAGE' : 'CREATE_WORK_STAGE', {
                     entityId: newDocRef.id,
-                    entityType: isSubphase ? 'subphase' : 'phase',
+                    entityType: isSubstage ? 'workSubstage' : 'workStage',
                     details: finalData,
                 });
             }
-            handlePhaseDialogOpenChange(false);
+            handleWorkStageDialogOpenChange(false);
         } catch (error) {
-            console.error("Error submitting phase/subphase:", error);
+            console.error("Error submitting work stage/substage:", error);
             toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η υποβολή απέτυχε.' });
         } finally {
             setIsSubmitting(false);
@@ -212,32 +208,32 @@ export function PhasesSection({ project, companies, isLoadingCompanies }: Phases
         <Card>
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>Φάσεις Κατασκευής</CardTitle>
-                    <Button size="sm" onClick={() => handlePhaseDialogOpenChange(true)}><PlusCircle className="mr-2"/>Νέα Φάση</Button>
+                    <CardTitle>Στάδια Εργασίας</CardTitle>
+                    <Button size="sm" onClick={() => handleWorkStageDialogOpenChange(true)}><PlusCircle className="mr-2"/>Νέο Στάδιο Εργασίας</Button>
                 </div>
             </CardHeader>
             <CardContent>
-                {isLoadingPhases ? (
+                {isLoadingWorkStages ? (
                     <div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-                ) : phases.length > 0 ? (
-                    <PhaseTable
-                        phases={phases}
+                ) : workStages.length > 0 ? (
+                    <WorkStageTable
+                        workStages={workStages}
                         companies={companies}
-                        onAddSubphase={handleAddSubphase}
-                        onEditPhase={handleEditPhase}
-                        onDeletePhase={handleDeletePhase}
+                        onAddWorkSubstage={handleAddWorkSubstage}
+                        onEditWorkStage={handleEditWorkStage}
+                        onDeleteWorkStage={handleDeleteWorkStage}
                     />
                 ) : (
-                    <p className="text-center text-muted-foreground py-8">Δεν υπάρχουν καταχωρημένες φάσεις για αυτό το έργο.</p>
+                    <p className="text-center text-muted-foreground py-8">Δεν υπάρχουν καταχωρημένα στάδια εργασίας για αυτό το έργο.</p>
                 )}
             </CardContent>
-            <PhaseFormDialog 
-                open={isPhaseDialogOpen}
-                onOpenChange={handlePhaseDialogOpenChange}
+            <WorkStageFormDialog 
+                open={isWorkStageDialogOpen}
+                onOpenChange={handleWorkStageDialogOpenChange}
                 form={form}
-                onSubmit={form.handleSubmit(onSubmitPhase)}
+                onSubmit={form.handleSubmit(onSubmitWorkStage)}
                 isSubmitting={isSubmitting}
-                editingPhase={editingPhase}
+                editingWorkStage={editingWorkStage}
                 companies={companies}
                 isLoadingCompanies={isLoadingCompanies}
             />
