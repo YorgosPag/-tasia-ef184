@@ -93,12 +93,14 @@ type BuildingFormValues = z.infer<typeof buildingSchema>;
 const phaseSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, 'Το όνομα είναι υποχρεωτικό.'),
-    status: z.enum(['Εκκρεμεί', 'Σε εξέλιξη', 'Ολοκληρώθηκε']),
-    personInCharge: z.string().optional(),
+    description: z.string().optional(),
+    status: z.enum(['Εκκρεμεί', 'Σε εξέλιξη', 'Ολοκληρώθηκε', 'Καθυστερεί']),
+    assignedTo: z.string().optional(),
     notes: z.string().optional(),
     startDate: z.date().optional(),
     endDate: z.date().optional(),
     deadline: z.date().optional(),
+    documents: z.string().optional(), // URLs separated by comma
 });
 
 type PhaseFormValues = z.infer<typeof phaseSchema>;
@@ -125,12 +127,14 @@ interface Building {
   topLevelId: string; // This will be the ID from the top-level collection
 }
 
-interface Phase extends Omit<PhaseFormValues, 'startDate' | 'endDate' | 'deadline'> {
+interface Phase extends Omit<PhaseFormValues, 'startDate' | 'endDate' | 'deadline' | 'documents' | 'assignedTo' > {
   id: string;
   createdAt: Timestamp;
   startDate?: Timestamp;
   endDate?: Timestamp;
   deadline?: Timestamp;
+  documents?: string[];
+  assignedTo?: string[];
 }
 
 
@@ -164,8 +168,9 @@ export default function ProjectDetailsPage() {
   const phaseForm = useForm<PhaseFormValues>({
     resolver: zodResolver(phaseSchema),
     defaultValues: {
-        id: undefined, name: '', status: 'Εκκρεμεί', personInCharge: '', notes: '',
+        id: undefined, name: '', status: 'Εκκρεμεί', assignedTo: '', notes: '',
         startDate: undefined, endDate: undefined, deadline: undefined,
+        documents: '', description: '',
     }
   });
 
@@ -288,12 +293,14 @@ export default function ProjectDetailsPage() {
     
     const finalData = {
       name: data.name,
+      description: data.description || '',
       status: data.status,
-      personInCharge: data.personInCharge || '',
+      assignedTo: data.assignedTo ? data.assignedTo.split(',').map(s => s.trim()).filter(Boolean) : [],
       notes: data.notes || '',
       startDate: data.startDate ? Timestamp.fromDate(data.startDate) : null,
       endDate: data.endDate ? Timestamp.fromDate(data.endDate) : null,
       deadline: data.deadline ? Timestamp.fromDate(data.deadline) : null,
+      documents: data.documents ? data.documents.split(',').map(s => s.trim()).filter(Boolean) : [],
     };
 
     try {
@@ -364,6 +371,8 @@ export default function ProjectDetailsPage() {
     setEditingPhase(phase);
     phaseForm.reset({
         ...phase,
+        assignedTo: phase.assignedTo?.join(', '),
+        documents: phase.documents?.join(', '),
         startDate: phase.startDate?.toDate(),
         endDate: phase.endDate?.toDate(),
         deadline: phase.deadline?.toDate(),
@@ -376,6 +385,15 @@ export default function ProjectDetailsPage() {
     const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
     return format(date, 'dd/MM/yyyy');
   };
+  
+  const getStatusVariant = (status: Phase['status']) => {
+    switch (status) {
+      case 'Ολοκληρώθηκε': return 'default';
+      case 'Σε εξέλιξη': return 'secondary';
+      case 'Καθυστερεί': return 'destructive';
+      default: return 'outline';
+    }
+  }
 
   if (isLoadingProject || !project) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
@@ -420,8 +438,10 @@ export default function ProjectDetailsPage() {
                         <Form {...phaseForm}>
                             <form onSubmit={phaseForm.handleSubmit(onSubmitPhase)} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-4">
                                 <FormField control={phaseForm.control} name="name" render={({field}) => (<FormItem><FormLabel>Όνομα Φάσης</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
-                                <FormField control={phaseForm.control} name="status" render={({field}) => (<FormItem><FormLabel>Κατάσταση</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Εκκρεμεί">Εκκρεμεί</SelectItem><SelectItem value="Σε εξέλιξη">Σε εξέλιξη</SelectItem><SelectItem value="Ολοκληρώθηκε">Ολοκληρώθηκε</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
-                                <FormField control={phaseForm.control} name="personInCharge" render={({field}) => (<FormItem><FormLabel>Υπεύθυνος/Συνεργείο</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                                <FormField control={phaseForm.control} name="description" render={({field}) => (<FormItem><FormLabel>Περιγραφή</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                                <FormField control={phaseForm.control} name="status" render={({field}) => (<FormItem><FormLabel>Κατάσταση</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Εκκρεμεί">Εκκρεμεί</SelectItem><SelectItem value="Σε εξέλιξη">Σε εξέλιξη</SelectItem><SelectItem value="Ολοκληρώθηκε">Ολοκληρώθηκε</SelectItem><SelectItem value="Καθυστερεί">Καθυστερεί</SelectItem></SelectContent></Select><FormMessage/></FormItem>)}/>
+                                <FormField control={phaseForm.control} name="assignedTo" render={({field}) => (<FormItem><FormLabel>Υπεύθυνοι (με κόμμα)</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
+                                <FormField control={phaseForm.control} name="documents" render={({field}) => (<FormItem><FormLabel>Έγγραφα (URL με κόμμα)</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <FormField control={phaseForm.control} name="notes" render={({field}) => (<FormItem><FormLabel>Σημειώσεις</FormLabel><FormControl><Textarea {...field}/></FormControl><FormMessage/></FormItem>)}/>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <FormField control={phaseForm.control} name="startDate" render={({ field }) => (<FormItem><FormLabel>Έναρξη</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, 'P', {locale: el}) : <span>Επιλογή</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus/></PopoverContent></Popover><FormMessage /></FormItem>)}/>
@@ -449,8 +469,8 @@ export default function ProjectDetailsPage() {
                         {phases.map(phase => (
                             <TableRow key={phase.id} className="group">
                                 <TableCell className="font-medium">{phase.name}</TableCell>
-                                <TableCell><Badge variant={phase.status === 'Ολοκληρώθηκε' ? 'default' : 'secondary'}>{phase.status}</Badge></TableCell>
-                                <TableCell>{phase.personInCharge || '-'}</TableCell>
+                                <TableCell><Badge variant={getStatusVariant(phase.status)}>{phase.status}</Badge></TableCell>
+                                <TableCell>{phase.assignedTo?.join(', ') || '-'}</TableCell>
                                 <TableCell>{formatDate(phase.startDate)}</TableCell>
                                 <TableCell>{formatDate(phase.endDate)}</TableCell>
                                 <TableCell>{formatDate(phase.deadline)}</TableCell>
