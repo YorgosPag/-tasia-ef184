@@ -173,7 +173,17 @@ export function useProjectsPage() {
 
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
-    return projects.filter((project) => {
+
+    let viewFilteredProjects = projects;
+    
+    // Apply view-based filtering first
+    if (view === 'index') {
+        viewFilteredProjects = projects.filter(p => p.status === 'Ενεργό' || p.status === 'Ολοκληρωμένο');
+    }
+    // 'construction' view shows all projects, so no filtering needed here.
+
+    // Then apply search query on the result of the view filter
+    return viewFilteredProjects.filter((project) => {
       const query = searchQuery.toLowerCase();
       const companyName = getCompanyName(project.companyId).toLowerCase();
       return (
@@ -184,7 +194,7 @@ export function useProjectsPage() {
         (project.tags && project.tags.some((tag) => tag.toLowerCase().includes(query)))
       );
     });
-  }, [projects, searchQuery, getCompanyName]);
+  }, [projects, searchQuery, getCompanyName, view]);
 
   const handleExport = useCallback(() => {
     const dataToExport = filteredProjects.map((p) => ({
