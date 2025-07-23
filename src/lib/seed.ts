@@ -5,102 +5,19 @@ import {
   collection,
   writeBatch,
   serverTimestamp,
-  Timestamp,
   doc,
   DocumentReference,
-  getDocs,
 } from 'firebase/firestore';
 import { db } from './firebase';
-
-const BATCH_LIMIT = 499; // Firestore batch limit is 500
-
-/**
- * Deletes all documents from a specified collection in batches.
- * @param collectionName The name of the collection to clear.
- */
-async function clearCollection(collectionName: string) {
-    const collectionRef = collection(db, collectionName);
-    const snapshot = await getDocs(collectionRef);
-    if (snapshot.empty) {
-        console.log(`Collection "${collectionName}" is already empty.`);
-        return;
-    }
-
-    let batch = writeBatch(db);
-    let count = 0;
-    
-    for (const doc of snapshot.docs) {
-        batch.delete(doc.ref);
-        count++;
-        if (count >= BATCH_LIMIT) {
-            await batch.commit();
-            console.log(`Committed a batch of ${count} deletions from "${collectionName}".`);
-            batch = writeBatch(db);
-            count = 0;
-        }
-    }
-
-    if (count > 0) {
-        await batch.commit();
-        console.log(`Committed final batch of ${count} deletions from "${collectionName}".`);
-    }
-
-    console.log(`Successfully cleared collection "${collectionName}".`);
-}
-
-/**
- * Clears all managed collections from the database.
- */
-export async function clearDatabase() {
-    console.log('Starting database cleanup...');
-    const collectionsToClear = ['attachments', 'units', 'floors', 'buildings', 'projects', 'companies'];
-    for (const collectionName of collectionsToClear) {
-        await clearCollection(collectionName);
-    }
-    console.log('Database cleanup finished successfully!');
-}
-
-
-// Simple maps to hold the generated document references for use within the seeding script.
-let refs: { [key: string]: DocumentReference } = {};
-let originalIds: { [key: string]: { building: string, floor?: string } } = {};
-
-type UnitStatus = 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
+import { companiesData, projectsData, buildingsData, floorsData, unitsData } from './seed-data';
 
 export async function seedDatabase() {
-  refs = {};
-  originalIds = {};
+  const refs: { [key: string]: DocumentReference } = {};
+  const originalIds: { [key: string]: { building: string, floor?: string } } = {};
   const batch = writeBatch(db);
   console.log('Starting database seed...');
 
   // --- Companies ---
-  const companiesData = [
-    {
-      _id: 'dev-construct',
-      name: 'DevConstruct Α.Ε.',
-      logoUrl: 'https://placehold.co/40x40.png',
-      website: 'https://devconstruct.example.com',
-      contactInfo: {
-        email: 'info@devconstruct.gr',
-        phone: '2101234567',
-        address: 'Λεωφ. Κηφισίας 123, Αθήνα',
-        afm: '123456789',
-      },
-    },
-    {
-      _id: 'city-build',
-      name: 'City Builders Ο.Ε.',
-      logoUrl: 'https://placehold.co/40x40.png',
-      website: 'https://citybuilders.example.com',
-      contactInfo: {
-        email: 'contact@citybuilders.gr',
-        phone: '2310987654',
-        address: 'Εγνατία 55, Θεσσαλονίκη',
-        afm: '987654321',
-      },
-    },
-  ];
-
   companiesData.forEach((company) => {
     const docRef = doc(collection(db, 'companies'));
     refs[company._id] = docRef;
@@ -110,31 +27,6 @@ export async function seedDatabase() {
   console.log('Companies queued for creation.');
 
   // --- Projects ---
-  const projectsData = [
-    {
-      _id: 'proj-athens-revival',
-      title: 'Athens Revival',
-      companyId: 'dev-construct',
-      location: 'Κέντρο Αθήνας',
-      description: 'Ολοκληρωμένη ανάπλαση ιστορικού κτιρίου γραφείων σε σύγχρονες κατοικίες υψηλών προδιαγραφών.',
-      deadline: Timestamp.fromDate(new Date('2025-12-31')),
-      status: 'Σε εξέλιξη',
-      photoUrl: 'https://placehold.co/800x600.png',
-      tags: ['residential', 'luxury', 'renovation'],
-    },
-    {
-      _id: 'proj-thess-towers',
-      title: 'Thessaloniki Towers',
-      companyId: 'city-build',
-      location: 'Ανατολική Θεσσαλονίκη',
-      description: 'Ανέγερση δύο πύργων μεικτής χρήσης (κατοικίες, καταστήματα και γραφεία) με θέα στη θάλασσα.',
-      deadline: Timestamp.fromDate(new Date('2026-06-30')),
-      status: 'Ενεργό',
-      photoUrl: 'https://placehold.co/800x600.png',
-      tags: ['commercial', 'residential', 'new-build'],
-    },
-  ];
-
   projectsData.forEach((project) => {
     const parentCompanyRef = refs[project.companyId];
     if (!parentCompanyRef) {
@@ -158,31 +50,6 @@ export async function seedDatabase() {
   console.log('Projects queued for creation.');
 
   // --- Buildings (Dual Write) ---
-  const buildingsData = [
-    { 
-        _id: 'bld-alpha', 
-        address: 'Πατησίων 100', 
-        type: 'Πολυκατοικία', 
-        projectId: 'proj-athens-revival', 
-        description: 'Ιστορικό κτίριο του 1960 με πλήρη ανακαίνιση.',
-        photoUrl: 'https://placehold.co/600x400.png',
-        floorsCount: 5,
-        constructionYear: 1960,
-        tags: ['ιστορικό', 'ανακαίνιση'],
-    },
-    { 
-        _id: 'bld-beta', 
-        address: 'Αγίας Σοφίας 12', 
-        type: 'Κτίριο Γραφείων', 
-        projectId: 'proj-thess-towers',
-        description: 'Μοντέρνο κτίριο με γυάλινη πρόσοψη.',
-        photoUrl: 'https://placehold.co/600x400.png',
-        floorsCount: 12,
-        constructionYear: 2024,
-        tags: ['νεόδμητο', 'γωνιακό'],
-    },
-  ];
-
   for(const building of buildingsData) {
       const parentProjectRef = refs[building.projectId];
       if (!parentProjectRef) continue;
@@ -212,12 +79,6 @@ export async function seedDatabase() {
   console.log('Buildings queued for creation.');
 
   // --- Floors (Dual Write) ---
-  const floorsData = [
-    { _id: 'flr-alpha-1', level: '1', description: 'Πρώτος όροφος', buildingId: 'bld-alpha', floorPlanUrl: 'https://firebasestorage.googleapis.com/v0/b/tasia-6f77i.appspot.com/o/floor_plans%2Fsample-floor-plan.pdf?alt=media&token=8a536968-3b2a-4303-a178-6512822c7595' },
-    { _id: 'flr-alpha-2', level: '2', description: 'Δεύτερος όροφος', buildingId: 'bld-alpha', floorPlanUrl: '' },
-    { _id: 'flr-beta-1', level: '1', description: 'Γραφεία Διοίκησης', buildingId: 'bld-beta', floorPlanUrl: '' },
-  ];
-
   for (const floor of floorsData) {
       const parentBuildingTopLevelRef = refs[floor.buildingId];
       if (!parentBuildingTopLevelRef) continue;
@@ -255,19 +116,6 @@ export async function seedDatabase() {
    console.log('Floors queued for creation.');
 
   // --- Units and Attachments ---
-  const unitsData: {
-    _id: string; floorIds: string[]; levelSpan?: string; identifier: string; name: string; type: string; status: UnitStatus;
-    area: number; price?: number; bedrooms?: number; bathrooms?: number; orientation?: string; amenities?: string[];
-    polygonPoints?: { x: number; y: number }[];
-    attachments: { type: 'parking' | 'storage'; details: string; area?: number; price?: number; photoUrl?: string, sharePercentage?: number, isBundle?: boolean, isStandalone?: boolean }[];
-  }[] = [
-    { _id: 'unit-a1', floorIds: ['flr-alpha-1'], identifier: 'A1', name: 'Διαμέρισμα', type: 'Δυάρι', status: 'Διαθέσιμο', area: 75.5, price: 280000, bedrooms: 2, bathrooms: 1, orientation: 'Νότιο', amenities: ['Μπαλκόνι', 'Τζάκι'], polygonPoints: [{x:50,y:50}, {x:150,y:50}, {x:150,y:150}, {x:50,y:150}], attachments: [{type: 'parking', details: 'P-1', area: 12.5, price: 15000, photoUrl: 'https://placehold.co/100x100.png', sharePercentage: 1.2, isBundle: true, isStandalone: false}, {type: 'storage', details: 'S-A1', area: 5, price: 5000, isBundle: true, isStandalone: false}] },
-    { _id: 'unit-a2', floorIds: ['flr-alpha-1'], identifier: 'A2', name: 'Διαμέρισμα', type: 'Τριάρι', status: 'Κρατημένο', area: 102, price: 350000, bedrooms: 3, bathrooms: 2, orientation: 'Νότιο-Δυτικό', amenities: ['Μεγάλο Μπαλκόνι'], polygonPoints: [{x:200,y:50}, {x:300,y:50}, {x:300,y:150}, {x:200,y:150}], attachments: [{type: 'parking', details: 'P-2', area: 12.5, price: 15000, isStandalone: true}] },
-    { _id: 'unit-b1', floorIds: ['flr-alpha-2'], identifier: 'B1', name: 'Ρετιρέ', type: 'Μεγάλο', status: 'Πωλημένο', area: 150, price: 550000, bedrooms: 4, bathrooms: 3, orientation: 'Πανοραμικός', amenities: ['Ταράτσα', 'BBQ', 'Jacuzzi'], polygonPoints: [{x:50,y:200}, {x:300,y:200}, {x:300,y:300}, {x:50,y:300}], attachments: [{type: 'storage', details: 'S-B1', area: 15, price: 20000, isBundle: true}] },
-    { _id: 'unit-b2', floorIds: ['flr-alpha-2'], identifier: 'B2', name: 'Διαμέρισμα Οικοπεδούχου', type: 'Δυάρι', status: 'Οικοπεδούχος', area: 80, bedrooms: 2, bathrooms: 1, amenities: [], polygonPoints: [{x:350,y:200}, {x:450,y:200}, {x:450,y:300}, {x:350,y:300}], attachments: [] },
-    { _id: 'unit-c1', floorIds: ['flr-beta-1'], identifier: 'C1', name: 'Γραφείο Open-Space', type: 'Γραφείο', status: 'Διαθέσιμο', area: 250, price: 1200000, amenities: ['Κουζίνα', 'Server Room'], polygonPoints: [{x:100,y:100}, {x:400,y:100}, {x:400,y:400}, {x:100,y:400}], attachments: [] },
-  ];
-
   for (const unit of unitsData) {
       if (!unit.floorIds || unit.floorIds.length === 0) continue;
       
@@ -326,5 +174,3 @@ export async function seedDatabase() {
   await batch.commit();
   console.log('Database has been successfully seeded!');
 }
-
-    
