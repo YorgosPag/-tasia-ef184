@@ -6,8 +6,8 @@ import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 import { usePolygonDraw } from './usePolygonDraw';
 import { useZoom } from './useZoom';
 import { usePrecisionZoom } from './usePrecisionZoom';
-import { Unit } from '../FloorPlanViewer';
-import { ALL_STATUSES, STATUS_COLOR_MAP } from '../utils';
+import { Unit } from '@/components/floor-plan/FloorPlanViewer';
+import { ALL_STATUSES, STATUS_COLOR_MAP } from '@/components/floor-plan/utils';
 
 interface PageDimensions {
     width: number;
@@ -16,7 +16,6 @@ interface PageDimensions {
 }
 
 interface useFloorPlanStateProps {
-    units: Unit[];
     onPolygonDrawn: (points: { x: number; y: number }[]) => void;
 }
 
@@ -26,7 +25,7 @@ interface useFloorPlanStateProps {
  * It manages the composition of more specialized hooks for zoom, drawing, and UI state.
  * This is the primary hook consumed by the FloorPlanViewer component.
  */
-export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStateProps) {
+export function useFloorPlanState({ onPolygonDrawn }: useFloorPlanStateProps) {
     const [pageDimensions, setPageDimensions] = useState<PageDimensions>({
         width: 0, height: 0, cropBox: { x: 0, y: 0, width: 0, height: 0 }
     });
@@ -44,7 +43,6 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
     );
 
     const [isEditMode, setIsEditMode] = useState(false);
-    const [localUnits, setLocalUnits] = useState<Unit[]>(units);
     const [draggingPoint, setDraggingPoint] = useState<{ unitId: string; pointIndex: number } | null>(null);
     
     const {
@@ -52,10 +50,10 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         setDrawingPolygon,
         handleUndo,
         completeAndResetDrawing,
-        cancelDrawing
+        cancelDrawing,
     } = usePolygonDraw({ isEditMode, onPolygonDrawn });
 
-    const zoom = useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming: false });
+    const zoom = useZoom({ pdfContainerRef, pageDimensions });
     
     const isPrecisionZooming = usePrecisionZoom({
         isEditMode,
@@ -64,10 +62,6 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         currentScale: zoom.scale,
         setScale: zoom.setScale,
     });
-    
-    useEffect(() => {
-        setLocalUnits(units);
-    }, [units]);
     
     // Effect to update the last mouse position, used by precision zoom
     useEffect(() => {
@@ -118,8 +112,6 @@ export function useFloorPlanState({ units, onPolygonDrawn }: useFloorPlanStatePr
         setIsLocked,
         isEditMode,
         toggleEditMode,
-        localUnits,
-        setLocalUnits,
         draggingPoint,
         setDraggingPoint,
         drawingPolygon,
