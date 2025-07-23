@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Timestamp, doc, updateDoc, deleteDoc, onSnapshot, collection } from 'firebase/firestore';
+import { Timestamp, doc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,9 +14,19 @@ import { exportToJson } from '@/lib/exporter';
 import { ProjectFormValues, projectSchema } from '@/components/projects/ProjectDialogForm';
 import { formatDate } from '@/lib/project-helpers';
 import { useAuth } from './use-auth';
+import type { Phase } from '@/app/projects/[id]/page';
+
+
+export interface ProjectWithPhaseSummary extends Project {
+    phaseSummary?: {
+        currentPhaseName: string;
+        overallStatus: 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Εκκρεμεί' | 'Καθυστερεί';
+    }
+}
+
 
 export function useProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectWithPhaseSummary[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const { user, isEditor, isLoading: isAuthLoading } = useAuth();
   const { addProject } = useDataStore();
@@ -44,19 +54,58 @@ export function useProjectsPage() {
   });
 
   useEffect(() => {
-    if (isAuthLoading) {
-      return;
-    }
-    if (!user) {
+    if (isAuthLoading || !user) {
         setIsLoading(false);
         setProjects([]);
         setCompanies([]);
         return;
     }
 
-    const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
-      setProjects(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Project)));
-      setIsLoading(false);
+    const projectsQuery = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
+    const unsubProjects = onSnapshot(projectsQuery, async (snapshot) => {
+        setIsLoading(true);
+        const projectsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+        
+        // Fetch phase summaries for all projects
+        const projectsWithSummaries = await Promise.all(projectsData.map(async (project) => {
+            const phasesQuery = query(collection(db, 'projects', project.id, 'phases'), orderBy('createdAt', 'asc'));
+            const phasesSnapshot = await getDocs(phasesQuery);
+            const phases = phasesSnapshot.docs.map(doc => doc.data() as Phase);
+            
+            if (phases.length === 0) {
+                return { ...project, phaseSummary: undefined };
+            }
+            
+            const completedPhases = phases.filter(p => p.status === 'Ολοκληρώθηκε').length;
+            const inProgressPhase = phases.find(p => p.status === 'Σε εξέλιξη');
+            const delayedPhase = phases.find(p => p.status === 'Καθυστερεί');
+
+            let overallStatus: ProjectWithPhaseSummary['phaseSummary']['overallStatus'] = 'Εκκρεμεί';
+            let currentPhaseName = "Έναρξη έργου";
+            
+            if (delayedPhase) {
+                overallStatus = 'Καθυστερεί';
+                currentPhaseName = delayedPhase.name;
+            } else if (inProgressPhase) {
+                overallStatus = 'Σε εξέλιξη';
+                currentPhaseName = inProgressPhase.name;
+            } else if (completedPhases === phases.length) {
+                overallStatus = 'Ολοκληρώθηκε';
+                currentPhaseName = "Ολοκληρώθηκε";
+            } else if (phases.length > 0) {
+                // If no phase is in progress/delayed but not all are complete, it's pending the next phase.
+                const lastCompletedIndex = phases.map(p => p.status).lastIndexOf('Ολοκληρώθηκε');
+                currentPhaseName = phases[lastCompletedIndex + 1]?.name || "Επόμενη φάση";
+            }
+            
+            return {
+                ...project,
+                phaseSummary: { currentPhaseName, overallStatus }
+            };
+        }));
+        
+        setProjects(projectsWithSummaries);
+        setIsLoading(false);
     }, (error) => {
         console.error("Failed to fetch projects:", error);
         setIsLoading(false);
@@ -70,7 +119,8 @@ export function useProjectsPage() {
       unsubProjects();
       unsubCompanies();
     };
-  }, [user, isAuthLoading]);
+}, [user, isAuthLoading]);
+
 
   const handleDialogOpenChange = useCallback((open: boolean) => {
     setIsDialogOpen(open);
@@ -97,7 +147,7 @@ export function useProjectsPage() {
       return;
     }
     try {
-      const { id, createdAt, ...clonedData } = projectToClone;
+      const { id, createdAt, phaseSummary, ...clonedData } = projectToClone;
       clonedData.title = `${clonedData.title} (Copy)`;
       const newId = await addProject({
         ...clonedData,
@@ -194,7 +244,7 @@ export function useProjectsPage() {
     if (view === 'construction') {
         // Show all projects
     } else { // Default to 'index' view
-      viewFilteredProjects = projects.filter(p => p.status === 'Ενεργό' || p.status === 'Ολοκληρωμένο');
+      // No filter needed, status is now dynamic
     }
 
     return viewFilteredProjects.filter((project) => {
