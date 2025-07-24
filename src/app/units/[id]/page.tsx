@@ -9,7 +9,7 @@ export default function UnitDetailsPage() {
   const viewProps = useUnitDetails();
 
   if (viewProps.isLoading || !viewProps.unit) {
-    return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
   }
   
   return <UnitDetailsPageView {...viewProps} />;

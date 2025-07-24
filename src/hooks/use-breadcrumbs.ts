@@ -126,10 +126,12 @@ export function useBreadcrumbs() {
 
           if (company) {
               newCrumbs.push({ href: `/companies`, label: 'Εταιρείες' });
-              newCrumbs.push({ href: `/companies`, label: company.name }); // Not a real page, but good for context
           }
           if (project) {
               newCrumbs.push({ href: `/projects`, label: 'Έργα' });
+              if (company) { // Show company name only if we have a project to link it to.
+                  newCrumbs.splice(1, 0, { href: `/projects?companyId=${company.id}`, label: company.name });
+              }
               newCrumbs.push({ href: `/projects/${project.id}`, label: project.title });
           }
           if (building) {
