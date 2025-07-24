@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -41,7 +40,6 @@ import {
 } from "@/components/ui/sidebar"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
-import { HierarchySidebar } from "./HierarchySidebar"
 
 const NavLink = ({
   href,
@@ -93,6 +91,26 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-0">
         <SidebarGroup>
+          <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
+          <SidebarMenu>
+             <NavLink href="/projects?view=construction" icon={Construction} tooltip="Στάδια Εργασιών">
+                Στάδια Εργασιών
+            </NavLink>
+             <NavLink href="/construction/calendar" icon={Calendar} tooltip="Ημερολόγιο">
+                Ημερολόγιο
+            </NavLink>
+            <NavLink href="/architect-dashboard" icon={FileCheck} tooltip="Architect Dashboard">
+                Architect's Desk
+            </NavLink>
+             <NavLink href="/assignments" icon={UserCheck} tooltip="Οι Αναθέσεις μου">
+                Οι Αναθέσεις μου
+            </NavLink>
+          </SidebarMenu>
+        </SidebarGroup>
+        
+        <SidebarSeparator />
+        
+        <SidebarGroup>
           <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
             <SidebarMenu>
                <NavLink href="/companies" icon={Building2} tooltip="Εταιρείες">
@@ -114,23 +132,6 @@ export function AppSidebar() {
                   Παρακολουθήματα
               </NavLink>
             </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
-          <SidebarMenu>
-             <NavLink href="/construction/calendar" icon={Calendar} tooltip="Ημερολόγιο">
-                Ημερολόγιο
-            </NavLink>
-            <NavLink href="/architect-dashboard" icon={FileCheck} tooltip="Architect Dashboard">
-                Architect's Desk
-            </NavLink>
-             <NavLink href="/assignments" icon={UserCheck} tooltip="Οι Αναθέσεις μου">
-                Οι Αναθέσεις μου
-            </NavLink>
-          </SidebarMenu>
         </SidebarGroup>
 
         <SidebarSeparator />
