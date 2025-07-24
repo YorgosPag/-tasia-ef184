@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -37,6 +38,7 @@ import {
   Paperclip,
   Users,
   Contact,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
