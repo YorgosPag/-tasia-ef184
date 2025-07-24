@@ -1,9 +1,9 @@
 
 'use client';
 
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SimpleListsTab } from '@/features/custom-lists/components/SimpleListsTab';
+import { ComplexEntitiesTab } from '@/features/custom-lists/components/ComplexEntitiesTab';
 
 export default function CustomListsPage() {
   return (
@@ -21,7 +21,7 @@ export default function CustomListsPage() {
       <Tabs defaultValue="simple-lists" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-sm">
           <TabsTrigger value="simple-lists">Απλές Λίστες</TabsTrigger>
-          <TabsTrigger value="complex-entities" disabled>
+          <TabsTrigger value="complex-entities">
             Σύνθετες Οντότητες
           </TabsTrigger>
         </TabsList>
@@ -30,15 +30,8 @@ export default function CustomListsPage() {
           <SimpleListsTab />
         </TabsContent>
 
-        <TabsContent value="complex-entities">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Σύνθετες Οντότητες</CardTitle>
-                    <CardDescription>
-                        Η λειτουργία αυτή θα είναι διαθέσιμη σύντομα.
-                    </CardDescription>
-                </CardHeader>
-            </Card>
+        <TabsContent value="complex-entities" className="space-y-6 mt-4">
+          <ComplexEntitiesTab />
         </TabsContent>
       </Tabs>
     </div>

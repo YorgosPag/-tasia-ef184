@@ -1,4 +1,5 @@
 
+
 export const customListsData = [
   {
     id: 'doy',
@@ -501,6 +502,42 @@ export const customListsData = [
       { code: null, value: 'Θερμομόνωση εξωτερικής τοιχοποιίας' },
     ],
   },
+];
+
+export const policeStationsData = [
+  { id: 'ps_001', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΕΛΛΟΜΕΝΟΥ', type: 'policeStation' },
+  { id: 'ps_002', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΠΕΥΚΗΣ - ΛΥΚΟΒΡΥΣΗΣ', type: 'policeStation' },
+  { id: 'ps_003', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΚΟΡΔΕΛΙΟΥ - ΕΥΟΣΜΟΥ', type: 'policeStation' },
+  { id: 'ps_004', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΣΤΥΛΙΔΑΣ', type: 'policeStation' },
+  { id: 'ps_005', name: 'ΤΜΗΜΑ ΑΣΦΑΛΕΙΑΣ ΜΑΡΚΟΠΟΥΛΟΥ - ΜΕΣΟΓΑΙΑΣ', type: 'policeStation' },
+  { id: 'ps_006', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΚΑΙΣΑΡΙΑΝΗΣ', type: 'policeStation' },
+  { id: 'ps_007', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΧΙΟΥ', type: 'policeStation' },
+  { id: 'ps_008', name: 'ΤΜΗΜΑ ΔΙΩΞΗΣ ΚΑΙ ΕΞΙΧΝΙΑΣΗΣ ΕΓΚΛΗΜΑΤΩΝ ΗΛΙΔΑΣ', type: 'policeStation' },
+  { id: 'ps_009', name: 'ΔΕΥ - ΔΙΕΥΘΥΝΣΗ ΕΣΩΤΕΡΙΚΩΝ ΥΠΟΘΕΣΕΩΝ', type: 'policeStation' },
+  { id: 'ps_010', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΙΘΑΚΗΣ', type: 'policeStation' },
+  { id: 'ps_011', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΚΑΛΑΜΑΤΑΣ', type: 'policeStation' },
+  { id: 'ps_012', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΠΕΛΛΑΣ', type: 'policeStation' },
+  { id: 'ps_013', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΑΜΦΙΚΛΕΙΑΣ - ΕΛΑΤΕΙΑΣ', type: 'policeStation' },
+  { id: 'ps_014', name: 'ΔΙΕΥΘΥΝΣΗ ΑΣΤΥΝΟΜΙΑΣ ΜΕΣΣΗΝΙΑΣ', type: 'policeStation' },
+  { id: 'ps_015', name: '1ο ΤΜΗΜΑ ΤΡΟΧΑΙΑΣ ΠΕΙΡΑΙΑ', type: 'policeStation' },
+  { id: 'ps_016', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΛΑΜΙΑΣ', type: 'policeStation' },
+  { id: 'ps_017', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΘΕΡΜΑΪΚΟΥ', type: 'policeStation' },
+  { id: 'ps_018', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΓΛΥΦΑΔΑΣ', type: 'policeStation' },
+  { id: 'ps_019', name: 'ΤΜΗΜΑ ΤΡΟΧΑΙΑΣ ΑΜΦΙΣΣΑΣ - ΔΕΛΦΩΝ', type: 'policeStation' },
+  { id: 'ps_020', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΠΕΝΤΕΛΗΣ', type: 'policeStation' },
+  { id: 'ps_021', name: 'ΤΜΗΜΑ ΤΡΟΧΑΙΑΣ ΡΕΘΥΜΝΟΥ', type: 'policeStation' },
+  { id: 'ps_022', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΝΕΑΣ ΦΙΛΑΔΕΛΦΕΙΑΣ - ΝΕΑΣ ΧΑΛΚΗΔΟΝΑΣ', type: 'policeStation' },
+  { id: 'ps_023', name: 'ΤΜΗΜΑ ΑΣΦΑΛΕΙΑΣ ΧΑΡΙΛΑΟΥ - ΑΝΑΛΗΨΕΩΣ', type: 'policeStation' },
+  { id: 'ps_024', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΧΑΛΚΙΔΑΣ', type: 'policeStation' },
+  { id: 'ps_025', name: 'ΑΣΤΥΝΟΜΙΚΟΣ ΣΤΑΘΜΟΣ ΜΟΝΕΜΒΑΣΙΑΣ', type: 'policeStation' },
+  { id: 'ps_026', name: 'ΤΜΗΜΑ ΑΣΦΑΛΕΙΑΣ ΠΕΤΡΟΥΠΟΛΗΣ', type: 'policeStation' },
+  { id: 'ps_027', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΒΟΛΟΥ', type: 'policeStation' },
+  { id: 'ps_028', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΖΑΚΥΝΘΟΥ', type: 'policeStation' },
+  { id: 'ps_029', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΠΑΛΑΙΟΥ ΦΑΛΗΡΟΥ', type: 'policeStation' },
+  { id: 'ps_030', name: 'ΓΕΝΙΚΗ ΠΕΡΙΦΕΡΕΙΑΚΗ ΑΣΤΥΝΟΜΙΚΗ ΔΙΕΥΘΥΝΣΗ ΠΕΛΟΠΟΝΝΗΣΟΥ', type: 'policeStation' },
+  { id: 'ps_031', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΣΚΙΑΘΟΥ', type: 'policeStation' },
+  { id: 'ps_032', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΔΙΟΝΥΣΟΥ', type: 'policeStation' },
+  { id: 'ps_033', name: 'ΤΜΗΜΑ ΕΛΕΓΧΟΥ ΔΙΑΒΑΤΗΡΙΩΝ ΝΙΚΗΣ', type: 'policeStation' },
 ];
 
     
