@@ -46,7 +46,7 @@ export function useCustomLists() {
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
       const listsData = await Promise.all(
         querySnapshot.docs.map(async (listDoc) => {
-          const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('code', 'asc'), orderBy('value', 'asc'));
+          const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
           const itemsSnapshot = await getDocs(itemsQuery);
           const items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
           return { id: listDoc.id, ...listDoc.data(), items } as CustomList;
