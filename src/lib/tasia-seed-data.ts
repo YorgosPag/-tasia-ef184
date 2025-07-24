@@ -1,7 +1,7 @@
 
 import { Timestamp } from 'firebase/firestore';
 
-type UnitStatus = 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
+type UnitStatus = 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος' | 'Προς Ενοικίαση';
 
 // Authoritative list of all contacts
 export const contactsData: any[] = [
