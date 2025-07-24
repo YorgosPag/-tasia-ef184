@@ -176,10 +176,10 @@ export default function CustomListsPage() {
                     <Input placeholder="Αναζήτηση σε απλές λίστες..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                  </div>
                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => exportToExcel(filteredLists[0])} disabled>
+                    <Button variant="outline" size="sm" onClick={() => exportToExcel(filteredLists[0])} disabled={filteredLists.length === 0}>
                         <Download className="mr-2 h-4 w-4" /> Εξαγωγή σε Excel
                     </Button>
-                     <Button variant="outline" size="sm" onClick={() => exportToTxt(filteredLists[0])} disabled>
+                     <Button variant="outline" size="sm" onClick={() => exportToTxt(filteredLists[0])} disabled={filteredLists.length === 0}>
                         <Download className="mr-2 h-4 w-4" /> Εξαγωγή σε TXT
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => toggleAll('open')}>
@@ -218,7 +218,7 @@ export default function CustomListsPage() {
                             <tbody>
                                 {list.items.map((item, index) => (
                                     <tr key={index} className="border-t">
-                                        {list.hasCode && <td className="p-2 font-mono">{item.code}</td>}
+                                        {list.hasCode && <td className="p-2 font-mono">{item.code || '-'}</td>}
                                         <td className="p-2">{item.value}</td>
                                     </tr>
                                 ))}
@@ -235,3 +235,5 @@ export default function CustomListsPage() {
     </div>
   );
 }
+
+    
