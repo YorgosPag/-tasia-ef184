@@ -1,39 +1,27 @@
-
 "use client";
 
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-    Sidebar,
     SidebarHeader,
     SidebarFooter,
     SidebarGroup,
     SidebarGroupLabel,
     SidebarContent,
     SidebarGroupContent,
-} from "@/components/ui/sidebar";
-import {
     SidebarMenu,
     SidebarMenuItem,
-    SidebarMenuButton
+    SidebarMenuButton,
+    SidebarMenuSub,
+    SidebarMenuSubItem,
+    SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 import {
   LayoutGrid,
   FolderKanban,
   Settings,
-  LogOut,
   BookUser,
-  Shield,
-  Info,
-  ListChecks,
-  BarChart,
-  ShoppingBag,
-  BellRing,
-  ClipboardList,
-  Network,
-  FileCheck,
-  Sparkles,
   Home as HomeIcon,
   Briefcase,
   Building,
@@ -50,45 +38,8 @@ import {
   Users,
   Contact,
 } from "lucide-react";
-import { InstructionsDialog } from "./instructions-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-
-const EcoFlowLogo = () => (
-  <div className="flex items-center gap-2">
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-primary"
-    >
-      <path
-        d="M12 2L2 7L12 12L22 7L12 2Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M2 17L12 22L22 17"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M2 12L12 17L22 12"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-    <span className="font-semibold">NESTOR eco</span>
-  </div>
-);
 
 const NavLink = ({
   href,
@@ -126,6 +77,8 @@ const NavLink = ({
 export function SidebarNav() {
   const pathname = usePathname();
   const { user, isAdmin } = useAuth()
+
+  const ecoIsActive = pathname.startsWith("/eco/");
 
   return (
     <>
@@ -196,50 +149,47 @@ export function SidebarNav() {
         </SidebarGroup>
 
         <SidebarGroup>
-            <SidebarGroupLabel className="flex items-center gap-2">
-                <HomeIcon className="h-4 w-4" />
-                Εξοικονομώ
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                    <SidebarMenuButton
-                        asChild
-                        isActive={pathname.startsWith("/eco/dashboard")}
-                        tooltip="Πίνακας Ελέγχου"
-                    >
-                        <Link href="/eco/dashboard">
-                        <LayoutGrid />
-                        <span>Πίνακας Ελέγχου</span>
-                        </Link>
-                    </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                    <SidebarMenuButton
-                        asChild
-                        isActive={pathname.startsWith("/eco/projects")}
-                        tooltip="Λίστα Έργων"
-                    >
-                        <Link href="/eco/projects">
-                        <FolderKanban />
-                        <span>Λίστα Έργων</span>
-                        </Link>
-                    </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                    <SidebarMenuButton
-                        asChild
-                        isActive={pathname.startsWith("/eco/contacts")}
-                        tooltip="Λίστα Επαφών"
-                    >
-                        <Link href="/eco/contacts">
-                        <BookUser />
-                        <span>Λίστα Επαφών</span>
-                        </Link>
-                    </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarGroupContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+                <SidebarMenuButton
+                    hasSubmenu
+                    isActive={ecoIsActive}
+                    tooltip="NESTOR Εξοικονομώ"
+                    className="h-10 justify-start"
+                >
+                    <div className="flex items-center gap-3">
+                        <HomeIcon className="h-5 w-5" />
+                        <span className="flex-1">NESTOR Εξοικονομώ</span>
+                    </div>
+                </SidebarMenuButton>
+                <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/dashboard")}>
+                            <Link href="/eco/dashboard">
+                                <LayoutGrid />
+                                <span>Πίνακας Ελέγχου</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/projects")}>
+                            <Link href="/eco/projects">
+                                <FolderKanban />
+                                <span>Λίστα Έργων</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/contacts")}>
+                            <Link href="/eco/contacts">
+                                <BookUser />
+                                <span>Λίστα Επαφών</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                </SidebarMenuSub>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarGroup>
 
         {isAdmin && (
