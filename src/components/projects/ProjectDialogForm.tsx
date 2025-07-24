@@ -38,7 +38,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { Company } from '@/hooks/use-data-store';
-import type { ProjectWithWorkStageSummary } from '@/hooks/use-projects-page';
+import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/types/project-types';
 
 export const projectSchema = z.object({
   id: z.string().optional(),
@@ -54,7 +54,6 @@ export const projectSchema = z.object({
   tags: z.string().optional(),
 });
 
-export type ProjectFormValues = z.infer<typeof projectSchema>;
 
 interface ProjectDialogFormProps {
   open: boolean;

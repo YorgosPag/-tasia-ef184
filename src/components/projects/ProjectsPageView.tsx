@@ -8,11 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Loader2, Download, Search } from 'lucide-react';
 import { ProjectTable } from './ProjectTable';
-import { ProjectDialogForm, ProjectFormValues } from './ProjectDialogForm';
+import { ProjectDialogForm } from './ProjectDialogForm';
 import { Company } from '@/hooks/use-data-store';
 import { UseFormReturn } from 'react-hook-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProjectWithWorkStageSummary } from '@/hooks/use-projects-page';
+import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/types/project-types';
 
 
 interface ProjectsPageViewProps {

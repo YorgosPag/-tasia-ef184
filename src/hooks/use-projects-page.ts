@@ -11,17 +11,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useDataStore, Project, Company } from '@/hooks/use-data-store';
 import { logActivity } from '@/lib/logger';
 import { exportToJson } from '@/lib/exporter';
-import { ProjectFormValues, projectSchema } from '@/components/projects/ProjectDialogForm';
+import { projectSchema } from '@/components/projects/ProjectDialogForm';
 import { formatDate } from '@/lib/project-helpers';
 import { useAuth } from './use-auth';
-
-export interface ProjectWithWorkStageSummary extends Project {
-    workStageSummary?: {
-        currentWorkStageName: string;
-        progress: number;
-        overallStatus: 'Εκκρεμεί' | 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Καθυστερεί';
-    }
-}
+import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/types/project-types';
 
 
 export function useProjectsPage() {
