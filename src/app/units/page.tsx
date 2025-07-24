@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Download, ListFilter, X, LayoutGrid, List } from 'lucide-react';
+import { Loader2, Search, Download, ListFilter, X, LayoutGrid, List, PlusCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -31,6 +31,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ALL_STATUSES } from '@/components/floor-plan/utils';
 import { getStatusClass } from '@/lib/unit-helpers';
 import { UnitCard } from '@/components/units/UnitCard';
+import Link from 'next/link';
 
 interface Unit {
   id: string;
@@ -220,10 +221,18 @@ export default function UnitsPage() {
          <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Ακίνητα (Units)
         </h1>
-        <Button onClick={handleExport} variant="outline" disabled={isLoading || filteredUnits.length === 0}>
-            <Download className="mr-2"/>
-            Εξαγωγή σε JSON
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button onClick={handleExport} variant="outline" disabled={isLoading || filteredUnits.length === 0}>
+                <Download className="mr-2"/>
+                Εξαγωγή σε JSON
+            </Button>
+            <Button asChild>
+                <Link href="/units/new">
+                    <PlusCircle className="mr-2"/>
+                    Νέο Ακίνητο
+                </Link>
+            </Button>
+        </div>
       </div>
 
        <div className="space-y-4 p-4 border rounded-lg">
