@@ -3,7 +3,7 @@
 
 import './globals.css';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/layout/sidebar';
+import AppSidebar from '@/components/layout/sidebar';
 import { AppHeader } from '@/components/layout/header';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
