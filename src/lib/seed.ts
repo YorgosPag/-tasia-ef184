@@ -12,185 +12,129 @@ import { db } from './firebase';
 import { companiesData, projectsData, buildingsData, floorsData, unitsData, contactsData } from './seed-data';
 
 export async function seedDatabase() {
-  const refs: { [key: string]: DocumentReference } = {};
-  const originalIds: { [key: string]: { building: string, floor?: string } } = {};
   const batch = writeBatch(db);
   console.log('Starting database seed...');
 
-  // --- Contacts ---
-  // Seed all contacts from the dedicated contactsData array
-  contactsData.forEach((contact) => {
+  const contactIdMap = new Map<string, DocumentReference>();
+  const companyIdMap = new Map<string, DocumentReference>();
+  const projectIdMap = new Map<string, DocumentReference>();
+  const buildingIdMap = new Map<string, { topLevelId: DocumentReference, originalId: DocumentReference }>();
+  const floorIdMap = new Map<string, { topLevelId: DocumentReference, originalId: DocumentReference }>();
+
+  // 1. Seed Contacts
+  for (const contact of contactsData) {
     const docRef = doc(collection(db, 'contacts'));
-    refs[contact._id] = docRef;
+    contactIdMap.set(contact._id, docRef);
     const { _id, ...contactData } = contact;
     batch.set(docRef, { ...contactData, createdAt: serverTimestamp() });
-  });
-  console.log('All contacts from contactsData queued for creation.');
+  }
+  console.log(`${contactsData.length} contacts queued for creation.`);
 
-  // --- Companies ---
-  // Companies are seeded into their own collection for business logic.
-  // We use a different key for their primary collection reference to avoid overwriting contact refs.
-  companiesData.forEach((company) => {
+  // 2. Seed Companies (linked to contacts)
+  for (const company of companiesData) {
+    const contactRef = contactIdMap.get(company._contactId);
+    if (!contactRef) {
+        console.warn(`[SEED] Contact with _id "${company._contactId}" not found for company "${company.name}". Skipping company.`);
+        continue;
+    }
     const companyRef = doc(collection(db, 'companies'));
-    refs[company._id] = companyRef; // Use the company _id for project linking
-    const { _id, ...companyData } = company;
-    batch.set(companyRef, { ...companyData, createdAt: serverTimestamp() });
-  });
-  console.log('Companies queued for creation.');
+    companyIdMap.set(company._id, companyRef);
+    const { _id, _contactId, ...companyData } = company;
+    batch.set(companyRef, { ...companyData, contactId: contactRef.id, createdAt: serverTimestamp() });
+  }
+  console.log(`${companiesData.length} companies queued for creation.`);
 
-
-  // --- Projects ---
-  projectsData.forEach((project) => {
-    const parentCompanyRef = refs[project.companyId];
+  // 3. Seed Projects
+  for (const project of projectsData) {
+    const parentCompanyRef = companyIdMap.get(project.companyId);
     if (!parentCompanyRef) {
       console.warn(`[SEED] Company with _id "${project.companyId}" not found for project "${project.title}". Skipping.`);
-      return;
+      continue;
     }
     const docRef = doc(collection(db, 'projects'));
-    refs[project._id] = docRef;
+    projectIdMap.set(project._id, docRef);
+    const { _id, companyId, ...projectData } = project;
     batch.set(docRef, {
-        title: project.title,
+        ...projectData,
         companyId: parentCompanyRef.id,
-        location: project.location,
-        description: project.description,
-        deadline: project.deadline,
-        status: project.status,
-        photoUrl: project.photoUrl,
-        tags: project.tags,
         createdAt: serverTimestamp(),
     });
-  });
+  }
   console.log('Projects queued for creation.');
 
-  // --- Buildings (Dual Write) ---
+  // 4. Seed Buildings (Dual Write)
   for(const building of buildingsData) {
-      const parentProjectRef = refs[building.projectId];
+      const parentProjectRef = projectIdMap.get(building.projectId);
       if (!parentProjectRef) continue;
 
-      const subCollectionBuildingRef = doc(collection(parentProjectRef, 'buildings'));
       const topLevelBuildingRef = doc(collection(db, 'buildings'));
+      const subCollectionBuildingRef = doc(collection(parentProjectRef, 'buildings'));
       
-      refs[building._id] = topLevelBuildingRef; 
-      originalIds[building._id] = { building: subCollectionBuildingRef.id };
+      buildingIdMap.set(building._id, { topLevelId: topLevelBuildingRef, originalId: subCollectionBuildingRef });
 
       const { _id, projectId, ...buildingCoreData } = building;
-      const buildingData = {
-        ...buildingCoreData,
-        createdAt: serverTimestamp(),
-      };
+      const buildingData = { ...buildingCoreData, createdAt: serverTimestamp() };
 
-      batch.set(subCollectionBuildingRef, {
-        ...buildingData,
-        topLevelId: topLevelBuildingRef.id, 
-      });
-      batch.set(topLevelBuildingRef, {
-          ...buildingData,
-          projectId: parentProjectRef.id, 
-          originalId: subCollectionBuildingRef.id, 
-      });
+      batch.set(subCollectionBuildingRef, { ...buildingData, topLevelId: topLevelBuildingRef.id });
+      batch.set(topLevelBuildingRef, { ...buildingData, projectId: parentProjectRef.id, originalId: subCollectionBuildingRef.id });
   }
   console.log('Buildings queued for creation.');
 
-  // --- Floors (Dual Write) ---
+  // 5. Seed Floors (Dual Write)
   for (const floor of floorsData) {
-      const parentBuildingTopLevelRef = refs[floor.buildingId];
-      if (!parentBuildingTopLevelRef) continue;
+      const parentBuildingRefs = buildingIdMap.get(floor.buildingId);
+      if (!parentBuildingRefs) continue;
       
-      const originalBuildingData = buildingsData.find(b => b._id === floor.buildingId);
-      if (!originalBuildingData) continue;
-      
-      const parentProjectRef = refs[originalBuildingData.projectId];
-      const buildingOriginalId = originalIds[floor.buildingId]?.building;
-      if (!parentProjectRef || !buildingOriginalId) continue;
-
       const topLevelFloorRef = doc(collection(db, 'floors'));
-      refs[floor._id] = topLevelFloorRef;
-      
-      const subCollectionFloorRef = doc(collection(db, 'projects', parentProjectRef.id, 'buildings', buildingOriginalId, 'floors'));
-      originalIds[floor._id] = { ...originalIds[floor._id], floor: subCollectionFloorRef.id };
+      const subCollectionFloorRef = doc(collection(parentBuildingRefs.originalId, 'floors'));
+      floorIdMap.set(floor._id, { topLevelId: topLevelFloorRef, originalId: subCollectionFloorRef });
 
-      const floorData = {
-        level: floor.level,
-        description: floor.description,
-        floorPlanUrl: floor.floorPlanUrl,
-        createdAt: serverTimestamp(),
-      }
-
-      batch.set(subCollectionFloorRef, {
-          ...floorData,
-          topLevelId: topLevelFloorRef.id,
-      });
-      batch.set(topLevelFloorRef, {
-          ...floorData,
-          buildingId: parentBuildingTopLevelRef.id,
-          originalId: subCollectionFloorRef.id,
-      });
+      const { _id, buildingId, ...floorData } = floor;
+      batch.set(subCollectionFloorRef, { ...floorData, topLevelId: topLevelFloorRef.id, createdAt: serverTimestamp() });
+      batch.set(topLevelFloorRef, { ...floorData, buildingId: parentBuildingRefs.topLevelId.id, originalId: subCollectionFloorRef.id, createdAt: serverTimestamp() });
   }
-   console.log('Floors queued for creation.');
+  console.log('Floors queued for creation.');
 
-  // --- Units and Attachments ---
+  // 6. Seed Units and Attachments
   for (const unit of unitsData) {
       if (!unit.floorIds || unit.floorIds.length === 0) continue;
       
-      const parentFloorTopLevelRef = refs[unit.floorIds[0]];
-      if (!parentFloorTopLevelRef) continue;
+      const parentFloorRefs = floorIdMap.get(unit.floorIds[0]);
+      if (!parentFloorRefs) continue;
 
-      const parentFloorData = floorsData.find(f => f._id === unit.floorIds[0]);
-      if (!parentFloorData) continue;
+      const parentBuildingData = buildingsData.find(b => b._id === floorsData.find(f => f._id === unit.floorIds[0])?.buildingId);
+      if(!parentBuildingData) continue;
+      const parentProjectRef = projectIdMap.get(parentBuildingData.projectId);
+      const parentBuildingRef = buildingIdMap.get(parentBuildingData._id);
+      if(!parentProjectRef || !parentBuildingRef) continue;
       
-      const parentBuildingData = buildingsData.find(b => b._id === parentFloorData.buildingId);
-      if (!parentBuildingData) continue;
+      const topLevelUnitRef = doc(collection(db, 'units'));
+      const subCollectionUnitRef = doc(collection(parentFloorRefs.originalId, 'units'));
 
-      const parentProjectRef = refs[parentBuildingData.projectId];
-      const parentBuildingTopLevelRef = refs[parentFloorData.buildingId];
-      
-      if (!parentProjectRef || !parentBuildingTopLevelRef) continue;
-      
       const { _id, attachments, ...unitCoreData } = unit;
       const unitData = {
         ...unitCoreData,
-        floorIds: unit.floorIds.map(fid => refs[fid]?.id).filter(Boolean),
-        polygonPoints: unit.polygonPoints || [],
-        buildingId: parentBuildingTopLevelRef.id,
+        floorIds: unit.floorIds.map(fid => floorIdMap.get(fid)?.topLevelId.id).filter(Boolean),
+        buildingId: parentBuildingRef.topLevelId.id,
+        projectId: parentProjectRef.id,
         createdAt: serverTimestamp(),
       };
-      
-      // Dual-Write for Units - simplified to one subcollection entry for simplicity
-      const buildingOriginalId = originalIds[parentFloorData.buildingId]?.building;
-      const floorOriginalId = originalIds[unit.floorIds[0]]?.floor;
-      if (!buildingOriginalId || !floorOriginalId) continue;
-      
-      const subCollectionUnitRef = doc(collection(db, 'projects', parentProjectRef.id, 'buildings', buildingOriginalId, 'floors', floorOriginalId, 'units'));
-      const topLevelUnitRef = doc(collection(db, 'units'));
       
       batch.set(subCollectionUnitRef, { ...unitData, topLevelId: topLevelUnitRef.id });
       batch.set(topLevelUnitRef, { ...unitData, originalId: subCollectionUnitRef.id });
       
-      refs[unit._id] = topLevelUnitRef; // Store top-level ref for attachments
-      
-      // Seed attachments into the top-level 'attachments' collection
       for (const att of unit.attachments) {
           const attachmentRef = doc(collection(db, 'attachments'));
-          const { type, details, area, price, photoUrl, sharePercentage, isBundle, isStandalone } = att;
-          
           const attachmentData: { [key: string]: any } = {
-            type, details, area, price, sharePercentage, isBundle, isStandalone,
-            bundleUnitId: isBundle ? topLevelUnitRef.id : undefined,
-            unitId: topLevelUnitRef.id, // Link to the top-level unit
+            ...att,
+            unitId: topLevelUnitRef.id,
             createdAt: serverTimestamp(),
           };
-
-          if (photoUrl) {
-            attachmentData.photoUrl = photoUrl;
-          }
-          
-          // Remove undefined keys before writing to Firestore
           Object.keys(attachmentData).forEach(key => attachmentData[key] === undefined && delete attachmentData[key]);
-
           batch.set(attachmentRef, attachmentData);
       }
   }
-   console.log('Units and Attachments queued for creation.');
+  console.log('Units and Attachments queued for creation.');
 
   await batch.commit();
   console.log('Database has been successfully seeded!');
