@@ -145,8 +145,8 @@ export function useBreadcrumbs() {
 
       // Build the breadcrumbs array in the correct order
       const crumbs: BreadcrumbItem[] = [];
-      if (company) crumbs.push({ href: `/companies`, label: company.name, tooltip: "Go to Companies List" });
-      if (project) crumbs.push({ href: `/projects/${project.id}`, label: project.title });
+      if (company) crumbs.push({ href: `/companies`, label: company.name || 'Company', tooltip: "Go to Companies List" });
+      if (project) crumbs.push({ href: `/projects/${project.id}`, label: project.title || 'Project' });
       if (building) crumbs.push({ href: `/buildings/${building.id}`, label: building.address || "Building" });
       if (floor) crumbs.push({ href: `/floors/${floor.id}`, label: `Όροφος ${floor.level}` });
       if (unit) crumbs.push({ href: `/units/${unit.id}`, label: unit.name || "Unit" });
