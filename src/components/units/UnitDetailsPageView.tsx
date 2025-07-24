@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -16,6 +15,7 @@ import { UnitContactForm } from './UnitContactForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UnitFloorPlansTab } from './tabs/UnitFloorPlansTab';
 import { UnitPhotosTab } from './tabs/UnitPhotosTab';
+import { UnitContractsTab } from './tabs/UnitContractsTab';
 
 interface UnitDetailsPageViewProps {
   unit: Unit;
@@ -70,8 +70,8 @@ export function UnitDetailsPageView({
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="general">Γενικά</TabsTrigger>
-          <TabsTrigger value="floor-plans">Κατόψεις Επιπέδων</TabsTrigger>
-          <TabsTrigger value="misc">Διάφορα</TabsTrigger>
+          <TabsTrigger value="floor-plans">Κατόψεις</TabsTrigger>
+          <TabsTrigger value="contracts">Συμβόλαια</TabsTrigger>
           <TabsTrigger value="photos">Φωτογραφίες</TabsTrigger>
           <TabsTrigger value="videos">Videos</TabsTrigger>
         </TabsList>
@@ -116,12 +116,8 @@ export function UnitDetailsPageView({
           <UnitFloorPlansTab unit={unit} />
         </TabsContent>
 
-        <TabsContent value="misc" className="mt-4">
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-muted-foreground">Διάφορες πληροφορίες και έγγραφα θα εμφανίζονται εδώ.</p>
-            </CardContent>
-          </Card>
+        <TabsContent value="contracts" className="mt-4">
+          <UnitContractsTab unit={unit} />
         </TabsContent>
         
         <TabsContent value="photos" className="mt-4">

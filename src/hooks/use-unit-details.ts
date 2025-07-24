@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,6 +22,7 @@ import { logActivity } from '@/lib/logger';
 import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/lib/unit-helpers';
 import type { NewUnitFormValues as UnitFormValues } from '@/lib/unit-helpers';
 import { AttachmentFormValues, attachmentSchema } from '@/components/units/AttachmentDialog';
+import type { UnitContract } from '@/components/units/tabs/UnitContractsTab';
 
 export interface Unit {
   id: string;
@@ -53,7 +53,7 @@ export interface Unit {
   description?: string;
   isPenthouse?: boolean;
 
-  // New fields for tabs
+  contracts?: UnitContract[];
   photos?: { url: string; name: string; uploadedAt: Timestamp }[];
   floorPlans?: Record<string, {
       applicationUrl?: string;
