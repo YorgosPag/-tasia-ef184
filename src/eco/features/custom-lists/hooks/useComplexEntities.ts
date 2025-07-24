@@ -59,3 +59,5 @@ export function useComplexEntities(type: string) {
   }, [type, toast]);
 
   // CRUD functions would go here (addEntity, updateEntity, deleteEntity)
+  return { entities, isLoading };
+}
