@@ -52,6 +52,13 @@ export interface Unit {
   amenities?: string[];
   description?: string;
   isPenthouse?: boolean;
+
+  // New fields for tabs
+  photos?: { url: string; name: string; uploadedAt: Timestamp }[];
+  floorPlans?: Record<string, {
+      applicationUrl?: string;
+      urbanPlanningUrl?: string;
+  }>;
 }
 
 export function useUnitDetails() {

@@ -15,6 +15,7 @@ import { AMENITIES_LIST, KITCHEN_LAYOUTS, ORIENTATIONS } from '@/lib/unit-helper
 import { AreaInputs } from './new/AreaInputs';
 import { AmenitiesChecklist } from './new/AmenitiesChecklist';
 import type { NewUnitFormValues as UnitFormValues } from '@/lib/unit-helpers';
+import { Card } from '../ui/card';
 
 
 interface UnitDetailsFormProps {
@@ -25,7 +26,7 @@ interface UnitDetailsFormProps {
 
 export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormProps) {
   return (
-    <>
+    <Card>
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
@@ -146,6 +147,6 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
         <Separator />
         <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel className="text-base font-semibold">Περιγραφή</FormLabel><FormControl><Textarea {...field} rows={5} /></FormControl><FormMessage /></FormItem>)} />
       </CardContent>
-    </>
+    </Card>
   );
 }
