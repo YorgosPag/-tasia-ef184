@@ -87,14 +87,14 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
           <SidebarMenu>
-            <NavLink href="/construction" icon={Construction} tooltip="Στάδια Εργασιών">
+            <NavLink href="/projects" icon={Construction} tooltip="Στάδια Εργασιών">
               Στάδια Εργασιών
             </NavLink>
             <NavLink href="/construction/calendar" icon={CalendarDays} tooltip="Ημερολόγιο">
               Ημερολόγιο
             </NavLink>
             <NavLink href="/architect-dashboard" icon={FilePen} tooltip="Architect's Desk">
-              Architect's Desk
+              Architect’s Desk
             </NavLink>
             <NavLink href="/assignments" icon={ClipboardList} tooltip="Οι Αναθέσεις μου">
               Οι Αναθέσεις μου
