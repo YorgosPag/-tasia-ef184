@@ -30,7 +30,7 @@ import {
   formatDate,
   getCompanyName,
 } from '@/lib/project-helpers';
-import type { ProjectWithWorkStageSummary } from '@/hooks/use-projects-page';
+import type { ProjectWithWorkStageSummary } from '@/types/project-types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { Progress } from '../ui/progress';
 
