@@ -70,6 +70,7 @@ export function useUnitDetails() {
       bathrooms: '',
       orientation: '',
       amenities: '',
+      levelSpan: 1,
     },
   });
 
@@ -77,6 +78,7 @@ export function useUnitDetails() {
     resolver: zodResolver(attachmentSchema),
     defaultValues: {
       type: 'parking',
+      identifier: '',
       details: '',
       area: '',
       price: '',
@@ -112,6 +114,7 @@ export function useUnitDetails() {
           bathrooms: unitData.bathrooms?.toString() || '',
           orientation: unitData.orientation || '',
           amenities: unitData.amenities?.join(', ') || '',
+          levelSpan: unitData.levelSpan ? parseInt(unitData.levelSpan.replace('F', '')) : 1,
         });
         setIsLoading(false);
     }, (error) => {
@@ -213,7 +216,7 @@ export function useUnitDetails() {
   const handleAddNewAttachment = () => {
       setEditingAttachment(null);
       attachmentForm.reset({
-          type: 'parking', details: '', area: '', price: '', sharePercentage: '', isBundle: true, isStandalone: false
+          type: 'parking', identifier: '', details: '', area: '', price: '', sharePercentage: '', isBundle: true, isStandalone: false
       });
       setIsAttachmentDialogOpen(true);
   }

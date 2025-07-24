@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { UseFormReturn, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import {
@@ -31,14 +31,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Wand2 } from 'lucide-react';
 import { Separator } from '../ui/separator';
+import { generateNextUnitIdentifier } from '@/lib/identifier-generator';
+import { useToast } from '@/hooks/use-toast';
 
 export const unitSchema = z.object({
   existingUnitId: z.string().optional(),
   identifier: z.string().min(1, { message: "Ο κωδικός είναι υποχρεωτικός." }),
   name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
-  type: z.string().optional(),
+  type: z.string().min(1, { message: "Ο τύπος είναι υποχρεωτικός."}),
   status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
   polygonPoints: z.string().optional(),
   area: z.string().refine(val => val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 1 && parseFloat(val) <= 10000), { message: "Το εμβαδόν πρέπει να είναι 1-10000 τ.μ." }).optional(),
@@ -47,6 +49,7 @@ export const unitSchema = z.object({
   bathrooms: z.string().refine(val => val === '' || !isNaN(parseInt(val, 10)), { message: "Πρέπει να είναι ακέραιος αριθμός." }).optional(),
   orientation: z.string().optional(),
   amenities: z.string().optional(),
+  floorSpan: z.number().int().min(1).default(1),
 });
 
 
@@ -56,6 +59,7 @@ interface Unit {
   id: string;
   identifier: string;
   name: string;
+  floorId: string;
 }
 
 interface UnitDialogFormProps {
@@ -84,12 +88,45 @@ export function UnitDialogForm({
   drawingPolygon,
   availableUnits,
 }: UnitDialogFormProps) {
+  const { toast } = useToast();
+  const [isGeneratingId, setIsGeneratingId] = useState(false);
+
   const isLinkingMode = drawingPolygon && !editingUnit;
   const selectedUnitId = useWatch({
       control: form.control,
       name: "existingUnitId",
   });
+  const unitType = useWatch({ control: form.control, name: "type" });
+  const floorSpan = useWatch({ control: form.control, name: "floorSpan" });
+  
   const isCreatingNew = selectedUnitId === 'new';
+
+  const handleGenerateId = async () => {
+    if (!editingUnit && !isCreatingNew) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν μπορεί να δημιουργηθεί κωδικός για υπάρχον ακίνητο.' });
+        return;
+    }
+    const floorId = availableUnits[0]?.floorId; // Assume all available units are on the same floor for now
+    if (!floorId) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε όροφος για τη δημιουργία κωδικού.' });
+        return;
+    }
+    if (!unitType) {
+        toast({ variant: 'destructive', title: 'Ειδοποίηση', description: 'Παρακαλώ επιλέξτε πρώτα τύπο ακινήτου.' });
+        return;
+    }
+
+    setIsGeneratingId(true);
+    try {
+        const nextId = await generateNextUnitIdentifier(floorId, unitType, floorSpan);
+        form.setValue('identifier', nextId);
+        toast({ title: 'Επιτυχία', description: `Προτεινόμενος κωδικός: ${nextId}` });
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Σφάλμα Δημιουργίας Κωδικού', description: error.message });
+    } finally {
+        setIsGeneratingId(false);
+    }
+  };
   
   const getDialogTitle = () => {
     if (editingUnit) return 'Επεξεργασία Ακινήτου';
@@ -146,7 +183,12 @@ export function UnitDialogForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Κωδικός</FormLabel>
-                    <FormControl><Input placeholder="π.χ. A1, B2" {...field} /></FormControl>
+                    <div className="flex items-center gap-2">
+                        <FormControl><Input placeholder="π.χ. A1D1" {...field} /></FormControl>
+                         <Button type="button" variant="outline" size="icon" onClick={handleGenerateId} disabled={isGeneratingId} title="Αυτόματη δημιουργία κωδικού">
+                            {isGeneratingId ? <Loader2 className="h-4 w-4 animate-spin"/> : <Wand2 className="h-4 w-4"/>}
+                        </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -162,17 +204,38 @@ export function UnitDialogForm({
                   </FormItem>
                 )}
               />
-              <FormField
+               <FormField
                 control={form.control}
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Τύπος (Προαιρετικό)</FormLabel>
-                    <FormControl><Input placeholder="π.χ. Γκαρσονιέρα" {...field} /></FormControl>
+                    <FormLabel>Τύπος</FormLabel>
+                     <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                       <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε τύπο..."/></SelectTrigger></FormControl>
+                       <SelectContent>
+                         <SelectItem value="Διαμέρισμα">Διαμέρισμα</SelectItem>
+                         <SelectItem value="Στούντιο">Στούντιο</SelectItem>
+                         <SelectItem value="Γκαρσονιέρα">Γκαρσονιέρα</SelectItem>
+                         <SelectItem value="Μεζονέτα">Μεζονέτα</SelectItem>
+                         <SelectItem value="Κατάστημα">Κατάστημα</SelectItem>
+                         <SelectItem value="Other">Άλλο</SelectItem>
+                       </SelectContent>
+                     </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+               <FormField
+                  control={form.control}
+                  name="floorSpan"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Αριθμός Ορόφων που καταλαμβάνει</FormLabel>
+                      <FormControl><Input type="number" min="1" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 1)} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               <FormField
                 control={form.control}
                 name="status"

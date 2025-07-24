@@ -1,4 +1,5 @@
 
+
 # Τεχνική Τεκμηρίωση Εφαρμογής TASIA
 
 ## 1. Επισκόπηση Εφαρμογής
@@ -194,6 +195,7 @@
 - **createdAt**: `timestamp` - Ημερομηνία καταχώρησης.
 
 ### Collection: `buildings`
+- **identifier**: `string` - **Νέο!** Ο κωδικός του κτιρίου (π.χ. "Α", "Β", "W1").
 - **address**: `string` - Διεύθυνση.
 - **type**: `string` - Τύπος κτιρίου.
 - **description**: `string` (optional) - Περιγραφή / Σημειώσεις.
@@ -206,7 +208,7 @@
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
 ### Collection: `floors`
-- **level**: `string` - Επίπεδο ορόφου (π.χ. "1", "Ισόγειο").
+- **level**: `string` - Επίπεδο ορόφου (π.χ. "1", "Ισόγειο", "Π").
 - **description**: `string` (optional) - Περιγραφή.
 - **floorPlanUrl**: `string` (optional) - URL του PDF της κάτοψης.
 - **buildingId**: `string` - Αναφορά στην `buildings` collection.
@@ -214,7 +216,7 @@
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 
 ### Collection: `units`
-- **identifier**: `string` - Κωδικός ακινήτου (π.χ. "Α1").
+- **identifier**: `string` - **Νέο!** Ο πλήρης ιεραρχικός κωδικός του ακινήτου (π.χ. "Β2D3").
 - **name**: `string` - Όνομα/Περιγραφή ακινήτου.
 - **type**: `string` (optional) - Τύπος (π.χ. "Δυάρι").
 - **status**: `string` - (`Διαθέσιμο`, `Κρατημένο`, `Πωλημένο`, `Οικοπεδούχος`).
@@ -225,7 +227,7 @@
 - **orientation**: `string` (optional) - Προσανατολισμός.
 - **amenities**: `array` of `string` (optional) - Λίστα με παροχές.
 - **polygonPoints**: `array` of `map` - Οι συντεταγμένες `{x, y}` του πολυγώνου.
-- **levelSpan**: `string` (optional) - Περιγραφικό string για μονάδες πολλαπλών ορόφων (π.χ. "Ισόγειο-1ος").
+- **levelSpan**: `string` (optional) - Περιγραφικό string για μονάδες πολλαπλών ορόφων (π.χ. "-2F").
 - **originalId**: `string` - Το ID του εγγράφου στη subcollection.
 - **createdAt**: `timestamp` - Ημερομηνία δημιουργίας.
 - **Σημείωση για Denormalization**: Για λόγους απόδοσης, κάθε `unit` περιέχει και τα IDs των γονικών του οντοτήτων:
@@ -236,6 +238,7 @@
   - Αυτή η τεχνική αποτρέπει τα πολλαπλά, διαδοχικά queries (deep lookups) κατά την κατασκευή των breadcrumbs ή σε άλλες λειτουργίες που απαιτούν την πλήρη ιεραρχία, βελτιώνοντας σημαντικά την ταχύτητα της εφαρμογής.
 
 ### Collection: `attachments`
+- **identifier**: `string` - **Νέο!** Ο πλήρης ιεραρχικός κωδικός (π.χ. "B2D3S1").
 - **type**: `string` - (`parking` ή `storage`).
 - **details**: `string` (optional) - Λεπτομέρειες (π.χ. "P-1").
 - **area**: `number` (optional) - Εμβαδόν σε τ.μ.
