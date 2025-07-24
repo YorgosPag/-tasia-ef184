@@ -62,7 +62,6 @@ const COLLECTION_NAMES: Record<string, string> = {
   attachments: 'attachments',
 };
 
-// Determines if a segment is likely a Firestore document ID (alphanumeric, usually > 15 chars)
 const isLikelyId = (segment: string) => /^[a-zA-Z0-9]{16,}$/.test(segment);
 
 export function useBreadcrumbs() {
@@ -78,25 +77,26 @@ export function useBreadcrumbs() {
         return;
       }
       
-      const lastSegment = segments[segments.length - 1];
-      const collectionSegment = segments[segments.length - 2];
-      
-      // Handle static pages or list pages
-      if (!isLikelyId(lastSegment)) {
-          const staticCrumbs: BreadcrumbItem[] = [];
-          let currentPath = '';
-          for (const segment of segments) {
-              currentPath += `/${segment}`;
-              if (STATIC_LABELS[segment]) {
-                  staticCrumbs.push({ href: currentPath, label: STATIC_LABELS[segment], tooltip: STATIC_LABELS[segment] });
-              }
+      let currentPath = '';
+      const pathSegments = pathname.split('/').filter(Boolean);
+      const isDetailsPage = pathSegments.length > 1 && isLikelyId(pathSegments[pathSegments.length - 1]);
+
+      if (!isDetailsPage) {
+        // Handle list pages
+        const staticCrumbs: BreadcrumbItem[] = [];
+        for (const segment of segments) {
+          currentPath += `/${segment}`;
+          if (STATIC_LABELS[segment]) {
+            staticCrumbs.push({ href: currentPath, label: STATIC_LABELS[segment], tooltip: STATIC_LABELS[segment] });
           }
-          setBreadcrumbs(staticCrumbs);
-          return;
+        }
+        setBreadcrumbs(staticCrumbs);
+        return;
       }
 
       // Handle details pages
-      const entityId = lastSegment;
+      const entityId = pathSegments[pathSegments.length - 1];
+      const collectionSegment = pathSegments[pathSegments.length - 2];
       const mainCollectionName = COLLECTION_NAMES[collectionSegment];
       
       if (!mainCollectionName) {
@@ -110,37 +110,33 @@ export function useBreadcrumbs() {
         return;
       }
 
+      // --- Build hierarchy bottom-up ---
       let companyId: string | undefined;
       let projectId: string | undefined;
       let buildingId: string | undefined;
       let floorId: string | undefined;
       let unitId: string | undefined;
+      let attachmentId: string | undefined = (mainCollectionName === 'attachments') ? currentEntity.id : undefined;
 
-      switch(mainCollectionName) {
-        case 'attachments':
-            unitId = currentEntity.unitId;
-            break;
-        case 'units':
+      if(attachmentId) {
+          unitId = currentEntity.unitId;
+      } else if (mainCollectionName === 'units') {
           unitId = currentEntity.id;
-          break;
-        case 'floors':
+      } else if (mainCollectionName === 'floors') {
           floorId = currentEntity.id;
-          break;
-        case 'buildings':
+      } else if (mainCollectionName === 'buildings') {
           buildingId = currentEntity.id;
-          break;
-        case 'projects':
+      } else if (mainCollectionName === 'projects') {
           projectId = currentEntity.id;
-          break;
       }
-      
+
       const unitDoc = unitId ? await getDocFromFirestore('units', unitId) : null;
       if (unitDoc) {
           floorId = unitDoc.floorIds?.[0];
           buildingId = unitDoc.buildingId;
           projectId = unitDoc.projectId;
       }
-
+      
       const floorDoc = floorId ? await getDocFromFirestore('floors', floorId) : null;
       if (floorDoc) {
           buildingId = floorDoc.buildingId;
@@ -157,21 +153,27 @@ export function useBreadcrumbs() {
       }
 
       const companyDoc = companyId ? await getDocFromFirestore('companies', companyId) : null;
-      
+
+      // --- Construct breadcrumbs top-down ---
       const crumbs: BreadcrumbItem[] = [];
-      
-      // Always start with the root list page
       crumbs.push({ href: '/companies', label: 'Εταιρείες', tooltip: 'Μετάβαση στις Εταιρείες' });
 
-      if (projectDoc) crumbs.push({ href: `/projects/${projectDoc.id}`, label: projectDoc.title || 'Project', tooltip: `Μετάβαση σε ${projectDoc.title}` });
-      if (buildingDoc) crumbs.push({ href: `/buildings/${buildingDoc.id}`, label: buildingDoc.address || 'Building', tooltip: `Μετάβαση σε ${buildingDoc.address}` });
-      if (floorDoc) crumbs.push({ href: `/floors/${floorDoc.id}`, label: `Όροφος ${floorDoc.level || ''}`.trim(), tooltip: `Μετάβαση στον Όροφο ${floorDoc.level}` });
-      if (unitDoc) crumbs.push({ href: `/units/${unitDoc.id}`, label: unitDoc.name || 'Unit', tooltip: `Μετάβαση στο ${unitDoc.name}` });
-      
-      if (mainCollectionName === 'attachments') {
-          crumbs.push({ href: pathname, label: currentEntity.details || 'Attachment', tooltip: `Μετάβαση στο ${currentEntity.details}` });
+      if (companyDoc) {
+        // Since there is no company detail page, this just links to the list.
+        // If there was a page /companies/[id], the link would be different.
       }
-
+      if (projectDoc) crumbs.push({ href: `/projects/${projectDoc.id}`, label: projectDoc.title || 'Έργο', tooltip: `Μετάβαση σε ${projectDoc.title}` });
+      if (buildingDoc) crumbs.push({ href: `/buildings/${buildingDoc.id}`, label: buildingDoc.address || 'Κτίριο', tooltip: `Μετάβαση σε ${buildingDoc.address}` });
+      if (floorDoc) crumbs.push({ href: `/floors/${floorDoc.id}`, label: `Όροφος ${floorDoc.level || ''}`.trim(), tooltip: `Μετάβαση στον Όροφο ${floorDoc.level}` });
+      if (unitDoc) crumbs.push({ href: `/units/${unitDoc.id}`, label: unitDoc.name || 'Ακίνητο', tooltip: `Μετάβαση στο ${unitDoc.name}` });
+      
+      if (attachmentId) {
+          const attachmentDoc = await getDocFromFirestore('attachments', attachmentId);
+          if (attachmentDoc) {
+               crumbs.push({ href: pathname, label: attachmentDoc.details || 'Παρακολούθημα', tooltip: `Μετάβαση στο ${attachmentDoc.details}` });
+          }
+      }
+      
       setBreadcrumbs(crumbs);
     };
 
