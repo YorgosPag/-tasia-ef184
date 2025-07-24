@@ -138,15 +138,10 @@ export default function NewUnitPage() {
         
         const topLevelUnitRef = doc(collection(db, 'units'));
         
-        const unitData = {
+        const unitData: any = {
             identifier: data.identifier, name: data.name, type: data.type || '',
-            status: data.status, area: data.area ? parseFloat(data.area) : undefined,
-            price: data.price ? parseFloat(data.price) : undefined,
-            bedrooms: data.bedrooms ? parseInt(data.bedrooms, 10) : undefined,
-            bathrooms: data.bathrooms ? parseInt(data.bathrooms, 10) : undefined,
-            orientation: data.orientation || '',
+            status: data.status,
             amenities: data.amenities ? data.amenities.split(',').map(a => a.trim()).filter(Boolean) : [],
-            levelSpan: data.levelSpan > 1 ? `${data.levelSpan}F` : undefined,
             floorIds: [data.floorId],
             buildingId: floorData.buildingId,
             projectId: buildingData.projectId,
@@ -154,6 +149,13 @@ export default function NewUnitPage() {
             createdAt: serverTimestamp(),
             originalId: topLevelUnitRef.id,
         };
+
+        if (data.area && !isNaN(parseFloat(data.area))) unitData.area = parseFloat(data.area);
+        if (data.price && !isNaN(parseFloat(data.price))) unitData.price = parseFloat(data.price);
+        if (data.bedrooms && !isNaN(parseInt(data.bedrooms))) unitData.bedrooms = parseInt(data.bedrooms, 10);
+        if (data.bathrooms && !isNaN(parseInt(data.bathrooms))) unitData.bathrooms = parseInt(data.bathrooms, 10);
+        if (data.orientation) unitData.orientation = data.orientation;
+        if (data.levelSpan > 1) unitData.levelSpan = `${data.levelSpan}F`;
 
         await setDoc(topLevelUnitRef, unitData);
 
