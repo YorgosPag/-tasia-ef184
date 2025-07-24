@@ -42,6 +42,15 @@ const STATIC_LABELS: Record<string, string> = {
   'audit-log': 'Audit Log',
   'users': 'User Management',
   'settings': 'Ρυθμίσεις',
+  'architect-dashboard': 'Architect\'s Dashboard',
+  'assignments': 'Οι Αναθέσεις μου',
+  'construction': 'Κατασκευή',
+  'calendar': 'Ημερολόγιο',
+  'leads': 'Leads',
+  'meetings': 'Συσκέψεις',
+  'templates': 'Πρότυπα',
+  'work-stages': 'Πρότυπα Εργασιών',
+  'new': 'Δημιουργία',
 };
 
 const COLLECTION_NAMES: Record<string, string> = {
@@ -64,92 +73,98 @@ export function useBreadcrumbs() {
         return;
       }
 
-      const mainSegment = segments[0];
+      // Handle simple static pages first
+      if (segments.length === 1 && STATIC_LABELS[segments[0]]) {
+         setBreadcrumbs([{ href: `/${segments[0]}`, label: STATIC_LABELS[segments[0]] }]);
+         return;
+      }
+
+      const crumbs: BreadcrumbItem[] = [];
+      const mainCollectionSegment = segments[0];
+      const mainCollectionName = COLLECTION_NAMES[mainCollectionSegment];
       const entityId = segments[1];
 
-      // Handle static/list pages first
-      if (segments.length === 1 && STATIC_LABELS[mainSegment]) {
-        setBreadcrumbs([{ href: `/${mainSegment}`, label: STATIC_LABELS[mainSegment] }]);
-        return;
-      }
-
-      // Handle detail pages
-      const collectionName = COLLECTION_NAMES[mainSegment];
-      if (!collectionName || !entityId) {
-        setBreadcrumbs([]);
-        return;
+      // Early exit for non-detail pages or unhandled routes
+      if (!mainCollectionName || !entityId) {
+          // Build from static labels if possible for multi-segment static paths like /construction/calendar
+          let currentPath = '';
+          for (const segment of segments) {
+              currentPath += `/${segment}`;
+              if (STATIC_LABELS[segment]) {
+                  crumbs.push({ href: currentPath, label: STATIC_LABELS[segment] });
+              }
+          }
+          setBreadcrumbs(crumbs);
+          return;
       }
       
-      const currentEntity = await getDocFromFirestore(collectionName, entityId);
+      const currentEntity = await getDocFromFirestore(mainCollectionName, entityId);
       if (!currentEntity) {
         setBreadcrumbs([]);
         return;
       }
-
-      // --- Start the bottom-up traversal ---
+      
+      // --- Start the bottom-up traversal to find all parent IDs ---
       let companyId: string | undefined;
       let projectId: string | undefined;
       let buildingId: string | undefined;
       let floorId: string | undefined;
       let unitId: string | undefined;
 
-      switch(collectionName) {
+      // Initialize IDs based on the current entity type
+      switch(mainCollectionName) {
         case 'units':
           unitId = currentEntity.id;
           floorId = currentEntity.floorIds?.[0];
           buildingId = currentEntity.buildingId;
           projectId = currentEntity.projectId;
-          companyId = currentEntity.companyId;
+          companyId = currentEntity.companyId; // Assumes denormalization
           break;
         case 'floors':
           floorId = currentEntity.id;
           buildingId = currentEntity.buildingId;
-          // Need to fetch building to get project/company
+          // Need to fetch parents
           break;
         case 'buildings':
           buildingId = currentEntity.id;
           projectId = currentEntity.projectId;
-          // Need to fetch project to get company
+          // Need to fetch parents
           break;
         case 'projects':
           projectId = currentEntity.id;
           companyId = currentEntity.companyId;
           break;
-        case 'companies':
-          companyId = currentEntity.id;
-          break;
       }
 
-      // Fetch any missing parent documents based on the traversal
-      if (floorId && !buildingId) {
-        const floorDoc = await getDocFromFirestore('floors', floorId);
-        buildingId = floorDoc?.buildingId;
-      }
+      // Fetch missing parent documents to complete the hierarchy
+      // This runs sequentially but could be parallelized if needed.
       if (buildingId && !projectId) {
-        const buildingDoc = await getDocFromFirestore('buildings', buildingId);
-        projectId = buildingDoc?.projectId;
+          const buildingDoc = await getDocFromFirestore('buildings', buildingId);
+          projectId = buildingDoc?.projectId;
       }
       if (projectId && !companyId) {
-        const projectDoc = await getDocFromFirestore('projects', projectId);
-        companyId = projectDoc?.companyId;
+          const projectDoc = await getDocFromFirestore('projects', projectId);
+          companyId = projectDoc?.companyId;
       }
       
-      // Fetch all documents in parallel
-      const [company, project, building, floor, unit] = await Promise.all([
+      // Fetch all necessary documents in parallel
+      const docsToFetch = [
         companyId ? getDocFromFirestore('companies', companyId) : Promise.resolve(null),
         projectId ? getDocFromFirestore('projects', projectId) : Promise.resolve(null),
         buildingId ? getDocFromFirestore('buildings', buildingId) : Promise.resolve(null),
         floorId ? getDocFromFirestore('floors', floorId) : Promise.resolve(null),
         unitId ? getDocFromFirestore('units', unitId) : Promise.resolve(null),
-      ]);
+      ];
+      
+      const [company, project, building, floor, unit] = await Promise.all(docsToFetch);
 
-      // Build the breadcrumbs array in the correct order
-      const crumbs: BreadcrumbItem[] = [];
+      // Build the breadcrumbs array in the correct hierarchical order
       if (company) crumbs.push({ href: `/companies`, label: company.name || 'Company', tooltip: "Go to Companies List" });
+      if (project) crumbs.push({ href: `/projects`, label: 'Έργα' });
       if (project) crumbs.push({ href: `/projects/${project.id}`, label: project.title || 'Project' });
-      if (building) crumbs.push({ href: `/buildings/${building.id}`, label: building.address || "Building" });
-      if (floor) crumbs.push({ href: `/floors/${floor.id}`, label: `Όροφος ${floor.level}` });
-      if (unit) crumbs.push({ href: `/units/${unit.id}`, label: unit.name || "Unit" });
+      if (building) crumbs.push({ href: `/buildings/${building.id}`, label: building.address || 'Building' });
+      if (floor) crumbs.push({ href: `/floors/${floor.id}`, label: `Όροφος ${floor.level || ''}`.trim() });
+      if (unit) crumbs.push({ href: `/units/${unit.id}`, label: unit.name || 'Unit' });
       
       setBreadcrumbs(crumbs);
     };
