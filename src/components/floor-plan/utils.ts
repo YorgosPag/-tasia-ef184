@@ -1,5 +1,5 @@
 
-import { Unit } from './FloorPlanViewer';
+import { Unit } from './Unit';
 
 export const ALL_STATUSES: Unit['status'][] = [
   'Διαθέσιμο',
@@ -46,14 +46,3 @@ export function getTextColorForBackground(hexColor: string): 'text-black' | 'tex
         return 'text-white'; // Fallback for safety
     }
 }
-
-
-/**
- * Gets the appropriate text color class for a given status badge.
- * This function now determines if the text should be light or dark based on the
- * provided background color to ensure good contrast.
- * @param backgroundColor The background color of the badge (hex format recommended).
- */
-export const getStatusClass = (backgroundColor: string) => {
-  return getTextColorForBackground(backgroundColor);
-};

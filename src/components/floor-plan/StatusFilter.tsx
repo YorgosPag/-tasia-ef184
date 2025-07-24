@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { STATUS_COLOR_MAP, ALL_STATUSES } from './utils';
-import type { Unit } from './FloorPlanViewer';
+import type { Unit } from './Unit';
 
 interface StatusFilterProps {
   statusVisibility: Record<Unit['status'], boolean>;

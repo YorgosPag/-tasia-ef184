@@ -6,7 +6,7 @@ import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 import { usePolygonDraw } from './usePolygonDraw';
 import { useZoom } from './useZoom';
 import { usePrecisionZoom } from './usePrecisionZoom';
-import { Unit } from '@/components/floor-plan/FloorPlanViewer';
+import { Unit } from '@/components/floor-plan/Unit';
 import { ALL_STATUSES, STATUS_COLOR_MAP } from '@/components/floor-plan/utils';
 
 interface PageDimensions {
@@ -46,8 +46,8 @@ export function useFloorPlanState({ onPolygonDrawn }: useFloorPlanStateProps) {
     const [draggingPoint, setDraggingPoint] = useState<{ unitId: string; pointIndex: number } | null>(null);
     
     const {
-        drawingPolygon: localDrawingPolygon,
-        setDrawingPolygon: setLocalDrawingPolygon,
+        drawingPolygon,
+        setDrawingPolygon,
         handleUndo,
         completeAndResetDrawing,
         cancelDrawing,
@@ -93,7 +93,7 @@ export function useFloorPlanState({ onPolygonDrawn }: useFloorPlanStateProps) {
         setIsEditMode(prev => {
             const isEnteringEditMode = !prev;
             // If exiting edit mode with an unfinished polygon, cancel it.
-            if (!isEnteringEditMode && localDrawingPolygon.length > 0) {
+            if (!isEnteringEditMode && drawingPolygon.length > 0) {
                  cancelDrawing();
             }
             return isEnteringEditMode;
@@ -114,8 +114,8 @@ export function useFloorPlanState({ onPolygonDrawn }: useFloorPlanStateProps) {
         toggleEditMode,
         draggingPoint,
         setDraggingPoint,
-        localDrawingPolygon,
-        setLocalDrawingPolygon,
+        drawingPolygon,
+        setDrawingPolygon,
         handleUndo,
         completeAndResetDrawing,
         isPrecisionZooming,

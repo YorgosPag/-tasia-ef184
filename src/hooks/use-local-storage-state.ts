@@ -49,5 +49,20 @@ export function useLocalStorageState<T>(
     }
   }, [key, state]);
 
+  // Listen for changes from other tabs/windows
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === key && e.newValue !== null) {
+        try {
+          setState(JSON.parse(e.newValue));
+        } catch (error) {
+           console.error(`Error parsing localStorage key "${key}" from storage event:`, error);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [key]);
+
   return [state, setState];
 }
