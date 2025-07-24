@@ -50,14 +50,12 @@ async function clearCollection(collectionName: string) {
 
 
 /**
- * Clears all managed collections from the database by deleting all documents within them.
- * It also clears nested subcollections where applicable.
+ * Clears all TASIA-related collections from the database.
  */
-export async function clearDatabase() {
-    console.log('Starting database cleanup...');
+export async function clearTasiaData() {
+    console.log('Starting TASIA database cleanup...');
     
     // Clear subcollections first to avoid orphaned data issues if needed,
-    // although our current structure with top-level collections is robust.
     const projectsSnapshot = await getDocs(collection(db, 'projects'));
     for (const projectDoc of projectsSnapshot.docs) {
         const buildingsSnapshot = await getDocs(collection(projectDoc.ref, 'buildings'));
@@ -77,11 +75,13 @@ export async function clearDatabase() {
         await clearCollection(`projects/${projectDoc.id}/workStages`);
     }
 
-    // Clear all top-level collections
+    // Clear all top-level collections for TASIA
     const collectionsToClear = ['contacts', 'attachments', 'units', 'floors', 'buildings', 'projects', 'companies', 'auditLogs', 'users', 'workStages', 'workSubstages', 'leads'];
     for (const collectionName of collectionsToClear) {
-        await clearCollection(collectionName);
+        if(!collectionName.startsWith('tsia-')) { // Avoid touching eco collections
+             await clearCollection(collectionName);
+        }
     }
     
-    console.log('Database cleanup finished successfully!');
+    console.log('TASIA database cleanup finished successfully!');
 }
