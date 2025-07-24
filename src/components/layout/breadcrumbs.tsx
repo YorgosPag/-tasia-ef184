@@ -48,7 +48,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                      <Tooltip>
                         <TooltipTrigger asChild>
                            <span
-                            className="font-medium text-foreground truncate"
+                            className="font-semibold text-foreground truncate"
                             aria-current="page"
                             style={{ maxWidth: '150px' }}
                           >
