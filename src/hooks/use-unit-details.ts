@@ -29,7 +29,7 @@ export interface Unit {
   identifier: string;
   name: string;
   type?: string;
-  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος' | 'Προς Ενοικίαση';
   buildingId: string;
   floorIds: string[];
   levelSpan?: string;
@@ -47,7 +47,7 @@ export interface Unit {
   
   price?: number;
   bedrooms?: number;
-  bathrooms?: number;
+  bathrooms?: string;
   orientation?: string;
   kitchenLayout?: string;
   amenities?: string[];
@@ -135,7 +135,7 @@ export function useUnitDetails() {
           balconiesArea: unitData.balconiesArea?.toString() || '',
           price: unitData.price?.toString() || '',
           bedrooms: unitData.bedrooms?.toString() || '',
-          bathrooms: unitData.bathrooms?.toString() || '',
+          bathrooms: unitData.bathrooms || '',
           orientation: unitData.orientation || '',
           kitchenLayout: unitData.kitchenLayout || '',
           description: unitData.description || '',

@@ -3,6 +3,7 @@ import { Unit } from './FloorPlanViewer';
 
 export const ALL_STATUSES: Unit['status'][] = [
   'Διαθέσιμο',
+  'Προς Ενοικίαση',
   'Κρατημένο',
   'Πωλημένο',
   'Οικοπεδούχος',
@@ -12,6 +13,7 @@ export const STATUS_COLOR_MAP: Record<Unit['status'], string> = {
   'Πωλημένο': '#ef4444', // red-500
   'Κρατημένο': '#eab308', // yellow-500
   'Διαθέσιμο': '#22c55e', // green-500
+  'Προς Ενοικίαση': '#8b5cf6', // purple-500
   'Οικοπεδούχος': '#f97316', // orange-500
 };
 

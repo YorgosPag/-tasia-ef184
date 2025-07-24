@@ -38,7 +38,7 @@ interface Unit {
   identifier: string;
   name: string;
   type?: string;
-  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος' | 'Προς Ενοικίαση';
   floorIds: string[];
   levelSpan?: string;
   buildingId: string;
