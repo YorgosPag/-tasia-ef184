@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, ArrowLeft, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { logActivity } from '@/lib/logger';
-import { useDataStore, Company, Project, Building } from '@/hooks/use-data-store';
+import { useDataStore } from '@/hooks/use-data-store';
 import { generateNextUnitIdentifier } from '@/lib/identifier-generator';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Switch } from '@/components/ui/switch';
@@ -30,7 +30,7 @@ const newUnitSchema = z.object({
   floorIds: z.array(z.string()).nonempty({ message: "Πρέπει να επιλέξετε τουλάχιστον έναν όροφο." }),
   identifier: z.string().min(1, { message: "Ο κωδικός είναι υποχρεωτικός. Δημιουργήστε τον αυτόματα." }),
   name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
-  type: z.string().optional(),
+  type: z.string().min(1, { message: "Ο τύπος είναι υποχρεωτικός." }),
   status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος', 'Προς Ενοικίαση']),
   
   // Area fields
@@ -59,6 +59,8 @@ interface Floor {
     buildingId: string;
 }
 
+const MULTI_FLOOR_TYPES = ['Μεζονέτα', 'Κατάστημα'];
+
 export default function NewUnitPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -71,7 +73,7 @@ export default function NewUnitPage() {
   const [floors, setFloors] = useState<{ value: string; label: string }[]>([]);
   const [isLoadingFloors, setIsLoadingFloors] = useState(false);
   
-  const { companies, projects, buildings, isLoading: isLoadingDataStore } = useDataStore();
+  const { companies, projects, buildings } = useDataStore();
 
   const form = useForm<NewUnitFormValues>({
     resolver: zodResolver(newUnitSchema),
@@ -101,6 +103,8 @@ export default function NewUnitPage() {
   const selectedType = useWatch({ control: form.control, name: 'type' });
   const selectedFloorIds = useWatch({ control: form.control, name: 'floorIds'});
 
+  const isMultiFloorAllowed = MULTI_FLOOR_TYPES.includes(selectedType);
+
   const filteredProjects = projects.filter(p => p.companyId === selectedCompany);
   const filteredBuildings = buildings.filter(b => b.projectId === selectedProject);
 
@@ -111,7 +115,7 @@ export default function NewUnitPage() {
             return;
         }
         setIsLoadingFloors(true);
-        const floorsQuery = query(collection(db, 'floors'), where('buildingId', '==', selectedBuilding));
+        const floorsQuery = query(collection(db, 'floors'), where('buildingId', '==', selectedBuilding), orderBy('level'));
         const floorsSnapshot = await getDocs(floorsQuery);
         setFloors(floorsSnapshot.docs.map(doc => ({ value: doc.id, label: doc.data().level } as { value: string; label: string })));
         setIsLoadingFloors(false);
@@ -119,13 +123,20 @@ export default function NewUnitPage() {
     fetchFloors();
   }, [selectedBuilding]);
 
+  // Reset dependent fields on change
   useEffect(() => { setSelectedProject(''); form.setValue('floorIds', []); }, [selectedCompany, form]);
   useEffect(() => { setSelectedBuilding(''); form.setValue('floorIds', []); }, [selectedProject, form]);
   useEffect(() => { form.setValue('floorIds', []); }, [selectedBuilding, form]);
+  
+  // Reset floor selection when type changes to ensure valid state
+  useEffect(() => {
+    form.setValue('floorIds', []);
+  }, [selectedType, form]);
+
 
   const handleGenerateId = async () => {
       if (!selectedFloorIds || selectedFloorIds.length === 0 || !selectedType) {
-          toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Επιλέξτε τουλάχιστον έναν όροφο και τύπο ακινήτου πρώτα.' });
+          toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Επιλέξτε τύπο και τουλάχιστον έναν όροφο πρώτα.' });
           return;
       }
       setIsGeneratingId(true);
@@ -203,33 +214,52 @@ export default function NewUnitPage() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <Collapsible defaultOpen className="space-y-4 rounded-lg border p-4">
-                    <CollapsibleTrigger className="font-semibold text-lg w-full text-left">Ιεραρχική Τοποθεσία</CollapsibleTrigger>
+                    <CollapsibleTrigger className="font-semibold text-lg w-full text-left">Ιεραρχική Τοποθεσία & Τύπος</CollapsibleTrigger>
                     <CollapsibleContent className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in-0">
                         <FormItem><FormLabel>Εταιρεία</FormLabel><Select onValueChange={setSelectedCompany} value={selectedCompany}><SelectTrigger><SelectValue placeholder="Επιλέξτε Εταιρεία..."/></SelectTrigger><SelectContent>{companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></FormItem>
                         <FormItem><FormLabel>Έργο</FormLabel><Select onValueChange={setSelectedProject} value={selectedProject} disabled={!selectedCompany || filteredProjects.length === 0}><SelectTrigger><SelectValue placeholder="Επιλέξτε Έργο..."/></SelectTrigger><SelectContent>{filteredProjects.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}</SelectContent></Select></FormItem>
                         <FormItem><FormLabel>Κτίριο</FormLabel><Select onValueChange={setSelectedBuilding} value={selectedBuilding} disabled={!selectedProject || filteredBuildings.length === 0}><SelectTrigger><SelectValue placeholder="Επιλέξτε Κτίριο..."/></SelectTrigger><SelectContent>{filteredBuildings.map(b => <SelectItem key={b.id} value={b.id}>{b.address}</SelectItem>)}</SelectContent></Select></FormItem>
-                        <FormField control={form.control} name="floorIds" render={({ field }) => (
-                            <FormItem><FormLabel>Όροφος / Όροφοι</FormLabel>
-                            <MultiSelect
-                                options={floors}
-                                selected={field.value}
-                                onChange={field.onChange}
-                                placeholder="Επιλέξτε ορόφους..."
-                                disabled={!selectedBuilding || floors.length === 0}
-                                isLoading={isLoadingFloors}
-                            />
-                            <FormMessage/></FormItem>
-                         )}/>
+                        <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><Select onValueChange={field.onChange} value={field.value} disabled={!selectedBuilding}><FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε τύπο..."/></SelectTrigger></FormControl><SelectContent><SelectItem value="Διαμέρισμα">Διαμέρισμα</SelectItem><SelectItem value="Στούντιο">Στούντιο</SelectItem><SelectItem value="Γκαρσονιέρα">Γκαρσονιέρα</SelectItem><SelectItem value="Μεζονέτα">Μεζονέτα</SelectItem><SelectItem value="Κατάστημα">Κατάστημα</SelectItem><SelectItem value="Other">Άλλο</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                        
+                        {isMultiFloorAllowed ? (
+                             <FormField control={form.control} name="floorIds" render={({ field }) => (
+                                <FormItem><FormLabel>Όροφοι</FormLabel>
+                                <MultiSelect
+                                    options={floors}
+                                    selected={field.value}
+                                    onChange={field.onChange}
+                                    placeholder="Επιλέξτε ορόφους..."
+                                    disabled={!selectedBuilding || !selectedType || floors.length === 0}
+                                    isLoading={isLoadingFloors}
+                                />
+                                <FormMessage/></FormItem>
+                             )}/>
+                        ) : (
+                            <FormField control={form.control} name="floorIds" render={({ field }) => (
+                                <FormItem><FormLabel>Όροφος</FormLabel>
+                                <Select onValueChange={(value) => field.onChange(value ? [value] : [])} value={field.value?.[0] || ''} disabled={!selectedBuilding || !selectedType || floors.length === 0}>
+                                    <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε όροφο..." /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        {isLoadingFloors ? (
+                                             <div className="flex items-center justify-center p-2"><Loader2 className="h-4 w-4 animate-spin" /></div>
+                                        ) : (
+                                            floors.map(floor => <SelectItem key={floor.value} value={floor.value}>{floor.label}</SelectItem>)
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage /></FormItem>
+                             )}/>
+                        )}
+
+                        <FormItem>
+                            <FormLabel>Πλήθος επιλεγμένων ορόφων</FormLabel>
+                            <FormControl>
+                                <Input type="number" readOnly value={selectedFloorIds?.length || 0} className="bg-muted" />
+                            </FormControl>
+                        </FormItem>
                     </CollapsibleContent>
                 </Collapsible>
               <div className="grid md:grid-cols-2 gap-6">
-                <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε τύπο..."/></SelectTrigger></FormControl><SelectContent><SelectItem value="Διαμέρισμα">Διαμέρισμα</SelectItem><SelectItem value="Στούντιο">Στούντιο</SelectItem><SelectItem value="Γκαρσονιέρα">Γκαρσονιέρα</SelectItem><SelectItem value="Μεζονέτα">Μεζονέτα</SelectItem><SelectItem value="Κατάστημα">Κατάστημα</SelectItem><SelectItem value="Other">Άλλο</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-                <FormItem>
-                    <FormLabel>Πλήθος επιλεγμένων ορόφων</FormLabel>
-                    <FormControl>
-                        <Input type="number" readOnly value={selectedFloorIds?.length || 0} />
-                    </FormControl>
-                </FormItem>
                 <FormField control={form.control} name="identifier" render={({ field }) => (
                     <FormItem className="md:col-span-2">
                         <FormLabel>Κωδικός</FormLabel>
