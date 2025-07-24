@@ -38,8 +38,8 @@ export function SimpleListsTab() {
     const lowercasedQuery = searchQuery.toLowerCase();
     return lists.filter(list => 
       list.title.toLowerCase().includes(lowercasedQuery) ||
-      list.description.toLowerCase().includes(lowercasedQuery) ||
-      list.items.some(item => item.value.toLowerCase().includes(lowercasedQuery) || item.code?.toLowerCase().includes(lowercasedQuery))
+      (list.description && list.description.toLowerCase().includes(lowercasedQuery)) ||
+      list.items.some(item => item.value.toLowerCase().includes(lowercasedQuery) || (item.code && item.code.toLowerCase().includes(lowercasedQuery)))
     );
   }, [lists, searchQuery]);
 
@@ -75,14 +75,6 @@ export function SimpleListsTab() {
   const expandAll = () => setOpenAccordionItems(filteredLists.map(l => l.id));
   const collapseAll = () => setOpenAccordionItems([]);
   
-  if (isLoading) {
-      return (
-          <div className="flex justify-center items-center h-40">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-      )
-  }
-
   return (
     <div className="space-y-6">
       <Card>
@@ -115,29 +107,34 @@ export function SimpleListsTab() {
             <Input placeholder="Αναζήτηση σε απλές λίστες..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
          </div>
          <div className="flex items-center justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => handleExport('csv')}><Download className="mr-2"/>Εξαγωγή σε Excel</Button>
-            <Button variant="outline" size="sm" onClick={() => handleExport('json')}><Download className="mr-2"/>Εξαγωγή σε TXT</Button>
-            <Button variant="ghost" size="sm" onClick={expandAll}><ChevronDown className="mr-2"/>Ανάπτυξη Όλων</Button>
-            <Button variant="ghost" size="sm" onClick={collapseAll}><ChevronUp className="mr-2"/>Σύμπτυξη Όλων</Button>
+            <Button variant="outline" size="sm" onClick={() => handleExport('csv')} disabled={isLoading || filteredLists.length === 0}><Download className="mr-2"/>Εξαγωγή σε Excel</Button>
+            <Button variant="outline" size="sm" onClick={() => handleExport('json')} disabled={isLoading || filteredLists.length === 0}><Download className="mr-2"/>Εξαγωγή σε TXT</Button>
+            <Button variant="ghost" size="sm" onClick={expandAll} disabled={isLoading || filteredLists.length === 0}><ChevronDown className="mr-2"/>Ανάπτυξη Όλων</Button>
+            <Button variant="ghost" size="sm" onClick={collapseAll} disabled={isLoading || filteredLists.length === 0}><ChevronUp className="mr-2"/>Σύμπτυξη Όλων</Button>
          </div>
        </div>
 
       <div>
-        <Accordion type="multiple" className="w-full space-y-2" value={openAccordionItems} onValueChange={setOpenAccordionItems}>
-          {filteredLists.map(list => (
-            <EditableList
-              key={list.id}
-              list={list}
-              updateList={updateList}
-              deleteList={deleteList}
-              addItem={addItem}
-              updateItem={updateItem}
-              deleteItem={deleteItem}
-            />
-          ))}
-        </Accordion>
+        {isLoading ? (
+             <div className="flex justify-center items-center h-40">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        ) : (
+            <Accordion type="multiple" className="w-full space-y-2" value={openAccordionItems} onValueChange={setOpenAccordionItems}>
+            {filteredLists.map(list => (
+                <EditableList
+                key={list.id}
+                list={list}
+                updateList={updateList}
+                deleteList={deleteList}
+                addItem={addItem}
+                updateItem={updateItem}
+                deleteItem={deleteItem}
+                />
+            ))}
+            </Accordion>
+        )}
       </div>
     </div>
   );
-
 }
