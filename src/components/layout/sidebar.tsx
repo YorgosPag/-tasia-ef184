@@ -16,7 +16,11 @@ import {
   Warehouse,
   Mail,
   UserCheck,
-  FileCog
+  FileCog,
+  Building,
+  Layers,
+  LayoutTemplate,
+  Paperclip
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -90,9 +94,26 @@ export function AppSidebar() {
       <SidebarContent className="p-0">
         <SidebarGroup>
           <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
-          <div className="px-2">
-             <HierarchySidebar />
-          </div>
+            <SidebarMenu>
+               <NavLink href="/companies" icon={Building2} tooltip="Εταιρείες">
+                  Εταιρείες
+              </NavLink>
+              <NavLink href="/projects" icon={Briefcase} tooltip="Έργα">
+                  Έργα
+              </NavLink>
+              <NavLink href="/buildings" icon={Building} tooltip="Κτίρια">
+                  Κτίρια
+              </NavLink>
+              <NavLink href="/floors" icon={Layers} tooltip="Όροφοι">
+                  Όροφοι
+              </NavLink>
+              <NavLink href="/units" icon={LayoutTemplate} tooltip="Ακίνητα">
+                  Ακίνητα
+              </NavLink>
+              <NavLink href="/attachments" icon={Paperclip} tooltip="Παρακολουθήματα">
+                  Παρακολουθήματα
+              </NavLink>
+            </SidebarMenu>
         </SidebarGroup>
 
         <SidebarSeparator />
