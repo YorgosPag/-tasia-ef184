@@ -85,8 +85,8 @@ export function useBreadcrumbs() {
       const entityId = segments[1];
 
       // Early exit for non-detail pages or unhandled routes
-      if (!mainCollectionName || !entityId) {
-          // Build from static labels if possible for multi-segment static paths like /construction/calendar
+      if (!mainCollectionName || !entityId || entityId === 'new') {
+          // Build from static labels if possible for multi-segment static paths like /construction/calendar or /units/new
           let currentPath = '';
           for (const segment of segments) {
               currentPath += `/${segment}`;
@@ -137,7 +137,10 @@ export function useBreadcrumbs() {
       }
 
       // Fetch missing parent documents to complete the hierarchy
-      // This runs sequentially but could be parallelized if needed.
+      if (floorId && !buildingId) {
+          const floorDoc = await getDocFromFirestore('floors', floorId);
+          buildingId = floorDoc?.buildingId;
+      }
       if (buildingId && !projectId) {
           const buildingDoc = await getDocFromFirestore('buildings', buildingId);
           projectId = buildingDoc?.projectId;
@@ -159,12 +162,24 @@ export function useBreadcrumbs() {
       const [company, project, building, floor, unit] = await Promise.all(docsToFetch);
 
       // Build the breadcrumbs array in the correct hierarchical order
+      // We only add the list-page link if it's the first item.
       if (company) crumbs.push({ href: `/companies`, label: company.name || 'Company', tooltip: "Go to Companies List" });
-      if (project) crumbs.push({ href: `/projects`, label: 'Έργα' });
-      if (project) crumbs.push({ href: `/projects/${project.id}`, label: project.title || 'Project' });
-      if (building) crumbs.push({ href: `/buildings/${building.id}`, label: building.address || 'Building' });
-      if (floor) crumbs.push({ href: `/floors/${floor.id}`, label: `Όροφος ${floor.level || ''}`.trim() });
-      if (unit) crumbs.push({ href: `/units/${unit.id}`, label: unit.name || 'Unit' });
+      if (project) {
+        if (crumbs.length === 0) crumbs.push({ href: '/projects', label: 'Έργα' });
+        crumbs.push({ href: `/projects/${project.id}`, label: project.title || 'Project' });
+      }
+      if (building) {
+        if (crumbs.length === 0) crumbs.push({ href: '/buildings', label: 'Κτίρια' });
+        crumbs.push({ href: `/buildings/${building.id}`, label: building.address || 'Building' });
+      }
+      if (floor) {
+        if (crumbs.length === 0) crumbs.push({ href: '/floors', label: 'Όροφοι' });
+        crumbs.push({ href: `/floors/${floor.id}`, label: `Όροφος ${floor.level || ''}`.trim() });
+      }
+      if (unit) {
+        if (crumbs.length === 0) crumbs.push({ href: '/units', label: 'Ακίνητα' });
+        crumbs.push({ href: `/units/${unit.id}`, label: unit.name || 'Unit' });
+      }
       
       setBreadcrumbs(crumbs);
     };
