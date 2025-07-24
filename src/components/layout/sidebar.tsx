@@ -2,12 +2,11 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import {
   Briefcase,
   Building,
   Building2,
-  Calendar,
+  CalendarDays,
   ClipboardList,
   Construction,
   FileCog,
@@ -19,10 +18,10 @@ import {
   MessageSquare,
   Paperclip,
   Settings,
+  SquareKanban,
   Users,
 } from "lucide-react"
 
-import { cn } from "@/lib/utils"
 import {
   Sidebar,
   SidebarContent,
@@ -37,7 +36,6 @@ import {
 } from "@/components/ui/sidebar"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
-import { HierarchySidebar } from "./HierarchySidebar"
 
 const NavLink = ({
   href,
@@ -59,10 +57,7 @@ const NavLink = ({
         href={href}
         isActive={isActive}
         tooltip={tooltip}
-        className={cn(
-          "h-10 justify-start",
-          isActive && "bg-sidebar-accent text-sidebar-accent-foreground"
-        )}
+        className="h-10 justify-start"
       >
         <div className="flex items-center gap-3">
           {React.createElement(icon, { className: "h-5 w-5" })}
@@ -92,13 +87,13 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
           <SidebarMenu>
-            <NavLink href="/projects?view=construction" icon={Construction} tooltip="Στάδια Εργασιών">
+            <NavLink href="/construction" icon={Construction} tooltip="Στάδια Εργασιών">
               Στάδια Εργασιών
             </NavLink>
-            <NavLink href="/construction/calendar" icon={Calendar} tooltip="Ημερολόγιο">
+            <NavLink href="/calendar" icon={CalendarDays} tooltip="Ημερολόγιο">
               Ημερολόγιο
             </NavLink>
-            <NavLink href="/architect-dashboard" icon={FilePen} tooltip="Architect's Desk">
+            <NavLink href="/architect-desk" icon={FilePen} tooltip="Architect's Desk">
               Architect's Desk
             </NavLink>
             <NavLink href="/assignments" icon={ClipboardList} tooltip="Οι Αναθέσεις μου">
@@ -144,7 +139,7 @@ export function AppSidebar() {
             <NavLink href="/meetings" icon={MessageSquare} tooltip="Meetings">
               Συσκέψεις
             </NavLink>
-            <NavLink href="/templates/work-stages" icon={FileCog} tooltip="Work Stage Templates">
+            <NavLink href="/templates/work-stages" icon={SquareKanban} tooltip="Work Stage Templates">
               Πρότυπα Εργασιών
             </NavLink>
           </SidebarMenu>
