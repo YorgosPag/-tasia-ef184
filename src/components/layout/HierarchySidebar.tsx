@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
@@ -28,6 +28,8 @@ interface HierarchyNode {
 // --- Data Fetching ---
 const fetchChildren = async (parentId: string, parentType: HierarchyNode['type']): Promise<any[]> => {
     let q;
+    // Using simpler queries that are more likely to be covered by default indexes
+    // or are easier to create single-field indexes for.
     switch(parentType) {
         case 'company':
             q = query(collection(db, 'projects'), where('companyId', '==', parentId), orderBy('title'));
