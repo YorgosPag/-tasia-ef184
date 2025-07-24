@@ -16,6 +16,7 @@ import {
     SidebarMenuSub,
     SidebarMenuSubItem,
     SidebarMenuSubButton,
+    SidebarContent,
 } from "@/components/ui/sidebar";
 import {
   LayoutGrid,
