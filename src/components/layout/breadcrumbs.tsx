@@ -49,11 +49,9 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                       {item.label}
                     </Link>
                   </TooltipTrigger>
-                  {item.tooltip && (
-                    <TooltipContent>
-                      <p>{item.tooltip}</p>
-                    </TooltipContent>
-                  )}
+                  <TooltipContent>
+                    <p>{item.tooltip || `Μετάβαση σε ${item.label}`}</p>
+                  </TooltipContent>
                 </Tooltip>
               </li>
               {index < items.length - 1 && (
