@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Company, Project, Building } from './use-data-store';
 import type { UseFormReturn } from 'react-hook-form';
@@ -52,7 +52,10 @@ export function useUnitLocationState(
             fetchedFloors.sort((a, b) => {
                 const levelA = parseInt(a.label, 10);
                 const levelB = parseInt(b.label, 10);
-                return isNaN(levelA) || isNaN(levelB) ? a.label.localeCompare(b.label, undefined, { numeric: true }) : levelA - levelB;
+                if (!isNaN(levelA) && !isNaN(levelB)) {
+                    return levelA - levelB;
+                }
+                return a.label.localeCompare(b.label, undefined, { numeric: true });
             });
 
             setFloors(fetchedFloors);
@@ -68,6 +71,7 @@ export function useUnitLocationState(
             setSelectedBuilding('');
             setValue('floorIds', []);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCompany, setValue]);
 
     useEffect(() => {
@@ -75,19 +79,29 @@ export function useUnitLocationState(
             setSelectedBuilding('');
             setValue('floorIds', []);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedProject, setValue]);
+    
+    useEffect(() => {
+        if (selectedBuilding) {
+            setValue('floorIds', []);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedBuilding, setValue]);
+
 
     useEffect(() => {
         setValue('floorIds', []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedType, setValue]);
     
     // Effect to automatically update the 'levelSpan' field
     useEffect(() => {
-        setValue('levelSpan', selectedFloorIds?.length || 1);
+        setValue('levelSpan', selectedFloorIds?.length || 0);
     }, [selectedFloorIds, setValue]);
 
     return {
-        companies, // Pass companies through
+        companies, 
         selectedCompany,
         setSelectedCompany,
         selectedProject,

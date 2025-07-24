@@ -38,7 +38,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { Company } from '@/hooks/use-data-store';
-import type { ProjectWithPhaseSummary } from '@/hooks/use-projects-page';
+import type { ProjectWithWorkStageSummary } from '@/hooks/use-projects-page';
 
 export const projectSchema = z.object({
   id: z.string().optional(),
@@ -63,7 +63,7 @@ interface ProjectDialogFormProps {
   onSubmit: (e: React.FormEvent) => void;
   isSubmitting: boolean;
   isLoading: boolean;
-  editingProject: ProjectWithPhaseSummary | null;
+  editingProject: ProjectWithWorkStageSummary | null;
   companies: Company[];
 }
 
@@ -259,3 +259,15 @@ export function ProjectDialogForm({
     </Dialog>
   );
 }
+
+export const companySchema = z.object({
+  name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
+  logoUrl: z.string().url({ message: "Το URL του λογότυπου δεν είναι έγκυρο." }).or(z.literal('')),
+  website: z.string().url({ message: "Το URL του website δεν είναι έγκυρο." }).or(z.literal('')),
+  contactInfo: z.object({
+      email: z.string().email({ message: "Το email δεν είναι έγκυρο." }).or(z.literal('')),
+      phone: z.string().optional(),
+      address: z.string().optional(),
+      afm: z.string().optional(),
+  })
+});

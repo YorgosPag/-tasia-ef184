@@ -6,40 +6,58 @@ import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
-export function UnitLocationSelector({ form, locationState, isMultiFloorAllowed }: { form: UseFormReturn<any>, locationState: any, isMultiFloorAllowed: boolean }) {
+export function UnitLocationSelector({ 
+    form, 
+    locationState, 
+    isMultiFloorAllowed,
+    onQuickCreate,
+}: { 
+    form: UseFormReturn<any>, 
+    locationState: any, 
+    isMultiFloorAllowed: boolean,
+    onQuickCreate: (entity: 'company' | 'project' | 'building' | 'floor') => void,
+}) {
     const {
-        companies, // Now directly from locationState
+        companies, 
         selectedCompany, setSelectedCompany, filteredProjects,
         selectedProject, setSelectedProject, filteredBuildings,
         selectedBuilding, setSelectedBuilding, floors, isLoadingFloors
     } = locationState;
 
+    const renderSelectWithAddButton = (
+        label: string, 
+        value: string, 
+        onChange: (val: string) => void, 
+        options: { id: string, name: string }[], 
+        placeholder: string, 
+        disabled: boolean, 
+        entityType: 'company' | 'project' | 'building' | 'floor'
+    ) => (
+         <FormItem>
+            <FormLabel>{label}</FormLabel>
+            <div className="flex items-center gap-2">
+                <Select onValueChange={onChange} value={value} disabled={disabled}>
+                    <SelectTrigger><SelectValue placeholder={placeholder}/></SelectTrigger>
+                    <SelectContent>{options.map((opt: any) => <SelectItem key={opt.id} value={opt.id}>{opt.name || opt.title || opt.address || opt.level}</SelectItem>)}</SelectContent>
+                </Select>
+                <Button type="button" variant="outline" size="icon" onClick={() => onQuickCreate(entityType)} disabled={entityType !== 'company' && disabled}>
+                    <PlusCircle className="h-4 w-4"/>
+                </Button>
+            </div>
+        </FormItem>
+    );
+
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-            <FormItem>
-                <FormLabel>Εταιρεία</FormLabel>
-                <Select onValueChange={setSelectedCompany} value={selectedCompany}>
-                    <SelectTrigger><SelectValue placeholder="Επιλέξτε Εταιρεία..."/></SelectTrigger>
-                    <SelectContent>{(companies || []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                </Select>
-            </FormItem>
-            <FormItem>
-                <FormLabel>Έργο</FormLabel>
-                <Select onValueChange={setSelectedProject} value={selectedProject} disabled={!selectedCompany || filteredProjects.length === 0}>
-                    <SelectTrigger><SelectValue placeholder="Επιλέξτε Έργο..."/></SelectTrigger>
-                    <SelectContent>{filteredProjects.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}</SelectContent>
-                </Select>
-            </FormItem>
-            <FormItem>
-                <FormLabel>Κτίριο</FormLabel>
-                <Select onValueChange={setSelectedBuilding} value={selectedBuilding} disabled={!selectedProject || filteredBuildings.length === 0}>
-                    <SelectTrigger><SelectValue placeholder="Επιλέξτε Κτίριο..."/></SelectTrigger>
-                    <SelectContent>{filteredBuildings.map((b: any) => <SelectItem key={b.id} value={b.id}>{b.address}</SelectItem>)}</SelectContent>
-                </Select>
-            </FormItem>
+            {renderSelectWithAddButton('Εταιρεία', selectedCompany, setSelectedCompany, companies, 'Επιλέξτε Εταιρεία...', false, 'company')}
+            {renderSelectWithAddButton('Έργο', selectedProject, setSelectedProject, filteredProjects, 'Επιλέξτε Έργο...', !selectedCompany, 'project')}
+            {renderSelectWithAddButton('Κτίριο', selectedBuilding, setSelectedBuilding, filteredBuildings, 'Επιλέξτε Κτίριο...', !selectedProject, 'building')}
+            
             <FormField control={form.control} name="type" render={({ field }) => (
                 <FormItem><FormLabel>Τύπος</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedBuilding}>
@@ -63,6 +81,7 @@ export function UnitLocationSelector({ form, locationState, isMultiFloorAllowed 
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Όροφος/οι</FormLabel>
+                        <div className="flex items-center gap-2">
                         {isMultiFloorAllowed ? (
                             <MultiSelect
                                 options={floors}
@@ -71,10 +90,11 @@ export function UnitLocationSelector({ form, locationState, isMultiFloorAllowed 
                                 placeholder="Επιλέξτε ορόφους..."
                                 disabled={!form.getValues('type') || floors.length === 0}
                                 isLoading={isLoadingFloors}
+                                className="flex-1"
                             />
                         ) : (
                             <Select onValueChange={(value) => field.onChange(value ? [value] : [])} value={field.value?.[0] || ''} disabled={!form.getValues('type') || floors.length === 0}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε όροφο..." /></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger className="flex-1"><SelectValue placeholder="Επιλέξτε όροφο..." /></SelectTrigger></FormControl>
                                 <SelectContent>
                                     {isLoadingFloors ? (
                                         <div className="flex items-center justify-center p-2"><Loader2 className="h-4 w-4 animate-spin" /></div>
@@ -84,6 +104,10 @@ export function UnitLocationSelector({ form, locationState, isMultiFloorAllowed 
                                 </SelectContent>
                             </Select>
                         )}
+                        <Button type="button" variant="outline" size="icon" onClick={() => onQuickCreate('floor')} disabled={!selectedBuilding}>
+                            <PlusCircle className="h-4 w-4"/>
+                        </Button>
+                        </div>
                         <FormMessage />
                     </FormItem>
                 )}
@@ -103,3 +127,4 @@ export function UnitLocationSelector({ form, locationState, isMultiFloorAllowed 
         </div>
     );
 }
+

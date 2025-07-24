@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
-import { doc, getDoc, collection, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, collection, setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { logActivity } from '@/lib/logger';
 import { generateNextUnitIdentifier } from '@/lib/identifier-generator';
@@ -30,14 +30,24 @@ import { UnitLocationSelector } from '@/components/units/new/UnitLocationSelecto
 import { AmenitiesChecklist } from '@/components/units/new/AmenitiesChecklist';
 import { AreaInputs } from '@/components/units/new/AreaInputs';
 import { useUnitLocationState } from '@/hooks/useUnitLocationState';
+import { BuildingFormDialog, buildingSchema } from '@/components/projects/BuildingFormDialog';
+import { ProjectDialogForm, projectSchema } from '@/components/projects/ProjectDialogForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+
+const floorFormSchema = z.object({
+  level: z.string().min(1, { message: 'Το επίπεδο είναι υποχρεωτικό.' }),
+  description: z.string().optional(),
+});
+type FloorFormValues = z.infer<typeof floorFormSchema>;
 
 export default function NewUnitPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { companies, projects, buildings } = useDataStore();
+  const { companies, projects, buildings, addCompany, addProject } = useDataStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingId, setIsGeneratingId] = useState(false);
+  const [quickCreateState, setQuickCreateState] = useState<{ entity: 'company' | 'project' | 'building' | 'floor' | null, open: boolean }>({ entity: null, open: false });
 
   const form = useForm<NewUnitFormValues>({
     resolver: zodResolver(newUnitSchema),
@@ -45,7 +55,7 @@ export default function NewUnitPage() {
       floorIds: [], identifier: '', name: '', type: '', status: 'Διαθέσιμο',
       netArea: '', grossArea: '', commonArea: '', semiOutdoorArea: '', architecturalProjectionsArea: '', balconiesArea: '',
       price: '', bedrooms: '1', bathrooms: '', orientation: '', kitchenLayout: '',
-      description: '', isPenthouse: false, amenities: [], levelSpan: 1,
+      description: '', isPenthouse: false, amenities: [], levelSpan: 0,
     },
   });
 
@@ -53,6 +63,72 @@ export default function NewUnitPage() {
   const isMultiFloorAllowed = MULTI_FLOOR_TYPES.includes(selectedType);
 
   const locationState = useUnitLocationState({ companies, projects, buildings }, form, isMultiFloorAllowed);
+
+  // --- Quick Create Logic ---
+  
+  // Create dedicated forms for each quick-create dialog
+  const quickCompanyForm = useForm({ resolver: zodResolver(companySchema), defaultValues: { name: '', logoUrl: '', website: '', contactInfo: { email: '', phone: '', address: '', afm: '' } } });
+  const quickProjectForm = useForm({ resolver: zodResolver(projectSchema) });
+  const quickBuildingForm = useForm({ resolver: zodResolver(buildingSchema) });
+  const quickFloorForm = useForm({ resolver: zodResolver(floorFormSchema) });
+
+  const handleQuickCreate = (entity: 'company' | 'project' | 'building' | 'floor') => {
+      setQuickCreateState({ entity, open: true });
+  }
+
+  const handleQuickCreateSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+        let newId;
+        switch (quickCreateState.entity) {
+            case 'company':
+                const companyData = quickCompanyForm.getValues();
+                newId = await addCompany(companyData);
+                if (newId) locationState.setSelectedCompany(newId);
+                break;
+            case 'project':
+                const projectData = quickProjectForm.getValues();
+                projectData.companyId = locationState.selectedCompany;
+                newId = await addProject(projectData);
+                if (newId) locationState.setSelectedProject(newId);
+                break;
+            case 'building':
+                const buildingData = quickBuildingForm.getValues();
+                const batch = writeBatch(db);
+                const topLevelBuildingRef = doc(collection(db, 'buildings'));
+                const subCollectionBuildingRef = doc(collection(db, 'projects', locationState.selectedProject, 'buildings'));
+                batch.set(topLevelBuildingRef, { ...buildingData, projectId: locationState.selectedProject, originalId: subCollectionBuildingRef.id, createdAt: serverTimestamp() });
+                batch.set(subCollectionBuildingRef, { ...buildingData, topLevelId: topLevelBuildingRef.id, createdAt: serverTimestamp() });
+                await batch.commit();
+                newId = topLevelBuildingRef.id;
+                if(newId) locationState.setSelectedBuilding(newId);
+                break;
+             case 'floor':
+                const floorData = quickFloorForm.getValues();
+                const buildingDoc = await getDoc(doc(db, 'buildings', locationState.selectedBuilding));
+                const building = buildingDoc.data();
+                if (!building || !building.projectId || !building.originalId) throw new Error("Building data is incomplete.");
+                const floorBatch = writeBatch(db);
+                const topLevelFloorRef = doc(collection(db, 'floors'));
+                const subCollectionFloorRef = doc(collection(db, 'projects', building.projectId, 'buildings', building.originalId, 'floors'));
+                floorBatch.set(topLevelFloorRef, { ...floorData, buildingId: locationState.selectedBuilding, originalId: subCollectionFloorRef.id, createdAt: serverTimestamp() });
+                floorBatch.set(subCollectionFloorRef, { ...floorData, topLevelId: topLevelFloorRef.id, createdAt: serverTimestamp() });
+                await floorBatch.commit();
+                newId = topLevelFloorRef.id;
+                // We don't auto-select the floor here as it's a multi-select
+                break;
+        }
+        toast({ title: 'Επιτυχία', description: 'Η οντότητα δημιουργήθηκε.' });
+        setQuickCreateState({ entity: null, open: false });
+    } catch (e: any) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η δημιουργία απέτυχε: ${e.message}` });
+    } finally {
+        setIsSubmitting(false);
+    }
+  }
+
+
+  // --- Main Form Logic ---
 
   const handleGenerateId = async () => {
     if (!locationState.selectedFloorIds || locationState.selectedFloorIds.length === 0 || !selectedType) {
@@ -135,7 +211,7 @@ export default function NewUnitPage() {
                 <Collapsible defaultOpen className="space-y-4 rounded-lg border p-4">
                     <CollapsibleTrigger className="font-semibold text-lg w-full text-left">Ιεραρχική Τοποθεσία & Τύπος</CollapsibleTrigger>
                     <CollapsibleContent className="animate-in fade-in-0">
-                       <UnitLocationSelector form={form} locationState={locationState} isMultiFloorAllowed={isMultiFloorAllowed} />
+                       <UnitLocationSelector form={form} locationState={locationState} isMultiFloorAllowed={isMultiFloorAllowed} onQuickCreate={handleQuickCreate} />
                     </CollapsibleContent>
                 </Collapsible>
                 
@@ -188,6 +264,49 @@ export default function NewUnitPage() {
           </Card>
         </form>
       </Form>
+      
+        {/* Quick Create Dialogs */}
+        <ProjectDialogForm
+            open={quickCreateState.entity === 'project' && quickCreateState.open}
+            onOpenChange={() => setQuickCreateState({ entity: null, open: false })}
+            form={quickProjectForm}
+            onSubmit={(e) => { e.preventDefault(); handleQuickCreateSubmit(); }}
+            isSubmitting={isSubmitting}
+            isLoading={false}
+            editingProject={null}
+            companies={companies}
+        />
+        <BuildingFormDialog
+            open={quickCreateState.entity === 'building' && quickCreateState.open}
+            onOpenChange={() => setQuickCreateState({ entity: null, open: false })}
+            form={quickBuildingForm}
+            onSubmit={(e) => { e.preventDefault(); handleQuickCreateSubmit(); }}
+            isSubmitting={isSubmitting}
+            editingBuilding={null}
+        />
+        {/* Simple Floor Dialog */}
+         <Dialog open={quickCreateState.entity === 'floor' && quickCreateState.open} onOpenChange={() => setQuickCreateState({ entity: null, open: false })}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Δημιουργία Νέου Ορόφου</DialogTitle>
+                </DialogHeader>
+                <Form {...quickFloorForm}>
+                    <form onSubmit={(e) => { e.preventDefault(); handleQuickCreateSubmit(); }} className="space-y-4">
+                        <FormField control={quickFloorForm.control} name="level" render={({ field }) => (
+                            <FormItem><FormLabel>Επίπεδο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={quickFloorForm.control} name="description" render={({ field }) => (
+                            <FormItem><FormLabel>Περιγραφή</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <DialogFooter>
+                            <DialogClose asChild><Button type="button" variant="outline">Ακύρωση</Button></DialogClose>
+                            <Button type="submit">Δημιουργία</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 }
+
