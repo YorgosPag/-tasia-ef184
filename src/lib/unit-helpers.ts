@@ -17,17 +17,33 @@ export const AMENITIES_LIST = [
     { id: 'playroom', label: 'Playroom' },
 ];
 
+export const ORIENTATIONS = [
+    'Ανατολικός', 'Δυτικός', 'Βόρειος', 'Νότιος',
+    'Βορειοανατολικός', 'Βορειοδυτικός', 'Νοτιοανατολικός', 'Νοτιοδυτικός',
+    'Διαμπερές'
+];
+
+export const KITCHEN_LAYOUTS = [
+    'Σαλοκουζίνα (Ενιαίος χώρος)', 'Ξεχωριστή Κουζίνα', 'Χωρίς Κουζίνα/Σαλόνι'
+];
+
 export function getUnitDataFromForm(data: UnitFormValues) {
     const unitData: { [key: string]: any } = {
         identifier: data.identifier,
         name: data.name,
         type: data.type || '',
         status: data.status,
-        area: data.area ? parseFloat(data.area) : undefined,
+        netArea: data.netArea ? parseFloat(data.netArea) : undefined,
+        grossArea: data.grossArea ? parseFloat(data.grossArea) : undefined,
+        commonArea: data.commonArea ? parseFloat(data.commonArea) : undefined,
+        semiOutdoorArea: data.semiOutdoorArea ? parseFloat(data.semiOutdoorArea) : undefined,
+        architecturalProjectionsArea: data.architecturalProjectionsArea ? parseFloat(data.architecturalProjectionsArea) : undefined,
+        balconiesArea: data.balconiesArea ? parseFloat(data.balconiesArea) : undefined,
         price: data.price ? parseFloat(data.price) : undefined,
         bedrooms: data.bedrooms ? parseInt(data.bedrooms, 10) : undefined,
         bathrooms: data.bathrooms ? parseInt(data.bathrooms, 10) : undefined,
         orientation: data.orientation || '',
+        kitchenLayout: data.kitchenLayout || '',
         description: data.description || '',
         isPenthouse: data.isPenthouse,
         amenities: data.amenities || [],

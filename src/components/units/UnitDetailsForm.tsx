@@ -13,18 +13,27 @@ import { Unit } from '@/hooks/use-unit-details';
 import { Switch } from '../ui/switch';
 import { Checkbox } from '../ui/checkbox';
 import { Separator } from '../ui/separator';
-import { AMENITIES_LIST } from '@/lib/unit-helpers';
+import { AMENITIES_LIST, KITCHEN_LAYOUTS, ORIENTATIONS } from '@/lib/unit-helpers';
 
 export const unitSchema = z.object({
   identifier: z.string().min(1, "Identifier is required"),
   name: z.string().min(1, "Name is required"),
   type: z.string().optional(),
   status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
-  area: z.string().optional(),
+  
+  // Area fields
+  netArea: z.string().optional(),
+  grossArea: z.string().optional(),
+  commonArea: z.string().optional(),
+  semiOutdoorArea: z.string().optional(),
+  architecturalProjectionsArea: z.string().optional(),
+  balconiesArea: z.string().optional(),
+  
   price: z.string().optional(),
   bedrooms: z.string().optional(),
   bathrooms: z.string().optional(),
   orientation: z.string().optional(),
+  kitchenLayout: z.string().optional(),
   description: z.string().optional(),
   isPenthouse: z.boolean().default(false),
   amenities: z.array(z.string()).optional(),
@@ -74,28 +83,42 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
           />
         </div>
       </CardHeader>
-      <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
-        <FormField control={form.control} name="identifier" render={({ field }) => (<FormItem><FormLabel>Κωδικός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Όνομα/Αναγνωριστικό</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <FormField control={form.control} name="orientation" render={({ field }) => (<FormItem><FormLabel>Προσανατολισμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <FormField control={form.control} name="area" render={({ field }) => (<FormItem><FormLabel>Εμβαδόν (τ.μ.)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>Τιμή (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Υπνοδωμάτια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Μπάνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-        
-        <FormField control={form.control} name="isPenthouse" render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-              <div className="space-y-0.5"><FormLabel>Ρετιρέ</FormLabel></div>
-              <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-            </FormItem>
-          )} />
-        
-        <div className="md:col-span-2">
-           <FormField
-              control={form.control}
-              name="levelSpan"
-              render={({ field }) => (
+      <CardContent className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-6">
+            <FormField control={form.control} name="identifier" render={({ field }) => (<FormItem><FormLabel>Κωδικός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Όνομα/Αναγνωριστικό</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+            
+            <FormField control={form.control} name="orientation" render={({ field }) => (
+              <FormItem><FormLabel>Προσανατολισμός</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ''}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε προσανατολισμό..."/></SelectTrigger></FormControl>
+                    <SelectContent>{ORIENTATIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+
+            <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>Τιμή (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Υπνοδωμάτια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Μπάνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+             <FormField control={form.control} name="kitchenLayout" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Σαλόνι, Κουζίνα</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ''}>
+                        <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε διαρρύθμιση..."/></SelectTrigger></FormControl>
+                        <SelectContent>{KITCHEN_LAYOUTS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+            )}/>
+            <FormField control={form.control} name="isPenthouse" render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <div className="space-y-0.5"><FormLabel>Ρετιρέ</FormLabel></div>
+                  <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                </FormItem>
+              )} />
+            <FormField control={form.control} name="levelSpan" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Αριθμός Ορόφων που καταλαμβάνει</FormLabel>
                   <FormControl>
@@ -112,11 +135,23 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
             />
         </div>
 
-        <div className="md:col-span-2">
-          <Separator />
-           <div className="mt-4">
-              <FormLabel className="text-base font-semibold">Παροχές</FormLabel>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+        <Separator />
+        <div>
+            <h3 className="text-base font-semibold mb-4">Ανάλυση Εμβαδού (τ.μ.)</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <FormField control={form.control} name="netArea" render={({ field }) => (<FormItem><FormLabel>Καθαρά</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="grossArea" render={({ field }) => (<FormItem><FormLabel>Μικτά</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="commonArea" render={({ field }) => (<FormItem><FormLabel>Κοινόχρηστα</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="semiOutdoorArea" render={({ field }) => (<FormItem><FormLabel>Ημιυπαίθριοι</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="architecturalProjectionsArea" render={({ field }) => (<FormItem><FormLabel>Αρχ. Προεξοχές</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="balconiesArea" render={({ field }) => (<FormItem><FormLabel>Μπαλκόνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            </div>
+        </div>
+
+        <Separator />
+        <div>
+            <h3 className="text-base font-semibold mb-4">Παροχές</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {AMENITIES_LIST.map((item) => (
                   <FormField
                     key={item.id}
@@ -144,13 +179,10 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
                   />
                 ))}
               </div>
-            </div>
         </div>
 
-        <div className="md:col-span-2">
-          <Separator />
-          <FormField control={form.control} name="description" render={({ field }) => (<FormItem className="mt-4"><FormLabel className="text-base font-semibold">Περιγραφή</FormLabel><FormControl><Textarea {...field} rows={5} /></FormControl><FormMessage /></FormItem>)} />
-        </div>
+        <Separator />
+        <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel className="text-base font-semibold">Περιγραφή</FormLabel><FormControl><Textarea {...field} rows={5} /></FormControl><FormMessage /></FormItem>)} />
       </CardContent>
     </>
   );
