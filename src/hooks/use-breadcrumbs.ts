@@ -59,6 +59,7 @@ const COLLECTION_NAMES: Record<string, string> = {
   buildings: 'buildings',
   floors: 'floors',
   units: 'units',
+  attachments: 'attachments',
 };
 
 export function useBreadcrumbs() {
@@ -73,7 +74,6 @@ export function useBreadcrumbs() {
         return;
       }
 
-      // Handle static pages or list pages first
       const mainCollectionSegment = segments[0];
       const isDetailsPage = segments.length > 1 && segments[1] !== 'new';
 
@@ -90,7 +90,6 @@ export function useBreadcrumbs() {
         return;
       }
       
-      // --- Logic for detail pages ---
       const mainCollectionName = COLLECTION_NAMES[mainCollectionSegment];
       const entityId = segments[1];
       
@@ -101,21 +100,22 @@ export function useBreadcrumbs() {
 
       const currentEntity = await getDocFromFirestore(mainCollectionName, entityId);
       if (!currentEntity) {
-        // Fallback for pages that might not have a direct DB entry but are part of a route
-        const listPageCrumb = STATIC_LABELS[mainCollectionSegment] ? [{ href: `/${mainCollectionSegment}`, label: STATIC_LABELS[mainCollectionSegment] }] : [];
-        setBreadcrumbs([...listPageCrumb, {href: pathname, label: entityId}]);
+        setBreadcrumbs([]);
         return;
       }
 
-      // Start the bottom-up traversal to find all parent documents
       let companyId: string | undefined;
       let projectId: string | undefined;
       let buildingId: string | undefined;
       let floorId: string | undefined;
       let unitId: string | undefined;
+      let attachmentId: string | undefined;
 
-      // Initialize IDs based on the current entity type
       switch(mainCollectionName) {
+        case 'attachments':
+            attachmentId = currentEntity.id;
+            unitId = currentEntity.unitId;
+            break;
         case 'units':
           unitId = currentEntity.id;
           floorId = currentEntity.floorIds?.[0];
@@ -125,6 +125,7 @@ export function useBreadcrumbs() {
         case 'floors':
           floorId = currentEntity.id;
           buildingId = currentEntity.buildingId;
+          projectId = currentEntity.projectId;
           break;
         case 'buildings':
           buildingId = currentEntity.id;
@@ -135,10 +136,17 @@ export function useBreadcrumbs() {
           companyId = currentEntity.companyId;
           break;
       }
+      
+      const unitDoc = unitId ? await getDocFromFirestore('units', unitId) : null;
+      if (unitDoc) {
+          if (!floorId) floorId = unitDoc.floorIds?.[0];
+          if (!buildingId) buildingId = unitDoc.buildingId;
+          if (!projectId) projectId = unitDoc.projectId;
+      }
 
-      // Fetch missing parent documents to complete the hierarchy
       const floorDoc = floorId ? await getDocFromFirestore('floors', floorId) : null;
       if (floorDoc && !buildingId) buildingId = floorDoc.buildingId;
+      if (floorDoc && !projectId) projectId = floorDoc.projectId;
       
       const buildingDoc = buildingId ? await getDocFromFirestore('buildings', buildingId) : null;
       if (buildingDoc && !projectId) projectId = buildingDoc.projectId;
@@ -149,17 +157,17 @@ export function useBreadcrumbs() {
       const companyDoc = companyId ? await getDocFromFirestore('companies', companyId) : null;
       
       const crumbs: BreadcrumbItem[] = [];
-
-      // Build the breadcrumbs array in the correct hierarchical order (top-down)
-      if (companyDoc) crumbs.push({ href: `/companies/${companyDoc.id}`, label: companyDoc.name || 'Company', tooltip: `Μετάβαση σε ${companyDoc.name}` });
+      
+      if (companyDoc) crumbs.push({ href: `/companies`, label: companyDoc.name || 'Company', tooltip: `Μετάβαση σε ${companyDoc.name}` });
       if (projectDoc) crumbs.push({ href: `/projects/${projectDoc.id}`, label: projectDoc.title || 'Project', tooltip: `Μετάβαση σε ${projectDoc.title}` });
       if (buildingDoc) crumbs.push({ href: `/buildings/${buildingDoc.id}`, label: buildingDoc.address || 'Building', tooltip: `Μετάβαση σε ${buildingDoc.address}` });
       if (floorDoc) crumbs.push({ href: `/floors/${floorDoc.id}`, label: `Όροφος ${floorDoc.level || ''}`.trim(), tooltip: `Μετάβαση στον Όροφο ${floorDoc.level}` });
-      if (unitId) {
-        const unitDoc = unitId === currentEntity.id ? currentEntity : await getDocFromFirestore('units', unitId);
-        if (unitDoc) crumbs.push({ href: `/units/${unitDoc.id}`, label: unitDoc.name || 'Unit', tooltip: `Μετάβαση στο ${unitDoc.name}` });
+      if (unitDoc) crumbs.push({ href: `/units/${unitDoc.id}`, label: unitDoc.name || 'Unit', tooltip: `Μετάβαση στο ${unitDoc.name}` });
+      if (attachmentId) {
+          const attachmentDoc = attachmentId === currentEntity.id ? currentEntity : await getDocFromFirestore('attachments', attachmentId);
+          if (attachmentDoc) crumbs.push({ href: `/attachments/${attachmentDoc.id}`, label: attachmentDoc.details || 'Attachment', tooltip: `Μετάβαση στο ${attachmentDoc.details}` });
       }
-      
+
       setBreadcrumbs(crumbs);
     };
 
