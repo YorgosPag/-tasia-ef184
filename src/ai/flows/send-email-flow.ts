@@ -5,22 +5,13 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
 import sgMail from '@sendgrid/mail';
-
-export const SendEmailInputSchema = z.object({
-  to: z.string().email().describe('The recipient email address.'),
-  subject: z.string().describe('The subject of the email.'),
-  text: z.string().describe('The plain text content of the email.'),
-  html: z.string().describe('The HTML content of the email.'),
-});
-export type SendEmailInput = z.infer<typeof SendEmailInputSchema>;
-
-export const SendEmailOutputSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-});
-export type SendEmailOutput = z.infer<typeof SendEmailOutputSchema>;
+import {
+  SendEmailInputSchema,
+  SendEmailOutputSchema,
+  type SendEmailInput,
+  type SendEmailOutput,
+} from '@/ai/schemas/email';
 
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailOutput> {
@@ -38,8 +29,8 @@ const sendEmailFlow = ai.defineFlow(
     const fromEmail = process***REMOVED***.NEXT_PUBLIC_SENDGRID_FROM_EMAIL;
     const replyToEmail = process***REMOVED***.NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL;
 
-    if (!apiKey || !fromEmail || !replyToEmail) {
-      console.error('SendGrid environment variables not configured. Please set SENDGRID_API_KEY, NEXT_PUBLIC_SENDGRID_FROM_EMAIL, and NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL.');
+    if (!apiKey || !fromEmail) {
+      console.error('SendGrid environment variables not configured. Please set SENDGRID_API_KEY and NEXT_PUBLIC_SENDGRID_FROM_EMAIL.');
       return { success: false, message: 'Email service is not configured.' };
     }
 
@@ -49,7 +40,7 @@ const sendEmailFlow = ai.defineFlow(
       await sgMail.send({
         ...input,
         from: fromEmail,
-        replyTo: replyToEmail,
+        replyTo: replyToEmail || fromEmail,
       });
       return { success: true, message: 'Email sent successfully.' };
     } catch (error: any) {
