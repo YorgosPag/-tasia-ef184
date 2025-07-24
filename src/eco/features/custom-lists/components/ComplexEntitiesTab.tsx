@@ -36,14 +36,6 @@ export function ComplexEntitiesTab() {
     }
   };
   
-  if (isLoading) {
-    return (
-        <div className="flex justify-center items-center h-40">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
       <Card>
@@ -63,12 +55,17 @@ export function ComplexEntitiesTab() {
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleExport('csv')}><Download className="mr-2"/>Εξαγωγή σε Excel</Button>
-                    <Button variant="outline" size="sm" onClick={() => handleExport('json')}><Download className="mr-2"/>Εξαγωγή σε TXT</Button>
+                    <Button variant="outline" size="sm" onClick={() => handleExport('csv')} disabled={isLoading || filteredEntities.length === 0}><Download className="mr-2"/>Εξαγωγή σε Excel</Button>
+                    <Button variant="outline" size="sm" onClick={() => handleExport('json')} disabled={isLoading || filteredEntities.length === 0}><Download className="mr-2"/>Εξαγωγή σε TXT</Button>
                 </div>
             </div>
 
             <div className="border rounded-md">
+                 {isLoading ? (
+                    <div className="flex justify-center items-center h-40">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                ) : (
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -94,6 +91,7 @@ export function ComplexEntitiesTab() {
                         ))}
                     </TableBody>
                 </Table>
+                )}
             </div>
         </CardContent>
       </Card>
