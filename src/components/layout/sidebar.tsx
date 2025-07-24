@@ -35,6 +35,7 @@ import {
 import { Logo } from '@/components/logo';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { HierarchySidebar } from './HierarchySidebar'; // Import the new component
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -43,7 +44,6 @@ export function AppSidebar() {
   const { isEditor, isAdmin } = useAuth();
 
   const isConstructionView = pathname.startsWith('/projects') && view === 'construction';
-  const isIndexView = pathname.startsWith('/projects') && (view === 'index' || view === null);
 
   return (
     <Sidebar>
@@ -63,25 +63,12 @@ export function AppSidebar() {
                 Αρχική
               </SidebarMenuButton>
             </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton href="/units" isActive={pathname.startsWith('/units')}>
-                    <LayoutTemplate />
-                    Ακίνητα
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton href="/companies" isActive={pathname.startsWith('/companies')}>
-                    <Building2 />
-                    Εταιρείες
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton href="/leads" isActive={pathname.startsWith('/leads')}>
-                    <Phone />
-                    Επικοινωνία
-                </SidebarMenuButton>
-            </SidebarMenuItem>
           </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+            <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
+            <HierarchySidebar />
         </SidebarGroup>
         
         {isEditor && (
@@ -112,36 +99,6 @@ export function AppSidebar() {
                             <CalendarDays />
                             Ημερολόγιο
                         </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-                </SidebarGroup>
-
-                <SidebarGroup>
-                <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton href="/projects?view=index" isActive={isIndexView}>
-                            <Briefcase />
-                            Έργα
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                    <SidebarMenuButton href="/buildings" isActive={pathname.startsWith('/buildings')}>
-                        <Building />
-                        Κτίρια
-                    </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                    <SidebarMenuButton href="/floors" isActive={pathname.startsWith('/floors')}>
-                        <Layers />
-                        Όροφοι
-                    </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                    <SidebarMenuButton href="/attachments" isActive={pathname.startsWith('/attachments')}>
-                        <Paperclip />
-                        Παρακολουθήματα
-                    </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
                 </SidebarGroup>
