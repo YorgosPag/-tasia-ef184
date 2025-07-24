@@ -3,24 +3,22 @@ import { Timestamp } from 'firebase/firestore';
 
 type UnitStatus = 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
 
-export const companiesData: any[] = [
-    { _id: 'comp1', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111' }, logoUrl: 'https://placehold.co/100x100.png' },
-    { _id: 'comp2', name: 'UrbanScapes ΕΠΕ', website: 'https://urbanscapes.example.com', contactInfo: { email: 'contact@urbanscapes.example.com', phone: '2102222222' }, logoUrl: 'https://placehold.co/100x100.png' }
-];
-
+// Authoritative list of all contacts
 export const contactsData: any[] = [
-    // Companies from above as contacts
-    { _id: 'contact_comp1', type: 'Company', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111' }, logoUrl: 'https://placehold.co/100x100.png' },
-    { _id: 'contact_comp2', type: 'Company', name: 'UrbanScapes ΕΠΕ', website: 'https://urbanscapes.example.com', contactInfo: { email: 'contact@urbanscapes.example.com', phone: '2102222222' }, logoUrl: 'https://placehold.co/100x100.png' },
-    // Individuals
+    { _id: 'contact_comp1', type: 'Company', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111', afm: '123456789' }, logoUrl: 'https://placehold.co/100x100.png' },
+    { _id: 'contact_comp2', type: 'Company', name: 'UrbanScapes ΕΠΕ', website: 'https://urbanscapes.example.com', contactInfo: { email: 'contact@urbanscapes.example.com', phone: '2102222222', afm: '987654321' }, logoUrl: 'https://placehold.co/100x100.png' },
     { _id: 'contact_ind1', type: 'Individual', name: 'Γιώργος Παπαδόπουλος', contactInfo: { email: 'gpapadopoulos@email.com', phone: '6971234567' } },
-    // Lawyers
     { _id: 'contact_law1', type: 'Lawyer', name: 'Αθηνά Νομικού', contactInfo: { email: 'anomikou@lawfirm.gr', phone: '2109876543' } },
     { _id: 'contact_law2', type: 'Lawyer', name: 'Αλέξανδρος Παύλου', contactInfo: { email: 'apavlou@law.gr', phone: '2101231231' } },
-    // Notaries
     { _id: 'contact_not1', type: 'Notary', name: 'Ελένη Συμβολαιογράφου', contactInfo: { email: 'eleni.s@notary.gr', phone: '2155554433' } },
-    // Suppliers
-    { _id: 'contact_sup1', type: 'Supplier', name: 'Marmara Granites ΑΕ', contactInfo: { email: 'sales@marmara.gr', phone: '2310123456' } }
+    { _id: 'contact_sup1', type: 'Supplier', name: 'Marmara Granites ΑΕ', contactInfo: { email: 'sales@marmara.gr', phone: '2310123456' } },
+    { _id: 'contact_eng1', type: 'Individual', name: 'Μαρία Μηχανικού', contactInfo: { email: 'maria.m@engineering.gr', phone: '2112345678' } }
+];
+
+// Companies that can own projects, linking to their contact entry
+export const companiesData: any[] = [
+    { _id: 'comp1', _contactId: 'contact_comp1', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111', afm: '123456789' }, logoUrl: 'https://placehold.co/100x100.png' },
+    { _id: 'comp2', _contactId: 'contact_comp2', name: 'UrbanScapes ΕΠΕ', website: 'https://urbanscapes.example.com', contactInfo: { email: 'contact@urbanscapes.example.com', phone: '2102222222', afm: '987654321' }, logoUrl: 'https://placehold.co/100x100.png' }
 ];
 
 export const projectsData: any[] = [
@@ -29,9 +27,9 @@ export const projectsData: any[] = [
 ];
 
 export const buildingsData: any[] = [
-    { _id: 'build1', projectId: 'proj1', address: 'Πατησίων 100, Αθήνα', type: 'Πολυκατοικία', photoUrl: 'https://placehold.co/400x300.png' },
-    { _id: 'build2', projectId: 'proj1', address: 'Πατησίων 102, Αθήνα', type: 'Πολυκατοικία', photoUrl: 'https://placehold.co/400x300.png' },
-    { _id: 'build3', projectId: 'proj2', address: 'Λεωφόρος Νίκης 5, Θεσσαλονίκη', type: 'Κτίριο Γραφείων', photoUrl: 'https://placehold.co/400x300.png' }
+    { _id: 'build1', projectId: 'proj1', address: 'Πατησίων 100, Αθήνα', type: 'Πολυκατοικία', identifier: 'A', photoUrl: 'https://placehold.co/400x300.png' },
+    { _id: 'build2', projectId: 'proj1', address: 'Πατησίων 102, Αθήνα', type: 'Πολυκατοικία', identifier: 'B', photoUrl: 'https://placehold.co/400x300.png' },
+    { _id: 'build3', projectId: 'proj2', address: 'Λεωφόρος Νίκης 5, Θεσσαλονίκη', type: 'Κτίριο Γραφείων', identifier: 'W', photoUrl: 'https://placehold.co/400x300.png' }
 ];
 
 export const floorsData: any[] = [
@@ -41,7 +39,7 @@ export const floorsData: any[] = [
 ];
 
 export const unitsData: {
-  _id: string; floorIds: string[]; levelSpan?: string; identifier: string; name: string; type: string; status: UnitStatus;
+  _id: string; floorIds: string[]; levelSpan?: number; identifier: string; name: string; type: string; status: UnitStatus;
   area: number; price?: number; bedrooms?: number; bathrooms?: string; orientation?: string; amenities?: string[];
   polygonPoints?: { x: number; y: number }[];
   attachments: { type: 'parking' | 'storage'; details: string; area?: number; price?: number; photoUrl?: string, sharePercentage?: number, isBundle?: boolean, isStandalone?: boolean }[];
