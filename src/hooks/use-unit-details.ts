@@ -32,7 +32,6 @@ export interface Unit {
   status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος' | 'Προς Ενοικίαση';
   buildingId: string;
   floorIds: string[];
-  levelSpan?: string;
   originalId: string;
   createdAt: Timestamp;
   projectId?: string;
@@ -75,6 +74,7 @@ export function useUnitDetails() {
       name: '',
       type: '',
       status: 'Διαθέσιμο',
+      floorIds: [],
       netArea: '',
       grossArea: '',
       commonArea: '',
@@ -89,7 +89,6 @@ export function useUnitDetails() {
       description: '',
       isPenthouse: false,
       amenities: [],
-      levelSpan: 1,
     },
   });
 
@@ -127,6 +126,7 @@ export function useUnitDetails() {
           name: unitData.name,
           type: unitData.type || '',
           status: unitData.status,
+          floorIds: unitData.floorIds || [],
           netArea: unitData.netArea?.toString() || '',
           grossArea: unitData.grossArea?.toString() || '',
           commonArea: unitData.commonArea?.toString() || '',
@@ -141,7 +141,6 @@ export function useUnitDetails() {
           description: unitData.description || '',
           isPenthouse: unitData.isPenthouse || false,
           amenities: unitData.amenities || [],
-          levelSpan: unitData.levelSpan ? parseInt(unitData.levelSpan.replace('F', '')) : 1,
         });
         setIsLoading(false);
     }, (error) => {
