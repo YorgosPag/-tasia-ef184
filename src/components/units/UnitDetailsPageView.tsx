@@ -48,6 +48,8 @@ export function UnitDetailsPageView({
   goBack,
   getStatusClass,
 }: UnitDetailsPageViewProps) {
+  const { isDirty } = unitForm.formState;
+
   return (
     <div className="flex flex-col gap-8">
       <Form {...unitForm}>
@@ -58,7 +60,7 @@ export function UnitDetailsPageView({
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Επιστροφή
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || !isDirty}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Αποθήκευση Ακινήτου
               </Button>
