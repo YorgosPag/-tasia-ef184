@@ -59,7 +59,7 @@ export type ProjectFormValues = z.infer<typeof projectSchema>;
 interface ProjectDialogFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  form: UseFormReturn<ProjectFormValues>;
+  form: UseFormReturn<any>;
   onSubmit: (e: React.FormEvent) => void;
   isSubmitting: boolean;
   isLoading: boolean;

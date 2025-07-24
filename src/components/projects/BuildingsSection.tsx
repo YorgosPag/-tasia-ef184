@@ -36,31 +36,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { PlusCircle, Loader2, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { logActivity } from '@/lib/logger';
-import { BuildingFormDialog } from './BuildingFormDialog';
+import { BuildingFormDialog, buildingSchema, BuildingFormValues } from './BuildingFormDialog';
 import type { Project, Building } from '@/app/projects/[id]/page';
 import { useAuth } from '@/hooks/use-auth';
-
-// Schema for the building form
-const buildingSchema = z.object({
-  id: z.string().optional(), // Hidden field to know if we are editing
-  address: z.string().min(1, { message: 'Η διεύθυνση είναι υποχρεωτική.' }),
-  type: z.string().min(1, { message: 'Ο τύπος είναι υποχρεωτικός.' }),
-  description: z.string().optional(),
-  photoUrl: z.string().url({ message: "Το URL της φωτογραφίας δεν είναι έγκυρο." }).or(z.literal('')),
-  floorsCount: z.coerce.number().int().positive().optional(),
-  constructionYear: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 5).optional(),
-  tags: z.string().optional(),
-  identifier: z.string().min(1, 'Ο κωδικός κτιρίου είναι υποχρεωτικός.'),
-});
-
-export type BuildingFormValues = z.infer<typeof buildingSchema>;
 
 interface BuildingsSectionProps {
     project: Project;

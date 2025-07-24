@@ -11,6 +11,7 @@ import { db } from '@/lib/firebase';
 import { logActivity } from '@/lib/logger';
 import { generateNextUnitIdentifier } from '@/lib/identifier-generator';
 import { useDataStore } from '@/hooks/use-data-store';
+import { z } from 'zod';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -67,7 +68,7 @@ export default function NewUnitPage() {
   // --- Quick Create Logic ---
   
   // Create dedicated forms for each quick-create dialog
-  const quickCompanyForm = useForm({ resolver: zodResolver(companySchema), defaultValues: { name: '', logoUrl: '', website: '', contactInfo: { email: '', phone: '', address: '', afm: '' } } });
+  const quickCompanyForm = useForm({ resolver: zodResolver(projectSchema.pick({name: true, logoUrl: true, website: true}).extend({contactInfo: projectSchema.shape.contactInfo})), defaultValues: { name: '', logoUrl: '', website: '', contactInfo: { email: '', phone: '', address: '', afm: '' } } });
   const quickProjectForm = useForm({ resolver: zodResolver(projectSchema) });
   const quickBuildingForm = useForm({ resolver: zodResolver(buildingSchema) });
   const quickFloorForm = useForm({ resolver: zodResolver(floorFormSchema) });
@@ -83,13 +84,13 @@ export default function NewUnitPage() {
         switch (quickCreateState.entity) {
             case 'company':
                 const companyData = quickCompanyForm.getValues();
-                newId = await addCompany(companyData);
+                newId = await addCompany(companyData as any);
                 if (newId) locationState.setSelectedCompany(newId);
                 break;
             case 'project':
                 const projectData = quickProjectForm.getValues();
                 projectData.companyId = locationState.selectedCompany;
-                newId = await addProject(projectData);
+                newId = await addProject(projectData as any);
                 if (newId) locationState.setSelectedProject(newId);
                 break;
             case 'building':
@@ -211,7 +212,12 @@ export default function NewUnitPage() {
                 <Collapsible defaultOpen className="space-y-4 rounded-lg border p-4">
                     <CollapsibleTrigger className="font-semibold text-lg w-full text-left">Ιεραρχική Τοποθεσία & Τύπος</CollapsibleTrigger>
                     <CollapsibleContent className="animate-in fade-in-0">
-                       <UnitLocationSelector form={form} locationState={locationState} isMultiFloorAllowed={isMultiFloorAllowed} onQuickCreate={handleQuickCreate} />
+                       <UnitLocationSelector 
+                         form={form} 
+                         locationState={locationState}
+                         isMultiFloorAllowed={isMultiFloorAllowed}
+                         onQuickCreate={handleQuickCreate}
+                        />
                     </CollapsibleContent>
                 </Collapsible>
                 
@@ -309,4 +315,3 @@ export default function NewUnitPage() {
     </div>
   );
 }
-
