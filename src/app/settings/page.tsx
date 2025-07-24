@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, KeyRound, Mail, MessageSquare } from 'lucide-react';
+import { Loader2, KeyRound, Mail, MessageSquare, Eye, EyeOff } from 'lucide-react';
 
 // Αυτό το component είναι ένα παράδειγμα.
 // Σε μια πραγματική εφαρμογή, αυτές οι τιμές θα αποθηκεύονταν με ασφάλεια
@@ -21,6 +21,10 @@ export default function SettingsPage() {
     const [twilioAuthToken, setTwilioAuthToken] = useState('');
     const [twilioFromNumber, setTwilioFromNumber] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    
+    const [showSendGridKey, setShowSendGridKey] = useState(false);
+    const [showTwilioToken, setShowTwilioToken] = useState(false);
+
 
     const handleSave = () => {
         setIsSaving(true);
@@ -58,15 +62,26 @@ export default function SettingsPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative">
                         <Label htmlFor="sendgrid-key">SendGrid API Key</Label>
                         <Input
                             id="sendgrid-key"
-                            type="password"
+                            type={showSendGridKey ? 'text' : 'password'}
                             value={sendgridApiKey}
                             onChange={(e) => setSendgridApiKey(e.target.value)}
                             placeholder="SG.xxxxxxxx"
+                            className="pr-10"
                         />
+                         <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-7 h-7 w-7"
+                            onClick={() => setShowSendGridKey(!showSendGridKey)}
+                        >
+                            {showSendGridKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            <span className="sr-only">{showSendGridKey ? 'Hide key' : 'Show key'}</span>
+                        </Button>
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="sendgrid-email">Email Αποστολέα</Label>
@@ -101,15 +116,26 @@ export default function SettingsPage() {
                             placeholder="ACxxxxxxxx"
                         />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative">
                         <Label htmlFor="twilio-token">Twilio Auth Token</Label>
                         <Input
                             id="twilio-token"
-                            type="password"
+                            type={showTwilioToken ? 'text' : 'password'}
                             value={twilioAuthToken}
                             onChange={(e) => setTwilioAuthToken(e.target.value)}
                             placeholder="••••••••••••••••"
+                            className="pr-10"
                         />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-7 h-7 w-7"
+                            onClick={() => setShowTwilioToken(!showTwilioToken)}
+                        >
+                            {showTwilioToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            <span className="sr-only">{showTwilioToken ? 'Hide token' : 'Show token'}</span>
+                        </Button>
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="twilio-number">Twilio Αριθμός Τηλεφώνου</Label>
