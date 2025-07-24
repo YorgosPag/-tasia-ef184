@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, serverTimestamp, doc, getDoc, query, where, getDocs, setDoc, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, getDoc, query, where, getDocs, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -118,9 +118,21 @@ export default function NewUnitPage() {
             return;
         }
         setIsLoadingFloors(true);
-        const floorsQuery = query(collection(db, 'floors'), where('buildingId', '==', selectedBuilding), orderBy('level'));
+        const floorsQuery = query(collection(db, 'floors'), where('buildingId', '==', selectedBuilding));
         const floorsSnapshot = await getDocs(floorsQuery);
-        setFloors(floorsSnapshot.docs.map(doc => ({ value: doc.id, label: doc.data().level } as { value: string; label: string })));
+        const fetchedFloors = floorsSnapshot.docs.map(doc => ({ value: doc.id, label: doc.data().level } as { value: string; label: string }));
+        
+        // Sort floors client-side
+        fetchedFloors.sort((a, b) => {
+            const levelA = parseInt(a.label, 10);
+            const levelB = parseInt(b.label, 10);
+            if (!isNaN(levelA) && !isNaN(levelB)) {
+                return levelA - levelB;
+            }
+            return a.label.localeCompare(b.label, undefined, { numeric: true });
+        });
+
+        setFloors(fetchedFloors);
         setIsLoadingFloors(false);
     }
     fetchFloors();
