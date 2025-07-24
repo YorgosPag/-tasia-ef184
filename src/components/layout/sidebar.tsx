@@ -90,10 +90,10 @@ export function AppSidebar() {
             <NavLink href="/construction" icon={Construction} tooltip="Στάδια Εργασιών">
               Στάδια Εργασιών
             </NavLink>
-            <NavLink href="/calendar" icon={CalendarDays} tooltip="Ημερολόγιο">
+            <NavLink href="/construction/calendar" icon={CalendarDays} tooltip="Ημερολόγιο">
               Ημερολόγιο
             </NavLink>
-            <NavLink href="/architect-desk" icon={FilePen} tooltip="Architect's Desk">
+            <NavLink href="/architect-dashboard" icon={FilePen} tooltip="Architect's Desk">
               Architect's Desk
             </NavLink>
             <NavLink href="/assignments" icon={ClipboardList} tooltip="Οι Αναθέσεις μου">
