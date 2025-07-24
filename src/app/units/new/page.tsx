@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, serverTimestamp, doc, getDoc, query, where, getDocs, setDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, getDoc, query, where, getDocs, setDoc, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,6 +49,7 @@ const newUnitSchema = z.object({
   description: z.string().optional(),
   isPenthouse: z.boolean().default(false),
   amenities: z.array(z.string()).optional(),
+  levelSpan: z.number().int().min(1).default(1),
 });
 
 type NewUnitFormValues = z.infer<typeof newUnitSchema>;
@@ -97,11 +98,13 @@ export default function NewUnitPage() {
       description: '',
       isPenthouse: false,
       amenities: [],
+      levelSpan: 1,
     },
   });
 
   const selectedType = useWatch({ control: form.control, name: 'type' });
   const selectedFloorIds = useWatch({ control: form.control, name: 'floorIds'});
+  const levelSpan = useWatch({ control: form.control, name: 'levelSpan' });
 
   const isMultiFloorAllowed = MULTI_FLOOR_TYPES.includes(selectedType);
 
@@ -126,12 +129,17 @@ export default function NewUnitPage() {
   // Reset dependent fields on change
   useEffect(() => { setSelectedProject(''); form.setValue('floorIds', []); }, [selectedCompany, form]);
   useEffect(() => { setSelectedBuilding(''); form.setValue('floorIds', []); }, [selectedProject, form]);
-  useEffect(() => { form.setValue('floorIds', []); }, [selectedBuilding, form]);
   
   // Reset floor selection when type changes to ensure valid state
   useEffect(() => {
-    form.setValue('floorIds', []);
+    if (form.getValues('floorIds').length > 0) {
+        form.setValue('floorIds', []);
+    }
   }, [selectedType, form]);
+  
+  useEffect(() => {
+    form.setValue('levelSpan', selectedFloorIds?.length || 1);
+  }, [selectedFloorIds, form]);
 
 
   const handleGenerateId = async () => {
@@ -141,7 +149,7 @@ export default function NewUnitPage() {
       }
       setIsGeneratingId(true);
       try {
-          const nextId = await generateNextUnitIdentifier(selectedFloorIds[0], selectedType, selectedFloorIds.length);
+          const nextId = await generateNextUnitIdentifier(selectedFloorIds[0], selectedType, levelSpan);
           form.setValue('identifier', nextId);
           if (!form.getValues('name')) {
               form.setValue('name', `${selectedType} ${nextId}`);
@@ -229,7 +237,7 @@ export default function NewUnitPage() {
                                     selected={field.value}
                                     onChange={field.onChange}
                                     placeholder="Επιλέξτε ορόφους..."
-                                    disabled={!selectedBuilding || !selectedType || floors.length === 0}
+                                    disabled={!selectedType || floors.length === 0}
                                     isLoading={isLoadingFloors}
                                 />
                                 <FormMessage/></FormItem>
@@ -237,7 +245,7 @@ export default function NewUnitPage() {
                         ) : (
                             <FormField control={form.control} name="floorIds" render={({ field }) => (
                                 <FormItem><FormLabel>Όροφος</FormLabel>
-                                <Select onValueChange={(value) => field.onChange(value ? [value] : [])} value={field.value?.[0] || ''} disabled={!selectedBuilding || !selectedType || floors.length === 0}>
+                                <Select onValueChange={(value) => field.onChange(value ? [value] : [])} value={field.value?.[0] || ''} disabled={!selectedType || floors.length === 0}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε όροφο..." /></SelectTrigger></FormControl>
                                     <SelectContent>
                                         {isLoadingFloors ? (
@@ -251,12 +259,19 @@ export default function NewUnitPage() {
                              )}/>
                         )}
 
-                        <FormItem>
-                            <FormLabel>Πλήθος επιλεγμένων ορόφων</FormLabel>
-                            <FormControl>
-                                <Input type="number" readOnly value={selectedFloorIds?.length || 0} className="bg-muted" />
-                            </FormControl>
-                        </FormItem>
+                        <FormField
+                          control={form.control}
+                          name="levelSpan"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Πλήθος επιλεγμένων ορόφων</FormLabel>
+                              <FormControl>
+                                <Input type="number" readOnly value={field.value} className="bg-muted" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                     </CollapsibleContent>
                 </Collapsible>
               <div className="grid md:grid-cols-2 gap-6">
