@@ -22,6 +22,7 @@ export const unitSchema = z.object({
   bathrooms: z.string().optional(),
   orientation: z.string().optional(),
   amenities: z.string().optional(),
+  levelSpan: z.number().int().min(1).default(1), // Add floorSpan to the schema
 });
 
 export type UnitFormValues = z.infer<typeof unitSchema>;
@@ -78,6 +79,26 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
         <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Μπάνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
         <div className="md:col-span-2">
           <FormField control={form.control} name="amenities" render={({ field }) => (<FormItem><FormLabel>Παροχές (με κόμμα)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
+        </div>
+        <div className="md:col-span-2">
+           <FormField
+              control={form.control}
+              name="levelSpan"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Αριθμός Ορόφων που καταλαμβάνει</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="1"
+                      {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 1)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
         </div>
       </CardContent>
     </>

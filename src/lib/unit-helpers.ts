@@ -14,11 +14,13 @@ export function getUnitDataFromForm(data: UnitFormValues) {
         bathrooms: data.bathrooms ? parseInt(data.bathrooms, 10) : undefined,
         orientation: data.orientation || '',
         amenities: data.amenities ? data.amenities.split(',').map(a => a.trim()).filter(Boolean) : [],
+        levelSpan: data.floorSpan > 1 ? `${data.floorSpan}F` : undefined, // Add levelSpan based on form
     };
 }
 
 export function getAttachmentDataFromForm(data: AttachmentFormValues) {
     return {
+        identifier: data.identifier,
         type: data.type,
         details: data.details,
         area: data.area ? parseFloat(data.area) : undefined,

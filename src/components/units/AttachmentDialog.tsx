@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Wand2 } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -30,10 +30,13 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-
+import { generateNextAttachmentIdentifier } from '@/lib/identifier-generator';
+import { useToast } from '@/hooks/use-toast';
+import { useParams } from 'next/navigation';
 
 export const attachmentSchema = z.object({
   id: z.string().optional(),
+  identifier: z.string().optional(), // Now optional, will be auto-generated
   type: z.enum(['parking', 'storage'], { required_error: 'Ο τύπος είναι υποχρεωτικός.' }),
   details: z.string().optional(),
   area: z.string().transform(v => v.trim()).refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Το εμβαδόν πρέπει να είναι αριθμός." }).optional(),
@@ -68,6 +71,31 @@ export function AttachmentDialog({
   isSubmitting,
   editingAttachment,
 }: AttachmentDialogProps) {
+  const { toast } = useToast();
+  const params = useParams();
+  const unitId = params.id as string;
+  const [isGeneratingId, setIsGeneratingId] = useState(false);
+
+  const handleGenerateId = async () => {
+    if (!unitId) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το γονικό ακίνητο.' });
+        return;
+    }
+    const attachmentType = form.getValues('type');
+
+    setIsGeneratingId(true);
+    try {
+        const nextId = await generateNextAttachmentIdentifier(unitId, attachmentType);
+        form.setValue('identifier', nextId);
+        form.setValue('details', nextId); // Also set details to the same value
+        toast({ title: 'Επιτυχία', description: `Προτεινόμενος κωδικός: ${nextId}` });
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Σφάλμα Δημιουργίας Κωδικού', description: error.message });
+    } finally {
+        setIsGeneratingId(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -88,7 +116,22 @@ export function AttachmentDialog({
                   <FormMessage />
                   </FormItem>
               )}/>
-              <FormField control={form.control} name="details" render={({ field }) => (<FormItem><FormLabel>Λεπτομέρειες</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
+               <FormField
+                control={form.control}
+                name="details"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Κωδικός / Λεπτομέρειες</FormLabel>
+                    <div className="flex items-center gap-2">
+                        <FormControl><Input {...field} placeholder="π.χ. B1D1S1" /></FormControl>
+                         <Button type="button" variant="outline" size="icon" onClick={handleGenerateId} disabled={isGeneratingId} title="Αυτόματη δημιουργία κωδικού">
+                            {isGeneratingId ? <Loader2 className="h-4 w-4 animate-spin"/> : <Wand2 className="h-4 w-4"/>}
+                        </Button>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField control={form.control} name="area" render={({ field }) => (<FormItem><FormLabel>Εμβαδόν (τ.μ.)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)}/>
               <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>Τιμή (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)}/>
               <FormField control={form.control} name="sharePercentage" render={({ field }) => (<FormItem><FormLabel>Ποσοστό (%)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)}/>
