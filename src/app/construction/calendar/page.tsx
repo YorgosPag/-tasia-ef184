@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -12,6 +12,22 @@ import { getStatusVariant } from '@/components/projects/work-stages/utils';
 
 export default function ConstructionCalendarPage() {
     const { events, isLoading, month, setMonth } = useWorkStageCalendar();
+
+    useEffect(() => {
+        // Some custom styles for the calendar day with events
+        // This needs to run on the client-side only.
+        const style = document.createElement('style');
+        style.innerHTML = `
+        .event-day {
+            position: relative;
+        }
+        `;
+        document.head.appendChild(style);
+        
+        return () => {
+            document.head.removeChild(style);
+        }
+    }, []);
 
     return (
         <div className="flex flex-col gap-8">
@@ -73,15 +89,4 @@ export default function ConstructionCalendarPage() {
             </Card>
         </div>
     );
-}
-
-// Some custom styles for the calendar day with events
-const style = document.createElement('style');
-style.innerHTML = `
-.event-day {
-    position: relative;
-}
-`;
-if (typeof window !== 'undefined') {
-    document.head.appendChild(style);
 }
