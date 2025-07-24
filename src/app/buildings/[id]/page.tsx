@@ -15,6 +15,7 @@ import {
   query,
   where,
   getDocs,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import Image from 'next/image';
+import { logActivity } from '@/lib/logger';
+import { useAuth } from '@/hooks/use-auth';
 
 const floorSchema = z.object({
   level: z.string().min(1, { message: 'Το επίπεδο είναι υποχρεωτικό.' }),
@@ -84,6 +87,7 @@ export default function BuildingDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const buildingId = params.id as string;
+  const { isEditor } = useAuth();
 
   const [building, setBuilding] = useState<Building | null>(null);
   const [floors, setFloors] = useState<Floor[]>([]);
@@ -169,41 +173,53 @@ export default function BuildingDetailsPage() {
     }
     setIsSubmitting(true);
     try {
-      const floorSubRef = doc(collection(db, 'projects', building.projectId, 'buildings', building.originalId, 'floors'));
-      const floorTopRef = doc(collection(db, 'floors'));
-      
-      const finalData = {
-          ...data,
+        const batch = writeBatch(db);
+
+        const subCollectionFloorRef = doc(collection(db, 'projects', building.projectId, 'buildings', building.originalId, 'floors'));
+        const topLevelFloorRef = doc(collection(db, 'floors'));
+        
+        const finalData = {
+          level: data.level,
+          description: data.description || '',
           floorPlanUrl: data.floorPlanUrl?.trim() ? data.floorPlanUrl : undefined,
-      };
+        };
       
-      await setDoc(floorSubRef, {
-        ...finalData,
-        topLevelId: floorTopRef.id,
-        createdAt: serverTimestamp(),
-      });
-      
-      // Also add to a top-level 'floors' collection
-      await setDoc(floorTopRef, {
-          ...finalData,
-          buildingId: building.id,
-          originalId: floorSubRef.id,
-          createdAt: serverTimestamp(),
-      });
-      toast({
-        title: 'Επιτυχία',
-        description: 'Ο όροφος προστέθηκε με επιτυχία.',
-      });
-      handleDialogOpenChange(false);
+        batch.set(subCollectionFloorRef, {
+            ...finalData,
+            topLevelId: topLevelFloorRef.id,
+            createdAt: serverTimestamp(),
+        });
+        
+        batch.set(topLevelFloorRef, {
+            ...finalData,
+            buildingId: building.id,
+            originalId: subCollectionFloorRef.id,
+            createdAt: serverTimestamp(),
+        });
+
+        await batch.commit();
+
+        toast({
+            title: 'Επιτυχία',
+            description: 'Ο όροφος προστέθηκε με επιτυχία.',
+        });
+        await logActivity('CREATE_FLOOR', {
+          entityId: topLevelFloorRef.id,
+          entityType: 'floor',
+          details: finalData,
+          projectId: building.projectId
+        });
+
+        handleDialogOpenChange(false);
     } catch (error) {
-      console.error('Error adding floor: ', error);
-      toast({
-        variant: 'destructive',
-        title: 'Σφάλμα',
-        description: 'Δεν ήταν δυνατή η προσθήκη του ορόφου.',
-      });
+        console.error('Error adding floor: ', error);
+        toast({
+            variant: 'destructive',
+            title: 'Σφάλμα',
+            description: 'Δεν ήταν δυνατή η προσθήκη του ορόφου.',
+        });
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
   };
 
@@ -271,76 +287,78 @@ export default function BuildingDetailsPage() {
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Όροφοι του Κτιρίου
         </h2>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" />
-              Νέος Όροφος
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Προσθήκη Νέου Ορόφου</DialogTitle>
-              <DialogDescription>
-                Συμπληρώστε τις πληροφορίες για να προσθέσετε έναν νέο όροφο στο κτίριο.
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitFloor)} className="grid gap-4 py-4">
-                <FormField
-                  control={form.control}
-                  name="level"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Επίπεδο Ορόφου</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. 1, 0, -1, Ισόγειο" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="π.χ. Γραφεία εταιρείας" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="floorPlanUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL Κάτοψης (Προαιρετικό)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/plan.pdf" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                   <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmitting}>
-                      Ακύρωση
+        {isEditor && (
+            <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
+            <DialogTrigger asChild>
+                <Button>
+                <PlusCircle className="mr-2" />
+                Νέος Όροφος
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                <DialogTitle>Προσθήκη Νέου Ορόφου</DialogTitle>
+                <DialogDescription>
+                    Συμπληρώστε τις πληροφορίες για να προσθέσετε έναν νέο όροφο στο κτίριο.
+                </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmitFloor)} className="grid gap-4 py-4">
+                    <FormField
+                    control={form.control}
+                    name="level"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Επίπεδο Ορόφου</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. 1, 0, -1, Ισόγειο" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="π.χ. Γραφεία εταιρείας" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="floorPlanUrl"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>URL Κάτοψης (Προαιρετικό)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="https://example.com/plan.pdf" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline" disabled={isSubmitting}>
+                        Ακύρωση
+                        </Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Προσθήκη Ορόφου
                     </Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Προσθήκη Ορόφου
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                    </DialogFooter>
+                </form>
+                </Form>
+            </DialogContent>
+            </Dialog>
+        )}
       </div>
 
       <Card>
