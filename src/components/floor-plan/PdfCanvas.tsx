@@ -6,7 +6,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Loader2 } from 'lucide-react';
-import { Unit } from './FloorPlanViewer';
+import { Unit } from './Unit';
 import { usePdfHandlers } from './hooks/usePdfHandlers';
 import { DrawingLayers } from './DrawingLayers';
 import { UnitLayers } from './UnitLayers';
@@ -23,6 +23,7 @@ interface PageDimensions {
 interface PdfCanvasProps {
   pdfUrl: string;
   units: Unit[];
+  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   statusVisibility: Record<Unit['status'], boolean>;
   isLocked: boolean;
   isEditMode: boolean;
@@ -33,14 +34,12 @@ interface PdfCanvasProps {
   pageDimensions: PageDimensions;
   pdfContainerRef: React.RefObject<HTMLDivElement>;
   zoom: { scale: number; rotation: number };
-  highlightedUnitId: string | null;
   setPageDimensions: React.Dispatch<React.SetStateAction<PageDimensions>>;
   setDrawingPolygon: React.Dispatch<React.SetStateAction<{ x: number; y: number }[]>>;
   setDraggingPoint: React.Dispatch<React.SetStateAction<{ unitId: string; pointIndex: number } | null>>;
   onUnitPointsUpdate: (unitId: string, newPoints: { x: number; y: number }[]) => void;
   onUnitClick: (unitId: string) => void;
   onUnitDelete: (unitId: string) => void;
-  setHighlightedUnitId: (id: string | null) => void;
 }
 
 const LoadingElement = () => (
@@ -58,6 +57,7 @@ const LoadingElement = () => (
 export function PdfCanvas({
   pdfUrl,
   units,
+  setUnits,
   statusVisibility,
   isLocked,
   isEditMode,
@@ -68,14 +68,12 @@ export function PdfCanvas({
   pageDimensions,
   pdfContainerRef,
   zoom,
-  highlightedUnitId,
   setPageDimensions,
   setDrawingPolygon,
   setDraggingPoint,
   onUnitPointsUpdate,
   onUnitClick,
   onUnitDelete,
-  setHighlightedUnitId,
 }: PdfCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const {
@@ -93,6 +91,7 @@ export function PdfCanvas({
     isEditMode,
     isLocked,
     draggingPoint,
+    setUnits,
     lastMouseEvent,
     setDrawingPolygon,
     setDraggingPoint,
@@ -164,8 +163,6 @@ export function PdfCanvas({
                   onUnitClick={onUnitClick}
                   onUnitDelete={onUnitDelete}
                   handlePointMouseDown={handlePointMouseDown}
-                  highlightedUnitId={highlightedUnitId}
-                  setHighlightedUnitId={setHighlightedUnitId}
                 />
               </svg>
             )}

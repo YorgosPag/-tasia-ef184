@@ -21,20 +21,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
-import { Unit } from './FloorPlanViewer';
+import { Unit } from './Unit';
 import { STATUS_COLOR_MAP, getTextColorForBackground } from './utils';
-import { cn } from '@/lib/utils';
 
 interface PolygonPopoverProps {
   unit: Unit;
   isEditMode: boolean;
   isLocked: boolean;
   scale: number;
-  highlighted: boolean;
   onUnitClick: (unitId: string) => void;
   onUnitDelete: (unitId: string) => void;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
 }
 
 export function PolygonPopover({
@@ -42,41 +38,29 @@ export function PolygonPopover({
   isEditMode,
   isLocked,
   scale,
-  highlighted,
   onUnitClick,
   onUnitDelete,
-  onMouseEnter,
-  onMouseLeave,
 }: PolygonPopoverProps) {
   if (!unit.polygonPoints) return null;
 
   const polygonColor = STATUS_COLOR_MAP[unit.status] ?? '#6b7280';
+  const polygonPointsString = unit.polygonPoints.map((p) => `${p.x},${p.y}`).join(' ');
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <g
-          className="group/polygon"
+        <polygon
+          points={polygonPointsString}
           style={{
+            fill: polygonColor,
+            stroke: polygonColor,
+            strokeWidth: 2 / scale,
+            opacity: 0.4,
             pointerEvents: isEditMode || isLocked ? 'none' : 'auto',
-            cursor: isLocked ? 'not-allowed' : 'pointer',
+            cursor: isLocked ? 'not-allowed' : 'pointer'
           }}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-        >
-          <polygon
-            points={unit.polygonPoints.map((p) => `${p.x},${p.y}`).join(' ')}
-            className={cn(
-              "stroke-2 transition-all",
-              highlighted ? "opacity-80" : "opacity-40 group-hover/polygon:opacity-70"
-            )}
-            style={{
-              fill: polygonColor,
-              stroke: polygonColor,
-              strokeWidth: highlighted ? (4 / scale) : (2 / scale),
-            }}
-          />
-        </g>
+          className="transition-all hover:opacity-70 hover:stroke-2"
+        />
       </PopoverTrigger>
       <PopoverContent className="w-auto">
         <div className="grid gap-4">
@@ -105,7 +89,7 @@ export function PolygonPopover({
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button size="sm" variant="destructive_outline">
+                <Button size="sm" variant="destructive">
                   <Trash2 className="mr-2 h-4 w-4" />
                   Διαγραφή
                 </Button>

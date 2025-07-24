@@ -352,29 +352,27 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         await batch.commit();
     };
 
-    const handleInspectionNotesChange = async (stage: WorkStage, inspectionId: string, notes: string, isSubstage: boolean) => {
+    const handleInspectionNotesChange = async (stage: WorkStage, itemIndex: number, notes: string, isSubstage: boolean) => {
         if (!projectId) return;
         const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
         if (isSubstage && !parentId) return;
-
-        const docRef = parentId 
+    
+        const docRef = parentId
             ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id)
             : doc(db, 'projects', projectId, 'workStages', stage.id);
-
-        const newInspections = [...(stage.inspections || [])];
-        const inspectionIndex = newInspections.findIndex(insp => insp.id === inspectionId);
-        if (inspectionIndex === -1) return;
-
-        newInspections[inspectionIndex] = { ...newInspections[inspectionIndex], text: notes };
-
+        
+        const newChecklist = [...(stage.checklist || [])];
+        if (newChecklist[itemIndex]) {
+            newChecklist[itemIndex].inspectionNotes = notes;
+        }
+    
         const batch = writeBatch(db);
-        batch.update(docRef, { inspections: newInspections });
+        batch.update(docRef, { checklist: newChecklist });
         const topLevelId = (stage as any).topLevelId;
         if (topLevelId) {
             const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
-            batch.update(topLevelRef, { inspections: newInspections });
+            batch.update(topLevelRef, { checklist: newChecklist });
         }
-        
         await batch.commit();
         toast({ title: "Οι παρατηρήσεις αποθηκεύτηκαν." });
     };

@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Unit } from './FloorPlanViewer';
+import { Unit } from './Unit';
 import { PolygonPopover } from './PolygonPopover';
 import { STATUS_COLOR_MAP } from './utils';
 
@@ -11,11 +11,9 @@ interface UnitLayersProps {
   isEditMode: boolean;
   isLocked: boolean;
   scale: number;
-  highlightedUnitId: string | null;
   onUnitClick: (unitId: string) => void;
   onUnitDelete: (unitId: string) => void;
   handlePointMouseDown: (event: React.MouseEvent<SVGCircleElement>, unitId: string, pointIndex: number) => void;
-  setHighlightedUnitId: (id: string | null) => void;
 }
 
 /**
@@ -28,11 +26,9 @@ export function UnitLayers({
   isEditMode,
   isLocked,
   scale,
-  highlightedUnitId,
   onUnitClick,
   onUnitDelete,
   handlePointMouseDown,
-  setHighlightedUnitId,
 }: UnitLayersProps) {
   return (
     <>
@@ -47,9 +43,6 @@ export function UnitLayers({
               scale={scale}
               onUnitClick={onUnitClick}
               onUnitDelete={onUnitDelete}
-              highlighted={unit.id === highlightedUnitId}
-              onMouseEnter={() => setHighlightedUnitId(unit.id)}
-              onMouseLeave={() => setHighlightedUnitId(null)}
             />
           ) : null
         )}

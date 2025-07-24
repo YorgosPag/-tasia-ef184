@@ -7,15 +7,7 @@ import { Toolbar } from './Toolbar';
 import { InfoPanel } from './InfoPanel';
 import { StatusFilter } from './StatusFilter';
 import { PdfCanvas } from './PdfCanvas';
-import { Unit } from './FloorPlanViewer';
-
-export interface Unit {
-  id: string;
-  identifier: string;
-  name: string;
-  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος' | 'Προς Ενοικίαση';
-  polygonPoints?: { x: number; y: number }[];
-}
+import { Unit } from './Unit';
 
 interface FloorPlanViewerProps {
   pdfUrl: string;
