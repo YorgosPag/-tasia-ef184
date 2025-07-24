@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, addDoc, serverTimestamp, doc, writeBatch, getDoc, query, where, getDocs, setDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, writeBatch, getDoc, query, where, getDocs, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -101,9 +101,9 @@ export default function NewUnitPage() {
   }, [selectedBuilding]);
 
   // Reset child dropdowns when a parent changes
-  useEffect(() => { setSelectedProject(''); form.setValue('floorId', ''); }, [selectedCompany]);
-  useEffect(() => { setSelectedBuilding(''); form.setValue('floorId', ''); }, [selectedProject]);
-  useEffect(() => { form.setValue('floorId', ''); }, [selectedBuilding]);
+  useEffect(() => { setSelectedProject(''); form.setValue('floorId', ''); }, [selectedCompany, form]);
+  useEffect(() => { setSelectedBuilding(''); form.setValue('floorId', ''); }, [selectedProject, form]);
+  useEffect(() => { form.setValue('floorId', ''); }, [selectedBuilding, form]);
 
   const handleGenerateId = async () => {
       if (!selectedFloorId || !selectedType) {
@@ -134,7 +134,12 @@ export default function NewUnitPage() {
         const floorData = floorDoc.data();
         const buildingDoc = await getDoc(doc(db, 'buildings', floorData.buildingId));
         if(!buildingDoc.exists()) throw new Error("Parent building does not exist.");
+        
         const buildingData = buildingDoc.data();
+        const projectDoc = await getDoc(doc(db, 'projects', buildingData.projectId));
+        if(!projectDoc.exists()) throw new Error("Parent project does not exist.");
+        
+        const projectData = projectDoc.data();
         
         const topLevelUnitRef = doc(collection(db, 'units'));
         
@@ -145,7 +150,7 @@ export default function NewUnitPage() {
             floorIds: [data.floorId],
             buildingId: floorData.buildingId,
             projectId: buildingData.projectId,
-            companyId: buildingData.companyId,
+            companyId: projectData.companyId,
             createdAt: serverTimestamp(),
             originalId: topLevelUnitRef.id,
         };
@@ -157,6 +162,10 @@ export default function NewUnitPage() {
         if (data.orientation) unitData.orientation = data.orientation;
         if (data.levelSpan > 1) unitData.levelSpan = `${data.levelSpan}F`;
 
+        // Ensure no undefined fields are passed to Firestore
+        Object.keys(unitData).forEach(key => unitData[key] === undefined && delete unitData[key]);
+
+
         await setDoc(topLevelUnitRef, unitData);
 
         await logActivity('CREATE_UNIT', {
@@ -166,9 +175,9 @@ export default function NewUnitPage() {
       toast({ title: 'Επιτυχία', description: 'Το νέο ακίνητο δημιουργήθηκε.' });
       router.push(`/units/${topLevelUnitRef.id}`);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating new unit: ', error);
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η δημιουργία του ακινήτου.' });
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η δημιουργία του ακινήτου. ' + error.message });
     } finally {
       setIsSubmitting(false);
     }
