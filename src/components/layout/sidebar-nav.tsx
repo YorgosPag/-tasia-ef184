@@ -245,14 +245,16 @@ export function SidebarNav() {
         {isAdmin && (
           <SidebarGroup>
               <SidebarGroupLabel>System</SidebarGroupLabel>
-              <SidebarMenu>
-                <NavLink href="/users" icon={Users} tooltip="User Management">
-                  Users
-                </NavLink>
-                <NavLink href="/audit-log" icon={LineChart} tooltip="Audit Log">
-                  Audit Log
-                </NavLink>
-              </SidebarMenu>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                    <NavLink href="/users" icon={Users} tooltip="User Management">
+                    Users
+                    </NavLink>
+                    <NavLink href="/audit-log" icon={LineChart} tooltip="Audit Log">
+                    Audit Log
+                    </NavLink>
+                </SidebarMenu>
+              </SidebarGroupContent>
             </SidebarGroup>
         )}
       </SidebarContent>
