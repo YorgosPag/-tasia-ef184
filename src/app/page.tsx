@@ -10,8 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from "@/components/ui/badge";
 import { useToast } from '@/hooks/use-toast';
-import { seedDatabase } from '@/lib/seed';
-import { clearDatabase } from '@/lib/clear';
+import { seedDatabaseAction, clearDatabaseAction } from '@/lib/actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,42 +31,38 @@ export default function Home() {
 
   const handleSeed = async () => {
     setIsSeeding(true);
-    try {
-      await seedDatabase();
+    const result = await seedDatabaseAction();
+    if (result.success) {
       toast({
         title: 'Επιτυχία',
         description: 'Η βάση δεδομένων αρχικοποιήθηκε με επιτυχία.',
       });
-    } catch (error) {
-      console.error('Seeding failed:', error);
+    } else {
       toast({
         variant: 'destructive',
         title: 'Σφάλμα',
-        description: 'Η αρχικοποίηση της βάσης δεδομένων απέτυχε.',
+        description: `Η αρχικοποίηση απέτυχε: ${result.error}`,
       });
-    } finally {
-      setIsSeeding(false);
     }
+    setIsSeeding(false);
   };
 
   const handleClear = async () => {
     setIsClearing(true);
-    try {
-      await clearDatabase();
+    const result = await clearDatabaseAction();
+    if (result.success) {
       toast({
         title: 'Επιτυχία',
         description: 'Η βάση δεδομένων καθαρίστηκε με επιτυχία.',
       });
-    } catch (error) {
-      console.error('Clearing failed:', error);
+    } else {
       toast({
         variant: 'destructive',
         title: 'Σφάλμα',
-        description: 'Ο καθαρισμός της βάσης δεδομένων απέτυχε.',
+        description: `Ο καθαρισμός απέτυχε: ${result.error}`,
       });
-    } finally {
-      setIsClearing(false);
     }
+    setIsClearing(false);
   };
 
   return (
