@@ -8,7 +8,7 @@ import {
   Minus,
   Plus,
   Frame,
-  RefreshCw,
+  RotateCw,
   Lock,
   Unlock,
   Pencil,
@@ -98,7 +98,7 @@ export function Toolbar({
         onClick={() => setRotation((r) => (r + 90) % 360)}
         disabled={!numPages || isLocked}
       >
-        <RefreshCw />
+        <RotateCw />
       </Button>
       <Button
         variant="ghost"
