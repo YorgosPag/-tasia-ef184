@@ -1,6 +1,34 @@
 
-import { UnitFormValues } from "@/components/units/UnitDetailsForm";
-import { AttachmentFormValues } from "@/components/units/AttachmentDialog";
+import { z } from "zod";
+
+export const newUnitSchema = z.object({
+  floorIds: z.array(z.string()).nonempty({ message: "Πρέπει να επιλέξετε τουλάχιστον έναν όροφο." }),
+  identifier: z.string().min(1, { message: "Ο κωδικός είναι υποχρεωτικός. Δημιουργήστε τον αυτόματα." }),
+  name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
+  type: z.string().min(1, { message: "Ο τύπος είναι υποχρεωτικός." }),
+  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος', 'Προς Ενοικίαση']),
+  
+  netArea: z.string().optional(),
+  grossArea: z.string().optional(),
+  commonArea: z.string().optional(),
+  semiOutdoorArea: z.string().optional(),
+  architecturalProjectionsArea: z.string().optional(),
+  balconiesArea: z.string().optional(),
+
+  price: z.string().optional(),
+  bedrooms: z.string().optional(),
+  bathrooms: z.string().optional(),
+  orientation: z.string().optional(),
+  kitchenLayout: z.string().optional(),
+  description: z.string().optional(),
+  isPenthouse: z.boolean().default(false),
+  amenities: z.array(z.string()).optional(),
+  levelSpan: z.number().int().min(1).default(1),
+});
+
+export type NewUnitFormValues = z.infer<typeof newUnitSchema>;
+
+export const MULTI_FLOOR_TYPES = ['Μεζονέτα', 'Κατάστημα'];
 
 export const AMENITIES_LIST = [
     { id: 'parking', label: 'Θέση Στάθμευσης' },
@@ -27,12 +55,13 @@ export const KITCHEN_LAYOUTS = [
     'Σαλοκουζίνα (Ενιαίος χώρος)', 'Ξεχωριστή Κουζίνα', 'Χωρίς Κουζίνα/Σαλόνι'
 ];
 
-export function getUnitDataFromForm(data: UnitFormValues) {
+export function getUnitDataFromForm(data: NewUnitFormValues) {
     const unitData: { [key: string]: any } = {
         identifier: data.identifier,
         name: data.name,
         type: data.type || '',
         status: data.status,
+        floorIds: data.floorIds,
         netArea: data.netArea ? parseFloat(data.netArea) : undefined,
         grossArea: data.grossArea ? parseFloat(data.grossArea) : undefined,
         commonArea: data.commonArea ? parseFloat(data.commonArea) : undefined,
@@ -47,7 +76,7 @@ export function getUnitDataFromForm(data: UnitFormValues) {
         description: data.description || '',
         isPenthouse: data.isPenthouse,
         amenities: data.amenities || [],
-        levelSpan: data.levelSpan > 1 ? `${data.levelSpan}F` : undefined,
+        levelSpan: data.levelSpan,
     };
 
     // Remove undefined keys before sending to Firestore
@@ -58,11 +87,10 @@ export function getUnitDataFromForm(data: UnitFormValues) {
         unitData.isPenthouse = false;
     }
 
-
     return unitData;
 }
 
-export function getAttachmentDataFromForm(data: AttachmentFormValues) {
+export function getAttachmentDataFromForm(data: any) {
     const attachmentData: { [key: string]: any } = {
         identifier: data.identifier,
         type: data.type,
@@ -85,7 +113,7 @@ export function getAttachmentDataFromForm(data: AttachmentFormValues) {
     return attachmentData;
 }
 
-export const getStatusClass = (status: UnitFormValues['status'] | undefined) => {
+export const getStatusClass = (status: NewUnitFormValues['status'] | undefined) => {
     switch (status) {
         case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600 text-white';
         case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600 text-white';

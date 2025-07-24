@@ -3,7 +3,6 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { z } from 'zod';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -11,36 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Unit } from '@/hooks/use-unit-details';
 import { Switch } from '../ui/switch';
-import { Checkbox } from '../ui/checkbox';
 import { Separator } from '../ui/separator';
 import { AMENITIES_LIST, KITCHEN_LAYOUTS, ORIENTATIONS } from '@/lib/unit-helpers';
+import { AreaInputs } from './new/AreaInputs';
+import { AmenitiesChecklist } from './new/AmenitiesChecklist';
+import type { NewUnitFormValues as UnitFormValues } from '@/lib/unit-helpers';
 
-export const unitSchema = z.object({
-  identifier: z.string().min(1, "Identifier is required"),
-  name: z.string().min(1, "Name is required"),
-  type: z.string().optional(),
-  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος', 'Προς Ενοικίαση']),
-  
-  // Area fields
-  netArea: z.string().optional(),
-  grossArea: z.string().optional(),
-  commonArea: z.string().optional(),
-  semiOutdoorArea: z.string().optional(),
-  architecturalProjectionsArea: z.string().optional(),
-  balconiesArea: z.string().optional(),
-  
-  price: z.string().optional(),
-  bedrooms: z.string().optional(),
-  bathrooms: z.string().optional(),
-  orientation: z.string().optional(),
-  kitchenLayout: z.string().optional(),
-  description: z.string().optional(),
-  isPenthouse: z.boolean().default(false),
-  amenities: z.array(z.string()).optional(),
-  levelSpan: z.number().int().min(1).default(1),
-});
-
-export type UnitFormValues = z.infer<typeof unitSchema>;
 
 interface UnitDetailsFormProps {
   form: UseFormReturn<UnitFormValues>;
@@ -159,47 +134,13 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
         <Separator />
         <div>
             <h3 className="text-base font-semibold mb-4">Ανάλυση Εμβαδού (τ.μ.)</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <FormField control={form.control} name="netArea" render={({ field }) => (<FormItem><FormLabel>Καθαρά</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="grossArea" render={({ field }) => (<FormItem><FormLabel>Μικτά</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="commonArea" render={({ field }) => (<FormItem><FormLabel>Κοινόχρηστα</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="semiOutdoorArea" render={({ field }) => (<FormItem><FormLabel>Ημιυπαίθριοι</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="architecturalProjectionsArea" render={({ field }) => (<FormItem><FormLabel>Αρχ. Προεξοχές</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="balconiesArea" render={({ field }) => (<FormItem><FormLabel>Μπαλκόνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            </div>
+            <AreaInputs control={form.control} />
         </div>
 
         <Separator />
         <div>
             <h3 className="text-base font-semibold mb-4">Παροχές</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {AMENITIES_LIST.map((item) => (
-                  <FormField
-                    key={item.id}
-                    control={form.control}
-                    name="amenities"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(item.id)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...(field.value || []), item.id])
-                                : field.onChange(
-                                    (field.value || []).filter(
-                                      (value) => value !== item.id
-                                    )
-                                  )
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">{item.label}</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                ))}
-              </div>
+            <AmenitiesChecklist control={form.control} />
         </div>
 
         <Separator />
