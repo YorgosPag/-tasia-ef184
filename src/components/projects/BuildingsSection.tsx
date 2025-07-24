@@ -11,6 +11,7 @@ import {
   getDoc,
   deleteDoc,
   serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -56,6 +57,7 @@ const buildingSchema = z.object({
   floorsCount: z.coerce.number().int().positive().optional(),
   constructionYear: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 5).optional(),
   tags: z.string().optional(),
+  identifier: z.string().min(1, 'Ο κωδικός κτιρίου είναι υποχρεωτικός.'),
 });
 
 export type BuildingFormValues = z.infer<typeof buildingSchema>;
@@ -79,7 +81,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
         resolver: zodResolver(buildingSchema),
         defaultValues: {
             id: undefined, address: '', type: '', description: '', photoUrl: '',
-            floorsCount: undefined, constructionYear: undefined, tags: '',
+            floorsCount: undefined, constructionYear: undefined, tags: '', identifier: '',
         },
     });
 
@@ -119,6 +121,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                 description: data.description || '', photoUrl: data.photoUrl || '',
                 floorsCount: data.floorsCount || undefined, constructionYear: data.constructionYear || undefined,
                 tags: (data.tags || []).join(', '),
+                identifier: data.identifier || '',
             });
             setEditingBuilding(building);
             setIsDialogOpen(true);
@@ -155,13 +158,19 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
             photoUrl: data.photoUrl?.trim() || undefined, floorsCount: data.floorsCount || undefined,
             constructionYear: data.constructionYear || undefined,
             tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+            identifier: data.identifier,
         }
     
         try {
             if (editingBuilding) {
                 const batch = writeBatch(db);
                 batch.update(doc(db, 'buildings', editingBuilding.topLevelId), finalData);
-                batch.update(doc(db, 'projects', project.id, 'buildings', editingBuilding.id), finalData);
+                batch.update(doc(db, 'projects', project.id, 'buildings', editingBuilding.id), {
+                  address: finalData.address,
+                  type: finalData.type,
+                  description: finalData.description,
+                  photoUrl: finalData.photoUrl,
+                });
                 await batch.commit();
                 toast({ title: 'Επιτυχία', description: 'Το κτίριο ενημερώθηκε.' });
                 await logActivity('UPDATE_BUILDING', {
@@ -175,7 +184,14 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                 const topLevelRef = doc(collection(db, 'buildings'));
                 const subCollectionRef = doc(collection(db, 'projects', project.id, 'buildings'));
                 batch.set(topLevelRef, { ...finalData, projectId: project.id, originalId: subCollectionRef.id, createdAt: serverTimestamp() });
-                batch.set(subCollectionRef, { ...finalData, topLevelId: topLevelRef.id, createdAt: serverTimestamp() });
+                batch.set(subCollectionRef, { 
+                  address: finalData.address,
+                  type: finalData.type,
+                  description: finalData.description,
+                  photoUrl: finalData.photoUrl,
+                  topLevelId: topLevelRef.id, 
+                  createdAt: serverTimestamp() 
+                });
                 await batch.commit();
                 toast({ title: 'Επιτυχία', description: 'Το κτίριο προστέθηκε.' });
                 await logActivity('CREATE_BUILDING', {
@@ -204,7 +220,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle>Κτίρια του Έργου</CardTitle>
-                    {isEditor && <Button size="sm" onClick={() => { setEditingBuilding(null); setIsDialogOpen(true); }}><PlusCircle className="mr-2" />Νέο Κτίριο</Button>}
+                    {isEditor && <Button size="sm" onClick={() => { setEditingBuilding(null); form.reset(); setIsDialogOpen(true); }}><PlusCircle className="mr-2" />Νέο Κτίριο</Button>}
                 </div>
             </CardHeader>
             <CardContent>
@@ -215,17 +231,17 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                     <TableHeader><TableRow><TableHead className="w-[60px]">Φωτο</TableHead><TableHead>Διεύθυνση</TableHead><TableHead>Τύπος</TableHead><TableHead>Ημ/νία Δημ.</TableHead><TableHead className="text-right">Ενέργειες</TableHead></TableRow></TableHeader>
                     <TableBody>
                         {buildings.map((building) => (
-                        <TableRow key={building.id} className="group cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>
-                            <TableCell><div className="cursor-pointer">{building.photoUrl ? (<Image src={building.photoUrl} alt={building.address} width={40} height={40} className="rounded-md object-cover"/>) : (<div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>)}</div></TableCell>
-                            <TableCell className="font-medium cursor-pointer">{building.address}</TableCell>
-                            <TableCell className="text-muted-foreground cursor-pointer">{building.type}</TableCell>
-                            <TableCell className="cursor-pointer">{formatDate(building.createdAt)}</TableCell>
+                        <TableRow key={building.id} className="group">
+                            <TableCell><div className="cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>{building.photoUrl ? (<Image src={building.photoUrl} alt={building.address} width={40} height={40} className="rounded-md object-cover"/>) : (<div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>)}</div></TableCell>
+                            <TableCell className="font-medium cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>{building.address}</TableCell>
+                            <TableCell className="text-muted-foreground cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>{building.type}</TableCell>
+                            <TableCell className="cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>{formatDate(building.createdAt)}</TableCell>
                             <TableCell className="text-right">
                                 {isEditor && <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-2">
                                     <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={(e) => { e.stopPropagation(); handleEditBuilding(building); }}><Edit className="h-4 w-4"/><span className="sr-only">Επεξεργασία</span></Button>
                                     <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}><Trash2 className="h-4 w-4"/><span className="sr-only">Διαγραφή</span></Button></AlertDialogTrigger>
                                         <AlertDialogContent>
-                                            <AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το κτίριο "{building.address}".</AlertDialogDescription></AlertDialogHeader>
+                                            <AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το κτίριο "{building.address}" και όλοι οι όροφοι και τα ακίνητα που περιέχει.</AlertDialogDescription></AlertDialogHeader>
                                             <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteBuilding(building.id)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
@@ -249,5 +265,3 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
         </Card>
     )
 }
-
-    
