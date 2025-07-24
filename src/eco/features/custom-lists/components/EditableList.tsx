@@ -1,14 +1,15 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Search } from 'lucide-react';
 import { ListItemComponent } from './ListItem';
 import { CustomList, ListItem } from '../hooks/useCustomLists';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
 
 interface EditableListProps {
   list: CustomList;
@@ -29,6 +30,7 @@ export const EditableList = ({
 }: EditableListProps) => {
   const [newItemValue, setNewItemValue] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [itemSearchQuery, setItemSearchQuery] = useState('');
 
   const handleAddItem = async () => {
     if (!newItemValue.trim()) return;
@@ -37,6 +39,16 @@ export const EditableList = ({
     setNewItemValue('');
     setIsAdding(false);
   };
+
+  const filteredItems = useMemo(() => {
+    if (!itemSearchQuery) return list.items;
+    const lowercasedQuery = itemSearchQuery.toLowerCase();
+    return list.items.filter(item =>
+      item.value.toLowerCase().includes(lowercasedQuery) ||
+      (item.code && item.code.toLowerCase().includes(lowercasedQuery))
+    );
+  }, [list.items, itemSearchQuery]);
+
 
   return (
     <AccordionItem value={list.id} className="border rounded-md px-4 bg-background">
@@ -48,7 +60,7 @@ export const EditableList = ({
           </div>
         </AccordionTrigger>
         <div className="flex items-center gap-1 pl-4">
-          <Button variant="ghost" size="icon" disabled><Edit className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" onClick={() => alert('Η επεξεργασία της λίστας θα υλοποιηθεί σύντομα.')}><Edit className="h-4 w-4" /></Button>
            <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" disabled={list.isProtected}><Trash2 className="h-4 w-4"/></Button>
@@ -67,9 +79,18 @@ export const EditableList = ({
         </div>
       </div>
       <AccordionContent>
-        <div className="max-h-[300px] overflow-y-auto pr-2 mb-4">
+        <div className="relative mb-2">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+                placeholder="Αναζήτηση στα στοιχεία..." 
+                className="pl-9 h-9"
+                value={itemSearchQuery}
+                onChange={(e) => setItemSearchQuery(e.target.value)}
+            />
+        </div>
+        <div className="max-h-[300px] overflow-y-auto pr-2 mb-4 border-t pt-2">
           <div className="space-y-1">
-            {list.items.map((item) => (
+            {filteredItems.map((item) => (
               <ListItemComponent
                 key={item.id}
                 item={item}
@@ -78,6 +99,9 @@ export const EditableList = ({
                 onDelete={() => deleteItem(list.id, item.id, item.value)}
               />
             ))}
+             {filteredItems.length === 0 && (
+                <p className="text-sm text-center text-muted-foreground py-4">Δεν βρέθηκαν στοιχεία.</p>
+            )}
           </div>
         </div>
         <div className="space-y-2 border-t pt-4">
