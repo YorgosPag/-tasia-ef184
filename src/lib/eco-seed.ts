@@ -9,6 +9,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { customListsData, policeStationsData } from './eco-data';
+import { contactsData } from './eco-contacts-data';
 
 /**
  * Seeds the Firestore database with the initial custom lists and complex entities for the "Exoikonomo" app.
@@ -47,6 +48,15 @@ export async function seedEcoData() {
       batch.set(stationRef, { ...station, createdAt: serverTimestamp() });
   }
   console.log(`${policeStationsData.length} police stations queued.`);
+  
+  // --- Seed Contacts ---
+  console.log('Seeding contacts...');
+  const contactsRef = collection(db, 'tsia-contacts');
+  for (const contact of contactsData) {
+      const contactRef = doc(contactsRef);
+      batch.set(contactRef, { ...contact, createdAt: serverTimestamp() });
+  }
+  console.log(`${contactsData.length} contacts queued.`);
 
 
   try {
