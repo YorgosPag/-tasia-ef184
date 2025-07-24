@@ -15,6 +15,7 @@ import {
   writeBatch,
   where,
   limit,
+  serverTimestamp,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -153,7 +154,7 @@ export function useCustomLists() {
   const updateItem = useCallback(async (listId: string, itemId: string, data: Partial<ListItem>) => {
     try {
       const cleanData = { ...data };
-      delete cleanData.id; // Don't try to write the id field back
+      delete (cleanData as any).id; // Don't try to write the id field back
       await updateDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId), cleanData);
     } catch (error) {
       console.error(error);

@@ -2,8 +2,8 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SimpleListsTab } from '@/features/custom-lists/components/SimpleListsTab';
-import { ComplexEntitiesTab } from '@/features/custom-lists/components/ComplexEntitiesTab';
+import { SimpleListsTab } from '@/eco/features/custom-lists/components/SimpleListsTab';
+import { ComplexEntitiesTab } from '@/eco/features/custom-lists/components/ComplexEntitiesTab';
 
 export default function CustomListsPage() {
   return (
