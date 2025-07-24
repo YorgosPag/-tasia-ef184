@@ -2,6 +2,7 @@
 'use client';
 
 import { useForm, UseFormReturn } from 'react-hook-form';
+import { z } from 'zod';
 import {
     Dialog,
     DialogContent,
@@ -23,8 +24,23 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import type { BuildingFormValues } from './BuildingsSection';
 import type { Building } from '@/app/projects/[id]/page';
+
+
+// Schema for the building form
+export const buildingSchema = z.object({
+  id: z.string().optional(), // Hidden field to know if we are editing
+  address: z.string().min(1, { message: 'Η διεύθυνση είναι υποχρεωτική.' }),
+  type: z.string().min(1, { message: 'Ο τύπος είναι υποχρεωτικός.' }),
+  description: z.string().optional(),
+  photoUrl: z.string().url({ message: "Το URL της φωτογραφίας δεν είναι έγκυρο." }).or(z.literal('')),
+  floorsCount: z.coerce.number().int().positive().optional(),
+  constructionYear: z.coerce.number().int().min(1900).max(new Date().getFullYear() + 5).optional(),
+  tags: z.string().optional(),
+  identifier: z.string().min(1, 'Ο κωδικός κτιρίου είναι υποχρεωτικός.'),
+});
+
+export type BuildingFormValues = z.infer<typeof buildingSchema>;
 
 interface BuildingFormDialogProps {
     open: boolean;
