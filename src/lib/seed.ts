@@ -18,34 +18,26 @@ export async function seedDatabase() {
   console.log('Starting database seed...');
 
   // --- Contacts ---
-  // Seed all contacts except for companies, which will be handled in their own loop
-  const nonCompanyContacts = contactsData.filter(c => c.type !== 'Company');
-  nonCompanyContacts.forEach((contact) => {
+  // Seed all contacts from the dedicated contactsData array
+  contactsData.forEach((contact) => {
     const docRef = doc(collection(db, 'contacts'));
     refs[contact._id] = docRef;
     const { _id, ...contactData } = contact;
     batch.set(docRef, { ...contactData, createdAt: serverTimestamp() });
   });
-  console.log('Non-company contacts queued for creation.');
+  console.log('All contacts from contactsData queued for creation.');
 
-
-  // --- Companies (Dual Write to companies and contacts) ---
+  // --- Companies ---
+  // Companies are seeded into their own collection for business logic,
+  // but they are already in the contacts list for relational purposes.
   companiesData.forEach((company) => {
-    // Create in 'companies' collection
     const companyRef = doc(collection(db, 'companies'));
     refs[company._id] = companyRef; // Use the company _id for project linking
     const { _id, ...companyData } = company;
     batch.set(companyRef, { ...companyData, createdAt: serverTimestamp() });
-
-    // Also create a corresponding entry in 'contacts' collection
-    const contactRef = doc(collection(db, 'contacts'));
-    batch.set(contactRef, {
-        ...companyData,
-        type: 'Company', // Ensure type is set correctly
-        createdAt: serverTimestamp() 
-    });
   });
-  console.log('Companies queued for creation in both companies and contacts collections.');
+  console.log('Companies queued for creation.');
+
 
   // --- Projects ---
   projectsData.forEach((project) => {
