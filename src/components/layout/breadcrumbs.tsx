@@ -35,16 +35,30 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
         <ol className="flex items-center space-x-1 text-sm text-muted-foreground">
           {items.map((item, index) => {
             const isLast = index === items.length - 1;
+            const itemContent = (
+              <span className="truncate" style={{ maxWidth: '150px' }}>
+                {item.label}
+              </span>
+            );
+
             return (
               <Fragment key={`${item.href}-${item.label}`}>
                 <li>
                   {isLast ? (
-                    <span
-                      className="font-medium text-foreground"
-                      aria-current="page"
-                    >
-                      {item.label}
-                    </span>
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                           <span
+                            className="font-medium text-foreground truncate"
+                            aria-current="page"
+                            style={{ maxWidth: '150px' }}
+                          >
+                            {item.label}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                           <p>{item.tooltip || item.label}</p>
+                        </TooltipContent>
+                    </Tooltip>
                   ) : (
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -52,11 +66,11 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                           href={item.href}
                           className="transition-colors hover:text-foreground"
                         >
-                          {item.label}
+                          {itemContent}
                         </Link>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{item.tooltip || `Μετάβαση σε ${item.label}`}</p>
+                        <p>{item.tooltip || item.label}</p>
                       </TooltipContent>
                     </Tooltip>
                   )}
