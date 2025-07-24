@@ -33,34 +33,42 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
     <TooltipProvider>
       <nav aria-label="Breadcrumb" className={cn('hidden md:block', className)}>
         <ol className="flex items-center space-x-1 text-sm text-muted-foreground">
-          {items.map((item, index) => (
-            <Fragment key={`${item.href}-${item.label}`}>
-              <li>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        'transition-colors hover:text-foreground',
-                        index === items.length - 1 ? 'font-medium text-foreground pointer-events-none' : ''
-                      )}
-                      aria-current={index === items.length - 1 ? 'page' : undefined}
+          {items.map((item, index) => {
+            const isLast = index === items.length - 1;
+            return (
+              <Fragment key={`${item.href}-${item.label}`}>
+                <li>
+                  {isLast ? (
+                    <span
+                      className="font-medium text-foreground"
+                      aria-current="page"
                     >
                       {item.label}
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{item.tooltip || `Μετάβαση σε ${item.label}`}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </li>
-              {index < items.length - 1 && (
-                <li>
-                  <ChevronRight className="h-4 w-4" />
+                    </span>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href={item.href}
+                          className="transition-colors hover:text-foreground"
+                        >
+                          {item.label}
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{item.tooltip || `Μετάβαση σε ${item.label}`}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                 </li>
-              )}
-            </Fragment>
-          ))}
+                {!isLast && (
+                  <li>
+                    <ChevronRight className="h-4 w-4" />
+                  </li>
+                )}
+              </Fragment>
+            );
+          })}
         </ol>
       </nav>
     </TooltipProvider>
