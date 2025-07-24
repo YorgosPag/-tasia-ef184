@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, writeBatch, doc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, writeBatch, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +14,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -44,12 +55,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { PlusCircle, Loader2, Download, Search } from 'lucide-react';
+import { PlusCircle, Loader2, Download, Search, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { useDataStore } from '@/hooks/use-data-store';
 import { exportToJson } from '@/lib/exporter';
+import { useAuth } from '@/hooks/use-auth';
+import { logActivity } from '@/lib/logger';
 
 
 const buildingSchema = z.object({
@@ -62,8 +75,14 @@ const buildingSchema = z.object({
 
 type BuildingFormValues = z.infer<typeof buildingSchema>;
 
-interface Building extends BuildingFormValues {
-  id: string;
+interface Building {
+  id: string; // This is the top-level ID
+  address: string;
+  type: string;
+  description?: string;
+  photoUrl?: string;
+  projectId?: string;
+  originalId?: string; // This is the sub-collection ID
   createdAt: any;
 }
 
@@ -72,9 +91,11 @@ export default function BuildingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingBuilding, setEditingBuilding] = useState<Building | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   const router = useRouter();
+  const { isEditor } = useAuth();
   const { projects, isLoading: isLoadingProjects } = useDataStore();
 
   const form = useForm<BuildingFormValues>({
@@ -88,15 +109,15 @@ export default function BuildingsPage() {
     },
   });
   
-  // Effect to reset form when dialog is closed
-  useEffect(() => {
-    if (!isDialogOpen) {
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
       form.reset();
+      setEditingBuilding(null);
     }
-  }, [isDialogOpen, form]);
+  };
 
   useEffect(() => {
-    // This will listen to a top-level 'buildings' collection
     const unsubscribe = onSnapshot(collection(db, 'buildings'), (snapshot) => {
       const buildingsData: Building[] = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -120,62 +141,87 @@ export default function BuildingsPage() {
   const onSubmit = async (data: BuildingFormValues) => {
     setIsSubmitting(true);
     try {
-        const batch = writeBatch(db);
-        const topLevelBuildingRef = doc(collection(db, 'buildings'));
-
         const buildingData = {
             address: data.address,
             type: data.type,
             description: data.description || '',
             photoUrl: data.photoUrl?.trim() || undefined,
             projectId: data.projectId,
-            createdAt: serverTimestamp(),
         };
 
-        const subCollectionBuildingRef = doc(collection(db, 'projects', data.projectId, 'buildings'));
-        
-        // Set in top-level collection with reference to subcollection
-        batch.set(topLevelBuildingRef, {
-            ...buildingData,
-            originalId: subCollectionBuildingRef.id,
-        });
-        // Set in subcollection with reference to top-level collection
-        batch.set(subCollectionBuildingRef, {
-            address: data.address,
-            type: data.type,
-            description: data.description,
-            photoUrl: data.photoUrl,
-            createdAt: serverTimestamp(),
-            topLevelId: topLevelBuildingRef.id,
-        });
-       
-
-        await batch.commit();
-
-      toast({
-        title: "Επιτυχία",
-        description: "Το κτίριο προστέθηκε με επιτυχία.",
-      });
-      setIsDialogOpen(false);
+        if (editingBuilding) {
+            const batch = writeBatch(db);
+            const topLevelBuildingRef = doc(db, 'buildings', editingBuilding.id);
+            const subCollectionBuildingRef = doc(db, 'projects', editingBuilding.projectId!, 'buildings', editingBuilding.originalId!);
+            
+            batch.update(topLevelBuildingRef, buildingData);
+            batch.update(subCollectionBuildingRef, {
+                address: data.address,
+                type: data.type,
+                description: data.description,
+                photoUrl: data.photoUrl,
+            });
+            
+            await batch.commit();
+            toast({ title: "Επιτυχία", description: "Το κτίριο ενημερώθηκε." });
+        } else {
+            const batch = writeBatch(db);
+            const topLevelBuildingRef = doc(collection(db, 'buildings'));
+            const subCollectionBuildingRef = doc(collection(db, 'projects', data.projectId, 'buildings'));
+            
+            batch.set(topLevelBuildingRef, { ...buildingData, originalId: subCollectionBuildingRef.id, createdAt: serverTimestamp() });
+            batch.set(subCollectionBuildingRef, {
+                address: data.address, type: data.type, description: data.description,
+                photoUrl: data.photoUrl, createdAt: serverTimestamp(), topLevelId: topLevelBuildingRef.id,
+            });
+            await batch.commit();
+            toast({ title: "Επιτυχία", description: "Το κτίριο προστέθηκε." });
+        }
+        handleDialogOpenChange(false);
     } catch (error) {
-      console.error("Error adding building: ", error);
-      toast({
-        variant: "destructive",
-        title: "Σφάλμα",
-        description: "Δεν ήταν δυνατή η προσθήκη του κτιρίου.",
-      });
+      console.error("Error submitting building: ", error);
+      toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν ήταν δυνατή η υποβολή." });
     } finally {
       setIsSubmitting(false);
     }
   };
+  
+  const handleEditClick = (building: Building) => {
+    setEditingBuilding(building);
+    form.reset({
+      address: building.address,
+      type: building.type,
+      description: building.description || '',
+      photoUrl: building.photoUrl || '',
+      projectId: building.projectId || '',
+    });
+    setIsDialogOpen(true);
+  };
+  
+  const handleDeleteClick = async (building: Building) => {
+    if (!building.originalId || !building.projectId) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Cannot delete building with missing data.' });
+      return;
+    }
+    try {
+      const batch = writeBatch(db);
+      batch.delete(doc(db, 'buildings', building.id));
+      batch.delete(doc(db, 'projects', building.projectId, 'buildings', building.originalId));
+      await batch.commit();
+      toast({ title: 'Success', description: `Building ${building.address} has been deleted.` });
+      await logActivity('DELETE_BUILDING', { entityId: building.id, entityType: 'building', name: building.address, projectId: building.projectId });
+    } catch (err) {
+      console.error("Error deleting building:", err);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete building.' });
+    }
+  };
+
 
    const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return 'N/A';
-    // Ensure timestamp is a Firebase Timestamp object before converting
     if (timestamp.toDate) {
       return format(timestamp.toDate(), 'dd/MM/yyyy');
     }
-    // Fallback for objects that might already be Date
     if (timestamp instanceof Date) {
         return format(timestamp, 'dd/MM/yyyy');
     }
@@ -188,7 +234,7 @@ export default function BuildingsPage() {
 
   const getProjectTitle = (projectId: string | undefined) => {
     if (!projectId) return 'N/A';
-    if (!projects) return 'Loading...'; // Defensive check
+    if (!projects) return 'Loading...'; 
     return projects.find(p => p.id === projectId)?.title || projectId;
   };
   
@@ -204,7 +250,7 @@ export default function BuildingsPage() {
         projectTitle.includes(query)
       );
     });
-  }, [buildings, searchQuery, projects]);
+  }, [buildings, searchQuery, projects, getProjectTitle]);
 
 
   const handleExport = () => {
@@ -227,18 +273,18 @@ export default function BuildingsPage() {
                 <Download className="mr-2"/>
                 Εξαγωγή σε JSON
             </Button>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
-                <Button>
+                <Button onClick={() => setEditingBuilding(null)}>
                 <PlusCircle className="mr-2" />
                 Νέο Κτίριο
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                <DialogTitle>Δημιουργία Νέου Κτιρίου</DialogTitle>
+                <DialogTitle>{editingBuilding ? 'Επεξεργασία' : 'Δημιουργία Νέου'} Κτιρίου</DialogTitle>
                 <DialogDescription>
-                    Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε ένα νέο κτίριο.
+                    Συμπληρώστε τις παρακάτω πληροφορίες για το κτίριο.
                 </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -331,7 +377,7 @@ export default function BuildingsPage() {
                     </DialogClose>
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Δημιουργία
+                        {editingBuilding ? 'Αποθήκευση' : 'Δημιουργία'}
                     </Button>
                     </DialogFooter>
                 </form>
@@ -368,15 +414,37 @@ export default function BuildingsPage() {
                   <TableHead>Τύπος</TableHead>
                   <TableHead>Έργο</TableHead>
                   <TableHead>Ημ/νία Δημιουργίας</TableHead>
+                  {isEditor && <TableHead className="text-right">Ενέργειες</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredBuildings.map((building) => (
-                  <TableRow key={building.id} onClick={() => handleRowClick(building.id)} className="cursor-pointer">
-                    <TableCell className="font-medium">{building.address}</TableCell>
-                    <TableCell className="text-muted-foreground">{building.type}</TableCell>
-                    <TableCell className="text-muted-foreground">{getProjectTitle(building.projectId)}</TableCell>
-                    <TableCell className="text-muted-foreground">{formatDate(building.createdAt)}</TableCell>
+                  <TableRow key={building.id} className="group">
+                    <TableCell className="font-medium cursor-pointer" onClick={() => handleRowClick(building.id)}>{building.address}</TableCell>
+                    <TableCell className="text-muted-foreground cursor-pointer" onClick={() => handleRowClick(building.id)}>{building.type}</TableCell>
+                    <TableCell className="text-muted-foreground cursor-pointer" onClick={() => handleRowClick(building.id)}>{getProjectTitle(building.projectId)}</TableCell>
+                    <TableCell className="text-muted-foreground cursor-pointer" onClick={() => handleRowClick(building.id)}>{formatDate(building.createdAt)}</TableCell>
+                    {isEditor && <TableCell className="text-right">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={() => handleEditClick(building)}><Edit className="h-4 w-4"/></Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/></Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                                <AlertDialogDescription>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το κτίριο "{building.address}".</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteClick(building)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    }
                   </TableRow>
                 ))}
               </TableBody>
