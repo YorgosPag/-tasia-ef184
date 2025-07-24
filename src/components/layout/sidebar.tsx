@@ -11,6 +11,7 @@ import {
   Construction,
   FileCog,
   FilePen,
+  Home,
   LayoutTemplate,
   Layers,
   LineChart,
@@ -50,7 +51,7 @@ const NavLink = ({
 }) => {
   const pathname = usePathname()
   // More specific check for projects link
-  const isActive = href.includes('?') ? pathname + window.location.search === href : pathname.startsWith(href);
+  const isActive = href === '/' ? pathname === href : href.includes('?') ? pathname + window.location.search === href : pathname.startsWith(href);
 
 
   return (
@@ -85,6 +86,15 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent className="p-0">
+        <SidebarGroup>
+            <SidebarMenu>
+                 <NavLink href="/" icon={Home} tooltip="Αρχική">
+                    Αρχική
+                </NavLink>
+            </SidebarMenu>
+        </SidebarGroup>
+        
+        <SidebarSeparator />
         
         <SidebarGroup>
           <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
