@@ -36,12 +36,6 @@ export interface CustomList {
   items: ListItem[];
 }
 
-const listToContactFieldMap: Record<string, string> = {
-    'Ρόλοι': 'job.role',
-    'Ειδικότητες': 'job.specialty',
-};
-
-
 export function useCustomLists() {
   const [lists, setLists] = useState<CustomList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,10 +54,14 @@ export function useCustomLists() {
       );
       setLists(listsData);
       setIsLoading(false);
+    }, (error) => {
+        console.error("Error fetching custom lists:", error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των λιστών.'});
+        setIsLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [toast]);
 
   const addList = useCallback(async (listData: Omit<CustomList, 'id' | 'items'>) => {
     try {
@@ -90,8 +88,6 @@ export function useCustomLists() {
 
   const deleteList = useCallback(async (id: string) => {
     try {
-      // Note: This does not delete subcollections in client-side code.
-      // A cloud function is required for cascading deletes. For now, we delete the parent.
       await deleteDoc(doc(db, 'tsia-custom-lists', id));
       toast({ title: 'Επιτυχία', description: 'Η λίστα διαγράφηκε.' });
     } catch (error) {
@@ -112,7 +108,7 @@ export function useCustomLists() {
         const lines = rawValue.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
         lines.forEach(line => {
             const firstSpaceIndex = line.indexOf(' ');
-            if (firstSpaceIndex === -1) return; // Skip lines without a space
+            if (firstSpaceIndex === -1) return;
 
             const code = line.substring(0, firstSpaceIndex).trim();
             const value = line.substring(firstSpaceIndex + 1).trim();
@@ -154,7 +150,7 @@ export function useCustomLists() {
   const updateItem = useCallback(async (listId: string, itemId: string, data: Partial<ListItem>) => {
     try {
       const cleanData = { ...data };
-      delete (cleanData as any).id; // Don't try to write the id field back
+      delete (cleanData as any).id;
       await updateDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId), cleanData);
     } catch (error) {
       console.error(error);
@@ -163,31 +159,13 @@ export function useCustomLists() {
   }, [toast]);
 
   const deleteItem = useCallback(async (listId: string, itemId: string, itemValue: string) => {
-    const list = lists.find(l => l.id === listId);
-    if (!list) return;
-
-    const contactField = listToContactFieldMap[list.title];
-    if (contactField) {
-        const q = query(collection(db, 'tsia-contacts'), where(contactField, '==', itemValue), limit(1));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-            const contactInUse = snapshot.docs[0].data();
-            toast({
-                variant: 'destructive',
-                title: "Αδυναμία Διαγραφής",
-                description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${contactInUse.name}.`
-            });
-            return;
-        }
-    }
-
     try {
       await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
     } catch (error) {
       console.error(error);
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
     }
-  }, [lists, toast]);
+  }, [toast]);
 
   return { lists, isLoading, addList, updateList, deleteList, addItem, updateItem, deleteItem };
 }
