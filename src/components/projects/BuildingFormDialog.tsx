@@ -52,6 +52,7 @@ export function BuildingFormDialog({
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={onSubmit} className="grid max-h-[80vh] gap-4 overflow-y-auto py-4 pr-4">
+                        <FormField control={form.control} name="identifier" render={({ field }) => (<FormItem><FormLabel>Κωδικός Κτιρίου</FormLabel><FormControl><Input placeholder="π.χ. Α, Β, W1" {...field}/></FormControl><FormMessage/></FormItem>)}/>
                         <FormField control={form.control} name="address" render={({ field }) => (<FormItem><FormLabel>Διεύθυνση</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                         <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><FormControl><Input {...field}/></FormControl><FormMessage/></FormItem>)}/>
                         <div className="grid grid-cols-2 gap-4">
