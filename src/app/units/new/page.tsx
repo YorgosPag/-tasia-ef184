@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
-import { doc, getDoc, collection, setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, collection, setDoc, serverTimestamp, writeBatch, orderBy, query as firestoreQuery } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { logActivity } from '@/lib/logger';
 import { generateNextUnitIdentifier } from '@/lib/identifier-generator';
@@ -31,7 +31,8 @@ import { UnitLocationSelector } from '@/components/units/new/UnitLocationSelecto
 import { AmenitiesChecklist } from '@/components/units/new/AmenitiesChecklist';
 import { AreaInputs } from '@/components/units/new/AreaInputs';
 import { useUnitLocationState } from '@/hooks/useUnitLocationState';
-import { BuildingFormDialog, buildingSchema } from '@/components/projects/BuildingFormDialog';
+import { BuildingFormDialog } from '@/components/projects/BuildingFormDialog';
+import { buildingSchema } from '@/components/projects/BuildingFormDialog';
 import { ProjectDialogForm, projectSchema } from '@/components/projects/ProjectDialogForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 
@@ -55,7 +56,7 @@ export default function NewUnitPage() {
     defaultValues: {
       floorIds: [], identifier: '', name: '', type: '', status: 'Διαθέσιμο',
       netArea: '', grossArea: '', commonArea: '', semiOutdoorArea: '', architecturalProjectionsArea: '', balconiesArea: '',
-      price: '', bedrooms: '1', bathrooms: '', orientation: '', kitchenLayout: '',
+      price: '', bedrooms: '', bathrooms: '', orientation: '', kitchenLayout: '',
       description: '', isPenthouse: false, amenities: [], levelSpan: 0,
     },
   });
@@ -63,7 +64,7 @@ export default function NewUnitPage() {
   const selectedType = useWatch({ control: form.control, name: 'type' });
   const isMultiFloorAllowed = MULTI_FLOOR_TYPES.includes(selectedType);
 
-  const locationState = useUnitLocationState({ companies, projects, buildings }, form, isMultiFloorAllowed);
+  const locationState = useUnitLocationState({ companies, projects, buildings }, form);
 
   // --- Quick Create Logic ---
   

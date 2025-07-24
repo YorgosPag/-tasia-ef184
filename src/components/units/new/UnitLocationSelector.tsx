@@ -32,7 +32,7 @@ export function UnitLocationSelector({
         label: string, 
         value: string, 
         onChange: (val: string) => void, 
-        options: { id: string, name: string }[], 
+        options: { id: string, name?: string, title?: string, address?: string, level?: string }[], 
         placeholder: string, 
         disabled: boolean, 
         entityType: 'company' | 'project' | 'building' | 'floor'
@@ -42,7 +42,7 @@ export function UnitLocationSelector({
             <div className="flex items-center gap-2">
                 <Select onValueChange={onChange} value={value} disabled={disabled}>
                     <SelectTrigger><SelectValue placeholder={placeholder}/></SelectTrigger>
-                    <SelectContent>{options.map((opt: any) => <SelectItem key={opt.id} value={opt.id}>{opt.name || opt.title || opt.address || opt.level}</SelectItem>)}</SelectContent>
+                    <SelectContent>{options.map((opt) => <SelectItem key={opt.id} value={opt.id}>{opt.name || opt.title || opt.address || opt.level}</SelectItem>)}</SelectContent>
                 </Select>
                 <Button type="button" variant="outline" size="icon" onClick={() => onQuickCreate(entityType)} disabled={entityType !== 'company' && disabled}>
                     <PlusCircle className="h-4 w-4"/>
@@ -127,4 +127,3 @@ export function UnitLocationSelector({
         </div>
     );
 }
-

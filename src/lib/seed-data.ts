@@ -8,6 +8,21 @@ export const companiesData: any[] = [
     { _id: 'comp2', name: 'UrbanScapes ΕΠΕ', website: 'https://urbanscapes.example.com', contactInfo: { email: 'contact@urbanscapes.example.com', phone: '2102222222' }, logoUrl: 'https://placehold.co/100x100.png' }
 ];
 
+export const contactsData: any[] = [
+    // Companies from above as contacts
+    { _id: 'contact_comp1', type: 'Company', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111' }, logoUrl: 'https://placehold.co/100x100.png' },
+    { _id: 'contact_comp2', type: 'Company', name: 'UrbanScapes ΕΠΕ', website: 'https://urbanscapes.example.com', contactInfo: { email: 'contact@urbanscapes.example.com', phone: '2102222222' }, logoUrl: 'https://placehold.co/100x100.png' },
+    // Individuals
+    { _id: 'contact_ind1', type: 'Individual', name: 'Γιώργος Παπαδόπουλος', contactInfo: { email: 'gpapadopoulos@email.com', phone: '6971234567' } },
+    // Lawyers
+    { _id: 'contact_law1', type: 'Lawyer', name: 'Αθηνά Νομικού', contactInfo: { email: 'anomikou@lawfirm.gr', phone: '2109876543' } },
+    { _id: 'contact_law2', type: 'Lawyer', name: 'Αλέξανδρος Παύλου', contactInfo: { email: 'apavlou@law.gr', phone: '2101231231' } },
+    // Notaries
+    { _id: 'contact_not1', type: 'Notary', name: 'Ελένη Συμβολαιογράφου', contactInfo: { email: 'eleni.s@notary.gr', phone: '2155554433' } },
+    // Suppliers
+    { _id: 'contact_sup1', type: 'Supplier', name: 'Marmara Granites ΑΕ', contactInfo: { email: 'sales@marmara.gr', phone: '2310123456' } }
+];
+
 export const projectsData: any[] = [
     { _id: 'proj1', companyId: 'comp1', title: 'Athens Revival I', location: 'Κέντρο, Αθήνα', description: 'Μοντέρνα κτίρια κατοικιών στην καρδιά της Αθήνας.', deadline: Timestamp.fromDate(new Date('2025-12-31')), status: 'Σε εξέλιξη', photoUrl: 'https://placehold.co/600x400.png', tags: ['residential', 'luxury'] },
     { _id: 'proj2', companyId: 'comp2', title: 'Thessaloniki Waterfront', location: 'Παραλία, Θεσσαλονίκη', description: 'Συγκρότημα γραφείων με θέα στη θάλασσα.', deadline: Timestamp.fromDate(new Date('2026-06-30')), status: 'Ενεργό', photoUrl: 'https://placehold.co/600x400.png', tags: ['commercial', 'offices'] }
@@ -27,13 +42,13 @@ export const floorsData: any[] = [
 
 export const unitsData: {
   _id: string; floorIds: string[]; levelSpan?: string; identifier: string; name: string; type: string; status: UnitStatus;
-  area: number; price?: number; bedrooms?: number; bathrooms?: number; orientation?: string; amenities?: string[];
+  area: number; price?: number; bedrooms?: number; bathrooms?: string; orientation?: string; amenities?: string[];
   polygonPoints?: { x: number; y: number }[];
   attachments: { type: 'parking' | 'storage'; details: string; area?: number; price?: number; photoUrl?: string, sharePercentage?: number, isBundle?: boolean, isStandalone?: boolean }[];
 }[] = [
     { 
         _id: 'unit1', floorIds: ['floor1'], identifier: 'Α1', name: 'Διαμέρισμα Α1', type: 'Δυάρι', status: 'Διαθέσιμο',
-        area: 85, price: 250000, bedrooms: 2, bathrooms: 1, orientation: 'Νοτιοανατολικός', amenities: ['Τζάκι', 'Κλιματισμός'],
+        area: 85, price: 250000, bedrooms: 2, bathrooms: '1', orientation: 'Νοτιοανατολικός', amenities: ['Τζάκι', 'Κλιματισμός'],
         polygonPoints: [{x: 100, y: 100}, {x: 200, y: 100}, {x: 200, y: 200}, {x: 100, y: 200}],
         attachments: [
             { type: 'parking', details: 'P-1', area: 12, price: 15000, isBundle: true },
@@ -42,14 +57,14 @@ export const unitsData: {
     },
     { 
         _id: 'unit2', floorIds: ['floor1'], identifier: 'Α2', name: 'Διαμέρισμα Α2', type: 'Τριάρι', status: 'Πωλημένο',
-        area: 110, price: 320000, bedrooms: 3, bathrooms: 2, orientation: 'Δυτικός', amenities: ['Αυτόνομη θέρμανση'],
+        area: 110, price: 320000, bedrooms: 3, bathrooms: '2', orientation: 'Δυτικός', amenities: ['Αυτόνομη θέρμανση'],
         attachments: [
             { type: 'parking', details: 'P-2', area: 12, isBundle: true }
         ]
     },
     { 
         _id: 'unit3', floorIds: ['floor2'], identifier: 'Β1', name: 'Ρετιρέ Β1', type: 'Μεζονέτα', status: 'Κρατημένο',
-        area: 150, price: 450000, bedrooms: 4, bathrooms: 3, orientation: 'Προσόψεως', amenities: ['Μεγάλη Βεράντα', 'BBQ'],
+        area: 150, price: 450000, bedrooms: 4, bathrooms: '3', orientation: 'Προσόψεως', amenities: ['Μεγάλη Βεράντα', 'BBQ'],
         attachments: []
     },
     { 

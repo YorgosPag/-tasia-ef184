@@ -21,6 +21,7 @@ import {
   Settings,
   SquareKanban,
   Users,
+  Contact,
 } from "lucide-react"
 
 import {
@@ -119,6 +120,9 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
           <SidebarMenu>
+            <NavLink href="/contacts" icon={Contact} tooltip="Επαφές">
+              Επαφές
+            </NavLink>
             <NavLink href="/companies" icon={Building2} tooltip="Εταιρείες">
               Εταιρείες
             </NavLink>
