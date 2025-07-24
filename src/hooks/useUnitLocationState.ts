@@ -87,6 +87,7 @@ export function useUnitLocationState(
     }, [selectedFloorIds, setValue]);
 
     return {
+        companies, // Pass companies through
         selectedCompany,
         setSelectedCompany,
         selectedProject,

@@ -8,10 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { MULTI_FLOOR_TYPES } from '@/lib/unit-helpers';
 
 export function UnitLocationSelector({ form, locationState, isMultiFloorAllowed }: { form: UseFormReturn<any>, locationState: any, isMultiFloorAllowed: boolean }) {
     const {
+        companies, // Now directly from locationState
         selectedCompany, setSelectedCompany, filteredProjects,
         selectedProject, setSelectedProject, filteredBuildings,
         selectedBuilding, setSelectedBuilding, floors, isLoadingFloors
@@ -23,7 +23,7 @@ export function UnitLocationSelector({ form, locationState, isMultiFloorAllowed 
                 <FormLabel>Εταιρεία</FormLabel>
                 <Select onValueChange={setSelectedCompany} value={selectedCompany}>
                     <SelectTrigger><SelectValue placeholder="Επιλέξτε Εταιρεία..."/></SelectTrigger>
-                    <SelectContent>{locationState.companies.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                    <SelectContent>{(companies || []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                 </Select>
             </FormItem>
             <FormItem>
