@@ -16,7 +16,6 @@ interface UsePdfHandlersProps {
   isEditMode: boolean;
   isLocked: boolean;
   draggingPoint: { unitId: string; pointIndex: number } | null;
-  setLocalUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   lastMouseEvent: MutableRefObject<MouseEvent | null>;
   setDrawingPolygon: React.Dispatch<React.SetStateAction<{ x: number; y: number }[]>>;
   setDraggingPoint: React.Dispatch<React.SetStateAction<{ unitId: string; pointIndex: number } | null>>;
@@ -35,7 +34,6 @@ export function usePdfHandlers({
   isEditMode,
   isLocked,
   draggingPoint,
-  setLocalUnits,
   lastMouseEvent,
   setDrawingPolygon,
   setDraggingPoint,
@@ -133,28 +131,15 @@ export function usePdfHandlers({
     if (isLocked || !draggingPoint) return;
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
-
-    setLocalUnits((prevUnits) =>
-      prevUnits.map((unit) => {
-        if (unit.id === draggingPoint.unitId) {
-          const newPoints = [...(unit.polygonPoints || [])];
-          newPoints[draggingPoint.pointIndex] = { x: svgPoint.x, y: svgPoint.y };
-          return { ...unit, polygonPoints: newPoints };
-        }
-        return unit;
-      })
-    );
+    
+    // This now only calls the parent update function
+    // The parent is responsible for updating the local state and then firestore
+    onUnitPointsUpdate(draggingPoint.unitId, [{ x: svgPoint.x, y: svgPoint.y, pointIndex: draggingPoint.pointIndex } as any]);
   };
 
   const handleMouseUp = () => {
     if (draggingPoint) {
-      setLocalUnits((prevUnits) => {
-        const unit = prevUnits.find((u) => u.id === draggingPoint.unitId);
-        if (unit && unit.polygonPoints) {
-          onUnitPointsUpdate(unit.id, unit.polygonPoints);
-        }
-        return prevUnits;
-      });
+      // Finalization is handled by the parent component now, we just stop the dragging state
       setDraggingPoint(null);
     }
   };

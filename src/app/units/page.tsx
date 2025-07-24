@@ -3,8 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { collection, Timestamp, getDocs, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { Timestamp } from 'firebase/firestore';
 import {
   Table,
   TableBody,
@@ -19,7 +18,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { useQuery } from '@tanstack/react-query';
 import { exportToJson } from '@/lib/exporter';
 import {
   Collapsible,
@@ -32,39 +30,7 @@ import { ALL_STATUSES } from '@/components/floor-plan/utils';
 import { getStatusClass } from '@/lib/unit-helpers';
 import { UnitCard } from '@/components/units/UnitCard';
 import Link from 'next/link';
-
-interface Unit {
-  id: string;
-  identifier: string;
-  name: string;
-  type?: string;
-  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος' | 'Προς Ενοικίαση';
-  floorIds: string[];
-  levelSpan?: string;
-  buildingId: string;
-  createdAt: any;
-  area?: number;
-  price?: number;
-  bedrooms?: number;
-  bathrooms?: number;
-  orientation?: string;
-  amenities?: string[];
-  photoUrl?: string; // Add photoUrl for the card view
-}
-
-async function fetchUnits(): Promise<Unit[]> {
-  const unitsCollection = collection(db, 'units');
-  const snapshot = await getDocs(query(unitsCollection));
-  const units = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit));
-  return units;
-}
-
-export function useUnits() {
-  return useQuery({
-      queryKey: ['units'],
-      queryFn: fetchUnits,
-  });
-}
+import { useUnits, type Unit } from '@/hooks/use-units';
 
 
 export default function UnitsPage() {
