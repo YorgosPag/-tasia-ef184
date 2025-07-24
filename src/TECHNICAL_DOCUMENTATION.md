@@ -80,43 +80,21 @@
 | `notes` | `string`| (Προαιρετικό) Ελεύθερες σημειώσεις. |
 | `createdAt`| `Timestamp`| Ημερομηνία δημιουργίας. |
 
-## 3. Λειτουργία στον Κώδικα
+## 3. Λειτουργία στον Κώδικα (CRUD)
 
 Η κύρια λογική βρίσκεται στον φάκελο `src/features/custom-lists`.
 
 ### Hooks
 
--   **`useCustomLists.ts`**: Διαχειρίζεται τις απλές λίστες. Φέρνει όλες τις λίστες και τα στοιχεία τους, και παρέχει συναρτήσεις για δημιουργία, ενημέρωση και διαγραφή λιστών και στοιχείων (CRUD). Υλοποιεί και έναν έλεγχο εξάρτησης (dependency check) για να αποτρέπει τη διαγραφή στοιχείων που χρησιμοποιούνται ήδη από κάποια επαφή.
+-   **`useCustomLists.ts`**: Διαχειρίζεται τις απλές λίστες. Παρέχει listeners (onSnapshot) στο Firestore και φέρνει όλες τις λίστες και τα στοιχεία τους σε πραγματικό χρόνο. Παρέχει επίσης τις συναρτήσεις `createList`, `updateList`, `deleteList`, `addItem`, `updateItem`, και `deleteItem` για την εκτέλεση όλων των CRUD λειτουργιών.
 -   **`useComplexEntities.ts`**: Διαχειρίζεται τις σύνθετες οντότητες. Παρέχει CRUD λειτουργίες για αυτές τις οντότητες, φιλτραρισμένες ανά `type`.
 
 ### Components
 
--   **`SimpleListsTab.tsx`**: Το κύριο component για την καρτέλα "Απλές Λίστες". Χρησιμοποιεί το `useCustomLists` και συνθέτει τα υπόλοιπα components.
+-   **`SimpleListsTab.tsx`**: Το κύριο component για την καρτέλα "Απλές Λίστες". Χρησιμοποιεί το `useCustomLists` και συνθέτει τα υπόλοιπα components για την εμφάνιση και διαχείριση.
 -   **`ComplexEntitiesTab.tsx`**: Το κύριο component για την καρτέλα "Σύνθετες Οντότητες". Χρησιμοποιεί το `useComplexEntities`.
 -   **`EditableList.tsx`**: Ένα επαναχρησιμοποιήσιμο component τύπου "accordion" που εμφανίζει μια λίστα και τα στοιχεία της, επιτρέποντας την προσθήκη, επεξεργασία και διαγραφή.
 -   **`ListItem.tsx`**: Το component που αναλαμβάνει την εμφάνιση και την "in-line" επεξεργασία κάθε μεμονωμένου στοιχείου της λίστας.
--   **`SearchableSelect.tsx`**: Ένα βασικό component που βρίσκεται στο `src/components/common`. Είναι ένα αναπτυσσόμενο μενού με δυνατότητα αναζήτησης και άμεσης προσθήκης νέου στοιχείου στη λίστα που χρησιμοποιεί.
-
-### Παράδειγμα Χρήσης του `SearchableSelect`
-
-```tsx
-import { SearchableSelect } from '@/components/common/SearchableSelect';
-import { useFormContext } from 'react-hook-form';
-
-// ...
-const { customLists, addListItem } = useCustomLists();
-const { watch, setValue } = useFormContext();
-
-// ... μέσα στο JSX:
-<SearchableSelect
-    label="Ρόλος"
-    options={customLists.roles} // Παρέχει τις επιλογές
-    value={watch('job.role') || ''} // Η τρέχουσα τιμή από τη φόρμα
-    onChange={(val) => setValue('job.role', val, { shouldDirty: true })} // Τι θα γίνει όταν επιλεγεί
-    onAdd={(newValue) => addListItem('Ρόλοι', newValue)} // Τι θα γίνει όταν προστεθεί νέα τιμή
-    placeholder="Επιλέξτε ή δημιουργήστε ρόλο..."
-/>
-```
 
 ## 4. Αρχικές Λίστες Δεδομένων
 
@@ -247,3 +225,37 @@ const deleteItem = useCallback(async (listId: string, itemId: string, itemValue:
 }, [lists, toast]);
 ```
 Αυτός ο μηχανισμός διασφαλίζει ότι δεν θα διαγραφούν κατά λάθος τιμές που είναι κρίσιμες για την καταχώρηση δεδομένων σε άλλα μέρη της εφαρμογής.
+
+## 7. Εξαγωγή Δεδομένων
+
+Η εφαρμογή υποστηρίζει την εξαγωγή των δεδομένων από τις λίστες σε μορφή CSV (για Excel) και απλού κειμένου (TXT).
+
+- **Υλοποίηση:** Τα κουμπιά εξαγωγής βρίσκονται στα components `SimpleListsTab.tsx` και `ComplexEntitiesTab.tsx`.
+- **Λογική:** Όταν ο χρήστης πατάει ένα κουμπί εξαγωγής:
+  1.  Τα δεδομένα από τις ορατές (φιλτραρισμένες) λίστες συγκεντρώνονται.
+  2.  Καλούνται οι βοηθητικές συναρτήσεις `exportToCsv` ή `exportToTxt` από το αρχείο `src/lib/exportUtils.ts`.
+  3.  **Για CSV:** Τα δεδομένα μετατρέπονται σε ένα string, με κάθε πεδίο να διαχωρίζεται με ερωτηματικό (`;`) για σωστή απεικόνιση στο ελληνικό Excel.
+  4.  **Για TXT:** Τα δεδομένα μορφοποιούνται σε μια ευανάγνωστη δομή κειμένου.
+  5.  Ο κώδικας δημιουργεί ένα `Blob` (ένα αντικείμενο τύπου αρχείου) και στη συνέχεια προσομοιώνει ένα κλικ σε έναν κρυφό σύνδεσμο (`<a>`) για να ξεκινήσει το κατέβασμα του αρχείου στον browser του χρήστη.
+```typescript
+// Απόσπασμα από το exportUtils.ts
+
+const convertToCsv = (data: any[]): string => {
+    // ... Λογική για τη μετατροπή του JSON array σε CSV string με ;
+    const headers = Object.keys(data[0]);
+    const rows = data.map(obj => 
+        headers.map(header => JSON.stringify(obj[header] || '')).join(';')
+    );
+    return [headers.join(';'), ...rows].join('\n');
+};
+
+const triggerDownload = (blob: Blob, filename: string) => {
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+```
