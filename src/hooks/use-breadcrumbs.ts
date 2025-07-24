@@ -63,7 +63,6 @@ const COLLECTION_NAMES: Record<string, string> = {
 };
 
 // Determines if a segment is likely a Firestore document ID (alphanumeric, usually > 15 chars)
-// This is a heuristic and might need adjustment.
 const isLikelyId = (segment: string) => /^[a-zA-Z0-9]{16,}$/.test(segment);
 
 export function useBreadcrumbs() {
@@ -73,32 +72,32 @@ export function useBreadcrumbs() {
   useEffect(() => {
     const generateBreadcrumbs = async () => {
       const segments = pathname.split('/').filter(Boolean);
+      
       if (segments.length === 0) {
         setBreadcrumbs([]);
         return;
       }
       
       const lastSegment = segments[segments.length - 1];
-      const isDetailsPage = isLikelyId(lastSegment);
-
-      if (!isDetailsPage) {
-        // It's a list page or a static page.
-        const staticCrumbs: BreadcrumbItem[] = [];
-        let currentPath = '';
-        for (const segment of segments) {
-            currentPath += `/${segment}`;
-            if (STATIC_LABELS[segment]) {
-                staticCrumbs.push({ href: currentPath, label: STATIC_LABELS[segment] });
-            }
-        }
-        setBreadcrumbs(staticCrumbs);
-        return;
-      }
+      const collectionSegment = segments[segments.length - 2];
       
-      // It's a details page
-      const mainCollectionSegment = segments[segments.length - 2];
+      // Handle static pages or list pages
+      if (!isLikelyId(lastSegment)) {
+          const staticCrumbs: BreadcrumbItem[] = [];
+          let currentPath = '';
+          for (const segment of segments) {
+              currentPath += `/${segment}`;
+              if (STATIC_LABELS[segment]) {
+                  staticCrumbs.push({ href: currentPath, label: STATIC_LABELS[segment], tooltip: STATIC_LABELS[segment] });
+              }
+          }
+          setBreadcrumbs(staticCrumbs);
+          return;
+      }
+
+      // Handle details pages
       const entityId = lastSegment;
-      const mainCollectionName = COLLECTION_NAMES[mainCollectionSegment];
+      const mainCollectionName = COLLECTION_NAMES[collectionSegment];
       
       if (!mainCollectionName) {
         setBreadcrumbs([]);
@@ -161,14 +160,16 @@ export function useBreadcrumbs() {
       
       const crumbs: BreadcrumbItem[] = [];
       
-      if (companyDoc) crumbs.push({ href: `/companies`, label: STATIC_LABELS['companies'], tooltip: `Μετάβαση στις Εταιρείες` });
+      // Always start with the root list page
+      crumbs.push({ href: '/companies', label: 'Εταιρείες', tooltip: 'Μετάβαση στις Εταιρείες' });
+
       if (projectDoc) crumbs.push({ href: `/projects/${projectDoc.id}`, label: projectDoc.title || 'Project', tooltip: `Μετάβαση σε ${projectDoc.title}` });
       if (buildingDoc) crumbs.push({ href: `/buildings/${buildingDoc.id}`, label: buildingDoc.address || 'Building', tooltip: `Μετάβαση σε ${buildingDoc.address}` });
       if (floorDoc) crumbs.push({ href: `/floors/${floorDoc.id}`, label: `Όροφος ${floorDoc.level || ''}`.trim(), tooltip: `Μετάβαση στον Όροφο ${floorDoc.level}` });
       if (unitDoc) crumbs.push({ href: `/units/${unitDoc.id}`, label: unitDoc.name || 'Unit', tooltip: `Μετάβαση στο ${unitDoc.name}` });
       
       if (mainCollectionName === 'attachments') {
-          crumbs.push({ href: `/attachments/${currentEntity.id}`, label: currentEntity.details || 'Attachment', tooltip: `Μετάβαση στο ${currentEntity.details}` });
+          crumbs.push({ href: pathname, label: currentEntity.details || 'Attachment', tooltip: `Μετάβαση στο ${currentEntity.details}` });
       }
 
       setBreadcrumbs(crumbs);
