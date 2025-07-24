@@ -1,18 +1,119 @@
 
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ArrowRight, Star } from "lucide-react";
+import { Search, ArrowRight, Database, Trash2, Loader2 } from "lucide-react";
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from "@/components/ui/badge";
+import { useToast } from '@/hooks/use-toast';
+import { seedDatabase } from '@/lib/seed';
+import { clearDatabase } from '@/lib/clear';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Separator } from '@/components/ui/separator';
 
 export default function Home() {
+  const { toast } = useToast();
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+
+  const handleSeed = async () => {
+    setIsSeeding(true);
+    try {
+      await seedDatabase();
+      toast({
+        title: 'Επιτυχία',
+        description: 'Η βάση δεδομένων αρχικοποιήθηκε με επιτυχία.',
+      });
+    } catch (error) {
+      console.error('Seeding failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Σφάλμα',
+        description: 'Η αρχικοποίηση της βάσης δεδομένων απέτυχε.',
+      });
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  const handleClear = async () => {
+    setIsClearing(true);
+    try {
+      await clearDatabase();
+      toast({
+        title: 'Επιτυχία',
+        description: 'Η βάση δεδομένων καθαρίστηκε με επιτυχία.',
+      });
+    } catch (error) {
+      console.error('Clearing failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Σφάλμα',
+        description: 'Ο καθαρισμός της βάσης δεδομένων απέτυχε.',
+      });
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center gap-12 py-10 px-4">
+
+      {/* Admin Controls */}
+      <Card className="w-full max-w-3xl">
+        <CardHeader>
+          <CardTitle>Database Management</CardTitle>
+          <CardDescription>
+            Εργαλεία για την εισαγωγή δεδομένων επίδειξης (seeding) ή τον πλήρη καθαρισμό της βάσης.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row gap-4">
+          <Button onClick={handleSeed} disabled={isSeeding || isClearing} className="flex-1">
+            {isSeeding ? <Loader2 className="mr-2 animate-spin" /> : <Database className="mr-2" />}
+            Seed Database
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={isSeeding || isClearing} className="flex-1">
+                {isClearing ? <Loader2 className="mr-2 animate-spin" /> : <Trash2 className="mr-2" />}
+                Clear Database
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Είστε απολύτως βέβαιοι;</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφούν οριστικά ΟΛΑ τα δεδομένα από τη βάση δεδομένων, συμπεριλαμβανομένων εταιρειών, έργων, χρηστών και όλων των σχετικών εγγραφών.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClear} className="bg-destructive hover:bg-destructive/90">
+                  Ναι, διαγραφή όλων
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
+      </Card>
       
+      <Separator className="w-full max-w-3xl" />
+
       {/* Hero Section */}
       <div className="flex flex-col items-center gap-4 text-center max-w-3xl">
         <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl font-headline">
