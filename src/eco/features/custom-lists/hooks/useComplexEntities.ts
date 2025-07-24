@@ -36,15 +36,18 @@ export function useComplexEntities(type: string) {
         return;
     };
     
+    // Removed orderBy('name') to avoid needing a composite index.
+    // Sorting will be done on the client-side.
     const q = query(
         collection(db, 'tsia-complex-entities'),
-        where('type', '==', type),
-        orderBy('name', 'asc')
+        where('type', '==', type)
     );
 
     const unsubscribe = onSnapshot(q, 
         (snapshot) => {
             const entitiesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
+            // Sort data on the client side
+            entitiesData.sort((a, b) => a.name.localeCompare(b.name));
             setEntities(entitiesData);
             setIsLoading(false);
         },
