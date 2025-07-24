@@ -68,5 +68,3 @@ export function UnitCard({ unit }: UnitCardProps) {
         </Card>
     )
 }
-
-  
