@@ -26,16 +26,23 @@ export default function Home() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Τι ψάχνετε; π.χ. 'Δυάρι στο Μαρούσι'"
+                placeholder="Τι ψάχνετε;"
                 className="pl-12 h-12 text-base"
               />
            </div>
-           <Button asChild size="lg" className="mt-4 w-full">
-            <Link href="/units">
-              Βρες το σπίτι σου
-              <ArrowRight className="ml-2" />
-            </Link>
-          </Button>
+           <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                <Button asChild size="lg" className="flex-1">
+                    <Link href="/units">
+                        Βρες το σπίτι σου
+                        <ArrowRight className="ml-2" />
+                    </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="flex-1">
+                    <Link href="/projects">
+                        Δες τα έργα μας
+                    </Link>
+                </Button>
+           </div>
         </div>
       </div>
       
@@ -124,7 +131,10 @@ export default function Home() {
             </Button>
         </div>
       </div>
-
+        <footer className="w-full max-w-6xl mt-12 border-t pt-8 text-center text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} NestorConstruct. All rights reserved.</p>
+            <p className="text-sm mt-2">Τηλέφωνο: 210-1234567 | Email: info@nestorconstruct.gr</p>
+        </footer>
     </div>
   );
 }
