@@ -2,15 +2,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, ArrowRight, Database, Trash2, Loader2 } from "lucide-react";
+import { Search, ArrowRight, Database, Trash2, Loader2, Building, HomeIcon } from "lucide-react";
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from "@/components/ui/badge";
 import { useToast } from '@/hooks/use-toast';
-import { seedDatabaseAction, clearDatabaseAction } from '@/lib/actions';
+import { seedTasiaDataAction, clearTasiaDataAction, seedEcoDataAction, clearEcoDataAction } from '@/lib/actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,95 +21,121 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Separator } from '@/components/ui/separator';
 
 export default function Home() {
   const { toast } = useToast();
-  const [isSeeding, setIsSeeding] = useState(false);
-  const [isClearing, setIsClearing] = useState(false);
+  const [isSeedingTasia, setIsSeedingTasia] = useState(false);
+  const [isClearingTasia, setIsClearingTasia] = useState(false);
+  const [isSeedingEco, setIsSeedingEco] = useState(false);
+  const [isClearingEco, setIsClearingEco] = useState(false);
 
-  const handleSeed = async () => {
-    setIsSeeding(true);
-    const result = await seedDatabaseAction();
+  const handleSeedTasia = async () => {
+    setIsSeedingTasia(true);
+    const result = await seedTasiaDataAction();
     if (result.success) {
-      toast({
-        title: 'Επιτυχία',
-        description: 'Η βάση δεδομένων αρχικοποιήθηκε με επιτυχία.',
-      });
+      toast({ title: 'Επιτυχία', description: 'Τα δεδομένα της TASIA αρχικοποιήθηκαν.' });
     } else {
-      toast({
-        variant: 'destructive',
-        title: 'Σφάλμα',
-        description: `Η αρχικοποίηση απέτυχε: ${result.error}`,
-      });
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η αρχικοποίηση απέτυχε: ${result.error}` });
     }
-    setIsSeeding(false);
+    setIsSeedingTasia(false);
   };
 
-  const handleClear = async () => {
-    setIsClearing(true);
-    const result = await clearDatabaseAction();
+  const handleClearTasia = async () => {
+    setIsClearingTasia(true);
+    const result = await clearTasiaDataAction();
     if (result.success) {
-      toast({
-        title: 'Επιτυχία',
-        description: 'Η βάση δεδομένων καθαρίστηκε με επιτυχία.',
-      });
+      toast({ title: 'Επιτυχία', description: 'Τα δεδομένα της TASIA καθαρίστηκαν.' });
     } else {
-      toast({
-        variant: 'destructive',
-        title: 'Σφάλμα',
-        description: `Ο καθαρισμός απέτυχε: ${result.error}`,
-      });
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Ο καθαρισμός απέτυχε: ${result.error}` });
     }
-    setIsClearing(false);
+    setIsClearingTasia(false);
   };
+  
+    const handleSeedEco = async () => {
+    setIsSeedingEco(true);
+    const result = await seedEcoDataAction();
+    if (result.success) {
+      toast({ title: 'Επιτυχία', description: 'Τα δεδομένα του NESTOR Εξοικονομώ αρχικοποιήθηκαν.' });
+    } else {
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η αρχικοποίηση απέτυχε: ${result.error}` });
+    }
+    setIsSeedingEco(false);
+  };
+
+  const handleClearEco = async () => {
+    setIsClearingEco(true);
+    const result = await clearEcoDataAction();
+    if (result.success) {
+      toast({ title: 'Επιτυχία', description: 'Τα δεδομένα του NESTOR Εξοικονομώ καθαρίστηκαν.' });
+    } else {
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Ο καθαρισμός απέτυχε: ${result.error}` });
+    }
+    setIsClearingEco(false);
+  };
+
 
   return (
     <div className="flex flex-col items-center gap-12 py-10 px-4">
-
       {/* Admin Controls */}
-      <Card className="w-full max-w-3xl">
-        <CardHeader>
-          <CardTitle>Database Management</CardTitle>
-          <CardDescription>
-            Εργαλεία για την εισαγωγή δεδομένων επίδειξης (seeding) ή τον πλήρη καθαρισμό της βάσης.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col sm:flex-row gap-4">
-          <Button onClick={handleSeed} disabled={isSeeding || isClearing} className="flex-1">
-            {isSeeding ? <Loader2 className="mr-2 animate-spin" /> : <Database className="mr-2" />}
-            Seed Database
-          </Button>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" disabled={isSeeding || isClearing} className="flex-1">
-                {isClearing ? <Loader2 className="mr-2 animate-spin" /> : <Trash2 className="mr-2" />}
-                Clear Database
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8">
+         <Card className="w-full">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Building className="h-6 w-6 text-primary" />
+                <CardTitle>Διαχείριση Δεδομένων TASIA</CardTitle>
+              </div>
+              <CardDescription>Εισαγωγή ή διαγραφή δεδομένων για την εφαρμογή Real Estate.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col sm:flex-row gap-4">
+              <Button onClick={handleSeedTasia} disabled={isSeedingTasia || isClearingTasia} className="flex-1">
+                {isSeedingTasia ? <Loader2 className="mr-2 animate-spin" /> : <Database className="mr-2" />}
+                Seed TASIA Data
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Είστε απολύτως βέβαιοι;</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφούν οριστικά ΟΛΑ τα δεδομένα από τη βάση δεδομένων, συμπεριλαμβανομένων εταιρειών, έργων, χρηστών και όλων των σχετικών εγγραφών.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClear} className="bg-destructive hover:bg-destructive/90">
-                  Ναι, διαγραφή όλων
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" disabled={isSeedingTasia || isClearingTasia} className="flex-1">
+                    {isClearingTasia ? <Loader2 className="mr-2 animate-spin" /> : <Trash2 className="mr-2" />}
+                    Clear TASIA Data
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader><AlertDialogTitle>Είστε βέβαιοι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει ΟΛΑ τα δεδομένα της TASIA (Έργα, Κτίρια, Ακίνητα κλπ). Τα δεδομένα του Εξοικονομώ θα παραμείνουν.</AlertDialogDescription></AlertDialogHeader>
+                  <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={handleClearTasia} className="bg-destructive hover:bg-destructive/90">Ναι, διαγραφή</AlertDialogAction></AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+           <Card className="w-full">
+            <CardHeader>
+               <div className="flex items-center gap-3">
+                <HomeIcon className="h-6 w-6 text-primary" />
+                <CardTitle>Διαχείριση NESTOR Εξοικονομώ</CardTitle>
+              </div>
+              <CardDescription>Εισαγωγή ή διαγραφή δεδομένων για την εφαρμογή Εξοικονομώ.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col sm:flex-row gap-4">
+              <Button onClick={handleSeedEco} disabled={isSeedingEco || isClearingEco} className="flex-1">
+                {isSeedingEco ? <Loader2 className="mr-2 animate-spin" /> : <Database className="mr-2" />}
+                Seed Eco Data
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" disabled={isSeedingEco || isClearingEco} className="flex-1">
+                    {isClearingEco ? <Loader2 className="mr-2 animate-spin" /> : <Trash2 className="mr-2" />}
+                    Clear Eco Data
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader><AlertDialogTitle>Είστε βέβαιοι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει ΟΛΑ τα δεδομένα του Εξοικονομώ (Λίστες, Επαφές κλπ). Τα δεδομένα της TASIA θα παραμείνουν.</AlertDialogDescription></AlertDialogHeader>
+                  <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={handleClearEco} className="bg-destructive hover:bg-destructive/90">Ναι, διαγραφή</AlertDialogAction></AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
+      </div>
       
-      <Separator className="w-full max-w-3xl" />
-
       {/* Hero Section */}
-      <div className="flex flex-col items-center gap-4 text-center max-w-3xl">
+      <div className="flex flex-col items-center gap-4 text-center max-w-3xl pt-8">
         <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl font-headline">
            Τα έργα μας – τα σπίτια του αύριο σήμερα
         </h1>
@@ -139,92 +164,6 @@ export default function Home() {
                     </Link>
                 </Button>
            </div>
-        </div>
-      </div>
-      
-      {/* Featured Properties Section */}
-      <div className="w-full max-w-6xl">
-        <h2 className="text-3xl font-bold tracking-tight text-center mb-8">
-            Διαθέσιμα Ακίνητα
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Static Property Card 1 */}
-          <Card className="overflow-hidden group">
-             <Link href="/units">
-                <div className="relative">
-                    <Image 
-                        src="https://placehold.co/600x400.png"
-                        alt="Modern Apartment"
-                        width={600}
-                        height={400}
-                        className="object-cover w-full h-48 transition-transform duration-300 group-hover:scale-105"
-                        data-ai-hint="modern apartment"
-                    />
-                     <Badge className="absolute top-2 right-2" variant="default">Διαθέσιμο</Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle>Νεόδμητο Διαμέρισμα</CardTitle>
-                  <CardDescription>Γλυφάδα, Αθήνα</CardDescription>
-                </CardHeader>
-                <CardContent className="flex justify-between items-center font-semibold">
-                    <span>120 τ.μ.</span>
-                    <span>€ 450.000</span>
-                </CardContent>
-             </Link>
-          </Card>
-          {/* Static Property Card 2 */}
-          <Card className="overflow-hidden group">
-             <Link href="/units">
-                <div className="relative">
-                    <Image 
-                        src="https://placehold.co/600x400.png"
-                        alt="Suburban Villa"
-                        width={600}
-                        height={400}
-                        className="object-cover w-full h-48 transition-transform duration-300 group-hover:scale-105"
-                        data-ai-hint="suburban villa"
-                    />
-                     <Badge className="absolute top-2 right-2" variant="default">Διαθέσιμο</Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle>Πολυτελής Μεζονέτα</CardTitle>
-                  <CardDescription>Κηφισιά, Αθήνα</CardDescription>
-                </CardHeader>
-                <CardContent className="flex justify-between items-center font-semibold">
-                    <span>250 τ.μ.</span>
-                    <span>€ 850.000</span>
-                </CardContent>
-             </Link>
-          </Card>
-          {/* Static Property Card 3 */}
-          <Card className="overflow-hidden group">
-             <Link href="/units">
-                <div className="relative">
-                    <Image 
-                        src="https://placehold.co/600x400.png"
-                        alt="City Loft"
-                        width={600}
-                        height={400}
-                        className="object-cover w-full h-48 transition-transform duration-300 group-hover:scale-105"
-                        data-ai-hint="city loft"
-                    />
-                     <Badge className="absolute top-2 right-2" variant="default">Διαθέσιμο</Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle>Μοντέρνο Loft</CardTitle>
-                  <CardDescription>Κέντρο, Θεσσαλονίκη</CardDescription>
-                </CardHeader>
-                <CardContent className="flex justify-between items-center font-semibold">
-                    <span>85 τ.μ.</span>
-                    <span>€ 280.000</span>
-                </CardContent>
-             </Link>
-          </Card>
-        </div>
-         <div className="text-center mt-8">
-            <Button asChild variant="outline">
-                <Link href="/units">Δείτε Όλα τα Ακίνητα <ArrowRight className="ml-2" /></Link>
-            </Button>
         </div>
       </div>
         <footer className="w-full max-w-6xl mt-12 border-t pt-8 text-center text-muted-foreground">
