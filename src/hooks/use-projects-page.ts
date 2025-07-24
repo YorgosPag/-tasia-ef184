@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
@@ -15,23 +15,37 @@ import { ProjectFormValues, projectSchema } from '@/components/projects/ProjectD
 import { formatDate } from '@/lib/project-helpers';
 import { useAuth } from './use-auth';
 
-export interface ProjectWithPhaseSummary extends Project {
-    phaseSummary?: {
-        currentPhase: string;
+export interface ProjectWithWorkStageSummary extends Project {
+    workStageSummary?: {
+        currentWorkStageName: string;
         progress: number;
+        overallStatus: 'Εκκρεμεί' | 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Καθυστερεί';
     }
 }
 
 
 export function useProjectsPage() {
-  const { projects, companies, isLoading, addProject } = useDataStore();
+  const { projects: allProjects, companies, isLoading, addProject } = useDataStore();
   const { isEditor } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<ProjectWithPhaseSummary | null>(null);
+  const [editingProject, setEditingProject] = useState<ProjectWithWorkStageSummary | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const view = searchParams.get('view') || 'index';
+
+  const [projects, setProjects] = useState<ProjectWithWorkStageSummary[]>([]);
+
+  // We need to enrich the projects with summary data here or fetch it.
+  // For now, let's just pass the projects through.
+  useEffect(() => {
+    // This is where you would calculate or fetch work stage summaries
+    // and map them to the projects.
+    setProjects(allProjects);
+  }, [allProjects]);
+
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -55,7 +69,7 @@ export function useProjectsPage() {
     }
   }, [form]);
 
-  const handleEditClick = useCallback((project: ProjectWithPhaseSummary) => {
+  const handleEditClick = useCallback((project: ProjectWithWorkStageSummary) => {
     setEditingProject(project);
     form.reset({
       ...project,
@@ -72,7 +86,7 @@ export function useProjectsPage() {
       return;
     }
     try {
-      const { id, createdAt, phaseSummary, ...clonedData } = projectToClone;
+      const { id, createdAt, workStageSummary, ...clonedData } = projectToClone;
       clonedData.title = `${clonedData.title} (Copy)`;
       const newId = await addProject({
         ...clonedData,
@@ -198,6 +212,7 @@ export function useProjectsPage() {
     isSubmitting,
     editingProject,
     form,
+    view,
     router,
     handleExport,
     handleDialogOpenChange,

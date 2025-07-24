@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,6 +57,9 @@ export function ProjectsPageView({
   handleDeleteProject,
 }: ProjectsPageViewProps) {
 
+  const searchParams = useSearchParams();
+  const currentView = searchParams.get('view') || 'index';
+
   const handleTabChange = (value: string) => {
     router.push(`/projects?view=${value}`);
   }
@@ -83,7 +86,7 @@ export function ProjectsPageView({
         </div>
       </div>
 
-      <Tabs defaultValue={view} onValueChange={handleTabChange}>
+      <Tabs value={currentView} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-2 md:w-1/3">
             <TabsTrigger value="index">Ευρετήριο</TabsTrigger>
             <TabsTrigger value="construction">Κατασκευή</TabsTrigger>

@@ -49,7 +49,9 @@ const NavLink = ({
   tooltip?: string
 }) => {
   const pathname = usePathname()
-  const isActive = pathname.startsWith(href)
+  // More specific check for projects link
+  const isActive = href.includes('?') ? pathname + window.location.search === href : pathname.startsWith(href);
+
 
   return (
     <SidebarMenuItem>
@@ -87,7 +89,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
           <SidebarMenu>
-            <NavLink href="/projects" icon={Construction} tooltip="Στάδια Εργασιών">
+            <NavLink href="/projects?view=construction" icon={Construction} tooltip="Στάδια Εργασιών">
               Στάδια Εργασιών
             </NavLink>
             <NavLink href="/construction/calendar" icon={CalendarDays} tooltip="Ημερολόγιο">
@@ -110,7 +112,7 @@ export function AppSidebar() {
             <NavLink href="/companies" icon={Building2} tooltip="Εταιρείες">
               Εταιρείες
             </NavLink>
-            <NavLink href="/projects" icon={Briefcase} tooltip="Έργα">
+            <NavLink href="/projects?view=index" icon={Briefcase} tooltip="Έργα">
               Έργα
             </NavLink>
             <NavLink href="/buildings" icon={Building} tooltip="Κτίρια">
