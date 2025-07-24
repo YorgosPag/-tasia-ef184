@@ -9,7 +9,6 @@ import {
     SidebarFooter,
     SidebarGroup,
     SidebarGroupLabel,
-    SidebarContent,
     SidebarGroupContent,
     SidebarMenu,
     SidebarMenuItem,
@@ -39,9 +38,18 @@ import {
   Users,
   Contact,
   ClipboardList,
+  BarChart,
+  ShoppingBag,
+  FileCheck,
+  Network,
+  Info,
+  Shield,
+  ListChecks,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { InstructionsDialog } from "./instructions-dialog";
+
 
 const NavLink = ({
   href,
@@ -189,6 +197,76 @@ export function SidebarNav() {
                             </Link>
                         </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/reports")}>
+                            <Link href="/eco/reports">
+                                <BarChart />
+                                <span>Αναφορές</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/supplier-offers")}>
+                            <Link href="/eco/supplier-offers">
+                                <ShoppingBag />
+                                <span>Προσφορές Προμηθευτών</span>
+                            </Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    
+                    <SidebarGroup className="p-0 mt-1">
+                        <SidebarGroupLabel className="h-7 pl-2">
+                           <FileCheck className="mr-2" /> Λογοδοσία
+                        </SidebarGroupLabel>
+                         <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/project-interventions")}>
+                            <Link href="/eco/project-interventions">
+                                <ClipboardList />
+                                <span>Παρεμβάσεις Έργων</span>
+                            </Link>
+                            </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                        <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/intervention-stages")}>
+                            <Link href="/eco/intervention-stages">
+                                <Network />
+                                <span>Στάδια Παρεμβάσεων</span>
+                            </Link>
+                            </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                    </SidebarGroup>
+                     <SidebarMenuSubItem>
+                         <InstructionsDialog>
+                            <SidebarMenuSubButton>
+                                <Info />
+                                <span>Οδηγίες</span>
+                            </SidebarMenuSubButton>
+                        </InstructionsDialog>
+                    </SidebarMenuSubItem>
+
+                     <SidebarGroup className="p-0 mt-1">
+                        <SidebarGroupLabel className="h-7 pl-2">
+                           Διαχείριση
+                        </SidebarGroupLabel>
+                         <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/interventions-catalog")}>
+                            <Link href="/eco/interventions-catalog">
+                                <Shield />
+                                <span>Κατάλογος Παρεμβάσεων</span>
+                            </Link>
+                            </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                        <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/custom-lists")}>
+                            <Link href="/eco/custom-lists">
+                                <ListChecks />
+                                <span>Προσ. Λίστες</span>
+                            </Link>
+                            </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                    </SidebarGroup>
+
+
                 </SidebarMenuSub>
             </SidebarMenuItem>
           </SidebarMenu>
