@@ -3,7 +3,7 @@ import { UnitFormValues } from "@/components/units/UnitDetailsForm";
 import { AttachmentFormValues } from "@/components/units/AttachmentDialog";
 
 export function getUnitDataFromForm(data: UnitFormValues) {
-    return {
+    const unitData: { [key: string]: any } = {
         identifier: data.identifier,
         name: data.name,
         type: data.type || '',
@@ -16,10 +16,15 @@ export function getUnitDataFromForm(data: UnitFormValues) {
         amenities: data.amenities ? data.amenities.split(',').map(a => a.trim()).filter(Boolean) : [],
         levelSpan: data.floorSpan > 1 ? `${data.floorSpan}F` : undefined, // Add levelSpan based on form
     };
+
+    // Remove undefined keys before sending to Firestore
+    Object.keys(unitData).forEach(key => unitData[key] === undefined && delete unitData[key]);
+
+    return unitData;
 }
 
 export function getAttachmentDataFromForm(data: AttachmentFormValues) {
-    return {
+    const attachmentData: { [key: string]: any } = {
         identifier: data.identifier,
         type: data.type,
         details: data.details,
@@ -30,6 +35,11 @@ export function getAttachmentDataFromForm(data: AttachmentFormValues) {
         isStandalone: data.isStandalone,
         photoUrl: data.photoUrl?.trim() || undefined,
     };
+    
+    // Remove undefined keys before sending to Firestore
+    Object.keys(attachmentData).forEach(key => attachmentData[key] === undefined && delete attachmentData[key]);
+    
+    return attachmentData;
 }
 
 export const getStatusClass = (status: UnitFormValues['status'] | undefined) => {
