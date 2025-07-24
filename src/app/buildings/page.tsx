@@ -57,7 +57,7 @@ const buildingSchema = z.object({
   type: z.string().min(1, { message: 'Ο τύπος είναι υποχρεωτικός.' }),
   description: z.string().optional(),
   photoUrl: z.string().url({ message: "Το URL της φωτογραφίας δεν είναι έγκυρο." }).or(z.literal('')),
-  projectId: z.string().optional(),
+  projectId: z.string().min(1, { message: "Το έργο είναι υποχρεωτικό." }),
 });
 
 type BuildingFormValues = z.infer<typeof buildingSchema>;
@@ -128,34 +128,27 @@ export default function BuildingsPage() {
             type: data.type,
             description: data.description || '',
             photoUrl: data.photoUrl?.trim() || undefined,
-            projectId: data.projectId || undefined,
+            projectId: data.projectId,
             createdAt: serverTimestamp(),
         };
 
-        if (data.projectId) {
-            const subCollectionBuildingRef = doc(collection(db, 'projects', data.projectId, 'buildings'));
-            
-            // Set in top-level collection with reference to subcollection
-            batch.set(topLevelBuildingRef, {
-                ...buildingData,
-                originalId: subCollectionBuildingRef.id,
-            });
-            // Set in subcollection with reference to top-level collection
-            batch.set(subCollectionBuildingRef, {
-                address: data.address,
-                type: data.type,
-                description: data.description,
-                photoUrl: data.photoUrl,
-                createdAt: serverTimestamp(),
-                topLevelId: topLevelBuildingRef.id,
-            });
-        } else {
-             // If no project is selected, just add to the top-level collection
-            batch.set(topLevelBuildingRef, {
-                ...buildingData,
-                originalId: topLevelBuildingRef.id, // Point to self if no parent
-            });
-        }
+        const subCollectionBuildingRef = doc(collection(db, 'projects', data.projectId, 'buildings'));
+        
+        // Set in top-level collection with reference to subcollection
+        batch.set(topLevelBuildingRef, {
+            ...buildingData,
+            originalId: subCollectionBuildingRef.id,
+        });
+        // Set in subcollection with reference to top-level collection
+        batch.set(subCollectionBuildingRef, {
+            address: data.address,
+            type: data.type,
+            description: data.description,
+            photoUrl: data.photoUrl,
+            createdAt: serverTimestamp(),
+            topLevelId: topLevelBuildingRef.id,
+        });
+       
 
         await batch.commit();
 
@@ -307,7 +300,7 @@ export default function BuildingsPage() {
                     name="projectId"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Αντιστοίχιση σε Έργο (Προαιρετικό)</FormLabel>
+                            <FormLabel>Αντιστοίχιση σε Έργο</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
                                 <FormControl>
                                     <SelectTrigger>
@@ -315,9 +308,6 @@ export default function BuildingsPage() {
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    <SelectItem value="">
-                                        <em>Κανένα</em>
-                                    </SelectItem>
                                     {isLoadingProjects ? (
                                         <div className="flex items-center justify-center p-2">
                                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -401,5 +391,3 @@ export default function BuildingsPage() {
     </div>
   );
 }
-
-    
