@@ -5,9 +5,21 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Edit, Trash2 } from 'lucide-react';
-import { ContactCard, InfoItem } from './ContactCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Contact } from '../hooks/useContacts';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
+interface InfoItemProps {
+    label: string;
+    value?: string | null;
+}
+const InfoItem = ({ label, value }: InfoItemProps) => (
+  <div>
+    <p className="font-semibold text-muted-foreground">{label}</p>
+    <p className="truncate">{value || '-'}</p>
+  </div>
+);
+
 
 interface ContactDetailsProps {
   contact: Contact;
@@ -55,21 +67,37 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
         </div>
       </header>
       
-      <ContactCard title="Επαγγελματικά Στοιχεία / Στοιχεία Οντότητας" contact={contact} onEdit={() => onEdit(contact)} section="professional">
-        <InfoItem label="Επωνυμία / Όνομα" value={contact.name} />
-        <InfoItem label="Ρόλος" value={contact.job?.role} />
-        <InfoItem label="Ειδικότητα" value={contact.job?.specialty} />
-        <InfoItem label="Τύπος Οντότητας" value={contact.entityType} />
-        <InfoItem label="ΑΦΜ" value={contact.contactInfo?.afm} />
-      </ContactCard>
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Επαγγελματικά Στοιχεία / Στοιχεία Οντότητας</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <InfoItem label="Επωνυμία / Όνομα" value={contact.name} />
+            <InfoItem label="Ρόλος" value={contact.job?.role} />
+            <InfoItem label="Ειδικότητα" value={contact.job?.specialty} />
+            <InfoItem label="Τύπος Οντότητας" value={contact.entityType} />
+            <InfoItem label="ΑΦΜ" value={contact.contactInfo?.afm} />
+            <InfoItem label="Website" value={contact.website} />
+        </CardContent>
+      </Card>
 
-      <ContactCard title="Στοιχεία Επικοινωνίας" contact={contact} onEdit={() => onEdit(contact)} section="contactInfo">
-        <InfoItem label="Email" value={contact.contactInfo?.email} />
-        <InfoItem label="Κινητό" value={contact.contactInfo?.phone} />
-        <InfoItem label="Σταθερό" value={contact.contactInfo?.landline} />
-        <InfoItem label="Website" value={contact.website} />
-        <InfoItem label="Διεύθυνση" value={contact.contactInfo?.address} />
-      </ContactCard>
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Στοιχεία Επικοινωνίας</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <InfoItem label="Email" value={contact.contactInfo?.email} />
+            <InfoItem label="Κινητό" value={contact.contactInfo?.phone} />
+            <InfoItem label="Σταθερό" value={contact.contactInfo?.landline} />
+            <InfoItem label="Διεύθυνση" value={contact.contactInfo?.address} />
+        </CardContent>
+      </Card>
+      
+      {contact.notes && (
+           <Card>
+                <CardHeader><CardTitle className="text-lg">Σημειώσεις</CardTitle></CardHeader>
+                <CardContent>
+                    <p className="text-sm whitespace-pre-wrap">{contact.notes}</p>
+                </CardContent>
+            </Card>
+      )}
+
     </div>
   );
 };
