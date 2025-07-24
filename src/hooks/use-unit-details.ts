@@ -20,9 +20,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { logActivity } from '@/lib/logger';
-import { UnitFormValues, unitSchema } from '@/components/units/UnitDetailsForm';
+import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/lib/unit-helpers';
+import type { NewUnitFormValues as UnitFormValues } from '@/lib/unit-helpers';
 import { AttachmentFormValues, attachmentSchema } from '@/components/units/AttachmentDialog';
-import { getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/lib/unit-helpers';
 
 export interface Unit {
   id: string;
@@ -35,8 +35,8 @@ export interface Unit {
   originalId: string;
   createdAt: Timestamp;
   projectId?: string;
+  levelSpan?: number;
   
-  // Area fields
   netArea?: number;
   grossArea?: number;
   commonArea?: number;
@@ -70,39 +70,17 @@ export function useUnitDetails() {
   const unitForm = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: {
-      identifier: '',
-      name: '',
-      type: '',
-      status: 'Διαθέσιμο',
-      floorIds: [],
-      netArea: '',
-      grossArea: '',
-      commonArea: '',
-      semiOutdoorArea: '',
-      architecturalProjectionsArea: '',
-      balconiesArea: '',
-      price: '',
-      bedrooms: '',
-      bathrooms: '',
-      orientation: '',
-      kitchenLayout: '',
-      description: '',
-      isPenthouse: false,
-      amenities: [],
+      identifier: '', name: '', type: '', status: 'Διαθέσιμο', floorIds: [],
+      netArea: '', grossArea: '', commonArea: '', semiOutdoorArea: '', architecturalProjectionsArea: '', balconiesArea: '',
+      price: '', bedrooms: '', bathrooms: '', orientation: '', kitchenLayout: '',
+      description: '', isPenthouse: false, amenities: [], levelSpan: 1,
     },
   });
 
   const attachmentForm = useForm<AttachmentFormValues>({
     resolver: zodResolver(attachmentSchema),
     defaultValues: {
-      type: 'parking',
-      identifier: '',
-      details: '',
-      area: '',
-      price: '',
-      sharePercentage: '',
-      isBundle: true,
-      isStandalone: false,
+      type: 'parking', identifier: '', details: '', area: '', price: '', sharePercentage: '', isBundle: true, isStandalone: false
     }
   });
 
@@ -141,6 +119,7 @@ export function useUnitDetails() {
           description: unitData.description || '',
           isPenthouse: unitData.isPenthouse || false,
           amenities: unitData.amenities || [],
+          levelSpan: unitData.levelSpan || 1,
         });
         setIsLoading(false);
     }, (error) => {
