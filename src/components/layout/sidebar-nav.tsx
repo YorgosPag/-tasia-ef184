@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -9,6 +10,7 @@ import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarContent,
+    SidebarGroupContent,
 } from "@/components/ui/sidebar";
 import {
     SidebarMenu,
