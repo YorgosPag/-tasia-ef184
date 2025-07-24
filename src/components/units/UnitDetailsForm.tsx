@@ -19,7 +19,7 @@ export const unitSchema = z.object({
   identifier: z.string().min(1, "Identifier is required"),
   name: z.string().min(1, "Name is required"),
   type: z.string().optional(),
-  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
+  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος', 'Προς Ενοικίαση']),
   
   // Area fields
   netArea: z.string().optional(),
@@ -73,6 +73,7 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
+                    <SelectItem value="Προς Ενοικίαση">Προς Ενοικίαση</SelectItem>
                     <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
                     <SelectItem value="Πωλημένο">Πωλημένο</SelectItem>
                     <SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem>
@@ -100,8 +101,28 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
             )} />
 
             <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>Τιμή (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Υπνοδωμάτια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Μπάνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            
+             <FormField
+              control={form.control}
+              name="bedrooms"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Υπνοδωμάτια</FormLabel>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε αριθμό..."/></SelectTrigger></FormControl>
+                      <SelectContent>
+                          {[...Array(8).keys()].map(i => (
+                              <SelectItem key={i} value={i.toString()}>{i === 0 ? 'Χωρίς υπνοδωμάτιο' : `${i} υπνοδωμάτιο(α)`}</SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Λουτρά (Περιγραφή)</FormLabel><FormControl><Input placeholder="π.χ. 1 με παράθυρο, 1 WC" {...field} /></FormControl><FormMessage /></FormItem>)} />
+
              <FormField control={form.control} name="kitchenLayout" render={({ field }) => (
                 <FormItem>
                     <FormLabel>Σαλόνι, Κουζίνα</FormLabel>

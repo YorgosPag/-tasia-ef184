@@ -41,7 +41,7 @@ export const unitSchema = z.object({
   identifier: z.string().min(1, { message: "Ο κωδικός είναι υποχρεωτικός." }),
   name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
   type: z.string().min(1, { message: "Ο τύπος είναι υποχρεωτικός."}),
-  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
+  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος', 'Προς Ενοικίαση']),
   polygonPoints: z.string().optional(),
   area: z.string().refine(val => val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 1 && parseFloat(val) <= 10000), { message: "Το εμβαδόν πρέπει να είναι 1-10000 τ.μ." }).optional(),
   price: z.string().refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Η τιμή πρέπει να είναι αριθμός." }).optional(),
@@ -246,6 +246,7 @@ export function UnitDialogForm({
                       <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε κατάσταση" /></SelectTrigger></FormControl>
                       <SelectContent>
                         <SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem>
+                        <SelectItem value="Προς Ενοικίαση">Προς Ενοικίαση</SelectItem>
                         <SelectItem value="Κρατημένο">Κρατημένο</SelectItem>
                         <SelectItem value="Πωλημένο">Πωλημένο</SelectItem>
                         <SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem>
@@ -296,7 +297,7 @@ export function UnitDialogForm({
                     name="bathrooms"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Μπάνια</FormLabel>
+                        <FormLabel>Λουτρά</FormLabel>
                         <FormControl><Input type="number" placeholder="π.χ. 1" {...field} /></FormControl>
                         <FormMessage />
                     </FormItem>

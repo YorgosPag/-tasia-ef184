@@ -30,7 +30,7 @@ const newUnitSchema = z.object({
   identifier: z.string().min(1, { message: "Ο κωδικός είναι υποχρεωτικός. Δημιουργήστε τον αυτόματα." }),
   name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
   type: z.string().optional(),
-  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος']),
+  status: z.enum(['Διαθέσιμο', 'Κρατημένο', 'Πωλημένο', 'Οικοπεδούχος', 'Προς Ενοικίαση']),
   
   // Area fields
   netArea: z.string().optional(),
@@ -88,7 +88,7 @@ export default function NewUnitPage() {
       architecturalProjectionsArea: '',
       balconiesArea: '',
       price: '',
-      bedrooms: '',
+      bedrooms: '1',
       bathrooms: '',
       orientation: '',
       kitchenLayout: '',
@@ -235,11 +235,28 @@ export default function NewUnitPage() {
                 )} />
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Όνομα/Αναγνωριστικό</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="status" render={({ field }) => (
-                    <FormItem><FormLabel>Κατάσταση</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem><SelectItem value="Κρατημένο">Κρατημένο</SelectItem><SelectItem value="Πωλημένο">Πωλημένο</SelectItem><SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Κατάσταση</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Διαθέσιμο">Διαθέσιμο</SelectItem><SelectItem value="Προς Ενοικίαση">Προς Ενοικίαση</SelectItem><SelectItem value="Κρατημένο">Κρατημένο</SelectItem><SelectItem value="Πωλημένο">Πωλημένο</SelectItem><SelectItem value="Οικοπεδούχος">Οικοπεδούχος</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                 )}/>
                 <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>Τιμή (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Υπνοδωμάτια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Μπάνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField
+                  control={form.control}
+                  name="bedrooms"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Υπνοδωμάτια</FormLabel>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε αριθμό..."/></SelectTrigger></FormControl>
+                          <SelectContent>
+                              {[...Array(8).keys()].map(i => (
+                                  <SelectItem key={i} value={i.toString()}>{i === 0 ? 'Χωρίς υπνοδωμάτιο' : `${i} υπνοδωμάτιο(α)`}</SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Λουτρά (Περιγραφή)</FormLabel><FormControl><Input placeholder="π.χ. 1 με παράθυρο, 1 WC" {...field} /></FormControl><FormMessage /></FormItem>)} />
                  <FormField control={form.control} name="orientation" render={({ field }) => (
                     <FormItem><FormLabel>Προσανατολισμός</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ''}>
