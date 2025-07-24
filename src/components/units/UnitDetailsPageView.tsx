@@ -4,7 +4,7 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { ArrowLeft, Loader2, PlusCircle } from 'lucide-react';
 import { UnitDetailsForm } from './UnitDetailsForm';
@@ -13,6 +13,9 @@ import { AttachmentDialog, AttachmentFormValues } from './AttachmentDialog';
 import { UnitsListTable } from '@/components/floors/UnitsListTable';
 import { Unit } from '@/hooks/use-unit-details';
 import { UnitContactForm } from './UnitContactForm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UnitFloorPlansTab } from './tabs/UnitFloorPlansTab';
+import { UnitPhotosTab } from './tabs/UnitPhotosTab';
 
 interface UnitDetailsPageViewProps {
   unit: Unit;
@@ -53,52 +56,87 @@ export function UnitDetailsPageView({
 
   return (
     <div className="flex flex-col gap-8">
-      <Form {...unitForm}>
-        <form onSubmit={onUnitSubmit}>
+      <div className="flex justify-between items-center">
+        <Button variant="outline" size="sm" className="w-fit" type="button" onClick={goBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Επιστροφή
+        </Button>
+        <Button type="submit" form="unit-details-form" disabled={isSubmitting || !isDirty}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Αποθήκευση Ακινήτου
+        </Button>
+      </div>
+
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="general">Γενικά</TabsTrigger>
+          <TabsTrigger value="floor-plans">Κατόψεις Επιπέδων</TabsTrigger>
+          <TabsTrigger value="misc">Διάφορα</TabsTrigger>
+          <TabsTrigger value="photos">Φωτογραφίες</TabsTrigger>
+          <TabsTrigger value="videos">Videos</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="general" className="mt-4">
           <div className="flex flex-col gap-8">
-            <div className="flex justify-between items-center">
-              <Button variant="outline" size="sm" className="w-fit" type="button" onClick={goBack}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Επιστροφή
-              </Button>
-              <Button type="submit" disabled={isSubmitting || !isDirty}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Αποθήκευση Ακινήτου
-              </Button>
-            </div>
+            <Form {...unitForm}>
+              <form id="unit-details-form" onSubmit={onUnitSubmit}>
+                 <UnitDetailsForm
+                    form={unitForm}
+                    unit={unit}
+                    getStatusClass={getStatusClass}
+                  />
+              </form>
+            </Form>
 
-            <UnitDetailsForm
-              form={unitForm}
-              unit={unit}
-              getStatusClass={getStatusClass}
-            />
+            <UnitContactForm unitName={unit.name} />
+
+            <Card>
+              <CardContent className="pt-6">
+                 <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Παρακολουθήματα</h3>
+                  <Button type="button" size="sm" variant="outline" onClick={handleAddNewAttachment}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Προσθήκη
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Διαχειριστείτε τις θέσεις στάθμευσης, αποθήκες κ.λπ. που συνδέονται με αυτό το ακίνητο.
+                </p>
+                <UnitsListTable
+                  units={attachments}
+                  onEditUnit={handleEditAttachment}
+                  onDeleteUnit={handleDeleteAttachment}
+                />
+              </CardContent>
+            </Card>
           </div>
-        </form>
-      </Form>
+        </TabsContent>
+        
+        <TabsContent value="floor-plans" className="mt-4">
+          <UnitFloorPlansTab unit={unit} />
+        </TabsContent>
 
-      <UnitContactForm unitName={unit.name} />
+        <TabsContent value="misc" className="mt-4">
+          <Card>
+            <CardContent className="p-6">
+              <p className="text-muted-foreground">Διάφορες πληροφορίες και έγγραφα θα εμφανίζονται εδώ.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="photos" className="mt-4">
+          <UnitPhotosTab unit={unit} />
+        </TabsContent>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Παρακολουθήματα</CardTitle>
-            <Button type="button" size="sm" variant="outline" onClick={handleAddNewAttachment}>
-              <PlusCircle className="mr-2" />
-              Προσθήκη
-            </Button>
-          </div>
-          <CardDescription>
-            Διαχειριστείτε τις θέσεις στάθμευσης, αποθήκες κ.λπ. που συνδέονται με αυτό το ακίνητο.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <UnitsListTable
-            units={attachments}
-            onEditUnit={handleEditAttachment}
-            onDeleteUnit={handleDeleteAttachment}
-          />
-        </CardContent>
-      </Card>
+        <TabsContent value="videos" className="mt-4">
+           <Card>
+            <CardContent className="p-6">
+              <p className="text-muted-foreground">Η διαχείριση βίντεο θα είναι διαθέσιμη σύντομα.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+      </Tabs>
 
       <AttachmentDialog
         open={isAttachmentDialogOpen}
