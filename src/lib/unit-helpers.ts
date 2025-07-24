@@ -2,6 +2,21 @@
 import { UnitFormValues } from "@/components/units/UnitDetailsForm";
 import { AttachmentFormValues } from "@/components/units/AttachmentDialog";
 
+export const AMENITIES_LIST = [
+    { id: 'parking', label: 'Θέση Στάθμευσης' },
+    { id: 'elevator', label: 'Ασανσέρ' },
+    { id: 'securityDoor', label: 'Πόρτα Ασφαλείας' },
+    { id: 'alarm', label: 'Συναγερμός' },
+    { id: 'furnished', label: 'Επιπλωμένο' },
+    { id: 'storage', label: 'Αποθήκη' },
+    { id: 'fireplace', label: 'Τζάκι' },
+    { id: 'balcony', label: 'Βεράντα' },
+    { id: 'internalStairs', label: 'Εσωτερική Σκάλα' },
+    { id: 'garden', label: 'Κήπος' },
+    { id: 'pool', label: 'Πισίνα' },
+    { id: 'playroom', label: 'Playroom' },
+];
+
 export function getUnitDataFromForm(data: UnitFormValues) {
     const unitData: { [key: string]: any } = {
         identifier: data.identifier,
@@ -13,12 +28,20 @@ export function getUnitDataFromForm(data: UnitFormValues) {
         bedrooms: data.bedrooms ? parseInt(data.bedrooms, 10) : undefined,
         bathrooms: data.bathrooms ? parseInt(data.bathrooms, 10) : undefined,
         orientation: data.orientation || '',
-        amenities: data.amenities ? data.amenities.split(',').map(a => a.trim()).filter(Boolean) : [],
-        levelSpan: data.floorSpan > 1 ? `${data.floorSpan}F` : undefined, // Add levelSpan based on form
+        description: data.description || '',
+        isPenthouse: data.isPenthouse,
+        amenities: data.amenities || [],
+        levelSpan: data.levelSpan > 1 ? `${data.levelSpan}F` : undefined,
     };
 
     // Remove undefined keys before sending to Firestore
-    Object.keys(unitData).forEach(key => unitData[key] === undefined && delete unitData[key]);
+    Object.keys(unitData).forEach(key => (unitData[key] === undefined || unitData[key] === '') && delete unitData[key]);
+    
+    // Ensure boolean false is kept
+    if (data.isPenthouse === false) {
+        unitData.isPenthouse = false;
+    }
+
 
     return unitData;
 }
@@ -37,7 +60,11 @@ export function getAttachmentDataFromForm(data: AttachmentFormValues) {
     };
     
     // Remove undefined keys before sending to Firestore
-    Object.keys(attachmentData).forEach(key => attachmentData[key] === undefined && delete attachmentData[key]);
+    Object.keys(attachmentData).forEach(key => (attachmentData[key] === undefined || attachmentData[key] === '') && delete attachmentData[key]);
+    
+    // Ensure boolean false is kept
+    if (data.isBundle === false) attachmentData.isBundle = false;
+    if (data.isStandalone === false) attachmentData.isStandalone = false;
     
     return attachmentData;
 }

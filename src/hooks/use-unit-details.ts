@@ -42,6 +42,8 @@ export interface Unit {
   bathrooms?: number;
   orientation?: string;
   amenities?: string[];
+  description?: string;
+  isPenthouse?: boolean;
 }
 
 export function useUnitDetails() {
@@ -69,7 +71,9 @@ export function useUnitDetails() {
       bedrooms: '',
       bathrooms: '',
       orientation: '',
-      amenities: '',
+      description: '',
+      isPenthouse: false,
+      amenities: [],
       levelSpan: 1,
     },
   });
@@ -113,7 +117,9 @@ export function useUnitDetails() {
           bedrooms: unitData.bedrooms?.toString() || '',
           bathrooms: unitData.bathrooms?.toString() || '',
           orientation: unitData.orientation || '',
-          amenities: unitData.amenities?.join(', ') || '',
+          description: unitData.description || '',
+          isPenthouse: unitData.isPenthouse || false,
+          amenities: unitData.amenities || [],
           levelSpan: unitData.levelSpan ? parseInt(unitData.levelSpan.replace('F', '')) : 1,
         });
         setIsLoading(false);
@@ -146,6 +152,7 @@ export function useUnitDetails() {
     try {
         await updateDoc(doc(db, 'units', unit.id), unitDataToUpdate);
         toast({ title: 'Επιτυχία', description: 'Οι αλλαγές στο ακίνητο αποθηκεύτηκαν.' });
+        unitForm.reset(data); // Sync form state to show it's no longer dirty
         await logActivity('UPDATE_UNIT', {
           entityId: unit.id,
           entityType: 'unit',
