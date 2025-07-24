@@ -12,13 +12,10 @@ const docCache = new Map<string, DocumentData | null>();
 
 async function getDocFromFirestore(collectionName: string, id: string): Promise<DocumentData | null> {
   if (!id || !collectionName) return null;
-  
   const cacheKey = `${collectionName}/${id}`;
-  // For this hook, we want fresh data on each navigation to avoid stale breadcrumbs.
-  // if (docCache.has(cacheKey)) {
-  //   return docCache.get(cacheKey) || null;
-  // }
-
+  if (docCache.has(cacheKey)) {
+    return docCache.get(cacheKey) || null;
+  }
   try {
     const docRef = doc(db, collectionName, id);
     const docSnap = await getDoc(docRef);
@@ -27,7 +24,7 @@ async function getDocFromFirestore(collectionName: string, id: string): Promise<
       docCache.set(cacheKey, data);
       return data;
     }
-    docCache.set(cacheKey, null); // Cache the miss
+    docCache.set(cacheKey, null);
     return null;
   } catch (error) {
     console.error(`Failed to fetch from ${collectionName}/${id}:`, error);
@@ -62,94 +59,99 @@ export function useBreadcrumbs() {
   useEffect(() => {
     const generateBreadcrumbs = async () => {
       const segments = pathname.split('/').filter(Boolean);
-      
       if (segments.length === 0) {
         setBreadcrumbs([]);
         return;
       }
-      
+
       const mainSegment = segments[0];
-      
-      // Handle static pages first (list pages, settings, etc.)
+      const entityId = segments[1];
+
+      // Handle static/list pages first
       if (segments.length === 1 && STATIC_LABELS[mainSegment]) {
-          setBreadcrumbs([{ href: `/${mainSegment}`, label: STATIC_LABELS[mainSegment] }]);
-          return;
+        setBreadcrumbs([{ href: `/${mainSegment}`, label: STATIC_LABELS[mainSegment] }]);
+        return;
       }
 
       // Handle detail pages
       const collectionName = COLLECTION_NAMES[mainSegment];
-      if (!collectionName || segments.length < 2) {
+      if (!collectionName || !entityId) {
+        setBreadcrumbs([]);
+        return;
+      }
+      
+      const currentEntity = await getDocFromFirestore(collectionName, entityId);
+      if (!currentEntity) {
         setBreadcrumbs([]);
         return;
       }
 
-      const entityId = segments[1];
-      const currentEntity = await getDocFromFirestore(collectionName, entityId);
+      // --- Start the bottom-up traversal ---
+      let companyId: string | undefined;
+      let projectId: string | undefined;
+      let buildingId: string | undefined;
+      let floorId: string | undefined;
+      let unitId: string | undefined;
 
-      if (!currentEntity) {
-          if (STATIC_LABELS[mainSegment]) {
-              setBreadcrumbs([{ href: `/${mainSegment}`, label: STATIC_LABELS[mainSegment] }]);
-          } else {
-              setBreadcrumbs([]);
-          }
-          return;
+      switch(collectionName) {
+        case 'units':
+          unitId = currentEntity.id;
+          floorId = currentEntity.floorIds?.[0];
+          buildingId = currentEntity.buildingId;
+          projectId = currentEntity.projectId;
+          companyId = currentEntity.companyId;
+          break;
+        case 'floors':
+          floorId = currentEntity.id;
+          buildingId = currentEntity.buildingId;
+          // Need to fetch building to get project/company
+          break;
+        case 'buildings':
+          buildingId = currentEntity.id;
+          projectId = currentEntity.projectId;
+          // Need to fetch project to get company
+          break;
+        case 'projects':
+          projectId = currentEntity.id;
+          companyId = currentEntity.companyId;
+          break;
+        case 'companies':
+          companyId = currentEntity.id;
+          break;
+      }
+
+      // Fetch any missing parent documents based on the traversal
+      if (floorId && !buildingId) {
+        const floorDoc = await getDocFromFirestore('floors', floorId);
+        buildingId = floorDoc?.buildingId;
+      }
+      if (buildingId && !projectId) {
+        const buildingDoc = await getDocFromFirestore('buildings', buildingId);
+        projectId = buildingDoc?.projectId;
+      }
+      if (projectId && !companyId) {
+        const projectDoc = await getDocFromFirestore('projects', projectId);
+        companyId = projectDoc?.companyId;
       }
       
-      let company: DocumentData | null = null;
-      let project: DocumentData | null = null;
-      let building: DocumentData | null = null;
-      let floor: DocumentData | null = null;
-      let unit: DocumentData | null = null;
+      // Fetch all documents in parallel
+      const [company, project, building, floor, unit] = await Promise.all([
+        companyId ? getDocFromFirestore('companies', companyId) : Promise.resolve(null),
+        projectId ? getDocFromFirestore('projects', projectId) : Promise.resolve(null),
+        buildingId ? getDocFromFirestore('buildings', buildingId) : Promise.resolve(null),
+        floorId ? getDocFromFirestore('floors', floorId) : Promise.resolve(null),
+        unitId ? getDocFromFirestore('units', unitId) : Promise.resolve(null),
+      ]);
+
+      // Build the breadcrumbs array in the correct order
+      const crumbs: BreadcrumbItem[] = [];
+      if (company) crumbs.push({ href: `/companies`, label: company.name, tooltip: "Go to Companies List" });
+      if (project) crumbs.push({ href: `/projects/${project.id}`, label: project.title });
+      if (building) crumbs.push({ href: `/buildings/${building.id}`, label: building.address || "Building" });
+      if (floor) crumbs.push({ href: `/floors/${floor.id}`, label: `Όροφος ${floor.level}` });
+      if (unit) crumbs.push({ href: `/units/${unit.id}`, label: unit.name || "Unit" });
       
-      // Follow the hierarchy up from the current entity
-      switch (collectionName) {
-          case 'units':
-              unit = currentEntity;
-              if (unit?.floorIds?.length > 0) floor = await getDocFromFirestore('floors', unit.floorIds[0]);
-              // Fallthrough is intentional
-          case 'floors':
-              floor = floor || (collectionName === 'floors' ? currentEntity : null);
-              if (floor?.buildingId) building = await getDocFromFirestore('buildings', floor.buildingId);
-              // Fallthrough is intentional
-          case 'buildings':
-              building = building || (collectionName === 'buildings' ? currentEntity : null);
-              if (building?.projectId) project = await getDocFromFirestore('projects', building.projectId);
-              // Fallthrough is intentional
-          case 'projects':
-              project = project || (collectionName === 'projects' ? currentEntity : null);
-              if (project?.companyId) company = await getDocFromFirestore('companies', project.companyId);
-              break;
-      }
-      
-      const newCrumbs: BreadcrumbItem[] = [];
-
-      if (company) {
-        newCrumbs.push({ href: `/companies`, label: company.name, tooltip: 'Go to company list' });
-      }
-
-      if (project) {
-        newCrumbs.push({ href: `/projects`, label: 'Έργα' });
-        newCrumbs.push({ href: `/projects/${project.id}`, label: project.title });
-      }
-
-      if (building) {
-          newCrumbs.push({ href: `/buildings`, label: 'Κτίρια' });
-          newCrumbs.push({ href: `/buildings/${building.id}`, label: building.address });
-      }
-      if (floor) {
-          newCrumbs.push({ href: `/floors`, label: 'Όροφοι' });
-          newCrumbs.push({ href: `/floors/${floor.id}`, label: `Όροφος ${floor.level}` });
-      }
-      if (unit) {
-          newCrumbs.push({ href: `/units`, label: 'Ακίνητα' });
-          newCrumbs.push({ href: `/units/${unit.id}`, label: unit.name });
-      }
-      
-      const uniqueCrumbs = newCrumbs.filter((crumb, index, self) =>
-          index === self.findIndex((c) => c.href === crumb.href)
-      );
-
-      setBreadcrumbs(uniqueCrumbs);
+      setBreadcrumbs(crumbs);
     };
 
     generateBreadcrumbs();
