@@ -78,7 +78,7 @@ export async function clearDatabase() {
     }
 
     // Clear all top-level collections
-    const collectionsToClear = ['contacts', 'attachments', 'units', 'floors', 'buildings', 'projects', 'companies', 'auditLogs', 'users', 'workStages', 'workSubstages'];
+    const collectionsToClear = ['contacts', 'attachments', 'units', 'floors', 'buildings', 'projects', 'companies', 'auditLogs', 'users', 'workStages', 'workSubstages', 'leads'];
     for (const collectionName of collectionsToClear) {
         await clearCollection(collectionName);
     }
