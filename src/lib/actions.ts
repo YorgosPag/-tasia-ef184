@@ -1,15 +1,14 @@
 
 'use server';
 
-import { seedTasiaData } from '@/lib/tasia-seed';
-import { clearTasiaData } from '@/lib/clear';
-import { seedEcoData } from './eco-seed';
-import { clearEcoData } from './eco-clear';
-
+import { seedTasiaData as seedTasia } from '@/lib/tasia-seed';
+import { clearTasiaData as clearTasia } from '@/lib/clear';
+import { seedEcoData as seedEco } from './eco-seed';
+import { clearEcoData as clearEco } from './eco-clear';
 
 export async function seedTasiaDataAction() {
     try {
-        await seedTasiaData();
+        await seedTasia();
         return { success: true };
     } catch (error) {
         console.error('TASIA Seeding failed:', error);
@@ -19,7 +18,7 @@ export async function seedTasiaDataAction() {
 
 export async function clearTasiaDataAction() {
     try {
-        await clearTasiaData();
+        await clearTasia();
         return { success: true };
     } catch (error) {
         console.error('TASIA Clearing failed:', error);
@@ -29,7 +28,7 @@ export async function clearTasiaDataAction() {
 
 export async function seedEcoDataAction() {
     try {
-        await seedEcoData();
+        await seedEco();
         return { success: true };
     } catch (error) {
         console.error('ECO Seeding failed:', error);
@@ -39,7 +38,7 @@ export async function seedEcoDataAction() {
 
 export async function clearEcoDataAction() {
     try {
-        await clearEcoData();
+        await clearEco();
         return { success: true };
     } catch (error) {
         console.error('ECO Clearing failed:', error);
