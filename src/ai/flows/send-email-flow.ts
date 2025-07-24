@@ -10,7 +10,6 @@ import sgMail from '@sendgrid/mail';
 
 export const SendEmailInputSchema = z.object({
   to: z.string().email().describe('The recipient email address.'),
-  from: z.string().email().describe('The sender email address.'),
   subject: z.string().describe('The subject of the email.'),
   text: z.string().describe('The plain text content of the email.'),
   html: z.string().describe('The HTML content of the email.'),
@@ -36,16 +35,22 @@ const sendEmailFlow = ai.defineFlow(
   },
   async (input) => {
     const apiKey = process***REMOVED***.SENDGRID_API_KEY;
+    const fromEmail = process***REMOVED***.NEXT_PUBLIC_SENDGRID_FROM_EMAIL;
+    const replyToEmail = process***REMOVED***.NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL;
 
-    if (!apiKey) {
-      console.error('SendGrid API key not configured. Set SENDGRID_API_KEY environment variable.');
+    if (!apiKey || !fromEmail || !replyToEmail) {
+      console.error('SendGrid environment variables not configured. Please set SENDGRID_API_KEY, NEXT_PUBLIC_SENDGRID_FROM_EMAIL, and NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL.');
       return { success: false, message: 'Email service is not configured.' };
     }
 
     sgMail.setApiKey(apiKey);
 
     try {
-      await sgMail.send(input);
+      await sgMail.send({
+        ...input,
+        from: fromEmail,
+        replyTo: replyToEmail,
+      });
       return { success: true, message: 'Email sent successfully.' };
     } catch (error: any) {
       console.error('SendGrid Error:', error.response?.body || error);

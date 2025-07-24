@@ -56,7 +56,6 @@ export function UnitContactForm({ unitName }: UnitContactFormProps) {
             // Send notification email
             const emailResult = await sendEmail({
                 to: notificationEmail,
-                from: process***REMOVED***.NEXT_PUBLIC_SENDGRID_FROM_EMAIL || 'noreply@nestorconstruct.gr', // Use a no-reply address from your verified domain
                 subject: `New Lead for ${unitName}`,
                 text: `You have a new lead for the unit: ${unitName}.\n\nName: ${name}\nEmail: ${email}\nMessage: ${message}`,
                 html: `<p>You have a new lead for the unit: <strong>${unitName}</strong>.</p>
