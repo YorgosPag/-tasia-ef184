@@ -116,7 +116,7 @@ export function SidebarNav() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
                 <SidebarMenu>
-                    <NavLink href="/projects?view=construction" icon={Construction} tooltip="Στάδια Εργασιών">
+                    <NavLink href="/projects?view=construction" icon={Network} tooltip="Στάδια Εργασιών">
                         Στάδια Εργασιών
                     </NavLink>
                     <NavLink href="/construction/calendar" icon={CalendarDays} tooltip="Ημερολόγιο">
@@ -134,7 +134,7 @@ export function SidebarNav() {
                     <NavLink href="/companies" icon={Building2} tooltip="Εταιρείες">
                         Εταιρείες
                     </NavLink>
-                    <NavLink href="/projects" icon={Briefcase} tooltip="Έργα">
+                    <NavLink href="/projects" icon={FolderKanban} tooltip="Έργα">
                         Έργα
                     </NavLink>
                     <NavLink href="/buildings" icon={Building} tooltip="Κτίρια">
