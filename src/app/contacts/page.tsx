@@ -39,7 +39,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { exportToJson } from '@/lib/exporter';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, query as firestoreQuery, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -83,11 +83,14 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 
 async function fetchContacts(): Promise<Contact[]> {
   const contactsCollection = collection(db, 'contacts');
-  const q = query(contactsCollection, orderBy('name', 'asc'));
+  // Removed orderBy to prevent index errors
+  const q = firestoreQuery(contactsCollection);
   
   return new Promise((resolve, reject) => {
     onSnapshot(q, (snapshot) => {
       const contacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contact));
+      // Sort on the client side
+      contacts.sort((a, b) => a.name.localeCompare(b.name));
       resolve(contacts);
     }, (error) => {
       console.error("Failed to fetch contacts:", error);
