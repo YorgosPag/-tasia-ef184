@@ -15,6 +15,7 @@ export const SidebarMenuButton = React.forwardRef<
   React.ComponentProps<"button"> & {
     asChild?: boolean
     isActive?: boolean
+    hasSubmenu?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
     href?: string
   } & VariantProps<typeof sidebarMenuButtonVariants>
@@ -23,6 +24,7 @@ export const SidebarMenuButton = React.forwardRef<
     {
       asChild = false,
       isActive = false,
+      hasSubmenu, // Destructure hasSubmenu to prevent it from being passed to the DOM element
       variant = "default",
       size = "default",
       tooltip,
