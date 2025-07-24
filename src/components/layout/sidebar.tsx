@@ -1,167 +1,134 @@
-
 'use client';
 
+import { useState } from 'react';
 import {
-  Home,
-  Building,
-  Briefcase,
-  Building2,
-  Layers,
-  LayoutTemplate,
-  History,
-  Users,
-  Paperclip,
-  Construction,
-  CalendarDays,
-  ClipboardList,
-  SquareKanban,
-  FilePen,
-  MessageSquare,
-  Package,
-  FileText,
-  Mail,
-  Phone,
+  Building2, Briefcase, Layers, LayoutTemplate, Paperclip, ChevronRight, ChevronDown, Home
 } from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
-} from '@/components/ui/sidebar';
-import { Logo } from '@/components/logo';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import { HierarchySidebar } from './HierarchySidebar'; // Import the new component
+import Link from 'next/link';
 
-export function AppSidebar() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const view = searchParams.get('view');
-  const { isEditor, isAdmin } = useAuth();
+type Entity = {
+  id: string;
+  name: string;
+  children?: Entity[];
+};
 
-  const isConstructionView = pathname.startsWith('/projects') && view === 'construction';
+// Mock hierarchical data – replace with real Firestore fetches!
+const companies: Entity[] = [
+  {
+    id: 'c1', name: 'DevConstruct',
+    children: [
+      {
+        id: 'p1', name: 'Athens Revival',
+        children: [
+          {
+            id: 'b1', name: 'Πατησίων 100',
+            children: [
+              {
+                id: 'f1', name: '1ος Όροφος',
+                children: [
+                  {
+                    id: 'u1', name: 'Διαμέρισμα Α1',
+                    children: [
+                      { id: 'att1', name: 'Parking Υπόγειο #1' },
+                      { id: 'att2', name: 'Αποθήκη #2' },
+                    ]
+                  },
+                  {
+                    id: 'u2', name: 'Μεζονέτα Β1'
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];
+
+const LEVEL_ICONS = [
+  Building2,        // Εταιρεία
+  Briefcase,        // Έργο
+  LayoutTemplate,   // Κτίριο
+  Layers,           // Όροφος
+  Home,             // Ακίνητο
+  Paperclip,        // Παρακολούθημα
+];
+
+type Breadcrumb = { id: string; name: string; level: number };
+
+export default function HierarchySidebar() {
+  const [expanded, setExpanded] = useState<{[key: string]: boolean}>({});
+  const [breadcrumb, setBreadcrumb] = useState<Breadcrumb[]>([]);
+
+  // Helper: renders recursively each level
+  function renderEntities(entities: Entity[], level = 0, parentTrail: Breadcrumb[] = []) {
+    return (
+      <ul className={`pl-${level * 2}`}>
+        {entities.map(entity => {
+          const Icon = LEVEL_ICONS[level] ?? Home;
+          const hasChildren = entity.children && entity.children.length > 0;
+          const isOpen = expanded[entity.id] || false;
+
+          return (
+            <li key={entity.id} className="mb-1">
+              <div className="flex items-center gap-1">
+                {hasChildren ? (
+                  <button
+                    className="focus:outline-none"
+                    onClick={() => setExpanded(e => ({...e, [entity.id]: !isOpen}))}
+                  >
+                    {isOpen ? <ChevronDown size={16}/> : <ChevronRight size={16}/>}
+                  </button>
+                ) : <span className="w-4" />}
+                <Icon className="w-4 h-4 text-muted-foreground mr-1" />
+                <button
+                  className="text-left text-sm hover:text-primary transition"
+                  onClick={() => setBreadcrumb([...parentTrail, { id: entity.id, name: entity.name, level }])}
+                >
+                  {entity.name}
+                </button>
+              </div>
+              {hasChildren && isOpen && (
+                renderEntities(entity.children!, level + 1, [...parentTrail, { id: entity.id, name: entity.name, level }])
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  // Breadcrumb UI
+  function Breadcrumbs() {
+    if (breadcrumb.length === 0) return null;
+    return (
+      <nav className="mb-2 flex items-center text-xs text-muted-foreground">
+        {breadcrumb.map((b, i) => (
+          <span key={b.id} className="flex items-center">
+            <span
+              className="hover:underline cursor-pointer"
+              onClick={() => setBreadcrumb(breadcrumb.slice(0, i+1))}
+            >{b.name}</span>
+            {i < breadcrumb.length - 1 && <ChevronRight size={12} className="mx-1" />}
+          </span>
+        ))}
+      </nav>
+    );
+  }
 
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-2">
-          <Logo className="size-8 text-primary" />
-          <span className="text-xl font-semibold font-headline">TASIA</span>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Μενού</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton href="/" isActive={pathname === '/'}>
-                <Home />
-                Αρχική
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup>
-            <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
-            <HierarchySidebar />
-        </SidebarGroup>
-        
-        {isEditor && (
-            <>
-                <SidebarGroup>
-                <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton href="/projects?view=construction" isActive={isConstructionView}>
-                            <Construction />
-                            Στάδια Εργασιών
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton href="/assignments" isActive={pathname.startsWith('/assignments')}>
-                            <ClipboardList />
-                            Οι Αναθέσεις μου
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton href="/architect-dashboard" isActive={pathname.startsWith('/architect-dashboard')}>
-                            <FilePen />
-                            Architect's Dashboard
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton href="/construction/calendar" isActive={pathname.startsWith('/construction/calendar')}>
-                            <CalendarDays />
-                            Ημερολόγιο
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-                </SidebarGroup>
-                
-                <SidebarGroup>
-                    <SidebarGroupLabel>Project Admin</SidebarGroupLabel>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton href="/leads" isActive={pathname.startsWith('/leads')}>
-                                <Mail />
-                                Leads
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                        <SidebarMenuButton href="/meetings" isActive={pathname.startsWith('/meetings')}>
-                            <MessageSquare />
-                            Συσκέψεις
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton href="/contracts" isActive={pathname.startsWith('/contracts')}>
-                            <FileText />
-                            Συμβόλαια
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton href="/materials" isActive={pathname.startsWith('/materials')}>
-                            <Package />
-                            Υλικά
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    </SidebarMenu>
-                </SidebarGroup>
-            </>
-        )}
-
-
-        {isAdmin && (
-          <SidebarGroup>
-              <SidebarGroupLabel>System</SidebarGroupLabel>
-              <SidebarMenu>
-                  <SidebarMenuItem>
-                      <SidebarMenuButton href="/templates/work-stages" isActive={pathname.startsWith('/templates/work-stages')}>
-                          <SquareKanban />
-                          Πρότυπα Σταδίων
-                      </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                      <SidebarMenuButton href="/users" isActive={pathname.startsWith('/users')}>
-                          <Users />
-                          Users
-                      </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                      <SidebarMenuButton href="/audit-log" isActive={pathname.startsWith('/audit-log')}>
-                          <History />
-                          Audit Log
-                      </SidebarMenuButton>
-                  </SidebarMenuItem>
-              </SidebarMenu>
-          </SidebarGroup>
-        )}
-      </SidebarContent>
-    </Sidebar>
+    <aside className="w-72 bg-background border-r min-h-screen p-4">
+      <h2 className="text-lg font-bold mb-4">Ιεραρχία</h2>
+      <Breadcrumbs />
+      {renderEntities(companies)}
+      {/* Place other sections (Κατασκευή, Leads, Admin...) BELOW this, NOT inside! */}
+      <div className="mt-8">
+        {/* Add your general menu here */}
+        {/* Example:
+        <Link href="/leads" className="block mt-4">Leads</Link>
+        */}
+      </div>
+    </aside>
   );
 }
