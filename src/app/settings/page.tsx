@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, KeyRound, Mail, MessageSquare, Eye, EyeOff } from 'lucide-react';
+import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 
 // Αυτό το component είναι ένα παράδειγμα.
 // Σε μια πραγματική εφαρμογή, αυτές οι τιμές θα αποθηκεύονταν με ασφάλεια
@@ -15,11 +16,11 @@ import { Loader2, KeyRound, Mail, MessageSquare, Eye, EyeOff } from 'lucide-reac
 
 export default function SettingsPage() {
     const { toast } = useToast();
-    const [sendgridApiKey, setSendgridApiKey] = useState('');
-    const [sendgridFromEmail, setSendgridFromEmail] = useState('');
-    const [twilioAccountSid, setTwilioAccountSid] = useState('');
-    const [twilioAuthToken, setTwilioAuthToken] = useState('');
-    const [twilioFromNumber, setTwilioFromNumber] = useState('');
+    const [sendgridApiKey, setSendgridApiKey] = useLocalStorageState('setting_sendgridApiKey', '');
+    const [sendgridFromEmail, setSendgridFromEmail] = useLocalStorageState('setting_sendgridFromEmail', '');
+    const [twilioAccountSid, setTwilioAccountSid] = useLocalStorageState('setting_twilioAccountSid', '');
+    const [twilioAuthToken, setTwilioAuthToken] = useLocalStorageState('setting_twilioAuthToken', '');
+    const [twilioFromNumber, setTwilioFromNumber] = useLocalStorageState('setting_twilioFromNumber', '');
     const [isSaving, setIsSaving] = useState(false);
     
     const [showSendGridKey, setShowSendGridKey] = useState(false);
@@ -28,21 +29,15 @@ export default function SettingsPage() {
 
     const handleSave = () => {
         setIsSaving(true);
-        // Προσομοίωση αποθήκευσης
+        // Η αποθήκευση γίνεται αυτόματα μέσω του useLocalStorageState hook.
+        // Εδώ απλά προσομοιώνουμε μια καθυστέρηση για το UX.
         setTimeout(() => {
-            console.log('Αποθηκευμένες Ρυθμίσεις:', {
-                sendgridApiKey: sendgridApiKey.substring(0, 5) + '...',
-                sendgridFromEmail,
-                twilioAccountSid: twilioAccountSid.substring(0, 5) + '...',
-                twilioAuthToken: '***',
-                twilioFromNumber,
-            });
             toast({
                 title: 'Επιτυχία',
                 description: 'Οι ρυθμίσεις αποθηκεύτηκαν με επιτυχία.',
             });
             setIsSaving(false);
-        }, 1500);
+        }, 1000);
     };
 
     return (
