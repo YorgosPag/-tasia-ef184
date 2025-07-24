@@ -10,6 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Unit } from '@/hooks/use-unit-details';
+import { Switch } from '../ui/switch';
+import { Checkbox } from '../ui/checkbox';
+import { Separator } from '../ui/separator';
+import { AMENITIES_LIST } from '@/lib/unit-helpers';
 
 export const unitSchema = z.object({
   identifier: z.string().min(1, "Identifier is required"),
@@ -21,8 +25,10 @@ export const unitSchema = z.object({
   bedrooms: z.string().optional(),
   bathrooms: z.string().optional(),
   orientation: z.string().optional(),
-  amenities: z.string().optional(),
-  levelSpan: z.number().int().min(1).default(1), // Add floorSpan to the schema
+  description: z.string().optional(),
+  isPenthouse: z.boolean().default(false),
+  amenities: z.array(z.string()).optional(),
+  levelSpan: z.number().int().min(1).default(1),
 });
 
 export type UnitFormValues = z.infer<typeof unitSchema>;
@@ -77,9 +83,14 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
         <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>Τιμή (€)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
         <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Υπνοδωμάτια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
         <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Μπάνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <div className="md:col-span-2">
-          <FormField control={form.control} name="amenities" render={({ field }) => (<FormItem><FormLabel>Παροχές (με κόμμα)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} />
-        </div>
+        
+        <FormField control={form.control} name="isPenthouse" render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+              <div className="space-y-0.5"><FormLabel>Ρετιρέ</FormLabel></div>
+              <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+            </FormItem>
+          )} />
+        
         <div className="md:col-span-2">
            <FormField
               control={form.control}
@@ -99,6 +110,46 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
                 </FormItem>
               )}
             />
+        </div>
+
+        <div className="md:col-span-2">
+          <Separator />
+           <div className="mt-4">
+              <FormLabel className="text-base font-semibold">Παροχές</FormLabel>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                {AMENITIES_LIST.map((item) => (
+                  <FormField
+                    key={item.id}
+                    control={form.control}
+                    name="amenities"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(item.id)}
+                            onCheckedChange={(checked) => {
+                              return checked
+                                ? field.onChange([...(field.value || []), item.id])
+                                : field.onChange(
+                                    (field.value || []).filter(
+                                      (value) => value !== item.id
+                                    )
+                                  )
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">{item.label}</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+        </div>
+
+        <div className="md:col-span-2">
+          <Separator />
+          <FormField control={form.control} name="description" render={({ field }) => (<FormItem className="mt-4"><FormLabel className="text-base font-semibold">Περιγραφή</FormLabel><FormControl><Textarea {...field} rows={5} /></FormControl><FormMessage /></FormItem>)} />
         </div>
       </CardContent>
     </>

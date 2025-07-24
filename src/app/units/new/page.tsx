@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { collection, serverTimestamp, doc, writeBatch, getDoc, query, where, getDocs, setDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, getDoc, query, where, getDocs, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,10 @@ import { logActivity } from '@/lib/logger';
 import { useDataStore, Company, Project, Building } from '@/hooks/use-data-store';
 import { generateNextUnitIdentifier } from '@/lib/identifier-generator';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+import { getUnitDataFromForm, AMENITIES_LIST } from '@/lib/unit-helpers';
 
 const newUnitSchema = z.object({
   floorId: z.string().min(1, { message: "Πρέπει να επιλέξετε όροφο." }),
@@ -32,7 +36,9 @@ const newUnitSchema = z.object({
   bedrooms: z.string().optional(),
   bathrooms: z.string().optional(),
   orientation: z.string().optional(),
-  amenities: z.string().optional(),
+  description: z.string().optional(),
+  isPenthouse: z.boolean().default(false),
+  amenities: z.array(z.string()).optional(),
   levelSpan: z.number().int().min(1).default(1),
 });
 
@@ -50,7 +56,6 @@ export default function NewUnitPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingId, setIsGeneratingId] = useState(false);
   
-  // Hierarchy selection state
   const [selectedCompany, setSelectedCompany] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedBuilding, setSelectedBuilding] = useState('');
@@ -72,7 +77,9 @@ export default function NewUnitPage() {
       bedrooms: '',
       bathrooms: '',
       orientation: '',
-      amenities: '',
+      description: '',
+      isPenthouse: false,
+      amenities: [],
       levelSpan: 1,
     },
   });
@@ -81,7 +88,6 @@ export default function NewUnitPage() {
   const selectedFloorSpan = useWatch({ control: form.control, name: 'levelSpan'});
   const selectedFloorId = useWatch({ control: form.control, name: 'floorId'});
 
-  // --- Chained Dropdown Logic ---
   const filteredProjects = projects.filter(p => p.companyId === selectedCompany);
   const filteredBuildings = buildings.filter(b => b.projectId === selectedProject);
 
@@ -100,7 +106,6 @@ export default function NewUnitPage() {
     fetchFloors();
   }, [selectedBuilding]);
 
-  // Reset child dropdowns when a parent changes
   useEffect(() => { setSelectedProject(''); form.setValue('floorId', ''); }, [selectedCompany, form]);
   useEffect(() => { setSelectedBuilding(''); form.setValue('floorId', ''); }, [selectedProject, form]);
   useEffect(() => { form.setValue('floorId', ''); }, [selectedBuilding, form]);
@@ -143,28 +148,15 @@ export default function NewUnitPage() {
         
         const topLevelUnitRef = doc(collection(db, 'units'));
         
-        const unitData: any = {
-            identifier: data.identifier, name: data.name, type: data.type || '',
-            status: data.status,
-            amenities: data.amenities ? data.amenities.split(',').map(a => a.trim()).filter(Boolean) : [],
-            floorIds: [data.floorId],
-            buildingId: floorData.buildingId,
-            projectId: buildingData.projectId,
-            companyId: projectData.companyId,
-            createdAt: serverTimestamp(),
-            originalId: topLevelUnitRef.id,
+        const unitData = {
+          ...getUnitDataFromForm(data),
+          floorIds: [data.floorId],
+          buildingId: floorData.buildingId,
+          projectId: buildingData.projectId,
+          companyId: projectData.companyId,
+          createdAt: serverTimestamp(),
+          originalId: topLevelUnitRef.id,
         };
-
-        if (data.area && !isNaN(parseFloat(data.area))) unitData.area = parseFloat(data.area);
-        if (data.price && !isNaN(parseFloat(data.price))) unitData.price = parseFloat(data.price);
-        if (data.bedrooms && !isNaN(parseInt(data.bedrooms))) unitData.bedrooms = parseInt(data.bedrooms, 10);
-        if (data.bathrooms && !isNaN(parseInt(data.bathrooms))) unitData.bathrooms = parseInt(data.bathrooms, 10);
-        if (data.orientation) unitData.orientation = data.orientation;
-        if (data.levelSpan > 1) unitData.levelSpan = `${data.levelSpan}F`;
-
-        // Ensure no undefined fields are passed to Firestore
-        Object.keys(unitData).forEach(key => unitData[key] === undefined && delete unitData[key]);
-
 
         await setDoc(topLevelUnitRef, unitData);
 
@@ -235,8 +227,47 @@ export default function NewUnitPage() {
                 <FormField control={form.control} name="bedrooms" render={({ field }) => (<FormItem><FormLabel>Υπνοδωμάτια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="bathrooms" render={({ field }) => (<FormItem><FormLabel>Μπάνια</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="orientation" render={({ field }) => (<FormItem><FormLabel>Προσανατολισμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <div className="md:col-span-2"><FormField control={form.control} name="amenities" render={({ field }) => (<FormItem><FormLabel>Παροχές (με κόμμα)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>)} /></div>
+                 <FormField control={form.control} name="isPenthouse" render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                      <div className="space-y-0.5"><FormLabel>Ρετιρέ</FormLabel></div>
+                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    </FormItem>
+                  )} />
               </div>
+              <Separator />
+               <div>
+                  <FormLabel className="text-base font-semibold">Παροχές</FormLabel>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                    {AMENITIES_LIST.map((item) => (
+                      <FormField
+                        key={item.id}
+                        control={form.control}
+                        name="amenities"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(item.id)}
+                                onCheckedChange={(checked) => {
+                                  return checked
+                                    ? field.onChange([...(field.value || []), item.id])
+                                    : field.onChange(
+                                        (field.value || []).filter(
+                                          (value) => value !== item.id
+                                        )
+                                      )
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal">{item.label}</FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+              <Separator />
+              <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Περιγραφή</FormLabel><FormControl><Textarea {...field} rows={5} /></FormControl><FormMessage /></FormItem>)} />
             </CardContent>
             <div className="flex justify-end p-6">
                 <Button type="submit" disabled={isSubmitting}>
