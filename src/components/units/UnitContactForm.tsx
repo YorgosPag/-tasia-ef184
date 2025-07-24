@@ -49,22 +49,27 @@ export function UnitContactForm({ unitName }: UnitContactFormProps) {
             status: 'New'
         });
 
-        // Send notification email
-        const emailResult = await sendEmail({
-            to: 'info@nestorconstruct.gr', // Replace with your desired notification email
-            from: 'noreply@nestorconstruct.gr', // Use a no-reply address from your verified domain
-            subject: `New Lead for ${unitName}`,
-            text: `You have a new lead for the unit: ${unitName}.\n\nName: ${name}\nEmail: ${email}\nMessage: ${message}`,
-            html: `<p>You have a new lead for the unit: <strong>${unitName}</strong>.</p>
-                   <p><strong>Name:</strong> ${name}</p>
-                   <p><strong>Email:</strong> ${email}</p>
-                   <p><strong>Message:</strong></p>
-                   <p>${message}</p>`,
-        });
+        const notificationEmail = process***REMOVED***.NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL;
+        if (!notificationEmail) {
+            console.warn("Lead notification email address is not set in environment variables (NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL). Skipping email notification.");
+        } else {
+            // Send notification email
+            const emailResult = await sendEmail({
+                to: notificationEmail,
+                from: process***REMOVED***.NEXT_PUBLIC_SENDGRID_FROM_EMAIL || 'noreply@nestorconstruct.gr', // Use a no-reply address from your verified domain
+                subject: `New Lead for ${unitName}`,
+                text: `You have a new lead for the unit: ${unitName}.\n\nName: ${name}\nEmail: ${email}\nMessage: ${message}`,
+                html: `<p>You have a new lead for the unit: <strong>${unitName}</strong>.</p>
+                       <p><strong>Name:</strong> ${name}</p>
+                       <p><strong>Email:</strong> ${email}</p>
+                       <p><strong>Message:</strong></p>
+                       <p>${message}</p>`,
+            });
 
-        if (!emailResult.success) {
-            console.warn("Could not send lead notification email:", emailResult.message);
-            // We don't block the user for this, just log it.
+            if (!emailResult.success) {
+                console.warn("Could not send lead notification email:", emailResult.message);
+                // We don't block the user for this, just log it.
+            }
         }
 
         setIsSubmitted(true);
