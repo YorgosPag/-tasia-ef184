@@ -22,6 +22,13 @@ export interface Company {
   createdAt: any;
 }
 
+export interface Building {
+    id: string;
+    address: string;
+    type: string;
+    projectId: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -38,6 +45,7 @@ export interface Project {
 interface DataStoreContextType {
   companies: Company[];
   projects: Project[];
+  buildings: Building[];
   isLoading: boolean;
   addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<string | null>;
   addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }) => Promise<string | null>;
@@ -46,6 +54,7 @@ interface DataStoreContextType {
 const DataStoreContext = createContext<DataStoreContextType>({
   companies: [],
   projects: [],
+  buildings: [],
   isLoading: true,
   addCompany: async () => null,
   addProject: async () => null,
@@ -55,42 +64,63 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
         setCompanies([]);
         setProjects([]);
+        setBuildings([]);
         setIsLoading(false);
         return;
     }
 
     setIsLoading(true);
+    let companyLoaded = false;
+    let projectLoaded = false;
+    let buildingLoaded = false;
+
+    const checkIfStillLoading = () => {
+        if(companyLoaded && projectLoaded && buildingLoaded) {
+            setIsLoading(false);
+        }
+    }
+
     const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
         setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
+        companyLoaded = true;
         checkIfStillLoading();
     }, (error) => {
         console.error("Failed to fetch companies:", error);
+        companyLoaded = true;
         checkIfStillLoading();
     });
     
     const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
         setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
+        projectLoaded = true;
         checkIfStillLoading();
     }, (error) => {
         console.error("Failed to fetch projects:", error);
+        projectLoaded = true;
         checkIfStillLoading();
     });
 
-    const checkIfStillLoading = () => {
-        // A simple way to set loading to false after first fetch attempts.
-        // Could be more robust by tracking individual loading states.
-        setIsLoading(false);
-    }
+    const unsubBuildings = onSnapshot(collection(db, 'buildings'), (snapshot) => {
+        setBuildings(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Building)));
+        buildingLoaded = true;
+        checkIfStillLoading();
+    }, (error) => {
+        console.error("Failed to fetch buildings:", error);
+        buildingLoaded = true;
+        checkIfStillLoading();
+    });
 
     return () => {
         unsubCompanies();
         unsubProjects();
+        unsubBuildings();
     };
   }, [user]);
 
@@ -138,7 +168,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
 
   return (
-    <DataStoreContext.Provider value={{ companies, projects, isLoading, addCompany, addProject }}>
+    <DataStoreContext.Provider value={{ companies, projects, buildings, isLoading, addCompany, addProject }}>
       {children}
     </DataStoreContext.Provider>
   );
