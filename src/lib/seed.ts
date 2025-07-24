@@ -28,8 +28,8 @@ export async function seedDatabase() {
   console.log('All contacts from contactsData queued for creation.');
 
   // --- Companies ---
-  // Companies are seeded into their own collection for business logic,
-  // but they are already in the contacts list for relational purposes.
+  // Companies are seeded into their own collection for business logic.
+  // We use a different key for their primary collection reference to avoid overwriting contact refs.
   companiesData.forEach((company) => {
     const companyRef = doc(collection(db, 'companies'));
     refs[company._id] = companyRef; // Use the company _id for project linking
