@@ -129,12 +129,12 @@ export function UnitContractsTab({ unit }: UnitContractsTabProps) {
               <Accordion type="multiple" defaultValue={fields.map(f => f.id || '')}>
                 {fields.map((field, index) => (
                   <AccordionItem key={field.fieldId} value={field.id || `contract-${index}`}>
-                    <AccordionTrigger>
-                        <div className="flex justify-between w-full items-center pr-4">
+                     <div className="flex w-full items-center">
+                        <AccordionTrigger className="flex-1">
                             <span>Πελάτης: {form.watch(`contracts.${index}.clientName`) || '(Χωρίς όνομα)'}</span>
-                            <Button variant="ghost" size="icon" className="hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); remove(index); }}><Trash2 className="h-4 w-4 text-destructive"/></Button>
-                        </div>
-                    </AccordionTrigger>
+                        </AccordionTrigger>
+                        <Button variant="ghost" size="icon" className="hover:bg-destructive/10 shrink-0" onClick={(e) => { e.stopPropagation(); remove(index); }}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                    </div>
                     <AccordionContent className="space-y-4 p-2">
                         <FormField control={form.control} name={`contracts.${index}.clientName`} render={({ field }) => (<FormItem><FormLabel>Πελάτης</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                         
