@@ -1,12 +1,13 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { doc, updateDoc, arrayUnion, arrayRemove, collection } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { doc, updateDoc, arrayUnion, arrayRemove, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/hooks/use-toast';
 import {
   Card,
@@ -26,10 +27,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Loader2, PlusCircle, Trash2, Upload, Eye } from 'lucide-react';
 import { Unit } from '@/hooks/use-unit-details';
+import { Contact } from '@/app/contacts/page';
+
 
 const contractStageSchema = z.object({
   contractNumber: z.string().optional(),
@@ -61,22 +65,57 @@ interface UnitContractsTabProps {
   unit: Unit;
 }
 
-const ContractStageForm = ({ control, name, title }: { control: any, name: string, title: string }) => (
-    <div className="space-y-4 rounded-md border p-4">
-        <h4 className="font-semibold">{title}</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField control={control} name={`${name}.contractNumber`} render={({ field }) => (<FormItem><FormLabel>Αριθμός Συμβολαίου</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={control} name={`${name}.contractDate`} render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Ημερ. Συμβολαίου</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP') : <span>Επιλογή ημερομηνίας</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-            <FormField control={control} name={`${name}.contractFileUrl`} render={({ field }) => (<FormItem><FormLabel>Αρχείο Συμβολαίου (URL)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={control} name={`${name}.notary`} render={({ field }) => (<FormItem><FormLabel>Συμβολαιογράφος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-            <FormField control={control} name={`${name}.lawyer`} render={({ field }) => (<FormItem><FormLabel>Δικηγόρος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+const ContractStageForm = ({ control, name, title, contacts, onFileUpload }: { control: any, name: string, title: string, contacts: Contact[], onFileUpload: (field: string, file: File) => void }) => {
+    const [isUploading, setIsUploading] = useState(false);
+    
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setIsUploading(true);
+            await onFileUpload(`${name}.contractFileUrl`, file);
+            setIsUploading(false);
+        }
+    }
+    
+    const fileUrl = control.getValues(`${name}.contractFileUrl`);
+    
+    return (
+        <div className="space-y-4 rounded-md border p-4">
+            <h4 className="font-semibold">{title}</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={control} name={`${name}.contractNumber`} render={({ field }) => (<FormItem><FormLabel>Αριθμός Συμβολαίου</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={control} name={`${name}.contractDate`} render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Ημερ. Συμβολαίου</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP') : <span>Επιλογή ημερομηνίας</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                
+                <FormField control={control} name={`${name}.notary`} render={({ field }) => (<FormItem><FormLabel>Συμβολαιογράφος</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε επαφή..."/></SelectTrigger></FormControl><SelectContent>{contacts.filter(c => c.type === 'Notary').map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                <FormField control={control} name={`${name}.lawyer`} render={({ field }) => (<FormItem><FormLabel>Δικηγόρος</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε επαφή..."/></SelectTrigger></FormControl><SelectContent>{contacts.filter(c => c.type === 'Lawyer').map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                
+                <FormItem className="col-span-full">
+                    <FormLabel>Αρχείο Συμβολαίου (PDF)</FormLabel>
+                    <div className="flex items-center gap-2">
+                         <Input type="file" accept=".pdf" className="text-xs h-9" onChange={handleFileChange} disabled={isUploading}/>
+                         {fileUrl && <Button type="button" variant="ghost" size="icon" onClick={() => window.open(fileUrl, '_blank')}><Eye className="h-4 w-4" /></Button>}
+                         {isUploading && <Loader2 className="h-4 w-4 animate-spin"/>}
+                    </div>
+                </FormItem>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 
 export function UnitContractsTab({ unit }: UnitContractsTabProps) {
   const { toast } = useToast();
+  const [contacts, setContacts] = useState<Contact[]>([]);
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+        const q = query(collection(db, 'contacts'), where('type', 'in', ['Notary', 'Lawyer']), orderBy('name'));
+        const snapshot = await getDocs(q);
+        setContacts(snapshot.docs.map(d => ({id: d.id, ...d.data()} as Contact)));
+    }
+    fetchContacts();
+  }, []);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -84,7 +123,7 @@ export function UnitContractsTab({ unit }: UnitContractsTabProps) {
     },
   });
 
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'contracts',
     keyName: 'fieldId',
@@ -100,9 +139,21 @@ export function UnitContractsTab({ unit }: UnitContractsTabProps) {
     }
   };
 
+  const handleFileUpload = async (field: string, file: File) => {
+    const storageRef = ref(storage, `unit_contracts/${unit.id}/${file.name}`);
+    try {
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        form.setValue(field as any, downloadURL, { shouldDirty: true });
+        toast({ title: 'Επιτυχία', description: 'Το αρχείο ανέβηκε.' });
+    } catch(error: any) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: `Το ανέβασμα απέτυχε: ${error.message}` });
+    }
+  }
+
   const addNewContract = () => {
     append({
-        id: doc(collection(db, 'dummy')).id, // Generate a unique ID client-side
+        id: doc(collection(db, 'dummy')).id,
         clientName: '',
         status: 'Προσύμφωνο',
     });
@@ -138,9 +189,9 @@ export function UnitContractsTab({ unit }: UnitContractsTabProps) {
                     <AccordionContent className="space-y-4 p-2">
                         <FormField control={form.control} name={`contracts.${index}.clientName`} render={({ field }) => (<FormItem><FormLabel>Πελάτης</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                         
-                        <ContractStageForm control={form.control} name={`contracts.${index}.preliminary`} title="Προσύμφωνο" />
-                        <ContractStageForm control={form.control} name={`contracts.${index}.final`} title="Οριστικό Συμβόλαιο" />
-                        <ContractStageForm control={form.control} name={`contracts.${index}.settlement`} title="Εξοφλητικό Συμβόλαιο" />
+                        <ContractStageForm control={form.control} name={`contracts.${index}.preliminary`} title="Προσύμφωνο" contacts={contacts} onFileUpload={handleFileUpload} />
+                        <ContractStageForm control={form.control} name={`contracts.${index}.final`} title="Οριστικό Συμβόλαιο" contacts={contacts} onFileUpload={handleFileUpload} />
+                        <ContractStageForm control={form.control} name={`contracts.${index}.settlement`} title="Εξοφλητικό Συμβόλαιο" contacts={contacts} onFileUpload={handleFileUpload} />
                         
                         <FormField control={form.control} name={`contracts.${index}.registeredBy`} render={({ field }) => (<FormItem><FormLabel>Καταχωρήθηκε από</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                     </AccordionContent>

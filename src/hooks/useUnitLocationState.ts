@@ -21,7 +21,6 @@ interface UseUnitLocationStateProps {
 export function useUnitLocationState(
     { companies, projects, buildings }: UseUnitLocationStateProps,
     form: UseFormReturn<NewUnitFormValues>,
-    isMultiFloorAllowed: boolean,
 ) {
     const [selectedCompany, setSelectedCompany] = useState('');
     const [selectedProject, setSelectedProject] = useState('');

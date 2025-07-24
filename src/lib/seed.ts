@@ -9,13 +9,22 @@ import {
   DocumentReference,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { companiesData, projectsData, buildingsData, floorsData, unitsData } from './seed-data';
+import { companiesData, projectsData, buildingsData, floorsData, unitsData, contactsData } from './seed-data';
 
 export async function seedDatabase() {
   const refs: { [key: string]: DocumentReference } = {};
   const originalIds: { [key: string]: { building: string, floor?: string } } = {};
   const batch = writeBatch(db);
   console.log('Starting database seed...');
+
+  // --- Contacts ---
+  contactsData.forEach((contact) => {
+    const docRef = doc(collection(db, 'contacts'));
+    refs[contact._id] = docRef;
+    const { _id, ...contactData } = contact;
+    batch.set(docRef, { ...contactData, createdAt: serverTimestamp() });
+  });
+  console.log('Contacts queued for creation.');
 
   // --- Companies ---
   companiesData.forEach((company) => {

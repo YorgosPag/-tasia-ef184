@@ -23,7 +23,7 @@ export const newUnitSchema = z.object({
   description: z.string().optional(),
   isPenthouse: z.boolean().default(false),
   amenities: z.array(z.string()).optional(),
-  levelSpan: z.number().int().min(1).default(1),
+  levelSpan: z.number().int().min(0).default(0),
 });
 
 export type NewUnitFormValues = z.infer<typeof newUnitSchema>;
