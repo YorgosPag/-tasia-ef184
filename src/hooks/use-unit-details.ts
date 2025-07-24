@@ -36,11 +36,20 @@ export interface Unit {
   originalId: string;
   createdAt: Timestamp;
   projectId?: string;
-  area?: number;
+  
+  // Area fields
+  netArea?: number;
+  grossArea?: number;
+  commonArea?: number;
+  semiOutdoorArea?: number;
+  architecturalProjectionsArea?: number;
+  balconiesArea?: number;
+  
   price?: number;
   bedrooms?: number;
   bathrooms?: number;
   orientation?: string;
+  kitchenLayout?: string;
   amenities?: string[];
   description?: string;
   isPenthouse?: boolean;
@@ -66,11 +75,17 @@ export function useUnitDetails() {
       name: '',
       type: '',
       status: 'Διαθέσιμο',
-      area: '',
+      netArea: '',
+      grossArea: '',
+      commonArea: '',
+      semiOutdoorArea: '',
+      architecturalProjectionsArea: '',
+      balconiesArea: '',
       price: '',
       bedrooms: '',
       bathrooms: '',
       orientation: '',
+      kitchenLayout: '',
       description: '',
       isPenthouse: false,
       amenities: [],
@@ -112,11 +127,17 @@ export function useUnitDetails() {
           name: unitData.name,
           type: unitData.type || '',
           status: unitData.status,
-          area: unitData.area?.toString() || '',
+          netArea: unitData.netArea?.toString() || '',
+          grossArea: unitData.grossArea?.toString() || '',
+          commonArea: unitData.commonArea?.toString() || '',
+          semiOutdoorArea: unitData.semiOutdoorArea?.toString() || '',
+          architecturalProjectionsArea: unitData.architecturalProjectionsArea?.toString() || '',
+          balconiesArea: unitData.balconiesArea?.toString() || '',
           price: unitData.price?.toString() || '',
           bedrooms: unitData.bedrooms?.toString() || '',
           bathrooms: unitData.bathrooms?.toString() || '',
           orientation: unitData.orientation || '',
+          kitchenLayout: unitData.kitchenLayout || '',
           description: unitData.description || '',
           isPenthouse: unitData.isPenthouse || false,
           amenities: unitData.amenities || [],
