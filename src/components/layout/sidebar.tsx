@@ -1,45 +1,43 @@
+
 "use client"
 
 import * as React from "react"
 import Link from "next/link"
 import {
-  Home,
   Briefcase,
-  Building2,
-  Users,
-  LineChart,
-  Settings,
-  Construction,
-  FileCheck,
-  Calendar,
-  Warehouse,
-  Mail,
-  UserCheck,
-  FileCog,
   Building,
-  Layers,
+  Building2,
+  Calendar,
+  ClipboardList,
+  Construction,
+  FileCog,
+  FilePen,
   LayoutTemplate,
-  Paperclip
+  Layers,
+  LineChart,
+  Mail,
+  MessageSquare,
+  Paperclip,
+  Settings,
+  Users,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarSeparator,
-  SidebarFooter,
 } from "@/components/ui/sidebar"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
+import { HierarchySidebar } from "./HierarchySidebar"
 
 const NavLink = ({
   href,
@@ -90,82 +88,83 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent className="p-0">
+        
         <SidebarGroup>
           <SidebarGroupLabel>Κατασκευαστική Διαχείριση</SidebarGroupLabel>
           <SidebarMenu>
-             <NavLink href="/projects?view=construction" icon={Construction} tooltip="Στάδια Εργασιών">
-                Στάδια Εργασιών
+            <NavLink href="/projects?view=construction" icon={Construction} tooltip="Στάδια Εργασιών">
+              Στάδια Εργασιών
             </NavLink>
-             <NavLink href="/construction/calendar" icon={Calendar} tooltip="Ημερολόγιο">
-                Ημερολόγιο
+            <NavLink href="/construction/calendar" icon={Calendar} tooltip="Ημερολόγιο">
+              Ημερολόγιο
             </NavLink>
-            <NavLink href="/architect-dashboard" icon={FileCheck} tooltip="Architect Dashboard">
-                Architect's Desk
+            <NavLink href="/architect-dashboard" icon={FilePen} tooltip="Architect's Desk">
+              Architect's Desk
             </NavLink>
-             <NavLink href="/assignments" icon={UserCheck} tooltip="Οι Αναθέσεις μου">
-                Οι Αναθέσεις μου
+            <NavLink href="/assignments" icon={ClipboardList} tooltip="Οι Αναθέσεις μου">
+              Οι Αναθέσεις μου
             </NavLink>
           </SidebarMenu>
         </SidebarGroup>
         
         <SidebarSeparator />
-        
+
         <SidebarGroup>
           <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
-            <SidebarMenu>
-               <NavLink href="/companies" icon={Building2} tooltip="Εταιρείες">
-                  Εταιρείες
-              </NavLink>
-              <NavLink href="/projects" icon={Briefcase} tooltip="Έργα">
-                  Έργα
-              </NavLink>
-              <NavLink href="/buildings" icon={Building} tooltip="Κτίρια">
-                  Κτίρια
-              </NavLink>
-              <NavLink href="/floors" icon={Layers} tooltip="Όροφοι">
-                  Όροφοι
-              </NavLink>
-              <NavLink href="/units" icon={LayoutTemplate} tooltip="Ακίνητα">
-                  Ακίνητα
-              </NavLink>
-              <NavLink href="/attachments" icon={Paperclip} tooltip="Παρακολουθήματα">
-                  Παρακολουθήματα
-              </NavLink>
-            </SidebarMenu>
+          <SidebarMenu>
+            <NavLink href="/companies" icon={Building2} tooltip="Εταιρείες">
+              Εταιρείες
+            </NavLink>
+            <NavLink href="/projects" icon={Briefcase} tooltip="Έργα">
+              Έργα
+            </NavLink>
+            <NavLink href="/buildings" icon={Building} tooltip="Κτίρια">
+              Κτίρια
+            </NavLink>
+            <NavLink href="/floors" icon={Layers} tooltip="Όροφοι">
+              Όροφοι
+            </NavLink>
+            <NavLink href="/units" icon={LayoutTemplate} tooltip="Ακίνητα">
+              Ακίνητα
+            </NavLink>
+            <NavLink href="/attachments" icon={Paperclip} tooltip="Παρακολουθήματα">
+              Παρακολουθήματα
+            </NavLink>
+          </SidebarMenu>
         </SidebarGroup>
 
         <SidebarSeparator />
         
         <SidebarGroup>
           <SidebarGroupLabel>Admin</SidebarGroupLabel>
-           <SidebarMenu>
-             <NavLink href="/leads" icon={Mail} tooltip="Leads">
-                Leads
+          <SidebarMenu>
+            <NavLink href="/leads" icon={Mail} tooltip="Leads">
+              Leads
             </NavLink>
-            <NavLink href="/meetings" icon={Users} tooltip="Meetings">
-                Συσκέψεις
+            <NavLink href="/meetings" icon={MessageSquare} tooltip="Meetings">
+              Συσκέψεις
             </NavLink>
-             <NavLink href="/templates/work-stages" icon={FileCog} tooltip="Work Stage Templates">
-                Πρότυπα Εργασιών
+            <NavLink href="/templates/work-stages" icon={FileCog} tooltip="Work Stage Templates">
+              Πρότυπα Εργασιών
             </NavLink>
-           </SidebarMenu>
+          </SidebarMenu>
         </SidebarGroup>
 
         {isAdmin && (
-           <>
+          <>
             <SidebarSeparator />
             <SidebarGroup>
-                <SidebarGroupLabel>System</SidebarGroupLabel>
-                <SidebarMenu>
-                    <NavLink href="/users" icon={Users} tooltip="User Management">
-                        Users
-                    </NavLink>
-                    <NavLink href="/audit-log" icon={LineChart} tooltip="Audit Log">
-                        Audit Log
-                    </NavLink>
-                </SidebarMenu>
+              <SidebarGroupLabel>System</SidebarGroupLabel>
+              <SidebarMenu>
+                <NavLink href="/users" icon={Users} tooltip="User Management">
+                  Users
+                </NavLink>
+                <NavLink href="/audit-log" icon={LineChart} tooltip="Audit Log">
+                  Audit Log
+                </NavLink>
+              </SidebarMenu>
             </SidebarGroup>
-           </>
+          </>
         )}
       </SidebarContent>
       <SidebarFooter>
