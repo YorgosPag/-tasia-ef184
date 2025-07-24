@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, writeBatch, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -32,7 +32,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
 import {
@@ -232,11 +231,11 @@ export default function BuildingsPage() {
     router.push(`/buildings/${buildingId}`);
   };
 
-  const getProjectTitle = (projectId: string | undefined) => {
+  const getProjectTitle = useCallback((projectId: string | undefined) => {
     if (!projectId) return 'N/A';
     if (!projects) return 'Loading...'; 
     return projects.find(p => p.id === projectId)?.title || projectId;
-  };
+  }, [projects]);
   
   const filteredBuildings = useMemo(() => {
     if (!buildings) return [];
@@ -250,7 +249,7 @@ export default function BuildingsPage() {
         projectTitle.includes(query)
       );
     });
-  }, [buildings, searchQuery, projects, getProjectTitle]);
+  }, [buildings, searchQuery, getProjectTitle]);
 
 
   const handleExport = () => {
@@ -273,117 +272,119 @@ export default function BuildingsPage() {
                 <Download className="mr-2"/>
                 Εξαγωγή σε JSON
             </Button>
-            <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-            <DialogTrigger asChild>
-                <Button onClick={() => setEditingBuilding(null)}>
-                <PlusCircle className="mr-2" />
-                Νέο Κτίριο
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                <DialogTitle>{editingBuilding ? 'Επεξεργασία' : 'Δημιουργία Νέου'} Κτιρίου</DialogTitle>
-                <DialogDescription>
-                    Συμπληρώστε τις παρακάτω πληροφορίες για το κτίριο.
-                </DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-                    <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Διεύθυνση</FormLabel>
-                        <FormControl>
-                            <Input placeholder="π.χ. Αριστοτέλους 1, Αθήνα" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Τύπος</FormLabel>
-                        <FormControl>
-                            <Input placeholder="π.χ. Πολυκατοικία" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="photoUrl"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
-                        <FormControl>
-                            <Input placeholder="https://example.com/photo.jpg" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
-                        <FormControl>
-                            <Textarea placeholder="Σημειώσεις για το κτίριο..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="projectId"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Αντιστοίχιση σε Έργο</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                    <SelectValue placeholder="Επιλέξτε έργο..." />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {isLoadingProjects ? (
-                                        <div className="flex items-center justify-center p-2">
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        </div>
-                                    ) : (
-                                        projects.map(project => (
-                                            <SelectItem key={project.id} value={project.id}>{project.title}</SelectItem>
-                                        ))
-                                    )}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <DialogFooter>
-                    <DialogClose asChild>
-                        <Button type="button" variant="outline" disabled={isSubmitting}>
-                        Ακύρωση
-                        </Button>
-                    </DialogClose>
-                    <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {editingBuilding ? 'Αποθήκευση' : 'Δημιουργία'}
+            {isEditor && (
+                <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
+                <DialogTrigger asChild>
+                    <Button onClick={() => setEditingBuilding(null)}>
+                    <PlusCircle className="mr-2" />
+                    Νέο Κτίριο
                     </Button>
-                    </DialogFooter>
-                </form>
-                </Form>
-            </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                    <DialogTitle>{editingBuilding ? 'Επεξεργασία' : 'Δημιουργία Νέου'} Κτιρίου</DialogTitle>
+                    <DialogDescription>
+                        Συμπληρώστε τις παρακάτω πληροφορίες για το κτίριο.
+                    </DialogDescription>
+                    </DialogHeader>
+                    <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
+                        <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Διεύθυνση</FormLabel>
+                            <FormControl>
+                                <Input placeholder="π.χ. Αριστοτέλους 1, Αθήνα" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="type"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Τύπος</FormLabel>
+                            <FormControl>
+                                <Input placeholder="π.χ. Πολυκατοικία" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="photoUrl"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
+                            <FormControl>
+                                <Input placeholder="https://example.com/photo.jpg" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
+                            <FormControl>
+                                <Textarea placeholder="Σημειώσεις για το κτίριο..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="projectId"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Αντιστοίχιση σε Έργο</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ""}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Επιλέξτε έργο..." />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {isLoadingProjects ? (
+                                            <div className="flex items-center justify-center p-2">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            </div>
+                                        ) : (
+                                            projects.map(project => (
+                                                <SelectItem key={project.id} value={project.id}>{project.title}</SelectItem>
+                                            ))
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline" disabled={isSubmitting}>
+                            Ακύρωση
+                            </Button>
+                        </DialogClose>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {editingBuilding ? 'Αποθήκευση' : 'Δημιουργία'}
+                        </Button>
+                        </DialogFooter>
+                    </form>
+                    </Form>
+                </DialogContent>
+                </Dialog>
+            )}
         </div>
       </div>
        <div className="relative">
@@ -424,27 +425,32 @@ export default function BuildingsPage() {
                     <TableCell className="text-muted-foreground cursor-pointer" onClick={() => handleRowClick(building.id)}>{building.type}</TableCell>
                     <TableCell className="text-muted-foreground cursor-pointer" onClick={() => handleRowClick(building.id)}>{getProjectTitle(building.projectId)}</TableCell>
                     <TableCell className="text-muted-foreground cursor-pointer" onClick={() => handleRowClick(building.id)}>{formatDate(building.createdAt)}</TableCell>
-                    {isEditor && <TableCell className="text-right">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
-                          <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={() => handleEditClick(building)}><Edit className="h-4 w-4"/></Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/></Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
-                                <AlertDialogDescription>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το κτίριο "{building.address}".</AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteClick(building)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    }
+                    {isEditor && (
+                        <TableCell className="text-right">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1">
+                                <Button variant="ghost" size="icon" title="Επεξεργασία" onClick={(e) => { e.stopPropagation(); handleEditClick(building); }}>
+                                    <Edit className="h-4 w-4"/>
+                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" title="Διαγραφή" className="text-destructive hover:text-destructive" onClick={(e) => e.stopPropagation()}>
+                                        <Trash2 className="h-4 w-4"/>
+                                    </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+                                        <AlertDialogDescription>Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το κτίριο "{building.address}".</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteClick(building)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                        </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
