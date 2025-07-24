@@ -159,13 +159,21 @@ export async function seedDatabase() {
       for (const att of unit.attachments) {
           const attachmentRef = doc(collection(db, 'attachments'));
           const { type, details, area, price, photoUrl, sharePercentage, isBundle, isStandalone } = att;
-          const attachmentData = {
-            type, details, area, price, photoUrl, sharePercentage, isBundle, isStandalone,
+          
+          const attachmentData: { [key: string]: any } = {
+            type, details, area, price, sharePercentage, isBundle, isStandalone,
             bundleUnitId: isBundle ? topLevelUnitRef.id : undefined,
             unitId: topLevelUnitRef.id, // Link to the top-level unit
             createdAt: serverTimestamp(),
           };
+
+          if (photoUrl) {
+            attachmentData.photoUrl = photoUrl;
+          }
           
+          // Remove undefined keys before writing to Firestore
+          Object.keys(attachmentData).forEach(key => attachmentData[key] === undefined && delete attachmentData[key]);
+
           batch.set(attachmentRef, attachmentData);
       }
   }
