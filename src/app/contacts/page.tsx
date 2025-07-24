@@ -39,7 +39,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { exportToJson } from '@/lib/exporter';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, onSnapshot, addDoc, serverTimestamp, query as firestoreQuery, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, query as firestoreQuery } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
