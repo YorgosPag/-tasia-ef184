@@ -1,3 +1,4 @@
+
 'use client';
 
 import { AppSidebar } from '@/shared/components/layout/Sidebar';
