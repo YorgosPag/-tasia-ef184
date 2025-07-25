@@ -34,13 +34,13 @@ export function UnitCard({ unit }: UnitCardProps) {
     return (
         <Card className="overflow-hidden group flex flex-col">
             <Link href={`/units/${unit.id}`} className="flex flex-col h-full">
-                <div className="relative">
+                <div className="relative aspect-[4/3] w-full">
                     <Image 
                         src={unit.photoUrl || "https://placehold.co/600x400.png"}
                         alt={`Photo of ${unit.name}`}
-                        width={600}
-                        height={400}
-                        className="object-cover w-full h-48 transition-transform duration-300 group-hover:scale-105"
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         data-ai-hint="modern apartment interior"
                     />
                      <Badge className={`absolute top-2 right-2 ${getStatusClass(unit.status)}`}>

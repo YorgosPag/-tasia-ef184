@@ -91,13 +91,13 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
         {unit.photos && unit.photos.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {unit.photos.map((photo, index) => (
-              <div key={index} className="relative group border rounded-lg overflow-hidden">
+              <div key={index} className="relative group border rounded-lg overflow-hidden aspect-square">
                 <Image
                   src={photo.url}
                   alt={photo.name || `Unit Photo ${index + 1}`}
-                  width={250}
-                  height={250}
-                  className="object-cover aspect-square w-full"
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Button variant="destructive" size="icon" onClick={() => handleDelete(photo)}>
