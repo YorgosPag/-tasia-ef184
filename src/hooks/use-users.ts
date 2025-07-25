@@ -21,6 +21,14 @@ export function useUsers() {
   const { isAdmin } = useAuth();
 
   useEffect(() => {
+    // Temporarily disabled to resolve auth issues.
+    // This hook will return an empty array until the root cause is fixed.
+    setUsers([]);
+    setIsLoading(false);
+    return;
+    
+    // Original logic is commented out below
+    /*
     if (!isAdmin) {
       setUsers([]);
       setIsLoading(false);
@@ -43,6 +51,7 @@ export function useUsers() {
     );
 
     return () => unsubscribe();
+    */
   }, [isAdmin]);
 
   const updateUserRole = async (userId: string, newRole: 'admin' | 'editor' | 'viewer') => {
