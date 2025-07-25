@@ -84,13 +84,13 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 
 async function fetchContacts(): Promise<Contact[]> {
   const contactsCollection = collection(db, 'contacts');
-  // Removed orderBy to prevent index errors
+  // Removed orderBy to prevent index errors. Sorting will happen on the client.
   const q = firestoreQuery(contactsCollection);
   
   return new Promise((resolve, reject) => {
     onSnapshot(q, (snapshot) => {
       const contacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contact));
-      // Sort on the client side
+      // Sort on the client side once data is fetched
       contacts.sort((a, b) => a.name.localeCompare(b.name));
       resolve(contacts);
     }, (error) => {
