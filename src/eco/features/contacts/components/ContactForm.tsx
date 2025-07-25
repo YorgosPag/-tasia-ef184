@@ -176,6 +176,7 @@ export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: C
                     )}
                 </AccordionContent>
             </AccordionItem>
+            
             <AccordionItem value="id-tax-info">
                 <AccordionTrigger>Στοιχεία Ταυτότητας &amp; ΑΦΜ</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
@@ -185,7 +186,8 @@ export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: C
                     <FormField control={form.control} name="identity.issuingAuthority" render={({ field }) => (<FormItem><FormLabel>Αρχή Έκδοσης</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </AccordionContent>
             </AccordionItem>
-             <AccordionItem value="contact-info">
+            
+            <AccordionItem value="contact-info">
                 <AccordionTrigger>Στοιχεία Επικοινωνίας</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
                      <FormField control={form.control} name="contactInfo.email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
@@ -193,14 +195,17 @@ export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: C
                      <FormField control={form.control} name="contactInfo.phone" render={({ field }) => (<FormItem><FormLabel>Κινητό Τηλέφωνο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </AccordionContent>
             </AccordionItem>
+
             <AccordionItem value="socials-info">
                 <AccordionTrigger>Κοινωνικά Δίκτυα</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
+                     <FormField control={form.control} name="socials.website" render={({ field }) => (<FormItem><FormLabel>Website</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                      <FormField control={form.control} name="socials.facebook" render={({ field }) => (<FormItem><FormLabel>Facebook</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                      <FormField control={form.control} name="socials.instagram" render={({ field }) => (<FormItem><FormLabel>Instagram</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                      <FormField control={form.control} name="socials.tiktok" render={({ field }) => (<FormItem><FormLabel>TikTok</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </AccordionContent>
             </AccordionItem>
+
             <AccordionItem value="address-info">
                 <AccordionTrigger>Στοιχεία Διεύθυνσης</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
@@ -214,6 +219,7 @@ export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: C
                     </div>
                 </AccordionContent>
             </AccordionItem>
+            
             <AccordionItem value="job-info">
                 <AccordionTrigger>Επαγγελματικά Στοιχεία</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
@@ -222,6 +228,7 @@ export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: C
                      <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem><FormLabel>Επιχείρηση/Οργανισμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </AccordionContent>
             </AccordionItem>
+
             <AccordionItem value="other-info">
                 <AccordionTrigger>Λοιπά</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
