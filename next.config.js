@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
-import 'dotenv/config'
+
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process***REMOVED***.ANALYZE === 'true',
+});
 
 const nextConfig = {
   images: {
@@ -20,4 +23,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
