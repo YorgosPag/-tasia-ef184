@@ -11,6 +11,7 @@ import {
   getDoc,
   query,
   collection,
+  where,
 } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
