@@ -14,12 +14,13 @@ async function isAdmin(): Promise<boolean> {
     if (!user) return false;
 
     const userDocRef = doc(db, 'users', user.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists() && userDoc.data().role === 'admin') {
-        return true;
+    try {
+        const userDoc = await getDoc(userDocRef);
+        return userDoc.exists() && userDoc.data().role === 'admin';
+    } catch (error) {
+        console.error("Error checking admin status:", error);
+        return false;
     }
-    return false;
 }
 
 
@@ -38,7 +39,7 @@ export async function seedTasiaDataAction() {
 }
 
 export async function clearTasiaDataAction() {
-     const adminUser = await isAdmin();
+    const adminUser = await isAdmin();
     if (!adminUser) {
         return { success: false, error: 'Unauthorized: Only admins can clear data.' };
     }
@@ -52,7 +53,7 @@ export async function clearTasiaDataAction() {
 }
 
 export async function seedEcoDataAction() {
-     const adminUser = await isAdmin();
+    const adminUser = await isAdmin();
     if (!adminUser) {
         return { success: false, error: 'Unauthorized: Only admins can seed data.' };
     }
@@ -66,7 +67,7 @@ export async function seedEcoDataAction() {
 }
 
 export async function clearEcoDataAction() {
-     const adminUser = await isAdmin();
+    const adminUser = await isAdmin();
     if (!adminUser) {
         return { success: false, error: 'Unauthorized: Only admins can clear data.' };
     }
