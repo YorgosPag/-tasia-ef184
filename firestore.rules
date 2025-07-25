@@ -1,0 +1,31 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the user has the 'admin' role
+    // by reading their role from the 'users' collection document.
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // By default, no one can read or write to any document.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Rule: Admins can read and write any document in the database.
+    // This rule is checked first. If a user is an admin, they get full access.
+    match /{document=**} {
+      allow read, write: if request.auth != null && isAdmin();
+    }
+    
+    // Rule: Any authenticated user can read any document.
+    // This rule is checked if the user is not an admin.
+    // The `write` permission is not granted here, so it remains denied for non-admins.
+    match /{document=**} {
+      allow read: if request.auth != null;
+    }
+  }
+}
