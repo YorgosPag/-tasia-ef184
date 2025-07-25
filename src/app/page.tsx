@@ -22,58 +22,37 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Home() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isSeedingTasia, setIsSeedingTasia] = useState(false);
   const [isClearingTasia, setIsClearingTasia] = useState(false);
   const [isSeedingEco, setIsSeedingEco] = useState(false);
   const [isClearingEco, setIsClearingEco] = useState(false);
 
-  const handleSeedTasia = async () => {
-    setIsSeedingTasia(true);
-    const result = await seedTasiaDataAction();
-    if (result.success) {
-      toast({ title: 'Επιτυχία', description: 'Τα δεδομένα της TASIA αρχικοποιήθηκαν.' });
-    } else {
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η αρχικοποίηση απέτυχε: ${result.error}` });
+  const handleAction = async (
+    actionFn: (userId: string) => Promise<{ success: boolean; error?: string }>,
+    setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+    successMessage: string,
+    failureMessage: string
+  ) => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Πρέπει να είστε συνδεδεμένος για αυτή την ενέργεια.' });
+      return;
     }
-    setIsSeedingTasia(false);
+    setIsLoading(true);
+    const result = await actionFn(user.uid);
+    if (result.success) {
+      toast({ title: 'Επιτυχία', description: successMessage });
+    } else {
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: `${failureMessage}: ${result.error}` });
+    }
+    setIsLoading(false);
   };
 
-  const handleClearTasia = async () => {
-    setIsClearingTasia(true);
-    const result = await clearTasiaDataAction();
-    if (result.success) {
-      toast({ title: 'Επιτυχία', description: 'Τα δεδομένα της TASIA καθαρίστηκαν.' });
-    } else {
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Ο καθαρισμός απέτυχε: ${result.error}` });
-    }
-    setIsClearingTasia(false);
-  };
-  
-    const handleSeedEco = async () => {
-    setIsSeedingEco(true);
-    const result = await seedEcoDataAction();
-    if (result.success) {
-      toast({ title: 'Επιτυχία', description: 'Τα δεδομένα του NESTOR Εξοικονομώ αρχικοποιήθηκαν.' });
-    } else {
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η αρχικοποίηση απέτυχε: ${result.error}` });
-    }
-    setIsSeedingEco(false);
-  };
-
-  const handleClearEco = async () => {
-    setIsClearingEco(true);
-    const result = await clearEcoDataAction();
-    if (result.success) {
-      toast({ title: 'Επιτυχία', description: 'Τα δεδομένα του NESTOR Εξοικονομώ καθαρίστηκαν.' });
-    } else {
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Ο καθαρισμός απέτυχε: ${result.error}` });
-    }
-    setIsClearingEco(false);
-  };
-
+  const isAnyActionLoading = isSeedingTasia || isClearingTasia || isSeedingEco || isClearingEco;
 
   return (
     <div className="flex flex-col items-center gap-12 py-10 px-4">
@@ -88,20 +67,20 @@ export default function Home() {
               <CardDescription>Εισαγωγή ή διαγραφή δεδομένων για την εφαρμογή Real Estate.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-4">
-              <Button onClick={handleSeedTasia} disabled={isSeedingTasia || isClearingTasia} className="flex-1">
+              <Button onClick={() => handleAction(seedTasiaDataAction, setIsSeedingTasia, 'Τα δεδομένα της TASIA αρχικοποιήθηκαν.', 'Η αρχικοποίηση απέτυχε')} disabled={isAnyActionLoading} className="flex-1">
                 {isSeedingTasia ? <Loader2 className="mr-2 animate-spin" /> : <Database className="mr-2" />}
                 Seed TASIA Data
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" disabled={isSeedingTasia || isClearingTasia} className="flex-1">
+                  <Button variant="destructive" disabled={isAnyActionLoading} className="flex-1">
                     {isClearingTasia ? <Loader2 className="mr-2 animate-spin" /> : <Trash2 className="mr-2" />}
                     Clear TASIA Data
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader><AlertDialogTitle>Είστε βέβαιοι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει ΟΛΑ τα δεδομένα της TASIA (Έργα, Κτίρια, Ακίνητα κλπ). Τα δεδομένα του Εξοικονομώ θα παραμείνουν.</AlertDialogDescription></AlertDialogHeader>
-                  <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={handleClearTasia} className="bg-destructive hover:bg-destructive/90">Ναι, διαγραφή</AlertDialogAction></AlertDialogFooter>
+                  <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleAction(clearTasiaDataAction, setIsClearingTasia, 'Τα δεδομένα της TASIA καθαρίστηκαν.', 'Ο καθαρισμός απέτυχε')} className="bg-destructive hover:bg-destructive/90">Ναι, διαγραφή</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             </CardContent>
@@ -115,20 +94,20 @@ export default function Home() {
               <CardDescription>Εισαγωγή ή διαγραφή δεδομένων για την εφαρμογή Εξοικονομώ.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-4">
-              <Button onClick={handleSeedEco} disabled={isSeedingEco || isClearingEco} className="flex-1">
+              <Button onClick={() => handleAction(seedEcoDataAction, setIsSeedingEco, 'Τα δεδομένα του NESTOR Εξοικονομώ αρχικοποιήθηκαν.', 'Η αρχικοποίηση απέτυχε')} disabled={isAnyActionLoading} className="flex-1">
                 {isSeedingEco ? <Loader2 className="mr-2 animate-spin" /> : <Database className="mr-2" />}
                 Seed Eco Data
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" disabled={isSeedingEco || isClearingEco} className="flex-1">
+                  <Button variant="destructive" disabled={isAnyActionLoading} className="flex-1">
                     {isClearingEco ? <Loader2 className="mr-2 animate-spin" /> : <Trash2 className="mr-2" />}
                     Clear Eco Data
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader><AlertDialogTitle>Είστε βέβαιοι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει ΟΛΑ τα δεδομένα του Εξοικονομώ (Λίστες, Επαφές κλπ). Τα δεδομένα της TASIA θα παραμείνουν.</AlertDialogDescription></AlertDialogHeader>
-                  <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={handleClearEco} className="bg-destructive hover:bg-destructive/90">Ναι, διαγραφή</AlertDialogAction></AlertDialogFooter>
+                  <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleAction(clearEcoDataAction, setIsClearingEco, 'Τα δεδομένα του NESTOR Εξοικονομώ καθαρίστηκαν.', 'Ο καθαρισμός απέτυχε')} className="bg-destructive hover:bg-destructive/90">Ναι, διαγραφή</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             </CardContent>

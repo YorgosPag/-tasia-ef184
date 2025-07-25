@@ -5,15 +5,14 @@ import { seedTasiaData as seedTasia } from '@/lib/tasia-seed';
 import { clearTasiaData as clearTasia } from '@/lib/clear';
 import { seedEcoData as seedEco } from './eco-seed';
 import { clearEcoData as clearEco } from './eco-clear';
-import { auth, db } from './firebase';
+import { db } from './firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 
-async function isAdmin(): Promise<boolean> {
-    const user = auth.currentUser;
-    if (!user) return false;
+async function isAdmin(userId: string): Promise<boolean> {
+    if (!userId) return false;
 
-    const userDocRef = doc(db, 'users', user.uid);
+    const userDocRef = doc(db, 'users', userId);
     try {
         const userDoc = await getDoc(userDocRef);
         return userDoc.exists() && userDoc.data().role === 'admin';
@@ -24,9 +23,8 @@ async function isAdmin(): Promise<boolean> {
 }
 
 
-export async function seedTasiaDataAction() {
-    const adminUser = await isAdmin();
-    if (!adminUser) {
+export async function seedTasiaDataAction(userId: string) {
+    if (!(await isAdmin(userId))) {
         return { success: false, error: 'Unauthorized: Only admins can seed data.' };
     }
     try {
@@ -38,9 +36,8 @@ export async function seedTasiaDataAction() {
     }
 }
 
-export async function clearTasiaDataAction() {
-    const adminUser = await isAdmin();
-    if (!adminUser) {
+export async function clearTasiaDataAction(userId: string) {
+     if (!(await isAdmin(userId))) {
         return { success: false, error: 'Unauthorized: Only admins can clear data.' };
     }
     try {
@@ -52,9 +49,8 @@ export async function clearTasiaDataAction() {
     }
 }
 
-export async function seedEcoDataAction() {
-    const adminUser = await isAdmin();
-    if (!adminUser) {
+export async function seedEcoDataAction(userId: string) {
+     if (!(await isAdmin(userId))) {
         return { success: false, error: 'Unauthorized: Only admins can seed data.' };
     }
     try {
@@ -66,9 +62,8 @@ export async function seedEcoDataAction() {
     }
 }
 
-export async function clearEcoDataAction() {
-    const adminUser = await isAdmin();
-    if (!adminUser) {
+export async function clearEcoDataAction(userId: string) {
+     if (!(await isAdmin(userId))) {
         return { success: false, error: 'Unauthorized: Only admins can clear data.' };
     }
     try {
