@@ -6,6 +6,7 @@ import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { logActivity } from '@/lib/logger';
+import { useQuery } from '@tanstack/react-query';
 
 export interface UserWithRole {
   id: string;
@@ -15,45 +16,43 @@ export interface UserWithRole {
   role: 'admin' | 'editor' | 'viewer';
 }
 
-export function useUsers() {
-  const [users, setUsers] = useState<UserWithRole[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { isAdmin } = useAuth();
-
-  useEffect(() => {
-    // Temporarily disabled to resolve auth issues.
-    // This hook will return an empty array until the root cause is fixed.
-    setUsers([]);
-    setIsLoading(false);
-    return;
-    
-    // Original logic is commented out below
-    /*
+function fetchUsers(isAdmin: boolean): Promise<UserWithRole[]> {
+  return new Promise((resolve, reject) => {
     if (!isAdmin) {
-      setUsers([]);
-      setIsLoading(false);
+      resolve([]);
       return;
     }
 
-    const unsubscribe = onSnapshot(collection(db, 'users'), 
+    const q = collection(db, 'users');
+    const unsubscribe = onSnapshot(q, 
       (snapshot) => {
         const usersData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
         } as UserWithRole));
-        setUsers(usersData);
-        setIsLoading(false);
+        // Unsubscribe after the first successful fetch to behave like a one-time get
+        unsubscribe();
+        resolve(usersData);
       },
       (error) => {
         console.error("Failed to fetch users:", error);
-        setIsLoading(false);
+        unsubscribe();
+        reject(error);
       }
     );
+  });
+}
 
-    return () => unsubscribe();
-    */
-  }, [isAdmin]);
-
+export function useUsers() {
+  const { isAdmin } = useAuth();
+  
+  const { data: users = [], isLoading } = useQuery({
+      queryKey: ['users', isAdmin],
+      queryFn: () => fetchUsers(isAdmin),
+      enabled: isAdmin,
+      refetchOnWindowFocus: false, // Prevents refetching on window focus
+  });
+  
   const updateUserRole = async (userId: string, newRole: 'admin' | 'editor' | 'viewer') => {
     if (!isAdmin) {
       console.error("Permission denied: Only admins can change roles.");
@@ -63,7 +62,6 @@ export function useUsers() {
       const userDocRef = doc(db, 'users', userId);
       await updateDoc(userDocRef, { role: newRole });
       
-      // Log this action
       await logActivity('UPDATE_USER_ROLE', {
         entityId: userId,
         entityType: 'user',
