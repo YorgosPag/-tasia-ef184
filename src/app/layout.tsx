@@ -1,6 +1,7 @@
 
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import '@/tasia/theme/global.tasia.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { AppSidebar } from '@/shared/components/layout/Sidebar';
