@@ -31,7 +31,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   }, [user, isLoading, pathname, router, pathIsPublic]);
   
-  // While determining auth status, show a loader
+  // While determining auth status on non-public pages, show a loader.
   if (isLoading && !pathIsPublic) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -40,19 +40,16 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   
-  // For public pages, render them immediately without the main layout
-  if (pathIsPublic) {
+  // If the user is authenticated OR if the page is public, show the children.
+  if (user || pathIsPublic) {
       return <>{children}</>;
   }
 
-  // If we are still loading, or if we are not logged in and not on a public page, show a loader
-  if (!user && !pathIsPublic) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-16 w-16 animate-spin" />
-      </div>
-    );
-  }
-
-  return <>{children}</>;
+  // Otherwise, the user is not logged in and not on a public page,
+  // the useEffect above will handle the redirect, so we show a loader while redirecting.
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <Loader2 className="h-16 w-16 animate-spin" />
+    </div>
+  );
 }
