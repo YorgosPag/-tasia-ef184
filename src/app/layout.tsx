@@ -1,6 +1,5 @@
 'use client';
 
-import './globals.css';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { AppShell } from '@/components/layout/app-shell';
