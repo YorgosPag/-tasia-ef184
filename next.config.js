@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
+import nextBundleAnalyzer from '@next/bundle-analyzer';
 
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
+const withBundleAnalyzer = nextBundleAnalyzer({
   enabled: process***REMOVED***.ANALYZE === 'true',
 });
 
