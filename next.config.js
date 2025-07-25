@@ -16,15 +16,6 @@ const nextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      // Rewrite for the NESTOR app
-      {
-        source: '/nestor/:path*',
-        destination: '/(main)/:path*',
-      },
-    ];
-  },
   images: {
     remotePatterns: [
       {
