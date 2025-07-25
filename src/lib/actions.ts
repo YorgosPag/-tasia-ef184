@@ -1,3 +1,4 @@
+
 'use server';
 
 import { seedTasiaData as seedTasia } from '@/lib/tasia-seed';
@@ -5,7 +6,7 @@ import { clearTasiaData as clearTasia } from '@/lib/clear';
 import { seedEcoData as seedEco } from './eco-seed';
 import { clearEcoData as clearEco } from './eco-clear';
 import { db } from './firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, limit, getDocs } from 'firebase/firestore';
 import { logActivity } from './logger';
 
 async function isAdmin(userId: string): Promise<boolean> {
@@ -21,6 +22,14 @@ async function isAdmin(userId: string): Promise<boolean> {
     }
 }
 
+async function isFirstUser(): Promise<boolean> {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, limit(1));
+    const snapshot = await getDocs(q);
+    return snapshot.empty;
+}
+
+
 export async function seedTasiaDataAction(userId: string) {
     if (!(await isAdmin(userId))) {
         return { success: false, error: 'Unauthorized: Only admins can seed data.' };
@@ -35,7 +44,6 @@ export async function seedTasiaDataAction(userId: string) {
     }
 }
 
-// ✅ Αφαίρεση ελέγχου isAdmin — μόνο login απαιτείται
 export async function clearTasiaDataAction(userId: string) {
     if (!userId) {
        return { success: false, error: 'Unauthorized: You must be logged in to clear data.' };
@@ -65,8 +73,8 @@ export async function seedEcoDataAction(userId: string) {
 }
 
 export async function clearEcoDataAction(userId: string) {
-    if (!(await isAdmin(userId))) {
-        return { success: false, error: 'Unauthorized: Only admins can clear data.' };
+     if (!userId) {
+       return { success: false, error: 'Unauthorized: You must be logged in to clear data.' };
     }
     try {
         await clearEco();
