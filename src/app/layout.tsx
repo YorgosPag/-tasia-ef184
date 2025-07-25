@@ -1,10 +1,9 @@
-
 'use client';
 
 import './globals.css';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/sidebar';
-import { AppHeader } from '@/components/layout/header';
+import { AppShell } from '@/components/layout/app-shell';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/hooks/use-auth';
 import { DataProvider } from '@/hooks/use-data-store';
@@ -12,16 +11,6 @@ import { QueryProvider } from '@/hooks/use-query-provider';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { ThemeProvider } from '@/components/theme-provider';
 
-function AppBody({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex flex-1 flex-col">
-      <AppHeader />
-      <main className="flex-1 p-2 md:p-4">
-        {children}
-      </main>
-    </div>
-  );
-}
 
 export default function RootLayout({
   children,
@@ -50,8 +39,10 @@ export default function RootLayout({
               <DataProvider>
                 <ProtectedRoute>
                   <SidebarProvider defaultOpen>
+                    <div className="flex">
                       <AppSidebar />
-                      <AppBody>{children}</AppBody>
+                      <AppShell>{children}</AppShell>
+                    </div>
                   </SidebarProvider>
                 </ProtectedRoute>
                 <Toaster />
