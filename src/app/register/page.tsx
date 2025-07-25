@@ -69,7 +69,7 @@ const createUserDocument = async (user: User) => {
         console.log(`First user registered with email ${email}. Assigning admin role.`);
       }
     } catch (error) {
-      console.error("Error creating user document:", error);
+      console.error("🔥 Firestore user creation error:", error);
     }
   }
 };
