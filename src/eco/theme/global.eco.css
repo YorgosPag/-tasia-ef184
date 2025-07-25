@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* global.eco.css */
+@layer base {
+  .eco {
+    --background: 60 48% 96%; /* Light Gray - #F2F2F0 */
+    --foreground: 215 35% 21%; /* Dark Slate Blue - #2D3E4F */
+    
+    --primary: 120 61% 34%; /* Green - #2E7D32 */
+    --primary-foreground: 60 93% 98%; /* Almost White for text on primary */
+
+    /* Card & Popover */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 215 35% 21%; /* Dark Slate Blue */
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 35% 21%;
+
+    /* Secondary Colors */
+    --secondary: 120 10% 90%; /* Lighter Green for subtle backgrounds */
+    --secondary-foreground: 120 15% 25%;
+    
+    /* Muted Colors */
+    --muted: 120 10% 90%; 
+    --muted-foreground: 215 16% 47%; /* Softer Slate Blue for text */
+
+    /* Accent (used for hover states, etc.) */
+    --accent: 120 10% 93%; /* Very light green for hover */
+    --accent-foreground: 120 15% 25%;
+    
+    /* Destructive Color */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Other UI Elements */
+    --border: 215 20% 87%; /* Light gray border */
+    --input: 215 20% 91%;  /* Input background */
+    --ring: 120 61% 34%;   /* Focus ring - Green */
+  }
+ 
+  .dark .eco {
+    --background: 215 28% 17%; /* Dark Slate Blue */
+    --foreground: 60 30% 96%;   /* Light Gray */
+
+    --primary: 120 51% 44%;       /* Lighter Green for dark mode */
+    --primary-foreground: 210 40% 98%;
+
+    --card: 215 28% 21%;        /* Slightly lighter than background */
+    --card-foreground: 60 30% 96%;
+    --popover: 215 28% 17%;
+    --popover-foreground: 60 30% 96%;
+
+    --secondary: 120 10% 25%;   /* Darker green accent */
+    --secondary-foreground: 60 30% 96%;
+
+    --muted: 120 10% 25%;
+    --muted-foreground: 215 15% 65%; /* Lighter gray for muted text */
+
+    --accent: 120 10% 28%;
+    --accent-foreground: 60 30% 96%;
+
+    --destructive: 0 72% 51%; /* Slightly adjusted for dark bg */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 28% 25%;
+    --input: 215 28% 25%;
+    --ring: 120 51% 44%;
+  }
+}

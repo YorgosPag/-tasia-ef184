@@ -13,6 +13,12 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Suspense } from 'react';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { usePathname } from 'next/navigation';
+
+// Conditionally import styles
+import '@/tasia/theme/global.tasia.css';
+import '@/eco/theme/global.eco.css';
+
 
 const inter = Inter({
   subsets: ['latin'],
@@ -24,6 +30,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const domainClass = pathname.startsWith('/eco') ? 'eco' : 'tasia';
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -31,7 +39,7 @@ export default function RootLayout({
         <title>TASIA</title>
         <meta name="description" content="Ευρετήριο Ακινήτων" />
       </head>
-      <body className={cn('font-sans', inter.variable)}>
+      <body className={cn('font-sans', inter.variable, domainClass)}>
         <Suspense>
         <ThemeProvider
             attribute="class"
