@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { FloorPlanViewer } from '@/components/floor-plan/FloorPlanViewer';
+import { FloorPlanLoader } from './FloorPlanLoader';
 import type { Unit } from '@/components/floor-plan/Unit';
 import { useFloorPlanDataManager } from '../floor-plan/hooks/useFloorPlanDataManager';
 import { Loader2 } from 'lucide-react';
@@ -39,7 +39,7 @@ export function FloorPlanCard({
     <Card className="p-0">
       <CardContent className="p-0">
         {floorPlanUrl ? (
-          <FloorPlanViewer
+          <FloorPlanLoader
             pdfUrl={floorPlanUrl}
             units={dataManager.units}
             setUnits={dataManager.setUnits}
