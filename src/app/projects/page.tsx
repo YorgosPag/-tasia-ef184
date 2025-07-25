@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ProjectsPageView } from '@/components/projects/ProjectsPageView';
