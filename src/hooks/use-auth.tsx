@@ -30,48 +30,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (!currentUser) {
-        // If no user is logged in, stop loading and clear role.
-        setRole(null);
-        setIsLoading(false);
-      }
-    });
+    // --- Mock User Data ---
+    const mockUser: User = {
+        uid: 'dev_admin_user',
+        email: 'georgios.pagonis@gmail.com',
+        displayName: 'Development Admin',
+        emailVerified: true,
+        isAnonymous: false,
+        photoURL: null,
+        providerId: 'password',
+        metadata: {},
+        providerData: [],
+        refreshToken: '',
+        tenantId: null,
+        delete: async () => {},
+        getIdToken: async () => '',
+        getIdTokenResult: async () => ({} as any),
+        reload: async () => {},
+        toJSON: () => ({}),
+    };
 
-    return () => unsubscribeAuth();
+    // --- Simulate being logged in ---
+    setUser(mockUser);
+    setRole('admin');
+    setIsLoading(false);
+    
   }, []);
-
-  useEffect(() => {
-    if (user === undefined) {
-      // Still waiting for onAuthStateChanged
-      return;
-    }
-
-    if (user === null) {
-      // User is logged out, handled by the first effect.
-      return;
-    }
-
-    // User is logged in, fetch their role from Firestore.
-    const userDocRef = doc(db, 'users', user.uid);
-    const unsubscribeRole = onSnapshot(userDocRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setRole(docSnap.data().role || 'viewer');
-      } else {
-        // Fallback for users who might exist in Auth but not in Firestore yet.
-        setRole('viewer');
-      }
-      setIsLoading(false); // Stop loading only after role is fetched.
-    }, (error) => {
-        console.error("Error fetching user role:", error);
-        setRole('viewer'); // Default to viewer on error
-        setIsLoading(false);
-    });
-
-    return () => unsubscribeRole();
-  }, [user]);
-
 
   const isAdmin = role === 'admin';
   const isEditor = role === 'admin' || role === 'editor';
