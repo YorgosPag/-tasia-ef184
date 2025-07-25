@@ -33,9 +33,9 @@ export const buildingsData: any[] = [
 ];
 
 export const floorsData: any[] = [
-    { _id: 'floor1', buildingId: 'build1', level: '1', description: 'Πρώτος όροφος', floorPlanUrl: '' },
-    { _id: 'floor2', buildingId: 'build1', level: '2', description: 'Δεύτερος όροφος', floorPlanUrl: '' },
-    { _id: 'floor3', buildingId: 'build3', level: '5', description: 'Γραφεία 5ου ορόφου', floorPlanUrl: '' }
+    { _id: 'floor1', buildingId: 'build1', level: '1', description: 'Πρώτος όροφος', floorPlanUrl: 'https://firebasestorage.googleapis.com/v0/b/tasia-6f77i.appspot.com/o/floor-plans%2Fsample-floor-plan.pdf?alt=media&token=c25b2a26-1e64-4269-9061-391456952e47' },
+    { _id: 'floor2', buildingId: 'build1', level: '2', description: 'Δεύτερος όροφος', floorPlanUrl: 'https://firebasestorage.googleapis.com/v0/b/tasia-6f77i.appspot.com/o/floor-plans%2Fsample-floor-plan.pdf?alt=media&token=c25b2a26-1e64-4269-9061-391456952e47' },
+    { _id: 'floor3', buildingId: 'build3', level: '5', description: 'Γραφεία 5ου ορόφου', floorPlanUrl: 'https://firebasestorage.googleapis.com/v0/b/tasia-6f77i.appspot.com/o/floor-plans%2Fsample-floor-plan.pdf?alt=media&token=c25b2a26-1e64-4269-9061-391456952e47' }
 ];
 
 export const unitsData: {
