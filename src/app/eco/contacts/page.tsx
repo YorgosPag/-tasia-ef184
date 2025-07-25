@@ -1,64 +1,29 @@
 
 'use client';
 
-import { useState } from 'react';
 import { ContactList } from '@/eco/features/contacts/components/ContactList';
 import { ContactDetails } from '@/eco/features/contacts/components/ContactDetails';
 import { ContactForm } from '@/eco/features/contacts/components/ContactForm';
 import { useContacts } from '@/eco/features/contacts/hooks/useContacts';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import type { Contact } from '@/eco/features/contacts/hooks/useContacts';
 
 export default function ContactsPage() {
   const {
     contacts,
     isLoading,
     isSubmitting,
-    addContact,
-    updateContact,
-    deleteContact,
+    selectedContact,
+    editingContact,
+    editingSection,
+    handleSelectContact,
+    handleAddNew,
+    handleEditSection,
+    handleDeleteContact,
+    handleSaveContact,
+    handleCancel,
   } = useContacts();
 
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingContact, setEditingContact] = useState<Contact | null>(null);
-
-  const handleSelectContact = (contact: Contact) => {
-    setSelectedContact(contact);
-    setIsFormOpen(false);
-  };
-
-  const handleEdit = (contact: Contact) => {
-    setEditingContact(contact);
-    setIsFormOpen(true);
-  };
-
-  const handleAddNew = () => {
-    setEditingContact(null);
-    setSelectedContact(null);
-    setIsFormOpen(true);
-  };
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-    setEditingContact(null);
-  };
-
-  const handleSaveContact = async (data: any) => {
-    if (editingContact) {
-      await updateContact(editingContact.id, data);
-    } else {
-      await addContact(data);
-    }
-    handleCloseForm();
-  };
-  
-  const handleDeleteContact = async (contactId: string) => {
-      await deleteContact(contactId);
-      setSelectedContact(null);
-      setIsFormOpen(false);
-  }
 
   return (
     <div className="flex h-[calc(100vh-theme(spacing.24))]">
@@ -91,15 +56,11 @@ export default function ContactsPage() {
 
       {/* Right Column: Details or Form */}
       <div className="flex-1 overflow-y-auto p-6">
-        {isFormOpen ? (
-          <ContactForm
-            isSubmitting={isSubmitting}
-            onSubmit={handleSaveContact}
-            onCancel={handleCloseForm}
-            initialData={editingContact}
-          />
-        ) : selectedContact ? (
-          <ContactDetails contact={selectedContact} onEdit={handleEdit} onDelete={handleDeleteContact} />
+        {selectedContact ? (
+          <ContactDetails 
+            contact={selectedContact} 
+            onEditSection={handleEditSection} 
+            onDelete={handleDeleteContact} />
         ) : (
           <div className="flex h-full items-center justify-center text-center">
             <div>
@@ -113,6 +74,16 @@ export default function ContactsPage() {
           </div>
         )}
       </div>
+      
+      {/* Editing Form Dialog */}
+      <ContactForm
+        isSubmitting={isSubmitting}
+        onSubmit={handleSaveContact}
+        onCancel={handleCancel}
+        editingContact={editingContact}
+        editingSection={editingSection}
+      />
     </div>
   );
 }
+

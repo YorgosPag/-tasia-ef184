@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Loader2, X } from 'lucide-react';
-import { Accordion } from '@/components/ui/accordion';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { FormLabel } from '@/components/ui/form';
 
@@ -21,47 +20,70 @@ import { SocialsSection } from './form-sections/SocialsSection';
 import { AddressSection } from './form-sections/AddressSection';
 import { JobInfoSection } from './form-sections/JobInfoSection';
 import { NotesSection } from './form-sections/NotesSection';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface ContactFormProps {
   isSubmitting: boolean;
   onSubmit: (data: ContactFormValues) => void;
   onCancel: () => void;
-  initialData?: Contact | null;
+  editingContact?: Contact | null;
+  editingSection: string | null;
 }
 
 const safeParseDate = (date: any): Date | null => {
   if (!date) return null;
-  if (date instanceof Date) {
-    return date;
-  }
-  if (typeof date.toDate === 'function') {
-    return date.toDate();
-  }
-  // Handle string dates if necessary, though Firestore usually provides Timestamps
+  if (date instanceof Date) return date;
+  if (typeof date.toDate === 'function') return date.toDate();
   const parsedDate = new Date(date);
   return isNaN(parsedDate.getTime()) ? null : parsedDate;
 };
 
-export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: ContactFormProps) => {
+const SECTIONS_MAP: Record<string, { title: string, component: React.FC<any> }> = {
+    'personal': { title: 'Προσωπικά Στοιχεία', component: PersonalInfoSection },
+    'id_tax': { title: 'Στοιχεία Ταυτότητας & ΑΦΜ', component: IdentityTaxSection },
+    'contact': { title: 'Στοιχεία Επικοινωνίας', component: ContactInfoSection },
+    'socials': { title: 'Κοινωνικά Δίκτυα', component: SocialsSection },
+    'address': { title: 'Στοιχεία Διεύθυνσης', component: AddressSection },
+    'job': { title: 'Επαγγελματικά Στοιχεία', component: JobInfoSection },
+    'notes': { title: 'Λοιπά', component: NotesSection },
+};
+
+
+export const ContactForm = ({ isSubmitting, onSubmit, onCancel, editingContact, editingSection }: ContactFormProps) => {
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
-    defaultValues: {
-      ...initialData,
-      birthDate: initialData?.birthDate ? safeParseDate(initialData.birthDate) : undefined,
+    defaultValues: editingContact ? {
+      ...editingContact,
+      birthDate: editingContact.birthDate ? safeParseDate(editingContact.birthDate) : undefined,
       identity: {
-          ...initialData?.identity,
-          issueDate: initialData?.identity?.issueDate ? safeParseDate(initialData.identity.issueDate) : undefined,
+          ...editingContact.identity,
+          issueDate: editingContact.identity?.issueDate ? safeParseDate(editingContact.identity.issueDate) : undefined,
       },
-    } || {
+    } : {
       entityType: 'Φυσικό Πρόσωπο',
       name: '',
     },
   });
 
   const selectedEntityType = useWatch({ control: form.control, name: 'entityType' });
+  
+  // Effect to reset form when the editing contact changes
+  React.useEffect(() => {
+     form.reset(editingContact ? {
+        ...editingContact,
+        birthDate: editingContact.birthDate ? safeParseDate(editingContact.birthDate) : undefined,
+        identity: {
+            ...editingContact.identity,
+            issueDate: editingContact.identity?.issueDate ? safeParseDate(editingContact.identity.issueDate) : undefined,
+        },
+      } : {
+        entityType: 'Φυσικό Πρόσωπο',
+        name: '',
+      });
+  }, [editingContact, form]);
+
 
   const handleFormSubmit = (data: ContactFormValues) => {
-    // Ensure dates are correctly formatted or null before submission
     const dataToSubmit = {
       ...data,
       birthDate: data.birthDate || null,
@@ -73,55 +95,36 @@ export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: C
     onSubmit(dataToSubmit);
   };
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">{initialData ? 'Επεξεργασία Επαφής' : 'Νέα Επαφή'}</h2>
-          <Button variant="ghost" size="icon" onClick={onCancel} type="button">
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        <RadioGroup
-          onValueChange={(value) => form.setValue('entityType', value as ContactFormValues['entityType'])}
-          defaultValue={form.getValues('entityType')}
-          className="flex flex-col md:flex-row space-y-1 md:space-y-0 md:space-x-4"
-        >
-          <div className="flex items-center space-x-3 space-y-0">
-            <RadioGroupItem value="Φυσικό Πρόσωπο" id="type-individual"/>
-            <FormLabel className="font-normal" htmlFor="type-individual">Φυσικό Πρόσωπο</FormLabel>
-          </div>
-           <div className="flex items-center space-x-3 space-y-0">
-            <RadioGroupItem value="Νομικό Πρόσωπο" id="type-legal"/>
-            <FormLabel className="font-normal" htmlFor="type-legal">Νομικό Πρόσωπο</FormLabel>
-          </div>
-           <div className="flex items-center space-x-3 space-y-0">
-            <RadioGroupItem value="Δημ. Υπηρεσία" id="type-public"/>
-            <FormLabel className="font-normal" htmlFor="type-public">Δημ. Υπηρεσία</FormLabel>
-          </div>
-        </RadioGroup>
-        
-        <Accordion type="multiple" defaultValue={['personal-info']} className="w-full space-y-2">
-            <PersonalInfoSection control={form.control} entityType={selectedEntityType} />
-            <IdentityTaxSection control={form.control} />
-            <ContactInfoSection control={form.control} />
-            <SocialsSection control={form.control} />
-            <AddressSection control={form.control} />
-            <JobInfoSection control={form.control} />
-            <NotesSection control={form.control} />
-        </Accordion>
+  const CurrentSection = editingSection ? SECTIONS_MAP[editingSection]?.component : null;
+  const currentTitle = editingSection ? SECTIONS_MAP[editingSection]?.title : 'Επεξεργασία';
 
-        <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
-            Άκυρο
-          </Button>
-          <Button type="submit" disabled={isSubmitting || !form.formState.isDirty}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Αποθήκευση Αλλαγών
-          </Button>
-        </div>
-      </form>
-    </Form>
+  return (
+    <Dialog open={!!editingSection} onOpenChange={(open) => !open && onCancel()}>
+        <DialogContent className="max-w-xl">
+             <DialogHeader>
+                 <DialogTitle>{currentTitle}</DialogTitle>
+                 <DialogDescription>Ενημερώστε τα παρακάτω πεδία. Οι αλλαγές αποθηκεύονται σε όλες τις ενότητες μαζί.</DialogDescription>
+             </DialogHeader>
+            <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto pr-4">
+                {CurrentSection ? (
+                    <CurrentSection control={form.control} entityType={selectedEntityType} />
+                ) : (
+                    <p>Επιλέξτε μια ενότητα για επεξεργασία.</p>
+                )}
+
+                <DialogFooter className="pt-4">
+                    <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
+                        Άκυρο
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting || !form.formState.isDirty}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Αποθήκευση
+                    </Button>
+                </DialogFooter>
+            </form>
+            </Form>
+        </DialogContent>
+    </Dialog>
   );
 };

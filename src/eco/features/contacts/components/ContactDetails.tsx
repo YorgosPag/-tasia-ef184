@@ -4,7 +4,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Edit, Trash2, MapPin } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Contact } from '../hooks/useContacts';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -21,14 +21,28 @@ const InfoItem = ({ label, value }: InfoItemProps) => (
   </div>
 );
 
+const SectionCard = ({ title, onEdit, children }: { title: string, onEdit: () => void, children: React.ReactNode }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg">{title}</CardTitle>
+            <Button variant="ghost" size="icon" onClick={onEdit}>
+                <Edit className="h-4 w-4" />
+                <span className="sr-only">Επεξεργασία {title}</span>
+            </Button>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+            {children}
+        </CardContent>
+    </Card>
+);
 
 interface ContactDetailsProps {
   contact: Contact;
-  onEdit: (contact: Contact) => void;
+  onEditSection: (section: string) => void;
   onDelete: (contactId: string) => void;
 }
 
-export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProps) => {
+export const ContactDetails = ({ contact, onEditSection, onDelete }: ContactDetailsProps) => {
   const isIndividual = contact.entityType === 'Φυσικό Πρόσωπο';
   return (
     <div className="space-y-6">
@@ -44,10 +58,6 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => onEdit(contact)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Επεξεργασία
-          </Button>
            <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive">
@@ -69,87 +79,65 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
         </div>
       </header>
       
-      <Card>
-        <CardHeader>
-            <CardTitle className="text-lg">Προσωπικά Στοιχεία</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-            <InfoItem label="Επωνυμία / Ονοματεπώνυμο" value={contact.name} />
-            <InfoItem label="Τύπος Οντότητας" value={contact.entityType} />
-            {isIndividual && (
-                <>
-                    <InfoItem label="Όνομα" value={contact.firstName} />
-                    <InfoItem label="Επώνυμο" value={contact.lastName} />
-                    <InfoItem label="Όνομα Πατέρα" value={contact.fatherName} />
-                    <InfoItem label="Όνομα Μητέρας" value={contact.motherName} />
-                    <InfoItem label="Ημ/νία Γέννησης" value={contact.birthDate ? formatDate(contact.birthDate.toDate()) : '-'} />
-                    <InfoItem label="Τόπος Γέννησης" value={contact.birthPlace} />
-                    <InfoItem label="Φύλο" value={contact.gender} />
-                    <InfoItem label="Υπηκοότητα" value={contact.nationality} />
-                </>
-            )}
-        </CardContent>
-      </Card>
+      <SectionCard title="Προσωπικά Στοιχεία" onEdit={() => onEditSection('personal')}>
+        <InfoItem label="Επωνυμία / Ονοματεπώνυμο" value={contact.name} />
+        <InfoItem label="Τύπος Οντότητας" value={contact.entityType} />
+        {isIndividual && (
+            <>
+                <InfoItem label="Όνομα" value={contact.firstName} />
+                <InfoItem label="Επώνυμο" value={contact.lastName} />
+                <InfoItem label="Όνομα Πατέρα" value={contact.fatherName} />
+                <InfoItem label="Όνομα Μητέρας" value={contact.motherName} />
+                <InfoItem label="Ημ/νία Γέννησης" value={contact.birthDate ? formatDate(contact.birthDate.toDate()) : '-'} />
+                <InfoItem label="Τόπος Γέννησης" value={contact.birthPlace} />
+                <InfoItem label="Φύλο" value={contact.gender} />
+                <InfoItem label="Υπηκοότητα" value={contact.nationality} />
+            </>
+        )}
+      </SectionCard>
       
-      <Card>
-        <CardHeader><CardTitle className="text-lg">Στοιχεία Ταυτότητας & ΑΦΜ</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-            <InfoItem label="Α.Φ.Μ." value={contact.afm} />
-            <InfoItem label="Δ.Ο.Υ." value={contact.doy} />
-            <InfoItem label="Α.Δ. Ταυτότητας" value={contact.identity?.number} />
-            <InfoItem label="Ημερομηνία Έκδοσης" value={contact.identity?.issueDate ? formatDate(contact.identity.issueDate.toDate()) : '-'} />
-            <InfoItem label="Αρχή Έκδοσης" value={contact.identity?.issuingAuthority} />
-        </CardContent>
-      </Card>
+      <SectionCard title="Στοιχεία Ταυτότητας & ΑΦΜ" onEdit={() => onEditSection('id_tax')}>
+        <InfoItem label="Α.Φ.Μ." value={contact.afm} />
+        <InfoItem label="Δ.Ο.Υ." value={contact.doy} />
+        <InfoItem label="Α.Δ. Ταυτότητας" value={contact.identity?.number} />
+        <InfoItem label="Ημερομηνία Έκδοσης" value={contact.identity?.issueDate ? formatDate(contact.identity.issueDate.toDate()) : '-'} />
+        <InfoItem label="Αρχή Έκδοσης" value={contact.identity?.issuingAuthority} />
+      </SectionCard>
 
-      <Card>
-        <CardHeader><CardTitle className="text-lg">Στοιχεία Επικοινωνίας</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-            <InfoItem label="Email" value={contact.contactInfo?.email} />
-            <InfoItem label="Κινητό" value={contact.contactInfo?.phone} />
-            <InfoItem label="Σταθερό" value={contact.contactInfo?.landline} />
-        </CardContent>
-      </Card>
+      <SectionCard title="Στοιχεία Επικοινωνίας" onEdit={() => onEditSection('contact')}>
+        <InfoItem label="Email" value={contact.contactInfo?.email} />
+        <InfoItem label="Κινητό" value={contact.contactInfo?.phone} />
+        <InfoItem label="Σταθερό" value={contact.contactInfo?.landline} />
+      </SectionCard>
       
-      <Card>
-        <CardHeader><CardTitle className="text-lg">Κοινωνικά Δίκτυα</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-            <InfoItem label="Website" value={contact.socials?.website} />
-            <InfoItem label="Facebook" value={contact.socials?.facebook} />
-            <InfoItem label="Instagram" value={contact.socials?.instagram} />
-            <InfoItem label="TikTok" value={contact.socials?.tiktok} />
-        </CardContent>
-      </Card>
+      <SectionCard title="Κοινωνικά Δίκτυα" onEdit={() => onEditSection('socials')}>
+        <InfoItem label="Website" value={contact.socials?.website} />
+        <InfoItem label="Facebook" value={contact.socials?.facebook} />
+        <InfoItem label="Instagram" value={contact.socials?.instagram} />
+        <InfoItem label="TikTok" value={contact.socials?.tiktok} />
+      </SectionCard>
 
-      <Card>
-        <CardHeader><CardTitle className="text-lg">Στοιχεία Διεύθυνσης</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-            <InfoItem label="Οδός" value={`${contact.address?.street || ''} ${contact.address?.number || ''}`} />
-            <InfoItem label="Περιοχή" value={contact.address?.region} />
-            <InfoItem label="Πόλη" value={contact.address?.city} />
-            <InfoItem label="Τ.Κ." value={contact.address?.postalCode} />
-            <InfoItem label="Δήμος" value={contact.address?.municipality} />
-        </CardContent>
-      </Card>
+      <SectionCard title="Στοιχεία Διεύθυνσης" onEdit={() => onEditSection('address')}>
+        <InfoItem label="Οδός" value={`${contact.address?.street || ''} ${contact.address?.number || ''}`} />
+        <InfoItem label="Περιοχή" value={contact.address?.region} />
+        <InfoItem label="Πόλη" value={contact.address?.city} />
+        <InfoItem label="Τ.Κ." value={contact.address?.postalCode} />
+        <InfoItem label="Δήμος" value={contact.address?.municipality} />
+      </SectionCard>
 
-      <Card>
-        <CardHeader><CardTitle className="text-lg">Επαγγελματικά Στοιχεία</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-            <InfoItem label="Ρόλος" value={contact.job?.role} />
-            <InfoItem label="Επάγγελμα/Ειδικότητα" value={contact.job?.specialty} />
-            <InfoItem label="Επιχείρηση/Οργανισμός" value={contact.job?.companyName} />
-        </CardContent>
-      </Card>
+      <SectionCard title="Επαγγελματικά Στοιχεία" onEdit={() => onEditSection('job')}>
+        <InfoItem label="Ρόλος" value={contact.job?.role} />
+        <InfoItem label="Επάγγελμα/Ειδικότητα" value={contact.job?.specialty} />
+        <InfoItem label="Επιχείρηση/Οργανισμός" value={contact.job?.companyName} />
+      </SectionCard>
       
-      {contact.notes && (
-           <Card>
-                <CardHeader><CardTitle className="text-lg">Σημειώσεις</CardTitle></CardHeader>
-                <CardContent>
-                    <p className="text-sm whitespace-pre-wrap">{contact.notes}</p>
-                </CardContent>
-            </Card>
-      )}
+       <SectionCard title="Σημειώσεις" onEdit={() => onEditSection('notes')}>
+         <div className="col-span-full">
+            <p className="text-sm whitespace-pre-wrap">{contact.notes || '-'}</p>
+         </div>
+       </SectionCard>
 
     </div>
   );
 };
+

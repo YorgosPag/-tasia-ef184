@@ -1,10 +1,12 @@
+
 'use client';
 
-import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { FormTextField } from "@/eco/components/form/FormTextField";
 import { FormDateField } from "@/eco/components/form/FormDateField";
 import { FormSelectField } from "@/eco/components/form/FormSelectField";
 import { Control } from "react-hook-form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface PersonalInfoSectionProps {
   control: Control<any>;
@@ -19,9 +21,43 @@ export function PersonalInfoSection({ control, entityType }: PersonalInfoSection
   ];
 
   return (
-    <AccordionItem value="personal-info">
-      <AccordionTrigger>Προσωπικά Στοιχεία</AccordionTrigger>
-      <AccordionContent className="space-y-4 pt-4">
+    <div className="space-y-4 pt-4">
+        <FormField
+            control={control}
+            name="entityType"
+            render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Τύπος Οντότητας</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex space-x-4"
+                >
+                  <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="Φυσικό Πρόσωπο" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Φυσικό Πρόσωπο</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="Νομικό Πρόσωπο" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Νομικό Πρόσωπο</FormLabel>
+                  </FormItem>
+                   <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="Δημ. Υπηρεσία" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Δημ. Υπηρεσία</FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormTextField control={control} name="name" label="Επωνυμία / Ονοματεπώνυμο" placeholder="Επωνυμία εταιρείας ή ονοματεπώνυμο"/>
         
         {entityType === 'Φυσικό Πρόσωπο' && (
@@ -39,7 +75,6 @@ export function PersonalInfoSection({ control, entityType }: PersonalInfoSection
             <FormTextField control={control} name="photoUrl" label="Φωτογραφία (URL)" placeholder="https://example.com/photo.jpg"/>
           </>
         )}
-      </AccordionContent>
-    </AccordionItem>
+      </div>
   );
 }

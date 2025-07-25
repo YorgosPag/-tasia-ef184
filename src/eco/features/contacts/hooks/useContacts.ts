@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { ContactFormValues } from '@/lib/validation/contactSchema';
 
 export interface Contact {
   id: string;
@@ -31,7 +32,7 @@ export interface Contact {
   birthPlace?: string;
   gender?: 'Άνδρας' | 'Γυναίκα' | 'Άλλο';
   nationality?: string;
-  photoUrl?: string; // Replaces logoUrl for photo
+  photoUrl?: string;
   
   // ID & Tax Info
   identity?: {
@@ -88,6 +89,9 @@ export function useContacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [editingSection, setEditingSection] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -104,45 +108,68 @@ export function useContacts() {
     });
     return () => unsubscribe();
   }, [toast]);
+  
+  const handleSelectContact = (contact: Contact) => {
+    setSelectedContact(contact);
+    setEditingContact(null);
+    setEditingSection(null);
+  };
+  
+  const handleAddNew = () => {
+    setSelectedContact(null);
+    setEditingContact({ entityType: 'Φυσικό Πρόσωπο' } as any); // Create a dummy object to trigger new mode
+    setEditingSection('personal');
+  };
 
-  const addContact = useCallback(async (data: Omit<Contact, 'id' | 'createdAt'>) => {
+  const handleEditSection = (section: string) => {
+    setEditingContact(selectedContact);
+    setEditingSection(section);
+  };
+
+  const handleCancel = () => {
+    setEditingContact(null);
+    setEditingSection(null);
+  };
+  
+  const handleSaveContact = useCallback(async (data: ContactFormValues) => {
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'tsia-contacts'), { ...data, createdAt: serverTimestamp() });
-      toast({ title: 'Επιτυχία', description: 'Η επαφή δημιουργήθηκε.' });
-    } catch (error) {
-      console.error(error);
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η δημιουργία απέτυχε.' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [toast]);
+        const dataToSave: Partial<Contact> = {
+            ...data,
+            birthDate: data.birthDate ? Timestamp.fromDate(data.birthDate) : undefined,
+            identity: {
+                ...data.identity,
+                issueDate: data.identity?.issueDate ? Timestamp.fromDate(data.identity.issueDate) : undefined,
+            }
+        };
 
-  const updateContact = useCallback(async (id: string, data: Partial<Omit<Contact, 'id' | 'createdAt'>>) => {
-    setIsSubmitting(true);
-    try {
-      const dataToUpdate = { ...data };
-      if (data.birthDate) {
-        (dataToUpdate as any).birthDate = Timestamp.fromDate(data.birthDate as any);
-      }
-      if (data.identity?.issueDate) {
-        (dataToUpdate as any).identity.issueDate = Timestamp.fromDate(data.identity.issueDate as any);
-      }
-      await updateDoc(doc(db, 'tsia-contacts', id), dataToUpdate);
-      toast({ title: 'Επιτυχία', description: 'Η επαφή ενημερώθηκε.' });
+        if (editingContact?.id) {
+            await updateDoc(doc(db, 'tsia-contacts', editingContact.id), dataToSave);
+            toast({ title: 'Επιτυχία', description: 'Η επαφή ενημερώθηκε.' });
+        } else {
+            const newDocRef = await addDoc(collection(db, 'tsia-contacts'), { ...dataToSave, createdAt: serverTimestamp() });
+            toast({ title: 'Επιτυχία', description: 'Η επαφή δημιουργήθηκε.' });
+            // Select the newly created contact
+            const newContact = { id: newDocRef.id, ...dataToSave } as Contact;
+            setSelectedContact(newContact);
+        }
+        handleCancel();
     } catch (error) {
-      console.error(error);
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η ενημέρωση απέτυχε.' });
+        console.error(error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η αποθήκευση απέτυχε.' });
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
-  }, [toast]);
+  }, [editingContact, toast]);
+
 
   const deleteContact = useCallback(async (id: string) => {
     setIsSubmitting(true);
     try {
       await deleteDoc(doc(db, 'tsia-contacts', id));
       toast({ title: 'Επιτυχία', description: 'Η επαφή διαγράφηκε.' });
+      setSelectedContact(null);
+      handleCancel();
     } catch (error) {
       console.error(error);
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
@@ -151,5 +178,18 @@ export function useContacts() {
     }
   }, [toast]);
 
-  return { contacts, isLoading, isSubmitting, addContact, updateContact, deleteContact };
+  return { 
+      contacts, 
+      isLoading, 
+      isSubmitting, 
+      selectedContact,
+      editingContact,
+      editingSection,
+      handleSelectContact,
+      handleAddNew,
+      handleEditSection,
+      handleDeleteContact: deleteContact,
+      handleSaveContact,
+      handleCancel,
+    };
 }

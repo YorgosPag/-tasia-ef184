@@ -13,6 +13,7 @@ import { Search, PlusCircle, Loader2, Download, ChevronUp, ChevronDown } from 'l
 import { useCustomLists } from '../hooks/useCustomLists';
 import { EditableList } from './EditableList';
 import { exportToJson, exportToCsv } from '@/lib/exporter';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 
 export function SimpleListsTab() {
   const {
@@ -77,29 +78,39 @@ export function SimpleListsTab() {
   
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Δημιουργία Νέας Λίστας</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="list-title">Τίτλος Λίστας</Label>
-            <Input id="list-title" placeholder="π.χ. Κατηγορίες Παρεμβάσεων" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="list-description">Περιγραφή (Προαιρετικό)</Label>
-            <Textarea id="list-description" placeholder="Μια σύντομη περιγραφή του σκοπού της λίστας." value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Switch id="has-code" checked={newHasCode} onCheckedChange={setNewHasCode} />
-            <Label htmlFor="has-code">Η λίστα περιέχει κωδικό;</Label>
-          </div>
-          <Button onClick={handleCreateList} disabled={isCreating}>
-            {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <PlusCircle className="mr-2 h-4 w-4" />}
-            Δημιουργία Λίστας
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+           <Button variant="outline" className="w-full">
+            <PlusCircle className="mr-2"/>
+            Δημιουργία Νέας Λίστας
           </Button>
-        </CardContent>
-      </Card>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+            <Card className="mt-4">
+            <CardHeader>
+                <CardTitle>Στοιχεία Νέας Λίστας</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="list-title">Τίτλος Λίστας</Label>
+                    <Input id="list-title" placeholder="π.χ. Κατηγορίες Παρεμβάσεων" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="list-description">Περιγραφή (Προαιρετικό)</Label>
+                    <Textarea id="list-description" placeholder="Μια σύντομη περιγραφή του σκοπού της λίστας." value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Switch id="has-code" checked={newHasCode} onCheckedChange={setNewHasCode} />
+                    <Label htmlFor="has-code">Η λίστα περιέχει κωδικό;</Label>
+                </div>
+                <Button onClick={handleCreateList} disabled={isCreating}>
+                    {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <PlusCircle className="mr-2 h-4 w-4" />}
+                    Δημιουργία
+                </Button>
+            </CardContent>
+            </Card>
+        </CollapsibleContent>
+      </Collapsible>
       
        <div className="space-y-4">
          <div className="relative">
