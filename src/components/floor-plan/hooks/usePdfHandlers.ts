@@ -134,6 +134,8 @@ export function usePdfHandlers({
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
 
+    // Optimistic UI: Update the local state immediately via the parent.
+    // The parent hook is responsible for the eventual Firestore update.
     setUnits((prevUnits) =>
       prevUnits.map((unit) => {
         if (unit.id === draggingPoint.unitId) {
@@ -148,8 +150,9 @@ export function usePdfHandlers({
 
   const handleMouseUp = () => {
     if (draggingPoint) {
+      // Find the unit and its final points to send for saving.
       setUnits((prevUnits) => {
-        const unit = prevUnits.find((u) => u.id === draggingPoint.unitId);
+        const unit = prevUnits.find((u) => u.id === draggingPoint.id);
         if (unit && unit.polygonPoints) {
           onUnitPointsUpdate(unit.id, unit.polygonPoints);
         }
