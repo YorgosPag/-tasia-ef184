@@ -13,7 +13,6 @@ import {
   addDoc,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import * as XLSX from 'xlsx';
 
 // --- Interfaces ---
 interface ImportRow {
@@ -78,6 +77,7 @@ async function findOrPrepareDoc(
  * @returns A promise that resolves with the import result.
  */
 export async function processImportFile(file: File): Promise<ImportResult> {
+  const XLSX = await import('xlsx');
   const result: ImportResult = {
     totalRows: 0,
     buildingsCreated: 0,
