@@ -32,6 +32,7 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/use-auth';
 
 
 const registerSchema = z.object({
@@ -41,43 +42,11 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-// Function to create a user document in Firestore
-const createUserDocument = async (user: User) => {
-  if (!user) return;
-  const userDocRef = doc(db, 'users', user.uid);
-  const userDoc = await getDoc(userDocRef);
-
-  // Do not overwrite if document already exists
-  if (userDoc.exists()) return;
-
-  // Check if this is the very first user BEFORE creating their document
-  const usersCollectionRef = collection(db, 'users');
-  const q = query(usersCollectionRef, limit(1));
-  const snapshot = await getDocs(q);
-  const isFirstUser = snapshot.empty;
-  const role = isFirstUser ? 'admin' : 'viewer';
-
-  const { email, photoURL, displayName } = user;
-  try {
-    await setDoc(userDocRef, {
-      email,
-      photoURL,
-      displayName,
-      role: role,
-      createdAt: serverTimestamp(),
-    });
-    if (isFirstUser) {
-      console.log(`First user registered with email ${email}. Assigning admin role.`);
-    }
-  } catch (error) {
-    console.error("🔥 Firestore user creation error:", error);
-  }
-};
-
 
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const isMobile = useIsMobile();
@@ -90,14 +59,17 @@ export default function RegisterPage() {
     },
   });
 
-   // Handle redirect result from Google Sign-In
+   // Handle redirect result from Google Sign-In on mobile
    useEffect(() => {
+    // Don't run this if a user is already logged in
+    if (user) return;
+
     const checkRedirectResult = async () => {
       setIsGoogleLoading(true);
       try {
         const result = await getRedirectResult(auth);
         if (result) {
-          await createUserDocument(result.user);
+          // The useAuth hook will handle user creation, so we just redirect
           router.push('/');
         }
       } catch (error: any) {
@@ -111,14 +83,16 @@ export default function RegisterPage() {
       }
     };
     checkRedirectResult();
-  }, [router, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-      await createUserDocument(userCredential.user);
+      // The useAuth hook now handles the user document creation.
+      // We can still send the verification email from here.
       await sendEmailVerification(userCredential.user);
 
       toast({
@@ -152,12 +126,12 @@ export default function RegisterPage() {
       if (isMobile) {
         await signInWithRedirect(auth, provider);
       } else {
-        const result = await signInWithPopup(auth, provider);
-        await createUserDocument(result.user);
+        await signInWithPopup(auth, provider);
+        // The useAuth hook handles the user state and redirects automatically.
         router.push('/');
       }
     } catch (error: any) {
-      if (error.code !== 'auth/popup-closed-by-user') {
+      if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
           toast({
             variant: "destructive",
             title: "Google Sign-Up Failed",

@@ -31,6 +31,7 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/use-auth';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -45,6 +46,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const isMobile = useIsMobile();
+  const { user } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -54,13 +56,17 @@ export default function LoginPage() {
     },
   });
 
-  // Handle redirect result from Google Sign-In
+  // Handle redirect result from Google Sign-In on mobile
   useEffect(() => {
     const checkRedirectResult = async () => {
+      // Don't run this if a user is already logged in
+      if (user) return;
+      
       setIsGoogleLoading(true);
       try {
         const result = await getRedirectResult(auth);
         if (result) {
+          // The useAuth hook will handle user creation, so we just redirect
           router.push('/');
         }
       } catch (error: any) {
@@ -74,12 +80,14 @@ export default function LoginPage() {
       }
     };
     checkRedirectResult();
-  }, [router, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
+      // The useAuth hook handles the user state and redirects automatically.
       router.push('/');
     } catch (error: any) {
       console.error("Authentication Error:", error);
@@ -109,10 +117,11 @@ export default function LoginPage() {
         await signInWithRedirect(auth, provider);
       } else {
         await signInWithPopup(auth, provider);
+        // The useAuth hook handles the user state and redirects automatically.
         router.push('/');
       }
     } catch (error: any) {
-      if (error.code !== 'auth/popup-closed-by-user') {
+      if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
           toast({
             variant: "destructive",
             title: "Google Sign-In Failed",
