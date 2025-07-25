@@ -51,7 +51,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
-const InstructionsDialog = dynamic(() => import('@/eco/components/InstructionsDialog').then(mod => mod.InstructionsDialog), {
+const InstructionsDialog = dynamic(() => import('@/nestor/components/InstructionsDialog').then(mod => mod.InstructionsDialog), {
     ssr: false,
 });
 
@@ -93,7 +93,7 @@ export function SidebarNav() {
   const pathname = usePathname();
   const { user, isAdmin } = useAuth()
 
-  const ecoIsActive = pathname.startsWith("/eco/");
+  const nestorIsActive = pathname.startsWith("/nestor/");
   const entitiesIsActive = ["/companies", "/projects", "/buildings", "/floors", "/units", "/attachments"].some(p => pathname.startsWith(p));
 
   return (
@@ -191,7 +191,7 @@ export function SidebarNav() {
             <SidebarMenuItem>
                 <SidebarMenuButton
                     hasSubmenu
-                    isActive={ecoIsActive}
+                    isActive={nestorIsActive}
                     tooltip="NESTOR Εξοικονομώ"
                     className="h-8 justify-start font-semibold text-green-600 dark:text-green-400"
                 >
@@ -202,40 +202,40 @@ export function SidebarNav() {
                 </SidebarMenuButton>
                 <SidebarMenuSub>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/dashboard")}>
-                            <Link href="/eco/dashboard">
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/nestor/dashboard")}>
+                            <Link href="/nestor/dashboard">
                                 <LayoutGrid />
                                 <span>Πίνακας Ελέγχου</span>
                             </Link>
                         </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/projects")}>
-                            <Link href="/eco/projects">
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/nestor/projects")}>
+                            <Link href="/nestor/projects">
                                 <FolderKanban />
                                 <span>Λίστα Έργων</span>
                             </Link>
                         </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/contacts")}>
-                            <Link href="/eco/contacts">
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/nestor/contacts")}>
+                            <Link href="/nestor/contacts">
                                 <BookUser />
                                 <span>Λίστα Επαφών</span>
                             </Link>
                         </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/reports")}>
-                            <Link href="/eco/reports">
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/nestor/reports")}>
+                            <Link href="/nestor/reports">
                                 <BarChart />
                                 <span>Αναφορές</span>
                             </Link>
                         </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/supplier-offers")}>
-                            <Link href="/eco/supplier-offers">
+                        <SidebarMenuSubButton asChild isActive={pathname.startsWith("/nestor/supplier-offers")}>
+                            <Link href="/nestor/supplier-offers">
                                 <ShoppingBag />
                                 <span>Προσφορές Προμηθευτών</span>
                             </Link>
@@ -247,16 +247,16 @@ export function SidebarNav() {
                            <FileCheck className="mr-2" /> Λογοδοσία
                         </SidebarGroupLabel>
                          <SidebarMenuSubItem>
-                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/project-interventions")}>
-                            <Link href="/eco/project-interventions">
+                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/nestor/project-interventions")}>
+                            <Link href="/nestor/project-interventions">
                                 <ClipboardList />
                                 <span>Παρεμβάσεις Έργων</span>
                             </Link>
                             </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                         <SidebarMenuSubItem>
-                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/intervention-stages")}>
-                            <Link href="/eco/intervention-stages">
+                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/nestor/intervention-stages")}>
+                            <Link href="/nestor/intervention-stages">
                                 <Network />
                                 <span>Στάδια Παρεμβάσεων</span>
                             </Link>
@@ -277,16 +277,16 @@ export function SidebarNav() {
                            Διαχείριση
                         </SidebarGroupLabel>
                          <SidebarMenuSubItem>
-                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/interventions-catalog")}>
-                            <Link href="/eco/interventions-catalog">
+                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/nestor/interventions-catalog")}>
+                            <Link href="/nestor/interventions-catalog">
                                 <Shield />
                                 <span>Κατάλογος Παρεμβάσεων</span>
                             </Link>
                             </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                         <SidebarMenuSubItem>
-                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/eco/custom-lists")}>
-                            <Link href="/eco/custom-lists">
+                            <SidebarMenuSubButton asChild isActive={pathname.startsWith("/nestor/custom-lists")}>
+                            <Link href="/nestor/custom-lists">
                                 <ListChecks />
                                 <span>Προσ. Λίστες</span>
                             </Link>

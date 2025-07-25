@@ -17,7 +17,7 @@ import { usePathname } from 'next/navigation';
 
 // Conditionally import styles
 import '@/tasia/theme/global.tasia.css';
-import '@/eco/theme/global.eco.css';
+import '@/nestor/theme/global.nestor.css';
 
 
 const inter = Inter({
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const domainClass = pathname.startsWith('/eco') ? 'eco' : 'tasia';
+  const domainClass = pathname.startsWith('/nestor') ? 'nestor' : 'tasia';
 
   return (
     <html lang="en" suppressHydrationWarning>

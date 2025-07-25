@@ -18,10 +18,10 @@ const nextConfig = {
   },
   async rewrites() {
     return [
-      // Rewrite for the ECO app
+      // Rewrite for the NESTOR app
       {
-        source: '/eco/:path*',
-        destination: '/eco-app/:path*',
+        source: '/nestor/:path*',
+        destination: '/nestor-app/:path*',
       },
     ];
   },

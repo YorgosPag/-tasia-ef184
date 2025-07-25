@@ -1,10 +1,9 @@
-
 'use server';
 
 import { seedTasiaData as seedTasia } from '@/lib/tasia-seed';
 import { clearTasiaData as clearTasia } from '@/lib/clear';
-import { seedEcoData as seedEco } from './eco-seed';
-import { clearEcoData as clearEco } from './eco-clear';
+import { seedNestorData as seedNestor } from './nestor-seed';
+import { clearNestorData as clearNestor } from './nestor-clear';
 import { db } from './firebase';
 import { doc, getDoc, collection, query, limit, getDocs } from 'firebase/firestore';
 import { logActivity } from './logger';
@@ -58,30 +57,30 @@ export async function clearTasiaDataAction(userId: string) {
     }
 }
 
-export async function seedEcoDataAction(userId: string) {
+export async function seedNestorDataAction(userId: string) {
     if (!(await isAdmin(userId))) {
         return { success: false, error: 'Unauthorized: Only admins can seed data.' };
     }
     try {
-        await seedEco();
-        await logActivity('SEED_DATA', { entityType: 'database', details: { app: 'ECO' }, userId });
+        await seedNestor();
+        await logActivity('SEED_DATA', { entityType: 'database', details: { app: 'NESTOR' }, userId });
         return { success: true };
     } catch (error) {
-        console.error('ECO Seeding failed:', error);
+        console.error('NESTOR Seeding failed:', error);
         return { success: false, error: (error as Error).message };
     }
 }
 
-export async function clearEcoDataAction(userId: string) {
+export async function clearNestorDataAction(userId: string) {
      if (!userId) {
        return { success: false, error: 'Unauthorized: You must be logged in to clear data.' };
     }
     try {
-        await clearEco();
-        await logActivity('CLEAR_DATA', { entityType: 'database', details: { app: 'ECO' }, userId });
+        await clearNestor();
+        await logActivity('CLEAR_DATA', { entityType: 'database', details: { app: 'NESTOR' }, userId });
         return { success: true };
     } catch (error) {
-        console.error('ECO Clearing failed:', error);
+        console.error('NESTOR Clearing failed:', error);
         return { success: false, error: (error as Error).message };
     }
 }
