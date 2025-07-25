@@ -49,7 +49,11 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { InstructionsDialog } from "./instructions-dialog";
+import dynamic from "next/dynamic";
+
+const InstructionsDialog = dynamic(() => import('./instructions-dialog').then(mod => mod.InstructionsDialog), {
+    ssr: false,
+});
 
 
 const NavLink = ({

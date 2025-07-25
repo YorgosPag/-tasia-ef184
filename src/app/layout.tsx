@@ -1,3 +1,4 @@
+
 'use client';
 
 import './globals.css';
@@ -10,6 +11,7 @@ import { DataProvider } from '@/hooks/use-data-store';
 import { QueryProvider } from '@/hooks/use-query-provider';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Suspense } from 'react';
 
 
 export default function RootLayout({
@@ -28,6 +30,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body>
+        <Suspense>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -50,6 +53,7 @@ export default function RootLayout({
             </QueryProvider>
           </AuthProvider>
         </ThemeProvider>
+        </Suspense>
       </body>
     </html>
   );

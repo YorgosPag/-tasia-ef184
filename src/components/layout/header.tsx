@@ -22,7 +22,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { Breadcrumbs } from './breadcrumbs';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { Skeleton } from '../ui/skeleton';
-import { ModeToggle } from './mode-toggle';
+import dynamic from 'next/dynamic';
+
+const ModeToggle = dynamic(() => import('./mode-toggle').then(mod => mod.ModeToggle), {
+  loading: () => <Skeleton className="h-8 w-8 rounded-full" />,
+  ssr: false,
+});
+
 
 export function AppHeader() {
   const isMobile = useIsMobile();
@@ -60,7 +66,7 @@ export function AppHeader() {
       <div className="flex items-center gap-4">
         <ModeToggle />
         {isAuthLoading ? (
-          <Skeleton className="h-8 w-20 rounded-md" />
+          <Skeleton className="h-8 w-8 rounded-full" />
         ) : user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
