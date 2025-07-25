@@ -20,9 +20,9 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@/eco/*": ["./src/eco/*"]
+      "@/nestor/*": ["./src/nestor/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/eco/**/*.ts", "src/eco/**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/nestor/**/*.ts", "src/nestor/**/*.tsx"],
   "exclude": ["node_modules"]
 }

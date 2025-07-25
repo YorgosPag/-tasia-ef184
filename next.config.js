@@ -21,7 +21,7 @@ const nextConfig = {
       // Rewrite for the NESTOR app
       {
         source: '/nestor/:path*',
-        destination: '/nestor-app/:path*',
+        destination: '/(main)/:path*',
       },
     ];
   },

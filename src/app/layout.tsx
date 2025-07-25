@@ -34,7 +34,7 @@ export default function RootLayout({
   const domainClass = pathname.startsWith('/nestor') ? 'nestor' : 'tasia';
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="el" suppressHydrationWarning>
       <head>
         <title>TASIA</title>
         <meta name="description" content="Ευρετήριο Ακινήτων" />
@@ -52,10 +52,7 @@ export default function RootLayout({
               <DataProvider>
                 <ProtectedRoute>
                   <SidebarProvider defaultOpen>
-                    <div className="flex">
-                      <AppSidebar />
-                      <AppShell>{children}</AppShell>
-                    </div>
+                    {children}
                   </SidebarProvider>
                 </ProtectedRoute>
                 <Toaster />
