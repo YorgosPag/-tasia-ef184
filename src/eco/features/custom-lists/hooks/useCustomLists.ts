@@ -36,6 +36,11 @@ export interface CustomList {
   items: ListItem[];
 }
 
+const listToContactFieldMap: Record<string, string> = {
+  'Ρόλοι': 'job.role',
+  'Ειδικότητες': 'job.specialty',
+}
+
 export function useCustomLists() {
   const [lists, setLists] = useState<CustomList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,14 +163,42 @@ export function useCustomLists() {
     }
   }, [toast]);
 
-  const deleteItem = useCallback(async (listId: string, itemId: string, itemValue: string) => {
+  const deleteItem = useCallback(async (listId: string, itemId: string, itemValue: string): Promise<boolean> => {
+    const list = lists.find(l => l.id === listId);
+    if (!list) return false;
+
+    // Dependency check for contacts
+    const contactField = listToContactFieldMap[list.title];
+    if (contactField) {
+      try {
+        const q = query(collection(db, 'tsia-contacts'), where(contactField, '==', itemValue), limit(1));
+        const snapshot = await getDocs(q);
+        
+        if (!snapshot.empty) {
+            const contactInUse = snapshot.docs[0].data();
+            toast({
+                variant: 'destructive',
+                title: "Αδυναμία Διαγραφής",
+                description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${contactInUse.name}.`
+            });
+            return false;
+        }
+      } catch (error) {
+        console.error("Error checking dependencies:", error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Απέτυχε ο έλεγχος εξαρτήσεων.' });
+        return false;
+      }
+    }
+
     try {
       await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
+      return true;
     } catch (error) {
       console.error(error);
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
+      return false;
     }
-  }, [toast]);
+  }, [lists, toast]);
 
   return { lists, isLoading, addList, updateList, deleteList, addItem, updateItem, deleteItem };
 }

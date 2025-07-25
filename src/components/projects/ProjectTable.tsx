@@ -139,7 +139,7 @@ export function ProjectTable({
                     <TableCell className="text-right">
                     <div
                         className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1"
-                        data-action-button
+                        data-action-button="true"
                     >
                         <Button
                         variant="ghost"

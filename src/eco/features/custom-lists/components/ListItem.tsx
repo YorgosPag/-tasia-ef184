@@ -11,7 +11,7 @@ interface ListItemProps {
   item: ListItem;
   hasCode: boolean;
   onUpdate: (data: Partial<ListItem>) => Promise<void>;
-  onDelete: () => Promise<void>;
+  onDelete: () => Promise<boolean>;
 }
 
 export const ListItemComponent = ({ item, hasCode, onUpdate, onDelete }: ListItemProps) => {

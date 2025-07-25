@@ -321,9 +321,9 @@ export default function CompaniesPage() {
                       <TableCell className="font-medium">{company.name}</TableCell>
                       <TableCell>
                         {company.contactInfo?.email ? (
-                           <a href={`mailto:${company.contactInfo.email}`} className="text-primary hover:underline">
+                           <Link href={`mailto:${company.contactInfo.email}`} className="text-primary hover:underline">
                             {company.contactInfo.email}
-                           </a>
+                           </Link>
                         ) : (
                            <span className="text-muted-foreground">N/A</span>
                         )}
@@ -355,7 +355,3 @@ export default function CompaniesPage() {
     </div>
   );
 }
-
-    
-
-    

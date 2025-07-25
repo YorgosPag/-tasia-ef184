@@ -16,7 +16,7 @@ interface EditableListProps {
   deleteList: (id: string) => Promise<void>;
   addItem: (listId: string, rawValue: string) => Promise<void>;
   updateItem: (listId: string, itemId: string, data: Partial<ListItem>) => Promise<void>;
-  deleteItem: (listId: string, itemId: string, itemValue: string) => Promise<void>;
+  deleteItem: (listId: string, itemId: string, itemValue: string) => Promise<boolean>;
 }
 
 export const EditableList = ({
