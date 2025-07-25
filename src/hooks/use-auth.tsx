@@ -30,20 +30,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // This function will bypass login by creating a mock admin user.
-    // To re-enable actual authentication, remove or comment out this useEffect.
-    const mockUser = {
-        uid: 'mock-admin-user',
-        email: 'admin@tasia.dev',
-        displayName: 'Admin User',
-        // Add any other user properties your app might need
-    } as User;
-    
-    setUser(mockUser);
-    setRole('admin');
-    setIsLoading(false);
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (!currentUser) {
+        // If no user is logged in, stop loading and clear role.
+        setRole(null);
+        setIsLoading(false);
+      }
+    });
 
+    return () => unsubscribeAuth();
   }, []);
+
+  useEffect(() => {
+    if (user === undefined) {
+      // Still waiting for onAuthStateChanged
+      return;
+    }
+
+    if (user === null) {
+      // User is logged out, handled by the first effect.
+      return;
+    }
+
+    // User is logged in, fetch their role from Firestore.
+    const userDocRef = doc(db, 'users', user.uid);
+    const unsubscribeRole = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setRole(docSnap.data().role || 'viewer');
+      } else {
+        // Fallback for users who might exist in Auth but not in Firestore yet.
+        setRole('viewer');
+      }
+      setIsLoading(false); // Stop loading only after role is fetched.
+    }, (error) => {
+        console.error("Error fetching user role:", error);
+        setRole('viewer'); // Default to viewer on error
+        setIsLoading(false);
+    });
+
+    return () => unsubscribeRole();
+  }, [user]);
 
 
   const isAdmin = role === 'admin';

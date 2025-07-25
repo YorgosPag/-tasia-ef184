@@ -13,23 +13,23 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // useEffect(() => {
-  //   if (isLoading) {
-  //     // Don't do anything while auth state is loading
-  //     return;
-  //   }
+  useEffect(() => {
+    if (isLoading) {
+      // Don't do anything while auth state is loading
+      return;
+    }
 
-  //   const pathIsPublic = publicPaths.includes(pathname);
+    const pathIsPublic = publicPaths.includes(pathname);
 
-  //   if (!user && !pathIsPublic) {
-  //     // If user is not logged in and trying to access a protected route
-  //     router.push('/login');
-  //   } else if (user && pathIsPublic) {
-  //     // If user is logged in and trying to access a public route (like login)
-  //     router.push('/');
-  //   }
+    if (!user && !pathIsPublic) {
+      // If user is not logged in and trying to access a protected route
+      router.push('/login');
+    } else if (user && pathIsPublic) {
+      // If user is logged in and trying to access a public route (like login)
+      router.push('/');
+    }
 
-  // }, [user, isLoading, pathname, router]);
+  }, [user, isLoading, pathname, router]);
   
   // While determining auth status, show a loader
   if (isLoading && !publicPaths.includes(pathname)) {
@@ -45,15 +45,14 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       return <>{children}</>;
   }
 
-  // Since we are bypassing login, we will no longer show a loader here.
-  // The app will just render.
-  // if (!isLoading && !user && !publicPaths.includes(pathname)) {
-  //   return (
-  //     <div className="flex h-screen w-full items-center justify-center">
-  //       <Loader2 className="h-16 w-16 animate-spin" />
-  //     </div>
-  //   );
-  // }
+  // If we are still loading, or if we are not logged in and not on a public page, show a loader
+  if (!user && !pathIsPublic) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-16 w-16 animate-spin" />
+      </div>
+    );
+  }
 
   return <>{children}</>;
 }
