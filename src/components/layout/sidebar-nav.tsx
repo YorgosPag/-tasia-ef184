@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -52,7 +51,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
-const InstructionsDialog = dynamic(() => import('./instructions-dialog').then(mod => mod.InstructionsDialog), {
+const InstructionsDialog = dynamic(() => import('@/eco/components/InstructionsDialog').then(mod => mod.InstructionsDialog), {
     ssr: false,
 });
 

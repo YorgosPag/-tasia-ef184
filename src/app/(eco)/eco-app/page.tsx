@@ -1,6 +1,6 @@
 'use client';
 
-import EcoProjectsPage from '@/eco/app/(main)/projects/page';
+import EcoProjectsPage from '@/app/(eco)/eco-app/projects/page';
 
 export default function Page() {
     return <EcoProjectsPage />;
