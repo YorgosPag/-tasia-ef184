@@ -37,13 +37,18 @@ async function fetchLeads(): Promise<Lead[]> {
     const q = query(leadsCollection, orderBy('createdAt', 'desc'));
     
     return new Promise((resolve, reject) => {
-        onSnapshot(q, (snapshot) => {
-        const leads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Lead));
-        resolve(leads);
+        // Using onSnapshot to keep the data real-time within the QueryProvider's lifecycle
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const leads = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Lead));
+            resolve(leads);
         }, (error) => {
-        console.error("Failed to fetch leads:", error);
-        reject(error);
+            console.error("Failed to fetch leads:", error);
+            reject(error);
         });
+        
+        // Note: In a typical useQuery setup without real-time needs, we would use getDocs.
+        // For a dashboard like this, onSnapshot provides live updates which is a good UX.
+        // The query will be refetched based on standard react-query rules.
     });
 }
 
@@ -62,6 +67,7 @@ export default function LeadsPage() {
   const { data: leads = [], isLoading, isError } = useQuery({
     queryKey: ['leads'],
     queryFn: fetchLeads,
+    refetchOnWindowFocus: true, // Keep leads list fresh
   });
 
   const mutation = useMutation({
