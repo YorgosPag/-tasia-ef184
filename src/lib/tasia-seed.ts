@@ -7,6 +7,7 @@ import {
   serverTimestamp,
   doc,
   DocumentReference,
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { companiesData, projectsData, buildingsData, floorsData, unitsData, contactsData } from './tasia-seed-data';
@@ -56,6 +57,7 @@ export async function seedTasiaData() {
     const { _id, companyId, ...projectData } = project;
     batch.set(docRef, {
         ...projectData,
+        deadline: Timestamp.fromDate(projectData.deadline),
         companyId: parentCompanyRef.id,
         createdAt: serverTimestamp(),
     });

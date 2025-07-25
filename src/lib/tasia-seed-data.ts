@@ -22,8 +22,8 @@ export const companiesData: any[] = [
 ];
 
 export const projectsData: any[] = [
-    { _id: 'proj1', companyId: 'comp1', title: 'Athens Revival I', location: 'Κέντρο, Αθήνα', description: 'Μοντέρνα κτίρια κατοικιών στην καρδιά της Αθήνας.', deadline: Timestamp.fromDate(new Date('2025-12-31')), status: 'Σε εξέλιξη', photoUrl: 'https://placehold.co/600x400.png', tags: ['residential', 'luxury'] },
-    { _id: 'proj2', companyId: 'comp2', title: 'Thessaloniki Waterfront', location: 'Παραλία, Θεσσαλονίκη', description: 'Συγκρότημα γραφείων με θέα στη θάλασσα.', deadline: Timestamp.fromDate(new Date('2026-06-30')), status: 'Ενεργό', photoUrl: 'https://placehold.co/600x400.png', tags: ['commercial', 'offices'] }
+    { _id: 'proj1', companyId: 'comp1', title: 'Athens Revival I', location: 'Κέντρο, Αθήνα', description: 'Μοντέρνα κτίρια κατοικιών στην καρδιά της Αθήνας.', deadline: new Date('2025-12-31'), status: 'Σε εξέλιξη', photoUrl: 'https://placehold.co/600x400.png', tags: ['residential', 'luxury'] },
+    { _id: 'proj2', companyId: 'comp2', title: 'Thessaloniki Waterfront', location: 'Παραλία, Θεσσαλονίκη', description: 'Συγκρότημα γραφείων με θέα στη θάλασσα.', deadline: new Date('2026-06-30'), status: 'Ενεργό', photoUrl: 'https://placehold.co/600x400.png', tags: ['commercial', 'offices'] }
 ];
 
 export const buildingsData: any[] = [
