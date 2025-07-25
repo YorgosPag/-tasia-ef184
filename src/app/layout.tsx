@@ -1,3 +1,4 @@
+
 'use client';
 
 import './globals.css';
@@ -10,6 +11,17 @@ import { DataProvider } from '@/hooks/use-data-store';
 import { QueryProvider } from '@/hooks/use-query-provider';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { ThemeProvider } from '@/components/theme-provider';
+
+function AppBody({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-1 flex-col">
+      <AppHeader />
+      <main className="flex-1 p-2 md:p-4">
+        {children}
+      </main>
+    </div>
+  );
+}
 
 export default function RootLayout({
   children,
@@ -39,12 +51,7 @@ export default function RootLayout({
                 <ProtectedRoute>
                   <SidebarProvider defaultOpen>
                       <AppSidebar />
-                      <div className="flex flex-1 flex-col">
-                          <AppHeader />
-                          <main className="flex-1 p-2 md:p-4">
-                              {children}
-                          </main>
-                      </div>
+                      <AppBody>{children}</AppBody>
                   </SidebarProvider>
                 </ProtectedRoute>
                 <Toaster />
