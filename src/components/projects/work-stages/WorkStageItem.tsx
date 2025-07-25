@@ -12,7 +12,8 @@ interface WorkStageItemProps {
     isSubstage: boolean;
 }
 
-export function WorkStageItem({ stage, isSubstage }: WorkStageItemProps) {
+// Memoize the component to prevent re-renders if props haven't changed.
+export const WorkStageItem = React.memo(function WorkStageItem({ stage, isSubstage }: WorkStageItemProps) {
     const progress = useMemo(() => calculateStageProgress(stage), [stage]);
 
     return (
@@ -25,4 +26,4 @@ export function WorkStageItem({ stage, isSubstage }: WorkStageItemProps) {
             </div>
         </div>
     )
-}
+});

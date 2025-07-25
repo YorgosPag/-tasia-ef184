@@ -14,7 +14,7 @@ interface ListItemProps {
   onDelete: () => Promise<boolean>;
 }
 
-export const ListItemComponent = ({ item, hasCode, onUpdate, onDelete }: ListItemProps) => {
+export const ListItemComponent = React.memo(function ListItemComponent({ item, hasCode, onUpdate, onDelete }: ListItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(item.value);
   const [code, setCode] = useState(item.code || '');
@@ -82,4 +82,4 @@ export const ListItemComponent = ({ item, hasCode, onUpdate, onDelete }: ListIte
       </div>
     </div>
   );
-};
+});
