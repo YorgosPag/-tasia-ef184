@@ -50,57 +50,47 @@ export function FloorDetailsContainer() {
   // --- State Management ---
   const [floor, setFloor] = useState<Floor | null>(null);
   const [initialUnits, setInitialUnits] = useState<Unit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingFloor, setIsLoadingFloor] = useState(true);
+  const [isLoadingUnits, setIsLoadingUnits] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
+  const isLoading = isLoadingFloor || isLoadingUnits;
 
   // --- Data Fetching Effects ---
   useEffect(() => {
     if (!floorId) return;
 
-    let unsubFloor: () => void;
-    let unsubUnits: () => void;
+    setIsLoadingFloor(true);
+    const docRef = doc(db, 'floors', floorId);
+    const unsubscribeFloor = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setFloor({ id: docSnap.id, ...docSnap.data() } as Floor);
+      } else {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Ο όροφος δεν βρέθηκε.' });
+        router.push('/buildings');
+      }
+      setIsLoadingFloor(false);
+    }, (error) => {
+      console.error("Error fetching floor:", error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch floor details.' });
+      setIsLoadingFloor(false);
+    });
 
-    const fetchData = async () => {
-        setIsLoading(true);
-        try {
-            // Fetch floor details
-            const docRef = doc(db, 'floors', floorId);
-            unsubFloor = onSnapshot(docRef, (docSnap) => {
-              if (docSnap.exists()) {
-                setFloor({ id: docSnap.id, ...docSnap.data() } as Floor);
-              } else {
-                toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Ο όροφος δεν βρέθηκε.' });
-                router.push('/buildings');
-              }
-            }, (error) => {
-              console.error("Error fetching floor:", error);
-              toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch floor details.' });
-            });
-
-            // Fetch initial units
-            const unitsQuery = query(collection(db, 'units'), where('floorIds', 'array-contains', floorId));
-            unsubUnits = onSnapshot(unitsQuery, (snapshot) => {
-                setInitialUnits(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit)));
-                setIsLoading(false);
-            }, (error) => {
-                console.error('Error fetching units:', error);
-                toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων.' });
-                setIsLoading(false);
-            });
-
-        } catch (error) {
-            console.error("Error setting up listeners", error);
-            setIsLoading(false);
-        }
-    }
+    setIsLoadingUnits(true);
+    const unitsQuery = query(collection(db, 'units'), where('floorIds', 'array-contains', floorId));
+    const unsubscribeUnits = onSnapshot(unitsQuery, (snapshot) => {
+        setInitialUnits(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit)));
+        setIsLoadingUnits(false);
+    }, (error) => {
+        console.error('Error fetching units:', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων.' });
+        setIsLoadingUnits(false);
+    });
     
-    fetchData();
-
     return () => {
-      if (unsubFloor) unsubFloor();
-      if (unsubUnits) unsubUnits();
+      unsubscribeFloor();
+      unsubscribeUnits();
     };
   }, [floorId, router, toast]);
   
