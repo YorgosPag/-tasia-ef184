@@ -38,11 +38,13 @@ export type ActionType =
   | 'DELETE_WORK_STAGE'
   | 'CREATE_WORK_SUBSTAGE'
   | 'UPDATE_WORK_SUBSTAGE'
-  | 'DELETE_WORK_SUBSTAGE';
+  | 'DELETE_WORK_SUBSTAGE'
+  | 'SEED_DATA'
+  | 'CLEAR_DATA';
 
 export interface LogDetails {
-  entityId: string;
-  entityType:
+  entityId?: string;
+  entityType?:
     | 'company'
     | 'project'
     | 'building'
@@ -52,7 +54,8 @@ export interface LogDetails {
     | 'floorplan'
     | 'user'
     | 'workStage'
-    | 'workSubstage';
+    | 'workSubstage'
+    | 'database';
   changes?: Record<string, any>;
   projectId?: string; // Added to filter activity by project
   [key: string]: any; // for additional context

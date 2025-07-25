@@ -7,6 +7,7 @@ import { seedEcoData as seedEco } from './eco-seed';
 import { clearEcoData as clearEco } from './eco-clear';
 import { db } from './firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { logActivity } from './logger';
 
 
 async function isAdmin(userId: string): Promise<boolean> {
@@ -29,6 +30,7 @@ export async function seedTasiaDataAction(userId: string) {
     }
     try {
         await seedTasia();
+        await logActivity('SEED_DATA', { entityType: 'database', details: { app: 'TASIA' }, userId });
         return { success: true };
     } catch (error) {
         console.error('TASIA Seeding failed:', error);
@@ -42,6 +44,7 @@ export async function clearTasiaDataAction(userId: string) {
     }
     try {
         await clearTasia();
+        await logActivity('CLEAR_DATA', { entityType: 'database', details: { app: 'TASIA' }, userId });
         return { success: true };
     } catch (error) {
         console.error('TASIA Clearing failed:', error);
@@ -55,6 +58,7 @@ export async function seedEcoDataAction(userId: string) {
     }
     try {
         await seedEco();
+        await logActivity('SEED_DATA', { entityType: 'database', details: { app: 'ECO' }, userId });
         return { success: true };
     } catch (error) {
         console.error('ECO Seeding failed:', error);
@@ -68,6 +72,7 @@ export async function clearEcoDataAction(userId: string) {
     }
     try {
         await clearEco();
+        await logActivity('CLEAR_DATA', { entityType: 'database', details: { app: 'ECO' }, userId });
         return { success: true };
     } catch (error) {
         console.error('ECO Clearing failed:', error);

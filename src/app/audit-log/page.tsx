@@ -88,15 +88,15 @@ export default function AuditLogPage() {
             log.action.toLowerCase().includes(query) ||
             log.entityType.toLowerCase().includes(query) ||
             log.userEmail.toLowerCase().includes(query) ||
-            log.entityId.toLowerCase().includes(query)
+            (log.entityId && log.entityId.toLowerCase().includes(query))
         );
     });
   }, [logs, searchQuery]);
   
   const getActionVariant = (action: string) => {
-    if (action.startsWith('CREATE') || action.startsWith('DUPLICATE')) return 'default';
+    if (action.startsWith('CREATE') || action.startsWith('DUPLICATE') || action.startsWith('SEED')) return 'default';
     if (action.startsWith('UPDATE') || action.startsWith('UPLOAD')) return 'secondary';
-    if (action.startsWith('DELETE')) return 'destructive';
+    if (action.startsWith('DELETE') || action.startsWith('CLEAR')) return 'destructive';
     return 'outline';
   }
 
@@ -159,7 +159,7 @@ export default function AuditLogPage() {
                       <Badge variant={getActionVariant(log.action)}>{log.action}</Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{log.entityType}</TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">{log.entityId}</TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-xs">{log.entityId || 'N/A'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
