@@ -30,32 +30,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // --- Mock User Data ---
-    const mockUser: User = {
-        uid: 'dev_admin_user',
-        email: 'georgios.pagonis@gmail.com',
-        displayName: 'Development Admin',
-        emailVerified: true,
-        isAnonymous: false,
-        photoURL: null,
-        providerId: 'password',
-        metadata: {},
-        providerData: [],
-        refreshToken: '',
-        tenantId: null,
-        delete: async () => {},
-        getIdToken: async () => '',
-        getIdTokenResult: async () => ({} as any),
-        reload: async () => {},
-        toJSON: () => ({}),
-    };
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      if (!user) {
+        setRole(null);
+        setIsLoading(false);
+      }
+    });
 
-    // --- Simulate being logged in ---
-    setUser(mockUser);
-    setRole('admin');
-    setIsLoading(false);
-    
-  }, []);
+    let unsubscribeFirestore: (() => void) | undefined;
+
+    if (user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setRole(docSnap.data().role as UserRole);
+        } else {
+          // This can happen if the user document hasn't been created yet
+          // It will be created on registration. For now, assume no specific role.
+          setRole(null);
+        }
+        setIsLoading(false);
+      }, (error) => {
+        console.error("Error fetching user role:", error);
+        setRole(null);
+        setIsLoading(false);
+      });
+    }
+
+    // Cleanup function
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeFirestore) {
+        unsubscribeFirestore();
+      }
+    };
+  }, [user]);
 
   const isAdmin = role === 'admin';
   const isEditor = role === 'admin' || role === 'editor';
