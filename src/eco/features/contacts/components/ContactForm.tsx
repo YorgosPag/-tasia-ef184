@@ -154,7 +154,7 @@ export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: C
             )}
         />
         
-        <Accordion type="multiple" defaultValue={['personal-info']} className="w-full space-y-2">
+        <Accordion type="multiple" defaultValue={['personal-info', 'id-tax-info', 'contact-info', 'socials-info', 'address-info', 'job-info', 'other-info']} className="w-full space-y-2">
             <AccordionItem value="personal-info">
                 <AccordionTrigger>Προσωπικά Στοιχεία</AccordionTrigger>
                 <AccordionContent className="space-y-4 pt-4">
