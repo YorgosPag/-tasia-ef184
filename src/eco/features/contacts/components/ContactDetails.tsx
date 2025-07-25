@@ -8,15 +8,16 @@ import { Edit, Trash2, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Contact } from '../hooks/useContacts';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { formatDate } from '@/components/projects/work-stages/utils';
 
 interface InfoItemProps {
     label: string;
-    value?: string | null;
+    value?: string | null | Date;
 }
 const InfoItem = ({ label, value }: InfoItemProps) => (
   <div className="flex flex-col gap-1">
     <p className="text-sm text-muted-foreground">{label}</p>
-    <p className="font-medium truncate">{value || '-'}</p>
+    <p className="font-medium truncate">{value ? (value instanceof Date ? formatDate(value) : value) : '-'}</p>
   </div>
 );
 
@@ -28,6 +29,7 @@ interface ContactDetailsProps {
 }
 
 export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProps) => {
+  const isIndividual = contact.entityType === 'Φυσικό Πρόσωπο';
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
@@ -38,7 +40,7 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
           </Avatar>
           <div>
             <h2 className="text-2xl font-bold">{contact.name}</h2>
-            <p className="text-muted-foreground">{contact.job?.role || 'N/A'}</p>
+            <p className="text-muted-foreground">{contact.job?.role || '-'}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -68,46 +70,74 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
       </header>
       
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
-            <CardTitle className="text-lg">Επαγγελματικά Στοιχεία / Στοιχεία Οντότητας</CardTitle>
-            <Button variant="ghost" size="icon" onClick={() => onEdit(contact)}><Edit className="h-4 w-4 text-muted-foreground" /></Button>
+        <CardHeader>
+            <CardTitle className="text-lg">Προσωπικά Στοιχεία</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-            <InfoItem label="Επωνυμία / Όνομα" value={contact.name} />
-            <InfoItem label="Ρόλος" value={contact.job?.role} />
-            <InfoItem label="Ειδικότητα" value={contact.job?.specialty} />
+            <InfoItem label="Επωνυμία / Ονοματεπώνυμο" value={contact.name} />
             <InfoItem label="Τύπος Οντότητας" value={contact.entityType} />
-            <InfoItem label="ΑΦΜ" value={contact.afm} />
-            <InfoItem label="Website" value={contact.socials?.website} />
+            {isIndividual && (
+                <>
+                    <InfoItem label="Όνομα" value={contact.firstName} />
+                    <InfoItem label="Επώνυμο" value={contact.lastName} />
+                    <InfoItem label="Όνομα Πατέρα" value={contact.fatherName} />
+                    <InfoItem label="Όνομα Μητέρας" value={contact.motherName} />
+                    <InfoItem label="Ημ/νία Γέννησης" value={contact.birthDate ? formatDate(contact.birthDate.toDate()) : '-'} />
+                    <InfoItem label="Τόπος Γέννησης" value={contact.birthPlace} />
+                    <InfoItem label="Φύλο" value={contact.gender} />
+                    <InfoItem label="Υπηκοότητα" value={contact.nationality} />
+                </>
+            )}
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Στοιχεία Ταυτότητας & ΑΦΜ</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+            <InfoItem label="Α.Φ.Μ." value={contact.afm} />
+            <InfoItem label="Δ.Ο.Υ." value={contact.doy} />
+            <InfoItem label="Α.Δ. Ταυτότητας" value={contact.identity?.number} />
+            <InfoItem label="Ημερομηνία Έκδοσης" value={contact.identity?.issueDate ? formatDate(contact.identity.issueDate.toDate()) : '-'} />
+            <InfoItem label="Αρχή Έκδοσης" value={contact.identity?.issuingAuthority} />
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
-            <CardTitle className="text-lg">Στοιχεία Επικοινωνίας</CardTitle>
-            <Button variant="ghost" size="icon" onClick={() => onEdit(contact)}><Edit className="h-4 w-4 text-muted-foreground" /></Button>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-lg">Στοιχεία Επικοινωνίας</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <InfoItem label="Email" value={contact.contactInfo?.email} />
             <InfoItem label="Κινητό" value={contact.contactInfo?.phone} />
             <InfoItem label="Σταθερό" value={contact.contactInfo?.landline} />
         </CardContent>
       </Card>
+      
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Κοινωνικά Δίκτυα</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+            <InfoItem label="Website" value={contact.socials?.website} />
+            <InfoItem label="Facebook" value={contact.socials?.facebook} />
+            <InfoItem label="Instagram" value={contact.socials?.instagram} />
+            <InfoItem label="TikTok" value={contact.socials?.tiktok} />
+        </CardContent>
+      </Card>
 
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
-            <CardTitle className="text-lg">Στοιχεία Διεύθυνσης</CardTitle>
-            <div className="flex items-center">
-              <Button variant="ghost" size="icon"><MapPin className="h-4 w-4 text-muted-foreground" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => onEdit(contact)}><Edit className="h-4 w-4 text-muted-foreground" /></Button>
-            </div>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-lg">Στοιχεία Διεύθυνσης</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <InfoItem label="Οδός" value={`${contact.address?.street || ''} ${contact.address?.number || ''}`} />
             <InfoItem label="Περιοχή" value={contact.address?.region} />
             <InfoItem label="Πόλη" value={contact.address?.city} />
             <InfoItem label="Τ.Κ." value={contact.address?.postalCode} />
             <InfoItem label="Δήμος" value={contact.address?.municipality} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-lg">Επαγγελματικά Στοιχεία</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+            <InfoItem label="Ρόλος" value={contact.job?.role} />
+            <InfoItem label="Επάγγελμα/Ειδικότητα" value={contact.job?.specialty} />
+            <InfoItem label="Επιχείρηση/Οργανισμός" value={contact.job?.companyName} />
         </CardContent>
       </Card>
       
