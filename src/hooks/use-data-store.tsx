@@ -77,50 +77,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLoading(true);
-    let companyLoaded = false;
-    let projectLoaded = false;
-    let buildingLoaded = false;
-
-    const checkIfStillLoading = () => {
-        if(companyLoaded && projectLoaded && buildingLoaded) {
+    
+    const listeners = [
+        { name: 'companies', setter: setCompanies },
+        { name: 'projects', setter: setProjects },
+        { name: 'buildings', setter: setBuildings },
+    ];
+    
+    let loadedCount = 0;
+    const checkLoadingDone = () => {
+        loadedCount++;
+        if (loadedCount === listeners.length) {
             setIsLoading(false);
         }
-    }
+    };
 
-    const unsubCompanies = onSnapshot(collection(db, 'companies'), (snapshot) => {
-        setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company)));
-        companyLoaded = true;
-        checkIfStillLoading();
-    }, (error) => {
-        console.error("Failed to fetch companies:", error);
-        companyLoaded = true;
-        checkIfStillLoading();
-    });
-    
-    const unsubProjects = onSnapshot(collection(db, 'projects'), (snapshot) => {
-        setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
-        projectLoaded = true;
-        checkIfStillLoading();
-    }, (error) => {
-        console.error("Failed to fetch projects:", error);
-        projectLoaded = true;
-        checkIfStillLoading();
-    });
-
-    const unsubBuildings = onSnapshot(collection(db, 'buildings'), (snapshot) => {
-        setBuildings(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Building)));
-        buildingLoaded = true;
-        checkIfStillLoading();
-    }, (error) => {
-        console.error("Failed to fetch buildings:", error);
-        buildingLoaded = true;
-        checkIfStillLoading();
+    const unsubscribers = listeners.map(({ name, setter }) => {
+        const q = collection(db, name);
+        return onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setter(data as any);
+            checkLoadingDone();
+        }, (error) => {
+            console.error(`Failed to fetch ${name}:`, error);
+            checkLoadingDone(); // Mark as "loaded" even on error to not block the UI
+        });
     });
 
     return () => {
-        unsubCompanies();
-        unsubProjects();
-        unsubBuildings();
+        unsubscribers.forEach(unsub => unsub());
     };
   }, [user]);
 
