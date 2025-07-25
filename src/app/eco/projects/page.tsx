@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProjectCard } from '@/eco/features/projects/components/ProjectCard';
-import { useEcoProjects } from '@/eco/features/projects/hooks/useEcoProjects';
+import { ProjectCard } from './components/ProjectCard';
+import { useEcoProjects } from './hooks/useEcoProjects';
 import { useRouter } from 'next/navigation';
 
 export default function EcoProjectsPage() {
