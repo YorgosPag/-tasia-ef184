@@ -38,13 +38,13 @@ export default function RootLayout({
               <DataProvider>
                 <ProtectedRoute>
                   <SidebarProvider defaultOpen>
-                    <AppSidebar />
-                    <div className="flex flex-1 flex-col">
-                      <AppHeader />
-                      <main className="flex-1 p-2 md:p-4">
-                        {children}
-                      </main>
-                    </div>
+                      <AppSidebar />
+                      <div className="flex flex-1 flex-col">
+                          <AppHeader />
+                          <main className="flex-1 p-2 md:p-4">
+                              {children}
+                          </main>
+                      </div>
                   </SidebarProvider>
                 </ProtectedRoute>
                 <Toaster />

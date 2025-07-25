@@ -27,16 +27,16 @@ import { Loader2, PlusCircle, Edit, Trash2, Copy } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { getStatusClass } from '@/components/floor-plan/utils';
-import type { Unit as IUnit } from '@/components/floor-plan/FloorPlanViewer';
+import type { Unit } from '@/components/floor-plan/Unit';
 import type { AttachmentFormValues } from '@/components/units/AttachmentDialog';
 import { cn } from '@/lib/utils';
 
-interface Unit {
+interface UnitListItem {
   id: string;
   identifier?: string; // Optional for attachments
   name?: string; // Optional for attachments
   type: string;
-  status?: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
+  status?: Unit['status'];
   createdAt?: any;
   details?: string;
   area?: number | string;
@@ -46,9 +46,8 @@ interface Unit {
 }
 
 interface UnitsListTableProps {
-  units: (Unit | AttachmentFormValues)[];
+  units: UnitListItem[];
   isLoading?: boolean;
-  statusColors?: Record<IUnit['status'], string>;
   highlightedUnitId?: string | null;
   onAddNewUnit?: () => void;
   onEditUnit: (unit: any) => void;
@@ -70,7 +69,6 @@ const formatDate = (timestamp: Timestamp | undefined) => {
 export function UnitsListTable({
   units,
   isLoading,
-  statusColors,
   highlightedUnitId,
   onAddNewUnit,
   onEditUnit,
@@ -134,9 +132,8 @@ export function UnitsListTable({
         </TableHeader>
         <TableBody>
             {units.map((item) => {
-            const unit = item as Unit;
+            const unit = item as UnitListItem;
             const attachment = item as AttachmentFormValues;
-            const color = unit.status && statusColors ? statusColors[unit.status] ?? '#6b7280' : '#6b7280';
             const isHighlighted = highlightedUnitId === unit.id;
 
             return (
@@ -164,8 +161,7 @@ export function UnitsListTable({
                             {unit.status && (
                                 <Badge 
                                     variant="default" 
-                                    style={{ backgroundColor: color }}
-                                    className={getStatusClass(color)}
+                                    className={getStatusClass(unit.status)}
                                 >
                                     {unit.status}
                                 </Badge>

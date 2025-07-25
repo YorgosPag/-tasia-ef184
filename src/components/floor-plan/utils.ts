@@ -1,4 +1,6 @@
 
+'use client';
+
 import { Unit } from './Unit';
 
 export const ALL_STATUSES: Unit['status'][] = [
@@ -44,5 +46,16 @@ export function getTextColorForBackground(hexColor: string): 'text-black' | 'tex
     } catch (e) {
         console.error("Could not parse hex color", hexColor, e);
         return 'text-white'; // Fallback for safety
+    }
+}
+
+export const getStatusClass = (status: Unit['status'] | undefined) => {
+    switch (status) {
+        case 'Πωλημένο': return 'bg-red-500 hover:bg-red-600 text-white';
+        case 'Κρατημένο': return 'bg-yellow-500 hover:bg-yellow-600 text-white';
+        case 'Διαθέσιμο': return 'bg-green-500 hover:bg-green-600 text-white';
+        case 'Προς Ενοικίαση': return 'bg-purple-500 hover:bg-purple-600 text-white';
+        case 'Οικοπεδούχος': return 'bg-orange-500 hover:bg-orange-600 text-white';
+        default: return 'bg-gray-500 hover:bg-gray-600 text-white';
     }
 }
