@@ -45,9 +45,12 @@ export function useContacts() {
 
   useEffect(() => {
     setIsLoading(true);
-    const q = query(collection(db, 'tsia-contacts'), orderBy('name', 'asc'));
+    // Removed orderBy to prevent index errors. Sorting is done on the client.
+    const q = query(collection(db, 'tsia-contacts'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const contactsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contact));
+      // Sort client-side
+      contactsData.sort((a, b) => a.name.localeCompare(b.name));
       setContacts(contactsData);
       setIsLoading(false);
     }, (error) => {
