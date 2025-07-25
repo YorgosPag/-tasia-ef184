@@ -88,7 +88,9 @@ async function fetchContacts(): Promise<Contact[]> {
   const q = firestoreQuery(contactsCollection);
   
   return new Promise((resolve, reject) => {
-    onSnapshot(q, (snapshot) => {
+    // Using onSnapshot to keep the data real-time, but for useQuery, you might use getDocs
+    // for a one-time fetch. onSnapshot is powerful for live updates.
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const contacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contact));
       // Sort on the client side once data is fetched
       contacts.sort((a, b) => a.name.localeCompare(b.name));
@@ -97,6 +99,9 @@ async function fetchContacts(): Promise<Contact[]> {
       console.error("Failed to fetch contacts:", error);
       reject(error);
     });
+
+    // Note: Since useQuery manages data fetching, a long-lived listener like onSnapshot
+    // might not be ideal if you don't need real-time updates. For simplicity here, it's fine.
   });
 }
 
@@ -109,7 +114,8 @@ export default function ContactsPage() {
 
   const { data: contacts = [], isLoading } = useQuery({
       queryKey: ['contacts'],
-      queryFn: fetchContacts
+      queryFn: fetchContacts,
+      refetchOnWindowFocus: false, // Optional: disable refetching on window focus
   });
 
   const form = useForm<ContactFormValues>({

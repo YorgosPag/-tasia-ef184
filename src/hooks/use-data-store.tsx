@@ -2,10 +2,11 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query as firestoreQuery } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query as firestoreQuery, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { logActivity } from '@/lib/logger';
+import { useQuery } from '@tanstack/react-query';
 
 // --- Interfaces ---
 export interface Company {
@@ -27,6 +28,7 @@ export interface Building {
     address: string;
     type: string;
     projectId: string;
+    originalId?: string; // Add originalId
 }
 
 export interface Project {
@@ -60,61 +62,38 @@ const DataStoreContext = createContext<DataStoreContextType>({
   addProject: async () => null,
 });
 
+async function fetchCollectionData<T>(collectionName: string): Promise<T[]> {
+    const q = firestoreQuery(collection(db, collectionName));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as T);
+}
+
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [buildings, setBuildings] = useState<Building[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) {
-        setCompanies([]);
-        setProjects([]);
-        setBuildings([]);
-        setIsLoading(false);
-        return;
-    }
+  const { data: companies = [], isLoading: isLoadingCompanies } = useQuery({
+      queryKey: ['companies'],
+      queryFn: () => fetchCollectionData<Company>('companies'),
+      enabled: !!user,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-    setIsLoading(true);
-    
-    const collectionsToListen = [
-        { name: 'companies', setter: setCompanies },
-        { name: 'projects', setter: setProjects },
-        { name: 'buildings', setter: setBuildings },
-    ];
-    
-    let activeSubscriptions = collectionsToListen.length;
-    
-    const unsubscribers = collectionsToListen.map(({ name, setter }) => {
-        const q = firestoreQuery(collection(db, name));
-        return onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setter(data as any);
-            
-            // This ensures we only set loading to false once all initial loads are complete
-            if (activeSubscriptions > 0) {
-                activeSubscriptions--;
-                if (activeSubscriptions === 0) {
-                    setIsLoading(false);
-                }
-            }
-        }, (error) => {
-            console.error(`Failed to fetch ${name}:`, error);
-            if (activeSubscriptions > 0) {
-                activeSubscriptions--;
-                if (activeSubscriptions === 0) {
-                    setIsLoading(false);
-                }
-            }
-        });
-    });
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
+      queryKey: ['projects'],
+      queryFn: () => fetchCollectionData<Project>('projects'),
+      enabled: !!user,
+      staleTime: 5 * 60 * 1000,
+  });
+  
+  const { data: buildings = [], isLoading: isLoadingBuildings } = useQuery({
+      queryKey: ['buildings'],
+      queryFn: () => fetchCollectionData<Building>('buildings'),
+      enabled: !!user,
+      staleTime: 5 * 60 * 1000,
+  });
 
-    return () => {
-        unsubscribers.forEach(unsub => unsub());
-    };
-  }, [user]);
-
+  const isLoading = isLoadingCompanies || isLoadingProjects || isLoadingBuildings;
 
   const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
     try {

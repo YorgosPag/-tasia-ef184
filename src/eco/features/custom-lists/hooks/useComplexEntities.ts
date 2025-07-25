@@ -7,10 +7,11 @@ import {
   onSnapshot,
   query,
   where,
-  orderBy,
+  getDocs,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 export interface ComplexEntity {
   id: string;
@@ -25,41 +26,28 @@ export interface ComplexEntity {
   createdAt: any;
 }
 
-export function useComplexEntities(type: string) {
-  const [entities, setEntities] = useState<ComplexEntity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (!type) {
-        setIsLoading(false);
-        return;
-    };
+async function fetchComplexEntities(type: string): Promise<ComplexEntity[]> {
+    if (!type) return [];
     
     // Removed orderBy('name') to avoid needing a composite index.
-    // Sorting will be done on the client-side.
     const q = query(
         collection(db, 'tsia-complex-entities'),
         where('type', '==', type)
     );
+    const snapshot = await getDocs(q);
+    const entitiesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
+    // Sort data on the client side
+    entitiesData.sort((a, b) => a.name.localeCompare(b.name));
+    return entitiesData;
+}
 
-    const unsubscribe = onSnapshot(q, 
-        (snapshot) => {
-            const entitiesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
-            // Sort data on the client side
-            entitiesData.sort((a, b) => a.name.localeCompare(b.name));
-            setEntities(entitiesData);
-            setIsLoading(false);
-        },
-        (error) => {
-            console.error("Error fetching complex entities:", error);
-            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των οντοτήτων.' });
-            setIsLoading(false);
-        }
-    );
 
-    return () => unsubscribe();
-  }, [type, toast]);
+export function useComplexEntities(type: string) {
+  const { data: entities = [], isLoading } = useQuery({
+      queryKey: ['complexEntities', type],
+      queryFn: () => fetchComplexEntities(type),
+      enabled: !!type,
+  });
 
   // CRUD functions would go here (addEntity, updateEntity, deleteEntity)
   return { entities, isLoading };
