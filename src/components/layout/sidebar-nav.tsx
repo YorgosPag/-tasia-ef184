@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -136,7 +137,7 @@ export function SidebarNav() {
                     <NavLink href="/contacts" icon={Contact} tooltip="Επαφές">
                         Επαφές
                     </NavLink>
-                    <SidebarMenuItem>
+                     <SidebarMenuItem>
                         <SidebarMenuButton hasSubmenu isActive={entitiesIsActive} className="h-10 justify-start">
                              <div className="flex items-center gap-3">
                                 <Archive className="h-5 w-5" />
@@ -150,7 +151,7 @@ export function SidebarNav() {
                                 </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton asChild isActive={pathname.startsWith("/projects")}>
+                                <SidebarMenuSubButton asChild isActive={pathname.startsWith("/projects") && !pathname.includes("construction")}>
                                     <Link href="/projects"><FolderKanban /><span>Έργα</span></Link>
                                 </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
