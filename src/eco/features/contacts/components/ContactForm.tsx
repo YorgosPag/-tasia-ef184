@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -29,24 +30,27 @@ interface ContactFormProps {
 }
 
 const safeParseDate = (date: any): Date | null => {
-  if (date && typeof date.toDate === 'function') {
-    return date.toDate();
-  }
+  if (!date) return null;
   if (date instanceof Date) {
     return date;
   }
-  return null;
-}
+  if (typeof date.toDate === 'function') {
+    return date.toDate();
+  }
+  // Handle string dates if necessary, though Firestore usually provides Timestamps
+  const parsedDate = new Date(date);
+  return isNaN(parsedDate.getTime()) ? null : parsedDate;
+};
 
 export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: ContactFormProps) => {
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
       ...initialData,
-      birthDate: initialData?.birthDate ? safeParseDate(initialData.birthDate) : null,
+      birthDate: initialData?.birthDate ? safeParseDate(initialData.birthDate) : undefined,
       identity: {
           ...initialData?.identity,
-          issueDate: initialData?.identity?.issueDate ? safeParseDate(initialData.identity.issueDate) : null,
+          issueDate: initialData?.identity?.issueDate ? safeParseDate(initialData.identity.issueDate) : undefined,
       },
     } || {
       entityType: 'Φυσικό Πρόσωπο',
@@ -56,9 +60,22 @@ export const ContactForm = ({ isSubmitting, onSubmit, onCancel, initialData }: C
 
   const selectedEntityType = useWatch({ control: form.control, name: 'entityType' });
 
+  const handleFormSubmit = (data: ContactFormValues) => {
+    // Ensure dates are correctly formatted or null before submission
+    const dataToSubmit = {
+      ...data,
+      birthDate: data.birthDate || null,
+      identity: {
+        ...data.identity,
+        issueDate: data.identity?.issueDate || null,
+      },
+    };
+    onSubmit(dataToSubmit);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">{initialData ? 'Επεξεργασία Επαφής' : 'Νέα Επαφή'}</h2>
           <Button variant="ghost" size="icon" onClick={onCancel} type="button">
