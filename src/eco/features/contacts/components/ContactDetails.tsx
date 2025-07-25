@@ -33,7 +33,7 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={contact.logoUrl} alt={contact.name} />
+            <AvatarImage src={contact.photoUrl} alt={contact.name} />
             <AvatarFallback>{contact.name.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
@@ -70,22 +70,22 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
       <Card>
         <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="text-lg">Επαγγελματικά Στοιχεία / Στοιχεία Οντότητας</CardTitle>
-            <Button variant="ghost" size="icon"><Edit className="h-4 w-4 text-muted-foreground" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => onEdit(contact)}><Edit className="h-4 w-4 text-muted-foreground" /></Button>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <InfoItem label="Επωνυμία / Όνομα" value={contact.name} />
             <InfoItem label="Ρόλος" value={contact.job?.role} />
             <InfoItem label="Ειδικότητα" value={contact.job?.specialty} />
             <InfoItem label="Τύπος Οντότητας" value={contact.entityType} />
-            <InfoItem label="ΑΦΜ" value={contact.contactInfo?.afm} />
-            <InfoItem label="Website" value={contact.website} />
+            <InfoItem label="ΑΦΜ" value={contact.afm} />
+            <InfoItem label="Website" value={contact.socials?.website} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="text-lg">Στοιχεία Επικοινωνίας</CardTitle>
-            <Button variant="ghost" size="icon"><Edit className="h-4 w-4 text-muted-foreground" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => onEdit(contact)}><Edit className="h-4 w-4 text-muted-foreground" /></Button>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <InfoItem label="Email" value={contact.contactInfo?.email} />
@@ -99,15 +99,15 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
             <CardTitle className="text-lg">Στοιχεία Διεύθυνσης</CardTitle>
             <div className="flex items-center">
               <Button variant="ghost" size="icon"><MapPin className="h-4 w-4 text-muted-foreground" /></Button>
-              <Button variant="ghost" size="icon"><Edit className="h-4 w-4 text-muted-foreground" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => onEdit(contact)}><Edit className="h-4 w-4 text-muted-foreground" /></Button>
             </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-            <InfoItem label="Οδός" value={contact.contactInfo?.address} />
-            <InfoItem label="Περιοχή" value={contact.contactInfo?.region} />
-            <InfoItem label="Πόλη" value={contact.contactInfo?.city} />
-            <InfoItem label="Τ.Κ." value={contact.contactInfo?.postalCode} />
-            <InfoItem label="Δήμος" value={contact.contactInfo?.municipality} />
+            <InfoItem label="Οδός" value={`${contact.address?.street || ''} ${contact.address?.number || ''}`} />
+            <InfoItem label="Περιοχή" value={contact.address?.region} />
+            <InfoItem label="Πόλη" value={contact.address?.city} />
+            <InfoItem label="Τ.Κ." value={contact.address?.postalCode} />
+            <InfoItem label="Δήμος" value={contact.address?.municipality} />
         </CardContent>
       </Card>
       

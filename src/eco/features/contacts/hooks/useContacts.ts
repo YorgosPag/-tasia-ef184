@@ -19,15 +19,19 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface Contact {
   id: string;
-  // Personal Info
+  name: string; 
   entityType: 'Φυσικό Πρόσωπο' | 'Νομικό Πρόσωπο' | 'Δημ. Υπηρεσία';
-  name: string; // Full name or company name
+  
+  // Personal Info
   firstName?: string;
   lastName?: string;
   fatherName?: string;
   motherName?: string;
-  spouseName?: string;
   birthDate?: Timestamp;
+  birthPlace?: string;
+  gender?: 'Άνδρας' | 'Γυναίκα' | 'Άλλο';
+  nationality?: string;
+  photoUrl?: string; // Replaces logoUrl for photo
   
   // ID & Tax Info
   identity?: {
@@ -51,11 +55,14 @@ export interface Contact {
     website?: string;
     linkedin?: string;
     facebook?: string;
+    instagram?: string;
+    tiktok?: string;
   };
 
   // Address Info
   address?: {
     street?: string;
+    number?: string;
     city?: string;
     region?: string;
     postalCode?: string;
@@ -72,7 +79,6 @@ export interface Contact {
   
   // Other
   notes?: string;
-  logoUrl?: string; // Kept for company logo or individual photo
   
   createdAt: any;
 }

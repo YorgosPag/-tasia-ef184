@@ -47,7 +47,7 @@ export const ContactList = ({ contacts, selectedContactId, onSelectContact }: Co
                 )}
               >
                 <Avatar className="h-9 w-9">
-                    <AvatarImage src={contact.logoUrl} alt={contact.name}/>
+                    <AvatarImage src={contact.photoUrl} alt={contact.name}/>
                     <AvatarFallback>{contact.name.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 truncate">
