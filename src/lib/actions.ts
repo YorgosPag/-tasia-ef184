@@ -39,10 +39,11 @@ export async function seedTasiaDataAction(userId: string) {
 }
 
 export async function clearTasiaDataAction(userId: string) {
-    // TEMPORARILY REMOVED ADMIN CHECK TO ALLOW DB RESET
-    // if (!(await isAdmin(userId))) {
-    //    return { success: false, error: 'Unauthorized: Only admins can clear data.' };
-    // }
+    // TEMPORARY: Removed admin check to allow DB reset.
+    // In a real production environment, this check MUST be enabled.
+    if (!userId) {
+       return { success: false, error: 'Unauthorized: You must be logged in to clear data.' };
+    }
     try {
         await clearTasia();
         await logActivity('CLEAR_DATA', { entityType: 'database', details: { app: 'TASIA' }, userId });
@@ -68,10 +69,9 @@ export async function seedEcoDataAction(userId: string) {
 }
 
 export async function clearEcoDataAction(userId: string) {
-     // TEMPORARILY REMOVED ADMIN CHECK TO ALLOW DB RESET
-     // if (!(await isAdmin(userId))) {
-     //    return { success: false, error: 'Unauthorized: Only admins can clear data.' };
-     // }
+    if (!(await isAdmin(userId))) {
+       return { success: false, error: 'Unauthorized: Only admins can clear data.' };
+    }
     try {
         await clearEco();
         await logActivity('CLEAR_DATA', { entityType: 'database', details: { app: 'ECO' }, userId });

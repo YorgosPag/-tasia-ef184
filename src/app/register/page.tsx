@@ -47,30 +47,30 @@ const createUserDocument = async (user: User) => {
   const userDocRef = doc(db, 'users', user.uid);
   const userDoc = await getDoc(userDocRef);
 
-  // Create user document only if it doesn't exist
-  if (!userDoc.exists()) {
-    // Check if this is the very first user *before* creating the document
-    const usersCollectionRef = collection(db, 'users');
-    const q = query(usersCollectionRef, limit(1));
-    const snapshot = await getDocs(q);
-    const isFirstUser = snapshot.empty;
-    const role = isFirstUser ? 'admin' : 'viewer';
-    
-    const { email, photoURL, displayName } = user;
-    try {
-      await setDoc(userDocRef, {
-        email,
-        photoURL,
-        displayName,
-        role: role, // Assign role dynamically
-        createdAt: serverTimestamp(),
-      });
-       if(isFirstUser) {
-        console.log(`First user registered with email ${email}. Assigning admin role.`);
-      }
-    } catch (error) {
-      console.error("🔥 Firestore user creation error:", error);
+  // Do not overwrite if document already exists
+  if (userDoc.exists()) return;
+
+  // Check if this is the very first user BEFORE creating their document
+  const usersCollectionRef = collection(db, 'users');
+  const q = query(usersCollectionRef, limit(1));
+  const snapshot = await getDocs(q);
+  const isFirstUser = snapshot.empty;
+  const role = isFirstUser ? 'admin' : 'viewer';
+
+  const { email, photoURL, displayName } = user;
+  try {
+    await setDoc(userDocRef, {
+      email,
+      photoURL,
+      displayName,
+      role: role,
+      createdAt: serverTimestamp(),
+    });
+    if (isFirstUser) {
+      console.log(`First user registered with email ${email}. Assigning admin role.`);
     }
+  } catch (error) {
+    console.error("🔥 Firestore user creation error:", error);
   }
 };
 
