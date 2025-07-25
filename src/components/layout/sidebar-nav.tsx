@@ -79,7 +79,7 @@ const NavLink = ({
         href={href}
         isActive={isActive}
         tooltip={tooltip}
-        className="h-10 justify-start"
+        className="h-7 justify-start"
       >
         <div className="flex items-center gap-3">
           {React.createElement(icon, { className: "h-5 w-5" })}
@@ -138,7 +138,7 @@ export function SidebarNav() {
                         Επαφές
                     </NavLink>
                      <SidebarMenuItem>
-                        <SidebarMenuButton hasSubmenu isActive={entitiesIsActive} className="h-10 justify-start">
+                        <SidebarMenuButton hasSubmenu isActive={entitiesIsActive} className="h-7 justify-start">
                              <div className="flex items-center gap-3">
                                 <Archive className="h-5 w-5" />
                                 <span className="flex-1">Οντότητες</span>
@@ -325,7 +325,7 @@ export function SidebarNav() {
               href="/settings"
               isActive={pathname.startsWith("/settings")}
               tooltip="Settings"
-              className="h-10 justify-start"
+              className="h-7 justify-start"
             >
               <div className="flex items-center gap-3">
                 <Settings className="h-5 w-5" />
