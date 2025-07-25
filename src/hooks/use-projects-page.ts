@@ -29,17 +29,6 @@ export function useProjectsPage() {
   const searchParams = useSearchParams();
   const view = searchParams.get('view') || 'index';
 
-  const [projects, setProjects] = useState<ProjectWithWorkStageSummary[]>([]);
-
-  // We need to enrich the projects with summary data here or fetch it.
-  // For now, let's just pass the projects through.
-  useEffect(() => {
-    // This is where you would calculate or fetch work stage summaries
-    // and map them to the projects.
-    setProjects(allProjects);
-  }, [allProjects]);
-
-
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
@@ -73,13 +62,18 @@ export function useProjectsPage() {
   }, [form]);
 
   const handleDuplicateProject = useCallback(async (projectId: string) => {
-    const projectToClone = projects.find((p) => p.id === projectId);
+    const projectToClone = allProjects.find((p) => p.id === projectId);
     if (!projectToClone) {
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το έργο προς αντιγραφή.' });
       return;
     }
     try {
-      const { id, createdAt, workStageSummary, ...clonedData } = projectToClone;
+      const { id, createdAt, ...clonedData } = projectToClone;
+      const workStageSummary = (clonedData as any).workStageSummary; // Exclude summary if it exists
+      if (workStageSummary) {
+          delete (clonedData as any).workStageSummary;
+      }
+      
       clonedData.title = `${clonedData.title} (Copy)`;
       const newId = await addProject({
         ...clonedData,
@@ -99,11 +93,11 @@ export function useProjectsPage() {
       console.error('Error duplicating project:', error);
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η αντιγραφή απέτυχε.' });
     }
-  }, [projects, toast, addProject]);
+  }, [allProjects, toast, addProject]);
 
   const handleDeleteProject = useCallback(async (projectId: string) => {
     try {
-      const projectToDelete = projects.find(p => p.id === projectId);
+      const projectToDelete = allProjects.find(p => p.id === projectId);
       await deleteDoc(doc(db, 'projects', projectId));
       toast({ title: 'Επιτυχία', description: 'Το έργο διαγράφηκε.' });
 
@@ -111,14 +105,14 @@ export function useProjectsPage() {
         await logActivity('DELETE_PROJECT', {
             entityId: projectId,
             entityType: 'project',
-            title: projectToDelete.title,
+            name: projectToDelete.title,
         });
       }
     } catch (error) {
       console.error('Error deleting project:', error);
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η διαγραφή του έργου.' });
     }
-  }, [projects, toast]);
+  }, [allProjects, toast]);
 
   const onSubmit = useCallback(async (data: ProjectFormValues) => {
     setIsSubmitting(true);
@@ -137,7 +131,7 @@ export function useProjectsPage() {
         await logActivity('UPDATE_PROJECT', {
             entityId: editingProject.id,
             entityType: 'project',
-            title: updateData.title,
+            name: updateData.title,
             changes: updateData,
         });
 
@@ -148,7 +142,7 @@ export function useProjectsPage() {
             await logActivity('CREATE_PROJECT', {
                 entityId: newProjectId,
                 entityType: 'project',
-                title: data.title,
+                name: data.title,
             });
         }
       }
@@ -170,8 +164,8 @@ export function useProjectsPage() {
   }, [companies]);
 
   const filteredProjects = useMemo(() => {
-    if (!projects) return [];
-    return projects.filter((project) => {
+    if (!allProjects) return [];
+    return allProjects.filter((project) => {
       const query = searchQuery.toLowerCase();
       const companyName = getCompanyName(project.companyId).toLowerCase();
       return (
@@ -182,13 +176,13 @@ export function useProjectsPage() {
         (project.tags && project.tags.some((tag) => tag.toLowerCase().includes(query)))
       );
     });
-  }, [projects, searchQuery, getCompanyName]);
+  }, [allProjects, searchQuery, getCompanyName]);
 
   const handleExport = useCallback(() => {
     const dataToExport = filteredProjects.map((p) => ({
       ...p,
       companyName: getCompanyName(p.companyId),
-      deadline: formatDate(p.deadline),
+      deadline: formatDate(p.deadline as Timestamp),
       createdAt: formatDate(p.createdAt),
     }));
     exportToJson(dataToExport, 'projects');
