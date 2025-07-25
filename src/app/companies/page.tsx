@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -94,7 +95,7 @@ export default function CompaniesPage() {
         logoUrl: data.logoUrl?.trim() || undefined,
         website: data.website?.trim() || undefined,
       };
-      await addCompany(companyData);
+      await addCompany(companyData as any);
       toast({
         title: "Επιτυχία",
         description: "Η εταιρεία προστέθηκε με επιτυχία.",
@@ -354,5 +355,7 @@ export default function CompaniesPage() {
     </div>
   );
 }
+
+    
 
     
