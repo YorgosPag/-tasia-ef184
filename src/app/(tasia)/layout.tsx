@@ -1,7 +1,7 @@
 'use client';
 
-import { AppSidebar } from '@/components/layout/sidebar';
-import { AppShell } from '@/components/layout/app-shell';
+import { AppSidebar } from '@/shared/components/layout/Sidebar';
+import { AppShell } from '@/shared/components/layout/AppShell';
 
 export default function TasiaLayout({
   children,
