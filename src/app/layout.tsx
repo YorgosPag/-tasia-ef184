@@ -1,4 +1,3 @@
-
 'use client';
 
 import './globals.css';
@@ -12,7 +11,13 @@ import { QueryProvider } from '@/hooks/use-query-provider';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Suspense } from 'react';
+import { Inter } from 'next/font/google';
+import { cn } from '@/lib/utils';
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
 
 export default function RootLayout({
   children,
@@ -25,11 +30,8 @@ export default function RootLayout({
       <head>
         <title>TASIA</title>
         <meta name="description" content="Ευρετήριο Ακινήτων" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body>
+      <body className={cn('font-sans', inter.variable)}>
         <Suspense>
         <ThemeProvider
             attribute="class"
