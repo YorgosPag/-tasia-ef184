@@ -109,9 +109,17 @@ export function UnitContractsTab({ unit }: UnitContractsTabProps) {
 
   useEffect(() => {
     const fetchContacts = async () => {
-        const q = query(collection(db, 'contacts'), where('type', 'in', ['Notary', 'Lawyer']), orderBy('name'));
-        const snapshot = await getDocs(q);
-        setContacts(snapshot.docs.map(d => ({id: d.id, ...d.data()} as Contact)));
+        // Querying for both types at once would require a composite index.
+        // It's better to make two separate queries.
+        const notaryQuery = query(collection(db, 'contacts'), where('type', '==', 'Notary'), orderBy('name'));
+        const lawyerQuery = query(collection(db, 'contacts'), where('type', '==', 'Lawyer'), orderBy('name'));
+        
+        const [notarySnapshot, lawyerSnapshot] = await Promise.all([getDocs(notaryQuery), getDocs(lawyerQuery)]);
+        
+        const notaries = notarySnapshot.docs.map(d => ({id: d.id, ...d.data()} as Contact));
+        const lawyers = lawyerSnapshot.docs.map(d => ({id: d.id, ...d.data()} as Contact));
+
+        setContacts([...notaries, ...lawyers]);
     }
     fetchContacts();
   }, []);

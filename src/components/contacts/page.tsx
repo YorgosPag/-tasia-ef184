@@ -257,7 +257,7 @@ export default function ContactsPage() {
                         {contact.name}
                       </TableCell>
                       <TableCell><Badge variant={getBadgeVariant(contact.type)}>{contact.type}</Badge></TableCell>
-                      <TableCell>{contact.contactInfo?.email ? (<Link href={`mailto:${contact.contactInfo.email}`} className="text-primary hover:underline">{contact.contactInfo.email}</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
+                      <TableCell>{contact.contactInfo?.email ? (<a href={`mailto:${contact.contactInfo.email}`} className="text-primary hover:underline">{contact.contactInfo.email}</a>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
                       <TableCell className="text-muted-foreground">{contact.contactInfo?.phone || 'N/A'}</TableCell>
                       <TableCell className="text-muted-foreground">{contact.contactInfo?.afm || 'N/A'}</TableCell>
                       <TableCell>{contact.website ? (<Link href={contact.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1"><LinkIcon size={14}/>Επίσκεψη</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
