@@ -12,34 +12,71 @@ import {
   query,
   orderBy,
   serverTimestamp,
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 export interface Contact {
   id: string;
-  name: string;
-  entityType?: 'Φυσικό Πρόσωπο' | 'Νομικό Πρόσωπο' | 'Δημ. Υπηρεσία';
-  logoUrl?: string;
-  website?: string;
-  job?: {
-    role?: string;
-    specialty?: string;
+  // Personal Info
+  entityType: 'Φυσικό Πρόσωπο' | 'Νομικό Πρόσωπο' | 'Δημ. Υπηρεσία';
+  name: string; // Full name or company name
+  firstName?: string;
+  lastName?: string;
+  fatherName?: string;
+  motherName?: string;
+  spouseName?: string;
+  birthDate?: Timestamp;
+  
+  // ID & Tax Info
+  identity?: {
+    type?: 'Ταυτότητα' | 'Διαβατήριο';
+    number?: string;
+    issueDate?: Timestamp;
+    issuingAuthority?: string;
   };
+  afm?: string;
+  doy?: string;
+
+  // Contact Info
   contactInfo?: {
     email?: string;
     phone?: string;
     landline?: string;
-    address?: string;
+  };
+
+  // Social Networks
+  socials?: {
+    website?: string;
+    linkedin?: string;
+    facebook?: string;
+  };
+
+  // Address Info
+  address?: {
+    street?: string;
     city?: string;
     region?: string;
     postalCode?: string;
     municipality?: string;
-    afm?: string;
   };
+  
+  // Professional Info
+  job?: {
+    role?: string;
+    specialty?: string;
+    title?: string;
+    companyName?: string;
+  };
+  
+  // Other
   notes?: string;
+  logoUrl?: string; // Kept for company logo or individual photo
+  
   createdAt: any;
 }
+
 
 export function useContacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -49,12 +86,9 @@ export function useContacts() {
 
   useEffect(() => {
     setIsLoading(true);
-    // Removed orderBy to prevent index errors. Sorting is done on the client.
-    const q = query(collection(db, 'tsia-contacts'));
+    const q = query(collection(db, 'tsia-contacts'), orderBy('name'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const contactsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contact));
-      // Sort client-side
-      contactsData.sort((a, b) => a.name.localeCompare(b.name));
       setContacts(contactsData);
       setIsLoading(false);
     }, (error) => {
@@ -81,7 +115,14 @@ export function useContacts() {
   const updateContact = useCallback(async (id: string, data: Partial<Omit<Contact, 'id' | 'createdAt'>>) => {
     setIsSubmitting(true);
     try {
-      await updateDoc(doc(db, 'tsia-contacts', id), data);
+      const dataToUpdate = { ...data };
+      if (data.birthDate) {
+        (dataToUpdate as any).birthDate = Timestamp.fromDate(data.birthDate as any);
+      }
+      if (data.identity?.issueDate) {
+        (dataToUpdate as any).identity.issueDate = Timestamp.fromDate(data.identity.issueDate as any);
+      }
+      await updateDoc(doc(db, 'tsia-contacts', id), dataToUpdate);
       toast({ title: 'Επιτυχία', description: 'Η επαφή ενημερώθηκε.' });
     } catch (error) {
       console.error(error);
