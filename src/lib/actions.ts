@@ -5,6 +5,7 @@ import { seedTasiaData as seedTasia } from '@/lib/tasia-seed';
 import { clearTasiaData as clearTasia } from '@/lib/clear';
 import { seedEcoData as seedEco } from './eco-seed';
 import { clearEcoData as clearEco } from './eco-clear';
+import { auth } from './firebase';
 
 export async function seedTasiaDataAction() {
     try {
