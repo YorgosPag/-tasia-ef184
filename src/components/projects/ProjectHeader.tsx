@@ -27,8 +27,8 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
             </CardHeader>
             <CardContent className="flex flex-col gap-6 md:flex-row">
                 {project.photoUrl && (
-                    <div className="md:w-1/3">
-                        <Image src={project.photoUrl} alt={`Photo of ${project.title}`} width={400} height={300} className="rounded-lg object-cover aspect-[4/3]" loading="lazy"/>
+                    <div className="md:w-1/3 relative aspect-[4/3]">
+                        <Image src={project.photoUrl} alt={`Photo of ${project.title}`} fill className="rounded-lg object-cover" loading="lazy"/>
                     </div>
                 )}
                 <div className="flex-1 space-y-4">
