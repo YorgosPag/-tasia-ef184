@@ -93,19 +93,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
     };
 
     const unsubscribers = listeners.map(({ name, setter }) => {
-        const q = collection(db, name);
-        return onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setter(data as any);
-            checkLoadingDone();
-        }, (error) => {
-            console.error(`Failed to fetch ${name}:`, error);
-            checkLoadingDone(); // Mark as "loaded" even on error to not block the UI
-        });
+        try {
+            const q = collection(db, name);
+            return onSnapshot(q, (snapshot) => {
+                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setter(data as any);
+                if (!isLoading) checkLoadingDone();
+            }, (error) => {
+                console.error(`Failed to fetch ${name}:`, error);
+                if (!isLoading) checkLoadingDone(); // Mark as "loaded" even on error to not block the UI
+            });
+        } catch (error) {
+            console.error(`Error setting up listener for ${name}:`, error);
+            if (!isLoading) checkLoadingDone();
+            return () => {}; // Return an empty unsubscribe function
+        }
     });
+    
+    // Fallback to ensure loading is always eventually set to false
+    const loadingTimeout = setTimeout(() => {
+        if(isLoading) {
+            setIsLoading(false);
+        }
+    }, 5000); // 5 second timeout
+
 
     return () => {
-        unsubscribers.forEach(unsub => unsub());
+        unsubscribers.forEach(unsub => unsub && unsub());
+        clearTimeout(loadingTimeout);
     };
   }, [user]);
 
