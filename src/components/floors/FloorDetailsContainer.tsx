@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   doc,
@@ -9,24 +9,19 @@ import {
   Timestamp,
   writeBatch,
   getDoc,
-  deleteDoc,
   query,
-  where,
-  getDocs,
   collection,
 } from 'firebase/firestore';
-import { db, storage, auth } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/hooks/use-toast';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
 
 import { FloorInfoHeader } from './FloorInfoHeader';
 import { FloorPlanCard } from './FloorPlanCard';
 import { logActivity } from '@/lib/logger';
-import type { Unit } from '@/components/floor-plan/FloorPlanViewer';
+import { useAuth } from '@/hooks/use-auth';
+import type { Unit } from '@/components/floor-plan/Unit';
 
 
 // --- Interfaces & Schemas ---
@@ -42,7 +37,7 @@ interface Floor {
 
 /**
  * FloorDetailsContainer is the main "smart" component for the floor details page.
- * It handles all data fetching, state management, and business logic (CRUD operations for units, file uploads).
+ * It handles all data fetching, state management, and business logic (file uploads).
  * It then passes down data and callbacks to its "dumb" child components.
  */
 export function FloorDetailsContainer() {
@@ -50,6 +45,7 @@ export function FloorDetailsContainer() {
   const router = useRouter();
   const floorId = params.id as string;
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // --- State Management ---
   const [floor, setFloor] = useState<Floor | null>(null);
@@ -122,7 +118,7 @@ export function FloorDetailsContainer() {
   };
 
   const handleFileUpload = async () => {
-    if (!selectedFile || !floorId || !auth.currentUser) return;
+    if (!selectedFile || !floorId || !user) return;
     setIsUploading(true);
     const storageRef = ref(storage, `floor_plans/${floorId}/${selectedFile.name}`);
     try {
