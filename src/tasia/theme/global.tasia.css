@@ -1,8 +1,8 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* global.tasia.css */
 @layer base {
   .tasia {
     /* Base Colors */
@@ -40,6 +40,14 @@
     --input: 215 20% 91%;  /* Input background */
     --ring: 0 84% 60%;     /* Focus ring - Orange */
 
+    /* Chart Colors */
+    --chart-1: 215 50% 50%; /* Slate Blue */
+    --chart-2: 0 70% 65%;   /* Lighter Orange */
+    --chart-3: 215 30% 65%; /* Medium Slate Blue */
+    --chart-4: 350 70% 70%; /* Soft Red */
+    --chart-5: 50 60% 60%;  /* Muted Yellow */
+    
+    /* Radius */
     --radius: 0.5rem;
   }
  
@@ -78,5 +86,21 @@
     --border: 215 28% 25%;
     --input: 215 28% 25%;
     --ring: 0 84% 60%;
+
+    /* Chart Colors (can be the same or adjusted for dark mode) */
+    --chart-1: 215 50% 50%;
+    --chart-2: 0 70% 65%;
+    --chart-3: 215 30% 65%;
+    --chart-4: 350 70% 70%;
+    --chart-5: 50 60% 60%;
+  }
+}
+ 
+@layer base {
+  .tasia * {
+    @apply border-border;
+  }
+  .tasia {
+    @apply bg-background text-foreground;
   }
 }
