@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -46,6 +45,7 @@ import {
   Info,
   Shield,
   ListChecks,
+  Archive,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -94,6 +94,7 @@ export function SidebarNav() {
   const { user, isAdmin } = useAuth()
 
   const ecoIsActive = pathname.startsWith("/eco/");
+  const entitiesIsActive = ["/companies", "/projects", "/buildings", "/floors", "/units", "/attachments"].some(p => pathname.startsWith(p));
 
   return (
     <>
@@ -113,8 +114,8 @@ export function SidebarNav() {
             </SidebarMenu>
         </SidebarGroup>
         
-        <SidebarGroup>
-            <SidebarGroupLabel className="flex items-center gap-2 h-8 font-semibold text-sm">
+        <SidebarGroup className="py-0">
+            <SidebarGroupLabel className="flex items-center gap-2 h-7 font-semibold text-sm">
                 <Construction className="h-4 w-4" />
                 TASIA Real Estate
             </SidebarGroupLabel>
@@ -135,24 +136,46 @@ export function SidebarNav() {
                     <NavLink href="/contacts" icon={Contact} tooltip="Επαφές">
                         Επαφές
                     </NavLink>
-                    <NavLink href="/companies" icon={Building2} tooltip="Εταιρείες">
-                        Εταιρείες
-                    </NavLink>
-                    <NavLink href="/projects" icon={FolderKanban} tooltip="Έργα">
-                        Έργα
-                    </NavLink>
-                    <NavLink href="/buildings" icon={Building} tooltip="Κτίρια">
-                        Κτίρια
-                    </NavLink>
-                    <NavLink href="/floors" icon={Layers} tooltip="Όροφοι">
-                        Όροφοι
-                    </NavLink>
-                    <NavLink href="/units" icon={LayoutTemplate} tooltip="Ακίνητα">
-                        Ακίνητα
-                    </NavLink>
-                    <NavLink href="/attachments" icon={Paperclip} tooltip="Παρακολουθήματα">
-                        Παρακολουθήματα
-                    </NavLink>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton hasSubmenu isActive={entitiesIsActive} className="h-10 justify-start">
+                             <div className="flex items-center gap-3">
+                                <Archive className="h-5 w-5" />
+                                <span className="flex-1">Οντότητες</span>
+                            </div>
+                        </SidebarMenuButton>
+                         <SidebarMenuSub>
+                            <SidebarMenuSubItem>
+                                <SidebarMenuSubButton asChild isActive={pathname.startsWith("/companies")}>
+                                    <Link href="/companies"><Building2 /><span>Εταιρείες</span></Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                             <SidebarMenuSubItem>
+                                <SidebarMenuSubButton asChild isActive={pathname.startsWith("/projects")}>
+                                    <Link href="/projects"><FolderKanban /><span>Έργα</span></Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                             <SidebarMenuSubItem>
+                                <SidebarMenuSubButton asChild isActive={pathname.startsWith("/buildings")}>
+                                    <Link href="/buildings"><Building /><span>Κτίρια</span></Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                             <SidebarMenuSubItem>
+                                <SidebarMenuSubButton asChild isActive={pathname.startsWith("/floors")}>
+                                    <Link href="/floors"><Layers /><span>Όροφοι</span></Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                             <SidebarMenuSubItem>
+                                <SidebarMenuSubButton asChild isActive={pathname.startsWith("/units")}>
+                                    <Link href="/units"><LayoutTemplate /><span>Ακίνητα</span></Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                             <SidebarMenuSubItem>
+                                <SidebarMenuSubButton asChild isActive={pathname.startsWith("/attachments")}>
+                                    <Link href="/attachments"><Paperclip /><span>Παρακολουθήματα</span></Link>
+                                </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                        </SidebarMenuSub>
+                    </SidebarMenuItem>
                     <NavLink href="/leads" icon={Mail} tooltip="Leads">
                         Leads
                     </NavLink>
@@ -163,14 +186,14 @@ export function SidebarNav() {
             </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        <SidebarGroup className="py-0">
           <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton
                     hasSubmenu
                     isActive={ecoIsActive}
                     tooltip="NESTOR Εξοικονομώ"
-                    className="h-8 justify-start font-semibold text-sm text-sky-400"
+                    className="h-8 justify-start font-semibold text-sm text-green-400"
                 >
                     <div className="flex items-center gap-3">
                         <HomeIcon className="h-5 w-5" />
