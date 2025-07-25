@@ -4,7 +4,10 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FloorPlanViewer } from '@/components/floor-plan/FloorPlanViewer';
-import type { Unit } from '@/components/floor-plan/FloorPlanViewer';
+import type { Unit } from '@/components/floor-plan/Unit';
+import { useFloorPlanDataManager } from '../floor-plan/hooks/useFloorPlanDataManager';
+import { Loader2 } from 'lucide-react';
+import { UnitDialogForm } from '../units/UnitDialogForm';
 
 
 interface FloorPlanCardProps {
@@ -25,15 +28,25 @@ export function FloorPlanCard({
   initialUnits,
   onUnitClick,
 }: FloorPlanCardProps) {
+  const dataManager = useFloorPlanDataManager({ floorId, initialUnits });
+
+  const handlePolygonDrawn = (points: { x: number, y: number }[]) => {
+    dataManager.setDrawingPolygon(points);
+    dataManager.setIsDialogOpen(true);
+  }
+
   return (
     <Card className="p-0">
       <CardContent className="p-0">
         {floorPlanUrl ? (
           <FloorPlanViewer
-            floorId={floorId}
             pdfUrl={floorPlanUrl}
-            initialUnits={initialUnits}
-            onUnitSelect={onUnitClick}
+            units={dataManager.units}
+            setUnits={dataManager.setUnits}
+            onPolygonDrawn={handlePolygonDrawn}
+            onUnitPointsUpdate={dataManager.handleUnitPointsUpdate}
+            onUnitClick={onUnitClick}
+            onUnitDelete={dataManager.handleDeleteUnit}
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
@@ -44,6 +57,16 @@ export function FloorPlanCard({
           </div>
         )}
       </CardContent>
+      <UnitDialogForm
+        open={dataManager.isDialogOpen}
+        onOpenChange={dataManager.setIsDialogOpen}
+        onSubmit={dataManager.form.handleSubmit(dataManager.onSubmitUnit)}
+        form={dataManager.form}
+        isSubmitting={dataManager.isSubmitting}
+        editingUnit={dataManager.editingUnit}
+        drawingPolygon={dataManager.drawingPolygon}
+        availableUnits={dataManager.unitsWithoutPolygon}
+      />
     </Card>
   );
 }
