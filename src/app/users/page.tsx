@@ -25,6 +25,42 @@ import { Loader2, MoreHorizontal, ShieldCheck, Shield, Eye } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function UserTableSkeleton() {
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell className="font-medium flex items-center gap-3">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <Skeleton className="h-4 w-24" />
+                        </TableCell>
+                        <TableCell>
+                            <Skeleton className="h-4 w-40" />
+                        </TableCell>
+                        <TableCell>
+                            <Skeleton className="h-6 w-20 rounded-full" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                           <Skeleton className="h-8 w-8 ml-auto" />
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    )
+}
+
 
 export default function UsersPage() {
   const { user, isAdmin, isLoading: isAuthLoading } = useAuth();
@@ -84,9 +120,24 @@ export default function UsersPage() {
 
   if (isAuthLoading || areUsersLoading) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-16 w-16 animate-spin text-muted-foreground" />
-      </div>
+      <div className="flex flex-col gap-8">
+            <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                User Management
+                </h1>
+            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>All Users</CardTitle>
+                    <CardDescription>
+                        View and manage user roles across the application.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <UserTableSkeleton />
+                </CardContent>
+            </Card>
+        </div>
     );
   }
 
