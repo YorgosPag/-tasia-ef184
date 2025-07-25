@@ -49,7 +49,7 @@ const createUserDocument = async (user: User) => {
 
   // Create user document only if it doesn't exist
   if (!userDoc.exists()) {
-    // Check if this is the very first user
+    // Check if this is the very first user *before* creating the document
     const usersCollectionRef = collection(db, 'users');
     const q = query(usersCollectionRef, limit(1));
     const snapshot = await getDocs(q);
