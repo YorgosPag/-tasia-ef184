@@ -1,6 +1,5 @@
 'use client';
 
-import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Control } from "react-hook-form";
@@ -11,9 +10,7 @@ interface NotesSectionProps {
 
 export function NotesSection({ control }: NotesSectionProps) {
   return (
-    <AccordionItem value="other-info">
-      <AccordionTrigger>Λοιπά</AccordionTrigger>
-      <AccordionContent className="space-y-4 pt-4">
+      <div className="space-y-4 pt-4">
         <FormField
           control={control}
           name="notes"
@@ -27,7 +24,6 @@ export function NotesSection({ control }: NotesSectionProps) {
             </FormItem>
           )}
         />
-      </AccordionContent>
-    </AccordionItem>
+      </div>
   );
 }

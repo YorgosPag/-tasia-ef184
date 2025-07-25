@@ -1,6 +1,5 @@
 'use client';
 
-import { AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { FormTextField } from "@/eco/components/form/FormTextField";
 import { FormSelectField } from "@/eco/components/form/FormSelectField";
 import { Control } from "react-hook-form";
@@ -15,9 +14,7 @@ export function JobInfoSection({ control }: JobInfoSectionProps) {
   const rolesList = lists.find(l => l.title === 'Ρόλοι')?.items || [];
 
   return (
-    <AccordionItem value="job-info">
-      <AccordionTrigger>Επαγγελματικά Στοιχεία</AccordionTrigger>
-      <AccordionContent className="space-y-4 pt-4">
+      <div className="space-y-4 pt-4">
         <div className="grid md:grid-cols-2 gap-4">
           <FormSelectField
             control={control}
@@ -30,7 +27,6 @@ export function JobInfoSection({ control }: JobInfoSectionProps) {
           <FormTextField control={control} name="job.specialty" label="Επάγγελμα/Ειδικότητα" />
           <FormTextField control={control} name="job.companyName" label="Επιχείρηση/Οργανισμός" />
         </div>
-      </AccordionContent>
-    </AccordionItem>
+      </div>
   );
 }

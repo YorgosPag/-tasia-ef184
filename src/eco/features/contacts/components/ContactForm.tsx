@@ -6,9 +6,11 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { Loader2, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { FormLabel } from '@/components/ui/form';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+
 
 import { contactSchema, type ContactFormValues } from '@/lib/validation/contactSchema';
 import type { Contact } from '../hooks/useContacts';
@@ -36,16 +38,6 @@ const safeParseDate = (date: any): Date | null => {
   if (typeof date.toDate === 'function') return date.toDate();
   const parsedDate = new Date(date);
   return isNaN(parsedDate.getTime()) ? null : parsedDate;
-};
-
-const SECTIONS_MAP: Record<string, { title: string, component: React.FC<any> }> = {
-    'personal': { title: 'Προσωπικά Στοιχεία', component: PersonalInfoSection },
-    'id_tax': { title: 'Στοιχεία Ταυτότητας & ΑΦΜ', component: IdentityTaxSection },
-    'contact': { title: 'Στοιχεία Επικοινωνίας', component: ContactInfoSection },
-    'socials': { title: 'Κοινωνικά Δίκτυα', component: SocialsSection },
-    'address': { title: 'Στοιχεία Διεύθυνσης', component: AddressSection },
-    'job': { title: 'Επαγγελματικά Στοιχεία', component: JobInfoSection },
-    'notes': { title: 'Λοιπά', component: NotesSection },
 };
 
 
@@ -94,26 +86,39 @@ export const ContactForm = ({ isSubmitting, onSubmit, onCancel, editingContact, 
     };
     onSubmit(dataToSubmit);
   };
+  
+  const allSections = {
+      personal: { title: 'Προσωπικά Στοιχεία', component: <PersonalInfoSection control={form.control} entityType={selectedEntityType} /> },
+      id_tax: { title: 'Στοιχεία Ταυτότητας & ΑΦΜ', component: <IdentityTaxSection control={form.control} /> },
+      contact: { title: 'Στοιχεία Επικοινωνίας', component: <ContactInfoSection control={form.control} /> },
+      socials: { title: 'Κοινωνικά Δίκτυα', component: <SocialsSection control={form.control} /> },
+      address: { title: 'Στοιχεία Διεύθυνσης', component: <AddressSection control={form.control} /> },
+      job: { title: 'Επαγγελματικά Στοιχεία', component: <JobInfoSection control={form.control} /> },
+      notes: { title: 'Λοιπά', component: <NotesSection control={form.control} /> },
+  };
 
-  const CurrentSection = editingSection ? SECTIONS_MAP[editingSection]?.component : null;
-  const currentTitle = editingSection ? SECTIONS_MAP[editingSection]?.title : 'Επεξεργασία';
+  const sectionsToRender = editingSection 
+    ? { [editingSection]: allSections[editingSection as keyof typeof allSections] }
+    : allSections;
 
   return (
-    <Dialog open={!!editingSection} onOpenChange={(open) => !open && onCancel()}>
-        <DialogContent className="max-w-xl">
+    <Dialog open={!!editingContact} onOpenChange={(open) => !open && onCancel()}>
+        <DialogContent className="max-w-4xl">
              <DialogHeader>
-                 <DialogTitle>{currentTitle}</DialogTitle>
+                 <DialogTitle>{editingContact?.id ? `Επεξεργασία Επαφής: ${editingContact.name}` : 'Δημιουργία Νέας Επαφής'}</DialogTitle>
                  <DialogDescription>Ενημερώστε τα παρακάτω πεδία. Οι αλλαγές αποθηκεύονται σε όλες τις ενότητες μαζί.</DialogDescription>
              </DialogHeader>
             <Form {...form}>
             <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto pr-4">
-                {CurrentSection ? (
-                    <CurrentSection control={form.control} entityType={selectedEntityType} />
-                ) : (
-                    <p>Επιλέξτε μια ενότητα για επεξεργασία.</p>
-                )}
-
-                <DialogFooter className="pt-4">
+               <Accordion type="multiple" defaultValue={Object.keys(sectionsToRender)} className="w-full space-y-2">
+                 {Object.entries(sectionsToRender).map(([key, { title, component }]) => (
+                    <AccordionItem key={key} value={key} className="border rounded-md px-4 bg-background">
+                        <AccordionTrigger>{title}</AccordionTrigger>
+                        <AccordionContent>{component}</AccordionContent>
+                    </AccordionItem>
+                 ))}
+               </Accordion>
+                <DialogFooter className="pt-4 sticky bottom-0 bg-background py-4">
                     <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
                         Άκυρο
                     </Button>
