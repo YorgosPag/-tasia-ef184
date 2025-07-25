@@ -114,7 +114,7 @@ export function SidebarNav() {
         </SidebarGroup>
         
         <SidebarGroup>
-            <SidebarGroupLabel className="flex items-center gap-2">
+            <SidebarGroupLabel className="flex items-center gap-2 h-8 font-semibold text-sm">
                 <Construction className="h-4 w-4" />
                 TASIA Real Estate
             </SidebarGroupLabel>
@@ -170,7 +170,7 @@ export function SidebarNav() {
                     hasSubmenu
                     isActive={ecoIsActive}
                     tooltip="NESTOR Εξοικονομώ"
-                    className="h-10 justify-start"
+                    className="h-8 justify-start font-semibold text-sm text-sky-400"
                 >
                     <div className="flex items-center gap-3">
                         <HomeIcon className="h-5 w-5" />
