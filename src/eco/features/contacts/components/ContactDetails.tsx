@@ -4,7 +4,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Contact } from '../hooks/useContacts';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -14,9 +14,9 @@ interface InfoItemProps {
     value?: string | null;
 }
 const InfoItem = ({ label, value }: InfoItemProps) => (
-  <div>
-    <p className="font-semibold text-muted-foreground">{label}</p>
-    <p className="truncate">{value || '-'}</p>
+  <div className="flex flex-col gap-1">
+    <p className="text-sm text-muted-foreground">{label}</p>
+    <p className="font-medium truncate">{value || '-'}</p>
   </div>
 );
 
@@ -68,8 +68,11 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
       </header>
       
       <Card>
-        <CardHeader><CardTitle className="text-lg">Επαγγελματικά Στοιχεία / Στοιχεία Οντότητας</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+        <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="text-lg">Επαγγελματικά Στοιχεία / Στοιχεία Οντότητας</CardTitle>
+            <Button variant="ghost" size="icon"><Edit className="h-4 w-4 text-muted-foreground" /></Button>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <InfoItem label="Επωνυμία / Όνομα" value={contact.name} />
             <InfoItem label="Ρόλος" value={contact.job?.role} />
             <InfoItem label="Ειδικότητα" value={contact.job?.specialty} />
@@ -80,12 +83,31 @@ export const ContactDetails = ({ contact, onEdit, onDelete }: ContactDetailsProp
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-lg">Στοιχεία Επικοινωνίας</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+        <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="text-lg">Στοιχεία Επικοινωνίας</CardTitle>
+            <Button variant="ghost" size="icon"><Edit className="h-4 w-4 text-muted-foreground" /></Button>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
             <InfoItem label="Email" value={contact.contactInfo?.email} />
             <InfoItem label="Κινητό" value={contact.contactInfo?.phone} />
             <InfoItem label="Σταθερό" value={contact.contactInfo?.landline} />
-            <InfoItem label="Διεύθυνση" value={contact.contactInfo?.address} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="text-lg">Στοιχεία Διεύθυνσης</CardTitle>
+            <div className="flex items-center">
+              <Button variant="ghost" size="icon"><MapPin className="h-4 w-4 text-muted-foreground" /></Button>
+              <Button variant="ghost" size="icon"><Edit className="h-4 w-4 text-muted-foreground" /></Button>
+            </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+            <InfoItem label="Οδός" value={contact.contactInfo?.address} />
+            <InfoItem label="Περιοχή" value={contact.contactInfo?.region} />
+            <InfoItem label="Πόλη" value={contact.contactInfo?.city} />
+            <InfoItem label="Τ.Κ." value={contact.contactInfo?.postalCode} />
+            <InfoItem label="Δήμος" value={contact.contactInfo?.municipality} />
         </CardContent>
       </Card>
       

@@ -31,6 +31,10 @@ export interface Contact {
     phone?: string;
     landline?: string;
     address?: string;
+    city?: string;
+    region?: string;
+    postalCode?: string;
+    municipality?: string;
     afm?: string;
   };
   notes?: string;
