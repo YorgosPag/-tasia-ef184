@@ -1,13 +1,14 @@
 
+
 'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, Loader2 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProjectCard } from './components/ProjectCard';
-import { useEcoProjects } from './hooks/useEcoProjects';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProjectCard } from '@/eco/app/(main)/projects/components/ProjectCard';
+import { useEcoProjects } from '@/eco/app/(main)/projects/hooks/useEcoProjects';
 import { useRouter } from 'next/navigation';
 
 export default function EcoProjectsPage() {

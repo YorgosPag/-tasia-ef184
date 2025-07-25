@@ -6,6 +6,25 @@ const withBundleAnalyzer = nextBundleAnalyzer({
 });
 
 const nextConfig = {
+  // Redirect / to /projects
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/projects',
+        permanent: true,
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      // Rewrite for the ECO app
+      {
+        source: '/eco/:path*',
+        destination: '/eco-app/:path*',
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

@@ -79,7 +79,7 @@ const NavLink = ({
         href={href}
         isActive={isActive}
         tooltip={tooltip}
-        className="h-7 justify-start"
+        className="h-8 justify-start"
       >
         <div className="flex items-center gap-3">
           {React.createElement(icon, { className: "h-5 w-5" })}
@@ -109,14 +109,14 @@ export function SidebarNav() {
       <SidebarContent className="p-0">
         <SidebarGroup>
             <SidebarMenu>
-                 <NavLink href="/" icon={HomeIcon} tooltip="Αρχική" exact={true}>
+                 <NavLink href="/projects" icon={HomeIcon} tooltip="Αρχική" exact={true}>
                     Αρχική
                 </NavLink>
             </SidebarMenu>
         </SidebarGroup>
         
-        <SidebarGroup className="py-0">
-            <SidebarGroupLabel className="flex items-center gap-2 h-7 font-semibold text-sm">
+        <SidebarGroup className="py-1">
+            <SidebarGroupLabel className="h-8 flex items-center gap-2 font-semibold">
                 <Construction className="h-4 w-4" />
                 TASIA Real Estate
             </SidebarGroupLabel>
@@ -137,8 +137,8 @@ export function SidebarNav() {
                     <NavLink href="/contacts" icon={Contact} tooltip="Επαφές">
                         Επαφές
                     </NavLink>
-                     <SidebarMenuItem>
-                        <SidebarMenuButton hasSubmenu isActive={entitiesIsActive} className="h-7 justify-start">
+                    <SidebarMenuItem>
+                        <SidebarMenuButton hasSubmenu isActive={entitiesIsActive} className="h-8 justify-start">
                              <div className="flex items-center gap-3">
                                 <Archive className="h-5 w-5" />
                                 <span className="flex-1">Οντότητες</span>
@@ -187,14 +187,14 @@ export function SidebarNav() {
             </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="py-0">
+        <SidebarGroup className="py-1">
           <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton
                     hasSubmenu
                     isActive={ecoIsActive}
                     tooltip="NESTOR Εξοικονομώ"
-                    className="h-8 justify-start font-semibold text-sm text-green-400"
+                    className="h-8 justify-start font-semibold text-green-600 dark:text-green-400"
                 >
                     <div className="flex items-center gap-3">
                         <HomeIcon className="h-5 w-5" />
@@ -325,7 +325,7 @@ export function SidebarNav() {
               href="/settings"
               isActive={pathname.startsWith("/settings")}
               tooltip="Settings"
-              className="h-7 justify-start"
+              className="h-8 justify-start"
             >
               <div className="flex items-center gap-3">
                 <Settings className="h-5 w-5" />
