@@ -1,31 +1,44 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to check if the user is an admin
+    // Helper function to check for admin role
     function isAdmin() {
       return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Allow admins full access.
-    // Allow authenticated users read-only access.
+    // Match any document in the database
     match /{document=**} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && isAdmin();
-    }
-    
-    // Explicitly allow any authenticated user to create their own user document upon signup.
-    // Prevent them from creating it with a role other than 'viewer', unless they are the first user.
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId
-                    && (resource.data.role == 'viewer' 
-                        || (resource.data.role == 'admin' && !exists(/databases/$(database)/documents/users/$(userId))));
+      // Admins have full read/write access everywhere
+      allow read, write: if request.auth != null && isAdmin();
       
-      // Allow admins to update anyone's role.
-      allow update: if isAdmin();
+      // All other authenticated users have read-only access
+      // This rule is evaluated only if the rule above is false.
+      allow read: if request.auth != null;
+    }
+
+    // Specific rules for the 'users' collection
+    match /users/{userId} {
+      // Any authenticated user can create their own user document
+      allow create: if request.auth != null && request.auth.uid == userId
+                      && ('role' in request.resource.data)
+                      && (
+                        // Allow 'admin' role only if no other users exist
+                        (request.resource.data.role == 'admin' && !exists(/databases/$(database)/documents/users)) ||
+                        // Otherwise, only allow 'viewer' role
+                        (request.resource.data.role == 'viewer')
+                      );
+
+      // Users can read their own document
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Admins can update any user's document, but only the 'role' field
+      // Users cannot update their own document after creation through this rule.
+      allow update: if request.auth != null && isAdmin()
+                      && request.resource.data.keys().hasOnly(['role']);
     }
   }
 }
