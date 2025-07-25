@@ -16,13 +16,13 @@ console.log("✅ ENV CHECK", {
   projectId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
 });
 const firebaseConfig = {
-  apiKey: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process***REMOVED***.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+  apiKey: "***REMOVED***",
+  authDomain: "tasia-dev.firebaseapp.com",
+  projectId: "tasia-dev",
+  storageBucket: "tasia-dev.appspot.com",
+  messagingSenderId: "955521526644",
+  appId: "1:955521526644:web:0f4f4d8058204f13a07851",
+  measurementId: "G-9XG18S6YTH"
 };
 
 // Initialize Firebase
