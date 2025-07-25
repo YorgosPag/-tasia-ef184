@@ -15,13 +15,13 @@ const BATCH_LIMIT = 499; // Firestore batch limit is 500
  * Deletes all documents from a specified collection in batches.
  * @param collectionName The name of the collection to clear.
  */
-async function clearCollection(collectionName: string) {
-    const collectionRef = collection(db, collectionName);
+async function clearCollection(collectionPath: string) {
+    const collectionRef = collection(db, collectionPath);
     const q = query(collectionRef);
     
     let snapshot = await getDocs(q);
     while (snapshot.size > 0) {
-        console.log(`Found ${snapshot.size} documents in "${collectionName}". Preparing to delete...`);
+        console.log(`Found ${snapshot.size} documents in "${collectionPath}". Preparing to delete...`);
         let batch = writeBatch(db);
         let count = 0;
         
@@ -30,7 +30,7 @@ async function clearCollection(collectionName: string) {
             count++;
             if (count >= BATCH_LIMIT) {
                 await batch.commit();
-                console.log(`Committed a batch of ${count} deletions from "${collectionName}".`);
+                console.log(`Committed a batch of ${count} deletions from "${collectionPath}".`);
                 batch = writeBatch(db);
                 count = 0;
             }
@@ -38,14 +38,14 @@ async function clearCollection(collectionName: string) {
 
         if (count > 0) {
             await batch.commit();
-            console.log(`Committed final batch of ${count} deletions from "${collectionName}".`);
+            console.log(`Committed final batch of ${count} deletions from "${collectionPath}".`);
         }
         
         // Check if there are more documents to delete in a subsequent pass
         snapshot = await getDocs(q);
     }
 
-    console.log(`Successfully cleared collection "${collectionName}".`);
+    console.log(`Successfully cleared collection "${collectionPath}".`);
 }
 
 
@@ -54,33 +54,38 @@ async function clearCollection(collectionName: string) {
  */
 export async function clearTasiaData() {
     console.log('Starting TASIA database cleanup...');
+
+    const TASIA_COLLECTIONS = [
+      'contacts', 'attachments', 'units', 'floors', 
+      'buildings', 'projects', 'companies', 'auditLogs', 
+      'users', 'workStages', 'workSubstages', 'leads'
+    ];
     
-    // Clear subcollections first to avoid orphaned data issues if needed,
+    // First, clear nested collections which might have deeper nesting
     const projectsSnapshot = await getDocs(collection(db, 'projects'));
     for (const projectDoc of projectsSnapshot.docs) {
+        const workStagesSnapshot = await getDocs(collection(projectDoc.ref, 'workStages'));
+        for(const workStageDoc of workStagesSnapshot.docs) {
+            // Clear any sub-collections of workStages, like workSubstages
+            await clearCollection(`projects/${projectDoc.id}/workStages/${workStageDoc.id}/workSubstages`);
+        }
+        // After clearing sub-collections, clear the workStages collection itself
+        await clearCollection(`projects/${projectDoc.id}/workStages`);
+
         const buildingsSnapshot = await getDocs(collection(projectDoc.ref, 'buildings'));
-        for (const buildingDoc of buildingsSnapshot.docs) {
+        for(const buildingDoc of buildingsSnapshot.docs) {
             const floorsSnapshot = await getDocs(collection(buildingDoc.ref, 'floors'));
-            for (const floorDoc of floorsSnapshot.docs) {
-                await clearCollection(`projects/${projectDoc.id}/buildings/${buildingDoc.id}/floors/${floorDoc.id}/units`);
+            for(const floorDoc of floorsSnapshot.docs) {
+                 await clearCollection(`projects/${projectDoc.id}/buildings/${buildingDoc.id}/floors/${floorDoc.id}/units`);
             }
             await clearCollection(`projects/${projectDoc.id}/buildings/${buildingDoc.id}/floors`);
         }
         await clearCollection(`projects/${projectDoc.id}/buildings`);
-
-        const workStagesSnapshot = await getDocs(collection(projectDoc.ref, 'workStages'));
-        for(const workStageDoc of workStagesSnapshot.docs) {
-            await clearCollection(`projects/${projectDoc.id}/workStages/${workStageDoc.id}/workSubstages`);
-        }
-        await clearCollection(`projects/${projectDoc.id}/workStages`);
     }
 
     // Clear all top-level collections for TASIA
-    const collectionsToClear = ['contacts', 'attachments', 'units', 'floors', 'buildings', 'projects', 'companies', 'auditLogs', 'users', 'workStages', 'workSubstages', 'leads'];
-    for (const collectionName of collectionsToClear) {
-        if(!collectionName.startsWith('tsia-')) { // Avoid touching eco collections
-             await clearCollection(collectionName);
-        }
+    for (const collectionName of TASIA_COLLECTIONS) {
+        await clearCollection(collectionName);
     }
     
     console.log('TASIA database cleanup finished successfully!');
