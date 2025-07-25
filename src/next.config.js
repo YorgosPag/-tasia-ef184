@@ -5,17 +5,21 @@ const withBundleAnalyzer = nextBundleAnalyzer({
   enabled: process***REMOVED***.ANALYZE === 'true',
 });
 
+// Detect current domain context (e.g., "nestor" or "tasia")
+const PROJECT = process***REMOVED***.PROJECT || 'tasia';
+
 const nextConfig = {
-  // Redirect / to /projects
+  // Optional: Conditional redirect based on domain
   async redirects() {
     return [
       {
         source: '/',
-        destination: '/projects',
+        destination: PROJECT === 'nestor' ? '/nestor/projects' : '/projects',
         permanent: true,
       },
     ];
   },
+
   images: {
     remotePatterns: [
       {
@@ -32,6 +36,8 @@ const nextConfig = {
       },
     ],
   },
+
+  // Optional: Add more project-specific config below if needed
 };
 
 export default withBundleAnalyzer(nextConfig);
