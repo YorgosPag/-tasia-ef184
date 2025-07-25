@@ -19,7 +19,7 @@ import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { logActivity } from '@/lib/logger';
 import { UnitFormValues, unitSchema } from '@/components/units/UnitDialogForm';
-import { Unit } from '../FloorPlanViewer';
+import { Unit } from '../Unit';
 
 interface UseFloorPlanDataManagerProps {
   floorId: string;
@@ -109,7 +109,7 @@ export function useFloorPlanDataManager({ floorId, initialUnits }: UseFloorPlanD
   });
 
   const updateUnitInFirestore = async (unitId: string, dataToUpdate: any) => {
-    const unitToUpdate = units.find(u => u.id === unitId);
+    const unitToUpdate = units.find(u => u.id === unitId) as any;
     if (!unitToUpdate) return false;
 
     const batch = writeBatch(db);
@@ -201,7 +201,7 @@ export function useFloorPlanDataManager({ floorId, initialUnits }: UseFloorPlanD
   };
   
   const handleDeleteUnit = async (unitId: string) => {
-    const unitToDelete = units.find(u => u.id === unitId);
+    const unitToDelete = units.find(u => u.id === unitId) as any;
     if (!unitToDelete) return;
 
     const batch = writeBatch(db);
