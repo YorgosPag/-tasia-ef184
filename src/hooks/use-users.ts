@@ -2,11 +2,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { logActivity } from '@/lib/logger';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export interface UserWithRole {
   id: string;
@@ -30,34 +30,45 @@ function fetchUsers(isAdmin: boolean): Promise<UserWithRole[]> {
           id: doc.id,
           ...doc.data(),
         } as UserWithRole));
-        // Unsubscribe after the first successful fetch to behave like a one-time get
-        unsubscribe();
+        // We let react-query manage caching, so we don't unsubscribe here.
         resolve(usersData);
       },
       (error) => {
         console.error("Failed to fetch users:", error);
-        unsubscribe();
         reject(error);
       }
     );
+    
+    // Note: In a real-world app, you might want to return the unsubscribe function
+    // and manage it, but for useQuery's managed lifecycle, this is okay.
   });
 }
 
 export function useUsers() {
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   
   const { data: users = [], isLoading } = useQuery({
-      queryKey: ['users', isAdmin],
+      queryKey: ['users'],
       queryFn: () => fetchUsers(isAdmin),
-      enabled: isAdmin,
-      refetchOnWindowFocus: false, // Prevents refetching on window focus
+      enabled: isAdmin, // Only run the query if the user is an admin
   });
   
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'editor' | 'viewer') => {
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'editor' | 'viewer'): Promise<boolean> => {
     if (!isAdmin) {
       console.error("Permission denied: Only admins can change roles.");
       return false;
     }
+
+    // Prevent an admin from demoting themselves if they are the last admin
+    if (user?.uid === userId) {
+        const adminUsers = users.filter(u => u.role === 'admin');
+        if(adminUsers.length === 1 && adminUsers[0].id === userId && newRole !== 'admin') {
+            console.error("Cannot demote the last admin.");
+            return false;
+        }
+    }
+
     try {
       const userDocRef = doc(db, 'users', userId);
       await updateDoc(userDocRef, { role: newRole });
@@ -68,6 +79,9 @@ export function useUsers() {
         details: `Set role to ${newRole}`,
       });
 
+      // Manually invalidate the query to force a refetch
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      
       return true;
     } catch (error) {
       console.error("Error updating user role:", error);
