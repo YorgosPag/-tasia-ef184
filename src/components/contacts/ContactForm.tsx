@@ -35,6 +35,7 @@ export function ContactForm({ form }: ContactFormProps) {
         <AccordionContent className="space-y-4 p-1">
           <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Όνομα/Επωνυμία</FormLabel><FormControl><Input {...field} placeholder="π.χ. Γιώργος Παπαδόπουλος ή DevConstruct AE" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="entityType" render={({ field }) => (<FormItem><FormLabel>Τύπος Οντότητας</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Φυσικό Πρόσωπο">Φυσικό Πρόσωπο</SelectItem><SelectItem value="Νομικό Πρόσωπο">Νομικό Πρόσωπο</SelectItem><SelectItem value="Δημ. Υπηρεσία">Δημ. Υπηρεσία</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="photoUrl" render={({ field }) => (<FormItem><FormLabel>URL Φωτογραφίας/Λογοτύπου</FormLabel><FormControl><Input {...field} placeholder="https://example.com/photo.jpg" /></FormControl><FormMessage /></FormItem>)} />
           
           {/* --- Fields only for Individuals --- */}
           {entityType === 'Φυσικό Πρόσωπο' && (
