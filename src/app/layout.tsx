@@ -10,8 +10,8 @@ import { DataProvider } from '@/shared/hooks/use-data-store';
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { ThemeProvider } from "@/shared/components/theme-provider";
-import TasiaLayout from '@/tasia/app/layout';
-import NestorLayout from '@/nestor/app/layout';
+import TasiaLayout from '@/app/(tasia)/layout';
+import NestorLayout from '@/nestor/app/(main)/layout';
 
 import '@/tasia/theme/global.tasia.css';
 import '@/nestor/theme/global.nestor.css';
