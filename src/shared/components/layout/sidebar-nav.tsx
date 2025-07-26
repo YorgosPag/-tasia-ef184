@@ -31,7 +31,8 @@ import {
   BookUser,
   Layers,
   Building2,
-  FolderKanban
+  FolderKanban,
+  FilePen,
 } from 'lucide-react';
 
 const tasiaNav = [
@@ -44,6 +45,10 @@ const tasiaNav = [
   { href: '/attachments', label: 'Παρακολουθήματα', icon: ClipboardList },
   { href: '/leads', label: 'Leads', icon: Wallet },
   { href: '/meetings', label: 'Συσκέψεις', icon: MessageSquare },
+  { href: '/work-stages', label: 'Στάδια Εργασιών', icon: GanttChartSquare },
+  { href: '/calendar', label: 'Ημερολόγιο', icon: Calendar },
+  { href: '/architect-desk', label: 'Architect\'s Desk', icon: FilePen },
+  { href: '/assignments', label: 'Οι Αναθέσεις μου', icon: ClipboardList },
 ];
 
 const nestorNav = [
