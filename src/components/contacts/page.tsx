@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/shared/components/ui/button';
 import {
   Table,
@@ -10,18 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-  DialogTrigger,
-} from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { PlusCircle, Loader2, Link as LinkIcon, Download, Search } from 'lucide-react';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -29,67 +19,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avat
 import Link from 'next/link';
 import { exportToJson } from '@/shared/lib/exporter';
 import { useAuth } from '@/shared/hooks/use-auth';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
 import { Badge } from '@/shared/components/ui/badge';
 import { useContacts, type Contact } from '@/shared/hooks/use-contacts';
-import { contactSchema, ContactFormValues } from '@/shared/lib/validation/contactSchema';
-import { ContactForm } from './ContactForm';
-import { Form } from '@/shared/components/ui/form';
 
 export default function ContactsPage() {
   const { isEditor } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const { toast } = useToast();
-
   const { contacts, isLoading } = useContacts();
-
-  const form = useForm<ContactFormValues>({
-    resolver: zodResolver(contactSchema),
-    defaultValues: {
-      name: '',
-      entityType: 'Φυσικό Πρόσωπο',
-      photoUrl: '',
-      identity: { type: 'Ταυτότητα', number: '', issuingAuthority: '' },
-      contactInfo: { email: '', phone: '', landline: ''},
-      socials: { website: '', linkedin: '', facebook: ''},
-      address: { street: '', number: '', city: '', postalCode: ''},
-      job: { role: '', specialty: ''},
-      notes: ''
-    },
-  });
-  
-  useEffect(() => {
-    if (!isDialogOpen) {
-      form.reset();
-    }
-  }, [isDialogOpen, form]);
-
-  const onSubmit = async (data: ContactFormValues) => {
-    setIsSubmitting(true);
-    try {
-      await addDoc(collection(db, 'contacts'), {
-        ...data,
-        createdAt: serverTimestamp(),
-      });
-      toast({
-        title: "Επιτυχία",
-        description: "Η επαφή προστέθηκε με επιτυχία.",
-      });
-      setIsDialogOpen(false);
-    } catch (error) {
-      console.error("Error adding contact: ", error);
-      toast({
-        variant: "destructive",
-        title: "Σφάλμα",
-        description: "Δεν ήταν δυνατή η προσθήκη της επαφής.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const filteredContacts = useMemo(() => {
     if (!contacts) return [];
@@ -129,28 +66,10 @@ export default function ContactsPage() {
                 Εξαγωγή σε JSON
             </Button>
             {isEditor && (
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                    <Button>
+                <Button onClick={() => router.push('/contacts/new')}>
                     <PlusCircle className="mr-2" />
                     Νέα Επαφή
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                    <DialogTitle>Δημιουργία Νέας Επαφής</DialogTitle>
-                    </DialogHeader>
-                    <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="max-h-[80vh] overflow-y-auto pr-6">
-                        <ContactForm form={form} />
-                        <DialogFooter className="mt-4 sticky bottom-0 bg-background py-4">
-                          <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
-                          <Button type="submit" disabled={isSubmitting || isLoading}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Δημιουργία</Button>
-                        </DialogFooter>
-                    </form>
-                    </Form>
-                </DialogContent>
-                </Dialog>
+                </Button>
             )}
         </div>
       </div>
