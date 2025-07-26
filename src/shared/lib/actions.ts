@@ -2,9 +2,9 @@
 'use server';
 
 import { seedTasiaData as seedTasia } from '@/tasia/lib/tasia-seed';
-import { clearTasiaData as clearTasia } from './clear';
-import { seedNestorData as seedNestor } from './nestor-seed';
-import { clearNestorData as clearNestor } from './nestor-clear';
+import { clearTasiaData as clearTasia } from '@/shared/lib/clear';
+import { seedNestorData as seedNestor } from '@/nestor/lib/nestor-seed';
+import { clearNestorData as clearNestor } from '@/nestor/lib/nestor-clear';
 import { db } from './firebase';
 import { doc, getDoc, collection, query, limit, getDocs } from 'firebase/firestore';
 import { logActivity } from './logger';

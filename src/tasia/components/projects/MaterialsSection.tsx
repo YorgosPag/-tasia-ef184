@@ -5,7 +5,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import type { Project } from '@/tasia/app/projects/[id]/page';
+import type { Project } from '@/tasia/types/project-types';
 
 interface MaterialsSectionProps {
     project: Project;

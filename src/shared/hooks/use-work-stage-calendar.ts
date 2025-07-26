@@ -3,8 +3,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { collection, query, getDocs, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { getStatusVariant } from '@/components/projects/work-stages/utils';
+import { db } from '@/shared/lib/firebase';
+import { getStatusVariant } from '@/tasia/components/projects/work-stages/utils';
 
 // --- Types ---
 interface Project {

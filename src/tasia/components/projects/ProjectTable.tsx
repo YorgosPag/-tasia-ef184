@@ -21,7 +21,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from '@/shared/components/ui/alert-dialog';
+} from "@/shared/components/ui/alert-dialog";
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Edit, Trash2, Copy } from 'lucide-react';

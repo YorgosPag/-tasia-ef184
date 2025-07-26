@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { doc, updateDoc, arrayUnion, arrayRemove, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '@/shared/lib/firebase';
-import { useToast } from '@/tasia/hooks/use-toast';
+import { useToast } from '@/shared/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
