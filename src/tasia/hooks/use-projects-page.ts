@@ -1,14 +1,15 @@
 
+
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/shared/hooks/use-toast';
-import { useDataStore, Project, Company } from '@/shared/hooks/use-data-store';
+import { useDataStore } from '@/shared/hooks/use-data-store';
 import { logActivity } from '@/shared/lib/logger';
 import { exportToJson } from '@/shared/lib/exporter';
 import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';

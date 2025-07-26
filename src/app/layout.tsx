@@ -26,20 +26,20 @@ export default function RootLayout({
   
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <QueryProvider>
           <AuthProvider>
             <DataProvider>
               <SidebarProvider>
-                <DomainLayout>
-                    {children}
-                </DomainLayout>
-                <Toaster />
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                    <DomainLayout>
+                        {children}
+                    </DomainLayout>
+                    <Toaster />
+                </ThemeProvider>
               </SidebarProvider>
             </DataProvider>
           </AuthProvider>
         </QueryProvider>
-      </ThemeProvider>
     </html>
   );
 }

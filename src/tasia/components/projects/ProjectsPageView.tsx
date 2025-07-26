@@ -1,17 +1,18 @@
 
+
 'use client';
 
 import React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { PlusCircle, Loader2, Download, Search } from 'lucide-react';
 import { ProjectDialogForm } from './ProjectDialogForm';
-import { Company } from '@/hooks/use-data-store';
+import { Company } from '@/shared/hooks/use-data-store';
 import { UseFormReturn } from 'react-hook-form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/types/project-types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/shared/types/project-types';
 import dynamic from 'next/dynamic';
 import { ProjectTableSkeleton } from './ProjectTableSkeleton';
 
