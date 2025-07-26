@@ -86,9 +86,9 @@ const getHref = (type: HierarchyNode['type'], id: string): string => {
         case 'unit':
             return `/units/${id}`;
         case 'attachment':
-            return `/attachments`; // Attachments list page
+            return `/attachments?id=${id}`;
         default:
-            return '/'; // Fallback
+            return '/';
     }
 }
 
