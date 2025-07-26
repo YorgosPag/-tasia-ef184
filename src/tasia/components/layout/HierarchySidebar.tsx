@@ -1,8 +1,2 @@
-
-'use client';
-
-// This component is temporarily disabled to prevent runtime errors.
-
-export function HierarchySidebar() {
-  return null;
-}
+// This file has been removed to resolve a critical runtime error.
+// A simpler, static navigation has been implemented in sidebar-nav.tsx.
