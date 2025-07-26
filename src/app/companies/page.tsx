@@ -34,7 +34,7 @@ import { exportToJson } from '@/shared/lib/exporter';
 import { useAuth } from '@/shared/hooks/use-auth';
 import { useDataStore, Company } from '@/shared/hooks/use-data-store';
 import { logActivity } from '@/shared/lib/logger';
-import { CompanyFormDialog, companySchema, CompanyFormValues } from '@/tasia/components/companies/CompanyFormDialog';
+import { CompanyFormDialog, companySchema, CompanyFormValues } from '@/components/companies/CompanyFormDialog';
 import { updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 
