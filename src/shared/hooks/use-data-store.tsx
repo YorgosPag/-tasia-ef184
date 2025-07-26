@@ -2,11 +2,10 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query as firestoreQuery, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query, orderBy } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useAuth } from './use-auth';
 import { logActivity } from '@/shared/lib/logger';
-import { useQuery } from '@tanstack/react-query';
 
 // --- Interfaces ---
 export interface Company {
@@ -62,39 +61,54 @@ const DataStoreContext = createContext<DataStoreContextType>({
   addProject: async () => null,
 });
 
-async function fetchCollectionData<T>(collectionName: string): Promise<T[]> {
-    const q = firestoreQuery(collection(db, collectionName));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as T);
-}
-
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: companies = [], isLoading: isLoadingCompanies } = useQuery({
-      queryKey: ['companies'],
-      queryFn: () => fetchCollectionData<Company>('companies'),
-      enabled: !!user,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  useEffect(() => {
+    if (!user) {
+        setCompanies([]);
+        setProjects([]);
+        setBuildings([]);
+        setIsLoading(false);
+        return;
+    }
 
-  const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
-      queryKey: ['projects'],
-      queryFn: () => fetchCollectionData<Project>('projects'),
-      enabled: !!user,
-      staleTime: 5 * 60 * 1000,
-  });
+    setIsLoading(true);
+
+    const q = (collectionName: string) => query(collection(db, collectionName), orderBy('createdAt', 'desc'));
+
+    const unsubscribeCompanies = onSnapshot(q('companies'), 
+        (snapshot) => setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company))),
+        (err) => console.error("Error fetching companies:", err)
+    );
+    const unsubscribeProjects = onSnapshot(q('projects'), 
+        (snapshot) => setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project))),
+        (err) => console.error("Error fetching projects:", err)
+    );
+    const unsubscribeBuildings = onSnapshot(q('buildings'), 
+        (snapshot) => setBuildings(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Building))),
+        (err) => console.error("Error fetching buildings:", err)
+    );
+    
+    // We can consider loading done when projects (the main entity) are loaded.
+    const unsubscribeLoadingCheck = onSnapshot(q('projects'), () => {
+        setIsLoading(false);
+    });
+
+    return () => {
+        unsubscribeCompanies();
+        unsubscribeProjects();
+        unsubscribeBuildings();
+        unsubscribeLoadingCheck();
+    };
+
+  }, [user]);
   
-  const { data: buildings = [], isLoading: isLoadingBuildings } = useQuery({
-      queryKey: ['buildings'],
-      queryFn: () => fetchCollectionData<Building>('buildings'),
-      enabled: !!user,
-      staleTime: 5 * 60 * 1000,
-  });
-
-  const isLoading = isLoadingCompanies || isLoadingProjects || isLoadingBuildings;
-
   const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
     try {
         const docRef = await addDoc(collection(db, 'companies'), {
@@ -127,7 +141,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         await logActivity('CREATE_PROJECT', {
             entityId: docRef.id,
             entityType: 'project',
-            name: projectData.title
+            name: projectData.title,
         });
         return docRef.id;
     } catch(e) {
