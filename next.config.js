@@ -1,11 +1,6 @@
 
+
 /** @type {import('next').NextConfig} */
-import nextBundleAnalyzer from '@next/bundle-analyzer';
-
-const withBundleAnalyzer = nextBundleAnalyzer({
-  enabled: process***REMOVED***.ANALYZE === 'true',
-});
-
 const nextConfig = {
   // Redirect / to /projects
   async redirects() {
@@ -35,4 +30,4 @@ const nextConfig = {
   },
 };
 
-export default withBundleAnalyzer(nextConfig);
+export default nextConfig;
