@@ -1,21 +1,46 @@
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import '@/tasia/theme/global.tasia.css';
+import { ThemeProvider } from '@/tasia/theme/theme-provider';
+import { AuthProvider } from '@/hooks/use-auth';
+import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryProvider } from '@/hooks/use-query-provider';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { DataProvider } from '@/hooks/use-data-store';
 
-import { z } from 'zod';
 
-export const workStageSchema = z.object({
-    id: z.string().optional(),
-    name: z.string().min(1, 'Το όνομα είναι υποχρεωτικό.'),
-    description: z.string().optional(),
-    status: z.enum(['Εκκρεμεί', 'Σε εξέλιξη', 'Ολοκληρώθηκε', 'Καθυστερεί']),
-    assignedTo: z.string().optional(),
-    relatedEntityIds: z.string().optional(),
-    dependsOn: z.string().optional(),
-    notes: z.string().optional(),
-    startDate: z.date().optional().nullable(),
-    endDate: z.date().optional().nullable(),
-    deadline: z.date().optional().nullable(),
-    documents: z.string().optional(), 
-    budgetedCost: z.string().optional(),
-    actualCost: z.string().optional(),
-});
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-export type WorkStageFormValues = z.infer<typeof workStageSchema>;
+export const metadata: Metadata = {
+  title: 'TASIA',
+  description: 'Real Estate Management Platform',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} tasia`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <QueryProvider>
+            <AuthProvider>
+              <DataProvider>
+                <SidebarProvider>
+                   <ProtectedRoute>
+                      {children}
+                    </ProtectedRoute>
+                    <Toaster />
+                </SidebarProvider>
+              </DataProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}

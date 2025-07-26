@@ -1,102 +1,46 @@
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import '@/tasia/theme/global.tasia.css';
+import { ThemeProvider } from '@/tasia/theme/theme-provider';
+import { AuthProvider } from '@/hooks/use-auth';
+import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryProvider } from '@/hooks/use-query-provider';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { DataProvider } from '@/hooks/use-data-store';
 
-'use client';
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Upload, CameraOff } from 'lucide-react';
-import Image from 'next/image';
-import { format } from 'date-fns';
-import { el } from 'date-fns/locale';
-import { Timestamp } from 'firebase/firestore';
-import type { WorkStage } from '@/app/projects/[id]/page';
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-interface WorkStagePhotoGalleryProps {
-    stage: WorkStage;
-    onPhotoUpload: (files: FileList) => void;
-}
-
-const formatDate = (timestamp?: Timestamp) => {
-    if (!timestamp) return 'Άγνωστη ημερομηνία';
-    return format(timestamp.toDate(), 'dd MMM yyyy, HH:mm', { locale: el });
+export const metadata: Metadata = {
+  title: 'TASIA',
+  description: 'Real Estate Management Platform',
 };
 
-export function WorkStagePhotoGallery({ stage, onPhotoUpload }: WorkStagePhotoGalleryProps) {
-    const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedFiles(e.target.files);
-    };
-
-    const handleUploadClick = async () => {
-        if (!selectedFiles) return;
-        setIsUploading(true);
-        await onPhotoUpload(selectedFiles);
-        setIsUploading(false);
-        setSelectedFiles(null);
-        // Reset file input
-        const input = document.getElementById(`photo-upload-${stage.id}`) as HTMLInputElement;
-        if (input) input.value = '';
-    };
-
-    return (
-        <Card className="mt-4">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">Φωτογραφίες Προόδου ({stage.photos?.length || 0})</CardTitle>
-                <div className="flex items-center gap-2">
-                    <Input
-                        id={`photo-upload-${stage.id}`}
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        className="max-w-xs text-xs h-9"
-                        onChange={handleFileChange}
-                    />
-                    <Button size="sm" onClick={handleUploadClick} disabled={!selectedFiles || isUploading}>
-                        <Upload className="mr-2" />
-                        {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα'}
-                    </Button>
-                </div>
-            </CardHeader>
-            <CardContent>
-                {stage.photos && stage.photos.length > 0 ? (
-                    <Carousel opts={{ align: "start", loop: true }} className="w-full">
-                        <CarouselContent>
-                            {stage.photos.map((photo, index) => (
-                                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                                    <div className="p-1">
-                                        <Card>
-                                            <CardContent className="flex flex-col aspect-square items-center justify-center p-0 rounded-lg overflow-hidden">
-                                                <Image
-                                                    src={photo.url}
-                                                    alt={`Progress photo ${index + 1}`}
-                                                    width={400}
-                                                    height={400}
-                                                    className="object-cover w-full h-full"
-                                                />
-                                            </CardContent>
-                                            <div className="text-xs text-muted-foreground p-2 text-center">
-                                                <p>{formatDate(photo.uploadedAt)}</p>
-                                                <p>από {photo.uploadedBy}</p>
-                                            </div>
-                                        </Card>
-                                    </div>
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious />
-                        <CarouselNext />
-                    </Carousel>
-                ) : (
-                    <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-24">
-                        <CameraOff className="h-8 w-8" />
-                        <p className="mt-2 text-sm">Δεν υπάρχουν φωτογραφίες για αυτό το στάδιο.</p>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-    )
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} tasia`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <QueryProvider>
+            <AuthProvider>
+              <DataProvider>
+                <SidebarProvider>
+                   <ProtectedRoute>
+                      {children}
+                    </ProtectedRoute>
+                    <Toaster />
+                </SidebarProvider>
+              </DataProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
 }

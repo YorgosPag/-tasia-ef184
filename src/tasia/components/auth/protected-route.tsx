@@ -1,52 +1,46 @@
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import '@/tasia/theme/global.tasia.css';
+import { ThemeProvider } from '@/tasia/theme/theme-provider';
+import { AuthProvider } from '@/hooks/use-auth';
+import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryProvider } from '@/hooks/use-query-provider';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { DataProvider } from '@/hooks/use-data-store';
 
-'use client';
 
-import { useAuth } from '@/hooks/use-auth';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-const publicPaths = ['/login', '/register'];
+export const metadata: Metadata = {
+  title: 'TASIA',
+  description: 'Real Estate Management Platform',
+};
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const pathIsPublic = publicPaths.includes(pathname);
-
-  useEffect(() => {
-    if (isLoading) {
-      // Don't do anything while auth state is loading
-      return;
-    }
-
-    if (!user && !pathIsPublic) {
-      // If user is not logged in and trying to access a protected route
-      router.push('/login');
-    } else if (user && pathIsPublic) {
-      // If user is logged in and trying to access a public route (like login)
-      router.push('/');
-    }
-
-  }, [user, isLoading, pathname, router, pathIsPublic]);
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   
-  if (isLoading && !pathIsPublic) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center">
-        <Loader2 className="h-16 w-16 animate-spin" />
-      </div>
-    );
-  }
-  
-  if (user || pathIsPublic) {
-      return <>{children}</>;
-  }
-
-  // Fallback for non-auth'd users on protected pages, while redirecting
   return (
-    <div className="flex h-screen w-screen items-center justify-center">
-      <Loader2 className="h-16 w-16 animate-spin" />
-    </div>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} tasia`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <QueryProvider>
+            <AuthProvider>
+              <DataProvider>
+                <SidebarProvider>
+                   <ProtectedRoute>
+                      {children}
+                    </ProtectedRoute>
+                    <Toaster />
+                </SidebarProvider>
+              </DataProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

@@ -1,35 +1,46 @@
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import '@/tasia/theme/global.tasia.css';
+import { ThemeProvider } from '@/tasia/theme/theme-provider';
+import { AuthProvider } from '@/hooks/use-auth';
+import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryProvider } from '@/hooks/use-query-provider';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { DataProvider } from '@/hooks/use-data-store';
 
-'use client';
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
-import { AMENITIES_LIST } from '@/tasia/lib/unit-helpers';
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-export function AmenitiesChecklist({ control }: { control: any }) {
+export const metadata: Metadata = {
+  title: 'TASIA',
+  description: 'Real Estate Management Platform',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-      {AMENITIES_LIST.map((item) => (
-        <FormField
-          key={item.id}
-          control={control}
-          name="amenities"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value?.includes(item.id)}
-                  onCheckedChange={(checked) =>
-                    checked
-                      ? field.onChange([...(field.value || []), item.id])
-                      : field.onChange((field.value || []).filter((v: string) => v !== item.id))
-                  }
-                />
-              </FormControl>
-              <FormLabel className="font-normal">{item.label}</FormLabel>
-            </FormItem>
-          )}
-        />
-      ))}
-    </div>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} tasia`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <QueryProvider>
+            <AuthProvider>
+              <DataProvider>
+                <SidebarProvider>
+                   <ProtectedRoute>
+                      {children}
+                    </ProtectedRoute>
+                    <Toaster />
+                </SidebarProvider>
+              </DataProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

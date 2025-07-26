@@ -1,89 +1,46 @@
-'use client';
-
-import React, { Fragment } from 'react';
-import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import '@/tasia/theme/global.tasia.css';
+import { ThemeProvider } from '@/tasia/theme/theme-provider';
+import { AuthProvider } from '@/hooks/use-auth';
+import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryProvider } from '@/hooks/use-query-provider';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { DataProvider } from '@/hooks/use-data-store';
 
 
-export interface BreadcrumbItem {
-  href: string;
-  label: string;
-  tooltip?: string;
-}
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-interface BreadcrumbsProps {
-  items: BreadcrumbItem[];
-  className?: string;
-}
+export const metadata: Metadata = {
+  title: 'TASIA',
+  description: 'Real Estate Management Platform',
+};
 
-/**
- * A reusable component for displaying breadcrumb navigation.
- * It takes an array of items and renders them as links with separators and tooltips.
- */
-export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  
   return (
-    <TooltipProvider>
-      <nav aria-label="Breadcrumb" className={cn('hidden md:block', className)}>
-        <ol className="flex items-center space-x-1 text-sm text-muted-foreground">
-          {items.map((item, index) => {
-            const isLast = index === items.length - 1;
-            const itemContent = (
-              <span className="truncate" style={{ maxWidth: '150px' }}>
-                {item.label}
-              </span>
-            );
-
-            return (
-              <Fragment key={`${item.href}-${item.label}`}>
-                <li>
-                  {isLast ? (
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                           <span
-                            className="font-semibold text-foreground truncate"
-                            aria-current="page"
-                            style={{ maxWidth: '150px' }}
-                          >
-                            {item.label}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>{item.tooltip || item.label}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Link
-                          href={item.href}
-                          className="transition-colors hover:text-foreground"
-                        >
-                          {itemContent}
-                        </Link>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{item.tooltip || item.label}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </li>
-                {!isLast && (
-                  <li>
-                    <ChevronRight className="h-4 w-4" />
-                  </li>
-                )}
-              </Fragment>
-            );
-          })}
-        </ol>
-      </nav>
-    </TooltipProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} tasia`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <QueryProvider>
+            <AuthProvider>
+              <DataProvider>
+                <SidebarProvider>
+                   <ProtectedRoute>
+                      {children}
+                    </ProtectedRoute>
+                    <Toaster />
+                </SidebarProvider>
+              </DataProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
