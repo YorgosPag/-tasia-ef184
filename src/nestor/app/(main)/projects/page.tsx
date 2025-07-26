@@ -1,10 +1,11 @@
+
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
 import { Plus, Search, Loader2 } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { ProjectCard } from '@/nestor/features/projects/components/ProjectCard';
 import { useNestorProjects } from '@/nestor/features/projects/hooks/useNestorProjects';
 import { useRouter } from 'next/navigation';

@@ -1,6 +1,7 @@
+
 'use client';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { SimpleListsTab } from '@/nestor/features/custom-lists/components/SimpleListsTab';
 import { ComplexEntitiesTab } from '@/nestor/features/custom-lists/components/ComplexEntitiesTab';
 
