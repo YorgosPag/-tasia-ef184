@@ -13,8 +13,12 @@ import { UseFormReturn } from 'react-hook-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/types/project-types';
 import dynamic from 'next/dynamic';
-import { ProjectTableSkeleton } from '@/tasia/components/projects/ProjectTableSkeleton';
-import { ProjectTable } from '@/tasia/components/projects/ProjectTable';
+import { ProjectTableSkeleton } from './ProjectTableSkeleton';
+
+const ProjectTable = dynamic(() => import('@/tasia/components/projects/ProjectTable').then(mod => mod.ProjectTable), {
+  loading: () => <ProjectTableSkeleton />,
+  ssr: false,
+});
 
 
 interface ProjectsPageViewProps {

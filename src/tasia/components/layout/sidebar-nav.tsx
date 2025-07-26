@@ -51,7 +51,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
-import { InstructionsDialog } from "@/components/layout/instructions-dialog";
+import { InstructionsDialog } from '@/shared/components/layout/instructions-dialog';
 
 
 
@@ -336,5 +336,6 @@ export function SidebarNav() {
     </>
   );
 }
+    
 
     

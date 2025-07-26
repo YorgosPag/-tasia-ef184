@@ -51,10 +51,8 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
+import { InstructionsDialog } from '@/shared/components/layout/instructions-dialog';
 
-const InstructionsDialog = dynamic(() => import('@/components/layout/instructions-dialog').then(mod => mod.InstructionsDialog), {
-    ssr: false,
-});
 
 
 const NavLink = ({
@@ -338,3 +336,4 @@ export function SidebarNav() {
     </>
   );
 }
+
