@@ -258,15 +258,3 @@ export function ProjectDialogForm({
     </Dialog>
   );
 }
-
-export const companySchema = z.object({
-  name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
-  logoUrl: z.string().url({ message: "Το URL του λογότυπου δεν είναι έγκυρο." }).or(z.literal('')),
-  website: z.string().url({ message: "Το URL του website δεν είναι έγκυρο." }).or(z.literal('')),
-  contactInfo: z.object({
-      email: z.string().email({ message: "Το email δεν είναι έγκυρο." }).or(z.literal('')),
-      phone: z.string().optional(),
-      address: z.string().optional(),
-      afm: z.string().optional(),
-  })
-});

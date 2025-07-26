@@ -1,7 +1,8 @@
+
 'use server';
 
-import { seedTasiaData as seedTasia } from '@/lib/tasia-seed';
-import { clearTasiaData as clearTasia } from '@/lib/clear';
+import { seedTasiaData as seedTasia } from '@/tasia/lib/tasia-seed';
+import { clearTasiaData as clearTasia } from './clear';
 import { seedNestorData as seedNestor } from './nestor-seed';
 import { clearNestorData as clearNestor } from './nestor-clear';
 import { db } from './firebase';
