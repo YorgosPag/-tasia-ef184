@@ -13,8 +13,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogClose,
@@ -247,7 +245,7 @@ export default function ContactsPage() {
           ) : filteredContacts.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>Επαφή</TableHead><TableHead>Τύπος</TableHead><TableHead>Email</TableHead><TableHead>Τηλέφωνο</TableHead><TableHead>ΑΦΜ</TableHead><TableHead>Website</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Όνομα</TableHead><TableHead>Τύπος</TableHead><TableHead>Email</TableHead><TableHead>Τηλέφωνο</TableHead><TableHead>ΑΦΜ</TableHead><TableHead>Website</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {filteredContacts.map((contact) => (
                     <TableRow key={contact.id}>
