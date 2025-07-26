@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React from 'react';
@@ -22,7 +23,7 @@ interface AttachmentsListTableProps {
   onEdit: (attachment: Attachment) => void;
 }
 
-export function AttachmentsListTable({ attachments, unitsMap, onEdit }: AttachmentsListTableProps) {
+export default function AttachmentsPage({ attachments, unitsMap, onEdit }: AttachmentsListTableProps) {
   return (
     <Table>
       <TableHeader>
