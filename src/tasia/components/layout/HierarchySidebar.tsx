@@ -74,25 +74,22 @@ const mapToNode = (item: any, type: HierarchyNode['type']): HierarchyNode => {
 };
 
 const getHref = (type: HierarchyNode['type'], id: string): string => {
-    const typeToPathMap: Record<HierarchyNode['type'], string> = {
-        'company': '/projects',
-        'project': '/projects',
-        'building': '/buildings',
-        'floor': '/floors',
-        'unit': '/units',
-        'attachment': '/attachments',
-    };
-
-    const path = typeToPathMap[type];
-
-    if (type === 'company') {
-        return `${path}?companyId=${id}`;
+    switch (type) {
+        case 'company':
+            return `/projects?companyId=${id}`;
+        case 'project':
+            return `/projects/${id}`;
+        case 'building':
+            return `/buildings/${id}`;
+        case 'floor':
+            return `/floors/${id}`;
+        case 'unit':
+            return `/units/${id}`;
+        case 'attachment':
+            return `/attachments`; // Attachments list page
+        default:
+            return '/'; // Fallback
     }
-    if (['project', 'building', 'floor', 'unit'].includes(type)) {
-        return `${path}/${id}`;
-    }
-    // For list pages like 'attachments'
-    return path;
 }
 
 
