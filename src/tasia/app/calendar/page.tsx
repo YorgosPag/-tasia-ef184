@@ -80,7 +80,7 @@ export default function CalendarPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-3xl font-bold">Ημερολόγιο Σταδίων Εργασίας</h1>
+      <h1 className="text-3xl font-bold">Ημερολόγιο Κατασκευής</h1>
       <Card>
         <CardContent className="pt-6">
           {isLoading ? (
@@ -109,6 +109,17 @@ export default function CalendarPage() {
               }}
             />
           )}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+            <CardTitle>Επεξήγηση</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-4">
+            <Badge variant="outline">Εκκρεμεί</Badge>
+            <Badge variant="secondary">Σε εξέλιξη</Badge>
+            <Badge variant="default">Ολοκληρώθηκε</Badge>
+            <Badge variant="destructive">Καθυστερεί</Badge>
         </CardContent>
       </Card>
     </div>
