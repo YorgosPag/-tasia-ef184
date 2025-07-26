@@ -1,16 +1,15 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import { PlusCircle, Loader2, Download } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
 import { Company } from '@/shared/hooks/use-data-store';
 import { useWorkStages } from '@/tasia/hooks/use-work-stages';
-import { WorkStageFormDialog } from './work-stages/WorkStageFormDialog';
-import { WorkStageAccordion } from './work-stages/WorkStageAccordion';
+import { WorkStageFormDialog } from '@/tasia/components/work-stages/WorkStageFormDialog';
+import { WorkStageAccordion } from '@/tasia/components/work-stages/WorkStageAccordion';
 import type { Project, WorkStage } from '@/tasia/app/projects/[id]/page';
-import { WorkStagesEmptyState } from './work-stages/WorkStagesEmptyState';
+import { WorkStagesEmptyState } from '@/tasia/components/work-stages/WorkStagesEmptyState';
 import { useAuth } from '@/shared/hooks/use-auth';
 
 interface WorkStagesSectionProps {
@@ -113,3 +112,5 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         </Card>
     );
 }
+
+    
