@@ -14,11 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/tasia/types/project-types';
 import dynamic from 'next/dynamic';
 import { ProjectTableSkeleton } from './ProjectTableSkeleton';
-
-const ProjectTable = dynamic(() => import('./ProjectTable').then(mod => mod.ProjectTable), {
-  loading: () => <ProjectTableSkeleton />,
-  ssr: false,
-});
+import { ProjectTable } from './ProjectTable';
 
 
 interface ProjectsPageViewProps {

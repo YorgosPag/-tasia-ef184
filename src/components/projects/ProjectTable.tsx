@@ -1,204 +1,147 @@
-
 'use client';
 
 import React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/shared/components/ui/table';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/shared/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Copy } from 'lucide-react';
-import { Company } from '@/hooks/use-data-store';
-import {
-  formatDate,
-  getCompanyName,
-} from '@/lib/project-helpers';
-import type { ProjectWithWorkStageSummary } from '@/types/project-types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip';
-import { Progress } from '../ui/progress';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { PlusCircle, Loader2, Download, Search } from 'lucide-react';
+import { ProjectDialogForm } from './ProjectDialogForm';
+import { Company } from '@/shared/hooks/use-data-store';
+import { UseFormReturn } from 'react-hook-form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/tasia/types/project-types';
+import dynamic from 'next/dynamic';
+import { ProjectTableSkeleton } from './ProjectTableSkeleton';
+import { ProjectTable } from './ProjectTable';
 
 
-interface WorkStageStatusBadgeProps {
-    summary: ProjectWithWorkStageSummary['workStageSummary'];
-    deadline: ProjectWithWorkStageSummary['deadline'];
-}
-
-function WorkStageStatusBadge({ summary, deadline }: WorkStageStatusBadgeProps) {
-    if (!summary) {
-        return <Badge variant="outline">Δεν έχει οριστεί</Badge>
-    }
-
-    let variant: "default" | "secondary" | "destructive" | "outline" = 'outline';
-    let label = 'Προπώληση';
-
-    switch(summary.overallStatus) {
-        case 'Σε εξέλιξη': variant = 'secondary'; label = 'Σε κατασκευή'; break;
-        case 'Καθυστερεί': variant = 'destructive'; label = 'Σε καθυστέρηση'; break;
-        case 'Ολοκληρώθηκε': variant = 'default'; label = 'Ολοκληρωμένο'; break;
-        default: variant = 'outline'; label = 'Προπώληση'; break;
-    }
-    
-    const tooltipText = `Τρέχον στάδιο: ${summary.currentWorkStageName || 'N/A'}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline)}`;
-
-    return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <div className="flex flex-col gap-1.5 w-40">
-                    <div className="flex justify-between items-center">
-                        <Badge variant={variant} className="whitespace-nowrap">{label}</Badge>
-                        <span className="text-xs font-medium text-muted-foreground">{Math.round(summary.progress)}%</span>
-                    </div>
-                    <Progress value={summary.progress} className="h-1.5" />
-                </div>
-            </TooltipTrigger>
-            <TooltipContent>
-                <p>{tooltipText}</p>
-            </TooltipContent>
-        </Tooltip>
-    )
-}
-
-interface ProjectTableProps {
-  projects: ProjectWithWorkStageSummary[];
+interface ProjectsPageViewProps {
+  filteredProjects: ProjectWithWorkStageSummary[];
   companies: Company[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  isLoading: boolean;
   isEditor: boolean;
-  onEdit: (project: ProjectWithWorkStageSummary) => void;
-  onDuplicate: (projectId: string) => void;
-  onDelete: (projectId: string) => void;
+  isDialogOpen: boolean;
+  isSubmitting: boolean;
+  editingProject: ProjectWithWorkStageSummary | null;
+  form: UseFormReturn<ProjectFormValues>;
+  view: string;
+  router: any;
+  handleExport: () => void;
+  handleDialogOpenChange: (open: boolean) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  handleEditClick: (project: ProjectWithWorkStageSummary) => void;
+  handleDuplicateProject: (projectId: string) => void;
+  handleDeleteProject: (projectId: string) => void;
 }
 
-export function ProjectTable({
-  projects,
+export function ProjectsPageView({
+  filteredProjects,
   companies,
+  searchQuery,
+  setSearchQuery,
+  isLoading,
   isEditor,
-  onEdit,
-  onDuplicate,
-  onDelete,
-}: ProjectTableProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const view = searchParams.get('view') || 'index';
+  isDialogOpen,
+  isSubmitting,
+  editingProject,
+  form,
+  view,
+  router,
+  handleExport,
+  handleDialogOpenChange,
+  onSubmit,
+  handleEditClick,
+  handleDuplicateProject,
+  handleDeleteProject,
+}: ProjectsPageViewProps) {
 
-  const handleRowClick = (e: React.MouseEvent, projectId: string) => {
-    // Prevent navigation if a button inside the row was clicked
-    if ((e.target as HTMLElement).closest('[data-action-button]')) {
-      return;
-    }
-    router.push(`/projects/${projectId}?view=${view}`);
-  };
+  const searchParams = useSearchParams();
+  const currentView = searchParams.get('view') || 'index';
+
+  const handleTabChange = (value: string) => {
+    router.push(`/projects?view=${value}`);
+  }
 
   return (
-    <TooltipProvider>
-        <div className="overflow-x-auto">
-        <Table>
-            <TableHeader>
-            <TableRow>
-                <TableHead>Τίτλος</TableHead>
-                <TableHead>Εταιρεία</TableHead>
-                <TableHead>Τοποθεσία</TableHead>
-                <TableHead>Πρόοδος Κατασκευής</TableHead>
-                {isEditor && <TableHead className="text-right">Ενέργειες</TableHead>}
-            </TableRow>
-            </TableHeader>
-            <TableBody>
-            {projects.map((project) => (
-                <TableRow
-                key={project.id}
-                onClick={(e) => handleRowClick(e, project.id)}
-                className="group cursor-pointer"
-                >
-                <TableCell className="font-medium">{project.title}</TableCell>
-                <TableCell className="text-muted-foreground">
-                    {getCompanyName(project.companyId, companies)}
-                </TableCell>
-                <TableCell className="text-muted-foreground">{project.location}</TableCell>
-                <TableCell>
-                   <WorkStageStatusBadge
-                        summary={project.workStageSummary}
-                        deadline={project.deadline}
-                    />
-                </TableCell>
-                {isEditor && (
-                    <TableCell className="text-right">
-                    <div
-                        className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1"
-                        data-action-button="true"
-                    >
-                        <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Αντιγραφή"
-                        onClick={(e) => { e.stopPropagation(); onDuplicate(project.id)}}
-                        >
-                        <Copy className="h-4 w-4" />
-                        <span className="sr-only">Αντιγραφή</span>
-                        </Button>
-                        <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Επεξεργασία"
-                         onClick={(e) => { e.stopPropagation(); onEdit(project)}}
-                        >
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Επεξεργασία</span>
-                        </Button>
-                        <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Διαγραφή"
-                            className="text-destructive hover:text-destructive"
-                            onClick={(e) => e.stopPropagation()}
-                            >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Διαγραφή</span>
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το
-                                έργο "{project.title}".
-                            </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                            <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={() => onDelete(project.id)}
-                                className="bg-destructive hover:bg-destructive/90"
-                            >
-                                Διαγραφή
-                            </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-                    </TableCell>
-                )}
-                </TableRow>
-            ))}
-            </TableBody>
-        </Table>
+    <div className="flex flex-col gap-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Έργα</h1>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleExport}
+            variant="outline"
+            disabled={isLoading || filteredProjects.length === 0}
+          >
+            <Download className="mr-2" />
+            Εξαγωγή σε JSON
+          </Button>
+          {isEditor && (
+            <Button onClick={() => handleDialogOpenChange(true)}>
+              <PlusCircle className="mr-2" />
+              Νέο Έργο
+            </Button>
+          )}
         </div>
-    </TooltipProvider>
+      </div>
+
+      <Tabs value={currentView} onValueChange={handleTabChange}>
+        <TabsList className="grid w-full grid-cols-2 md:w-1/3">
+            <TabsTrigger value="index">Ευρετήριο</TabsTrigger>
+            <TabsTrigger value="construction">Κατασκευή</TabsTrigger>
+        </TabsList>
+
+        <div className="relative mt-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+            type="search"
+            placeholder="Αναζήτηση σε τίτλο, τοποθεσία, εταιρεία..."
+            className="pl-10 w-full md:w-1/3"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            />
+        </div>
+
+        <Card className="mt-4">
+            <CardHeader>
+            <CardTitle>Λίστα Έργων ({filteredProjects.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+            {isLoading ? (
+                <ProjectTableSkeleton />
+            ) : filteredProjects.length > 0 ? (
+                <ProjectTable
+                projects={filteredProjects}
+                companies={companies}
+                isEditor={isEditor}
+                onEdit={handleEditClick}
+                onDuplicate={handleDuplicateProject}
+                onDelete={handleDeleteProject}
+                />
+            ) : (
+                <p className="text-center text-muted-foreground py-8">
+                {searchQuery ? 'Δεν βρέθηκαν έργα που να ταιριάζουν με την αναζήτηση.' : 'Δεν βρέθηκαν έργα.'}
+                </p>
+            )}
+            </CardContent>
+        </Card>
+      </Tabs>
+
+
+      {isEditor && (
+        <ProjectDialogForm
+          open={isDialogOpen}
+          onOpenChange={handleDialogOpenChange}
+          form={form}
+          onSubmit={onSubmit}
+          isSubmitting={isSubmitting}
+          isLoading={isLoading}
+          editingProject={editingProject}
+          companies={companies}
+        />
+      )}
+    </div>
   );
 }
