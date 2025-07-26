@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -45,17 +46,22 @@ export default function NewContactPage() {
         const dataToSave: { [key: string]: any } = { ...data };
 
         // Convert dates to Timestamps if they exist
-        if (dataToSave.birthDate) {
-            dataToSave.birthDate = Timestamp.fromDate(new Date(dataToSave.birthDate));
+        if (data.birthDate) {
+            dataToSave.birthDate = Timestamp.fromDate(new Date(data.birthDate));
+        } else {
+            dataToSave.birthDate = null;
         }
-        if (dataToSave.identity?.issueDate) {
-            dataToSave.identity.issueDate = Timestamp.fromDate(new Date(dataToSave.identity.issueDate));
+
+        if (data.identity?.issueDate) {
+            dataToSave.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
+        } else if (dataToSave.identity) {
+            dataToSave.identity.issueDate = null;
         }
 
         // Sanitize data to remove undefined or empty values before sending to Firestore
         Object.keys(dataToSave).forEach(key => {
             const typedKey = key as keyof ContactFormValues;
-            if (dataToSave[typedKey] === undefined || dataToSave[typedKey] === '' || dataToSave[typedKey] === null) {
+            if (dataToSave[typedKey] === undefined || dataToSave[typedKey] === '') {
                 delete dataToSave[typedKey];
             } else if (typeof dataToSave[typedKey] === 'object' && dataToSave[typedKey] !== null) {
                  // Clean nested objects

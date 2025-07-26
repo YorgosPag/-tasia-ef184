@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -69,12 +70,17 @@ export default function EditContactPage() {
         
         const dataToUpdate: { [key: string]: any } = { ...data };
         
-        // Convert dates back to Timestamps for Firestore
-        if (dataToUpdate.birthDate) {
-            dataToUpdate.birthDate = Timestamp.fromDate(new Date(dataToUpdate.birthDate));
+        // Convert dates back to Timestamps for Firestore, only if they exist
+        if (data.birthDate) {
+            dataToUpdate.birthDate = Timestamp.fromDate(new Date(data.birthDate));
+        } else {
+            dataToUpdate.birthDate = null;
         }
-        if (dataToUpdate.identity?.issueDate) {
-            dataToUpdate.identity.issueDate = Timestamp.fromDate(new Date(dataToUpdate.identity.issueDate));
+
+        if (data.identity?.issueDate) {
+            dataToUpdate.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
+        } else if (dataToUpdate.identity) {
+            dataToUpdate.identity.issueDate = null;
         }
 
         // Sanitize undefined values
