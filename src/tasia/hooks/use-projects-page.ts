@@ -56,7 +56,7 @@ export function useProjectsPage() {
     form.reset({
       ...project,
       tags: project.tags?.join(', ') || '',
-      deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : project.deadline,
+      deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : new Date(project.deadline),
     });
     setIsDialogOpen(true);
   }, [form]);
@@ -78,7 +78,7 @@ export function useProjectsPage() {
       const newId = await addProject({
         ...clonedData,
         tags: clonedData.tags?.join(','),
-        deadline: clonedData.deadline instanceof Timestamp ? clonedData.deadline.toDate() : clonedData.deadline,
+        deadline: clonedData.deadline instanceof Timestamp ? clonedData.deadline.toDate() : new Date(clonedData.deadline),
       });
       toast({ title: 'Επιτυχία', description: `Το έργο '${projectToClone.title}' αντιγράφηκε.` });
       if(newId) {
