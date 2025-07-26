@@ -115,6 +115,11 @@ export default function EditContactPage() {
 
             const docRef = doc(db, 'contacts', contactId);
             await updateDoc(docRef, cleanedData);
+            
+            // After saving, reset the form with the new data to make it "not dirty"
+            // and reflect the new photo URL.
+            form.reset({ ...data, photoUrl: newPhotoUrl });
+            setFileToUpload(null);
 
             await logActivity('UPDATE_CONTACT', {
                 entityId: contactId,
@@ -126,7 +131,7 @@ export default function EditContactPage() {
                 title: "Επιτυχία",
                 description: `Οι αλλαγές στην επαφή "${data.name}" αποθηκεύτηκαν.`,
             });
-            router.push('/contacts');
+            // router.push('/contacts'); // Removed redirection
         } catch (error: any) {
             console.error("Error updating contact: ", error);
             toast({
