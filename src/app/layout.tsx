@@ -1,6 +1,5 @@
 
-'use client';
-
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/shared/hooks/use-auth';
 import { Toaster } from '@/shared/components/ui/toaster';
@@ -8,27 +7,17 @@ import { QueryProvider } from '@/shared/hooks/use-query-provider';
 import { SidebarProvider } from '@/shared/components/ui/sidebar';
 import { DataProvider } from '@/shared/hooks/use-data-store';
 import React from 'react';
-import { usePathname } from 'next/navigation';
 import { ThemeProvider } from "@/shared/components/theme-provider";
-import TasiaLayout from '@/tasia/app/layout';
-import NestorLayout from '@/nestor/app/(main)/layout';
 
 import '@/tasia/theme/global.tasia.css';
 import '@/nestor/theme/global.nestor.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-
-function DomainSpecificLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isNestor = pathname.startsWith('/nestor');
-  
-  if (isNestor) {
-      return <NestorLayout>{children}</NestorLayout>;
-  }
-  
-  return <TasiaLayout>{children}</TasiaLayout>
-}
+export const metadata: Metadata = {
+  title: 'TASIA',
+  description: 'Real Estate Management Platform',
+};
 
 
 export default function RootLayout({
@@ -36,20 +25,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const domainClass = pathname.startsWith('/nestor') ? 'nestor' : 'tasia';
 
   return (
     <html lang="el" suppressHydrationWarning>
-      <body className={`${inter.variable} ${domainClass}`}>
+      <body className={`${inter.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <QueryProvider>
               <AuthProvider>
                 <DataProvider>
                   <SidebarProvider>
-                    <DomainSpecificLayout>
-                        {children}
-                    </DomainSpecificLayout>
+                    {children}
                   </SidebarProvider>
                 </DataProvider>
               </AuthProvider>

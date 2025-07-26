@@ -8,8 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@/shared/components/ui/table';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 
 export function ProjectTableSkeleton() {
   return (

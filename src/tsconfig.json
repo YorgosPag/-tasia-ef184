@@ -20,12 +20,12 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@/tasia/*": ["./tasia/*"],
-      "@/nestor/*": ["./nestor/*"],
-      "@/shared/*": ["./shared/*"]
+      "@/*": ["./src/*"],
+      "@/tasia/*": ["./src/tasia/*"],
+      "@/nestor/*": ["./src/nestor/*"],
+      "@/shared/*": ["./src/shared/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/nestor/**/*.ts", "src/nestor/**/*.tsx", "src/tasia/**/*.ts", "src/tasia/**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "src/components", "src/hooks", "src/lib", "src/ai", "src/types"]
 }
