@@ -131,7 +131,6 @@ export default function EditContactPage() {
                 title: "Επιτυχία",
                 description: `Οι αλλαγές στην επαφή "${data.name}" αποθηκεύτηκαν.`,
             });
-            // router.push('/contacts'); // Removed redirection
         } catch (error: any) {
             console.error("Error updating contact: ", error);
             toast({

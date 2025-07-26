@@ -63,9 +63,9 @@ export function ImageUploader({
     if (!preview) return;
 
     // For existing contacts with an image on storage
-    if (entityId && initialImageUrl) {
-        const storageRef = ref(storage, initialImageUrl);
+    if (entityId && initialImageUrl && initialImageUrl.startsWith('https://firebasestorage.googleapis.com')) {
         try {
+            const storageRef = ref(storage, initialImageUrl);
             await deleteObject(storageRef);
         } catch (error: any) {
             if (error.code !== 'storage/object-not-found') {
