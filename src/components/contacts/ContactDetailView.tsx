@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -25,12 +26,12 @@ const DetailSection = ({ title, children, icon }: { title: string; children: Rea
 );
 
 const DetailRow = ({ label, value, href, type }: { label: string; value?: string | null; href?: string, type?: string }) => {
-  if (!value) return null;
+  const displayValue = value || '-';
 
-  const content = href ? (
+  const content = href && value ? (
     <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{value}</a>
   ) : (
-    <span>{value}</span>
+    <span className={!value ? 'text-muted-foreground' : ''}>{displayValue}</span>
   );
 
   return (
@@ -74,6 +75,13 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
         return null;
     }
   }
+  
+  const fullAddress = [
+    contact.address?.street,
+    contact.address?.number,
+    contact.address?.city,
+    contact.address?.postalCode
+  ].filter(Boolean).join(' ');
 
   return (
     <Card className="h-full sticky top-20">
@@ -112,54 +120,57 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
 
         {/* ID & Tax Info */}
         <DetailSection title="Ταυτότητα & ΑΦΜ" icon={Info}>
-            {contact.entityType === 'Φυσικό Πρόσωπο' && contact.identity && (
+            {contact.entityType === 'Φυσικό Πρόσωπο' ? (
                  <>
-                    <DetailRow label="Τύπος" value={contact.identity.type} />
-                    <DetailRow label="Αριθμός" value={contact.identity.number} />
-                    <DetailRow label="Ημ/νία Έκδοσης" value={formatDate(contact.identity.issueDate)} />
-                    <DetailRow label="Εκδ. Αρχή" value={contact.identity.issuingAuthority} />
+                    <DetailRow label="Τύπος" value={contact.identity?.type} />
+                    <DetailRow label="Αριθμός" value={contact.identity?.number} />
+                    <DetailRow label="Ημ/νία Έκδοσης" value={formatDate(contact.identity?.issueDate)} />
+                    <DetailRow label="Εκδ. Αρχή" value={contact.identity?.issuingAuthority} />
                  </>
-            )}
+            ) : null}
             <DetailRow label="ΑΦΜ" value={contact.afm} />
             <DetailRow label="ΔΟΥ" value={contact.doy} />
         </DetailSection>
 
         {/* Contact Info */}
         <DetailSection title="Στοιχεία Επικοινωνίας" icon={Phone}>
-            {contact.emails?.map((email, i) => <DetailRow key={i} label="Email" value={email.value} href={`mailto:${email.value}`} type={email.type}/>)}
-            {contact.phones?.map((phone, i) => <DetailRow key={i} label="Τηλέφωνο" value={phone.value} href={`tel:${phone.value}`} type={`${phone.type} ${phone.indicators?.join(', ')}`.trim()} />)}
+            {(contact.emails && contact.emails.length > 0) 
+              ? contact.emails.map((email, i) => <DetailRow key={i} label="Email" value={email.value} href={`mailto:${email.value}`} type={email.type}/>)
+              : <DetailRow label="Email" value={null} />
+            }
+            {(contact.phones && contact.phones.length > 0)
+              ? contact.phones.map((phone, i) => <DetailRow key={i} label="Τηλέφωνο" value={phone.value} href={`tel:${phone.value}`} type={`${phone.type} ${phone.indicators?.join(', ')}`.trim()} />)
+              : <DetailRow label="Τηλέφωνο" value={null} />
+            }
         </DetailSection>
         
         {/* Socials & Websites */}
-        {contact.socials && contact.socials.length > 0 && (
-            <DetailSection title="Κοινωνικά Δίκτυα & Websites" icon={LinkIcon}>
-                {contact.socials.map((social, i) => <DetailRow key={i} label={social.type} value={social.url} href={social.url} />)}
-            </DetailSection>
-        )}
+        <DetailSection title="Κοινωνικά Δίκτυα & Websites" icon={LinkIcon}>
+            {(contact.socials && contact.socials.length > 0)
+              ? contact.socials.map((social, i) => <DetailRow key={i} label={social.type} value={social.url} href={social.url} />)
+              : <DetailRow label="Website" value={null} />
+            }
+        </DetailSection>
 
         {/* Address */}
-        {contact.address && Object.values(contact.address).some(v => v) && (
-            <DetailSection title="Διεύθυνση" icon={MapPin}>
-                <p className="text-sm text-muted-foreground">
-                    {contact.address.street} {contact.address.number}, {contact.address.postalCode} {contact.address.city}
-                </p>
-            </DetailSection>
-        )}
+        <DetailSection title="Διεύθυνση" icon={MapPin}>
+            <p className="text-sm text-muted-foreground">
+                {fullAddress || '-'}
+            </p>
+        </DetailSection>
 
         {/* Job Info */}
-        {contact.job && Object.values(contact.job).some(v => v) && (
+        {contact.entityType !== 'Δημ. Υπηρεσία' && (
             <DetailSection title="Επαγγελματικά Στοιχεία" icon={Briefcase}>
-                <DetailRow label="Ρόλος" value={contact.job.role} />
-                <DetailRow label="Ειδικότητα" value={contact.job.specialty} />
+                <DetailRow label="Ρόλος" value={contact.job?.role} />
+                <DetailRow label="Ειδικότητα" value={contact.job?.specialty} />
             </DetailSection>
         )}
 
         {/* Notes */}
-        {contact.notes && (
-             <DetailSection title="Σημειώσεις" icon={Info}>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{contact.notes}</p>
-            </DetailSection>
-        )}
+        <DetailSection title="Σημειώσεις" icon={Info}>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{contact.notes || '-'}</p>
+        </DetailSection>
       </CardContent>
     </Card>
   );
