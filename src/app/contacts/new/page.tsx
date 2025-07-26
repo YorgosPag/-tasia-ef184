@@ -39,10 +39,62 @@ export default function NewContactPage() {
 
     const onSubmit = async (data: ContactFormValues) => {
         setIsSubmitting(true);
+        
+        // Sanitize data to remove undefined values before sending to Firestore
+        const dataToSave = { ...data };
+        Object.keys(dataToSave).forEach(key => {
+            const typedKey = key as keyof ContactFormValues;
+            if (dataToSave[typedKey] === undefined) {
+                delete dataToSave[typedKey];
+            }
+        });
+        
+        // Ensure nested objects are also sanitized
+        if (dataToSave.identity) {
+            Object.keys(dataToSave.identity).forEach(key => {
+                const typedKey = key as keyof NonNullable<ContactFormValues['identity']>;
+                if (dataToSave.identity![typedKey] === undefined) {
+                    delete dataToSave.identity![typedKey];
+                }
+            });
+        }
+       if (dataToSave.contactInfo) {
+            Object.keys(dataToSave.contactInfo).forEach(key => {
+                const typedKey = key as keyof NonNullable<ContactFormValues['contactInfo']>;
+                if (dataToSave.contactInfo![typedKey] === undefined) {
+                    delete dataToSave.contactInfo![typedKey];
+                }
+            });
+        }
+        if (dataToSave.socials) {
+            Object.keys(dataToSave.socials).forEach(key => {
+                const typedKey = key as keyof NonNullable<ContactFormValues['socials']>;
+                if (dataToSave.socials![typedKey] === undefined) {
+                    delete dataToSave.socials![typedKey];
+                }
+            });
+        }
+        if (dataToSave.address) {
+            Object.keys(dataToSave.address).forEach(key => {
+                const typedKey = key as keyof NonNullable<ContactFormValues['address']>;
+                if (dataToSave.address![typedKey] === undefined) {
+                    delete dataToSave.address![typedKey];
+                }
+            });
+        }
+        if (dataToSave.job) {
+            Object.keys(dataToSave.job).forEach(key => {
+                 const typedKey = key as keyof NonNullable<ContactFormValues['job']>;
+                if (dataToSave.job![typedKey] === undefined) {
+                    delete dataToSave.job![typedKey];
+                }
+            });
+        }
+
+
         try {
             const docRef = await addDoc(collection(db, 'contacts'), {
-                ...data,
-                // Ensure date fields are correctly formatted or null
+                ...dataToSave,
                 birthDate: data.birthDate || null,
                 'identity.issueDate': data.identity?.issueDate || null,
                 createdAt: serverTimestamp(),
