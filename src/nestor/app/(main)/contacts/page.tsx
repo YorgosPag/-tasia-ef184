@@ -1,10 +1,11 @@
+
 'use client';
 
 import { ContactList } from '@/nestor/features/contacts/components/ContactList';
 import { ContactDetails } from '@/nestor/features/contacts/components/ContactDetails';
 import { ContactForm } from '@/nestor/features/contacts/components/ContactForm';
 import { useContacts } from '@/nestor/features/contacts/hooks/useContacts';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
 
 export default function ContactsPage() {
