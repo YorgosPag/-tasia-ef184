@@ -42,6 +42,7 @@ export default function NewContactPage() {
         try {
             const docRef = await addDoc(collection(db, 'contacts'), {
                 ...data,
+                // Ensure date fields are correctly formatted or null
                 birthDate: data.birthDate || null,
                 'identity.issueDate': data.identity?.issueDate || null,
                 createdAt: serverTimestamp(),
