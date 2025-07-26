@@ -93,17 +93,14 @@ export default function ContactsPage() {
 
   const filteredContacts = useMemo(() => {
     if (!contacts) return [];
-    // The 'type' field does not exist on the Contact interface, so we need to fix this.
-    // I'll assume a 'type' field should exist on the contact for filtering.
-    // If not, this line needs to be adjusted based on the actual data model.
     return contacts.filter(contact => {
       const query = searchQuery.toLowerCase();
       return (
         contact.name.toLowerCase().includes(query) ||
-        (contact as any).type?.toLowerCase().includes(query) || // Temporarily cast to any to avoid TS error
+        (contact.entityType && contact.entityType.toLowerCase().includes(query)) ||
         (contact.contactInfo?.email && contact.contactInfo.email.toLowerCase().includes(query)) ||
         (contact.contactInfo?.phone && contact.contactInfo.phone.toLowerCase().includes(query)) ||
-        (contact.contactInfo?.afm && contact.contactInfo.afm.toLowerCase().includes(query))
+        (contact.afm && contact.afm.toLowerCase().includes(query))
       );
     });
   }, [contacts, searchQuery]);
@@ -112,11 +109,10 @@ export default function ContactsPage() {
     exportToJson(filteredContacts, 'contacts');
   };
 
-  const getBadgeVariant = (type: Contact['type']) => {
+  const getBadgeVariant = (type?: Contact['entityType']) => {
       switch(type) {
-          case 'Company': return 'default';
-          case 'Lawyer': return 'secondary';
-          case 'Notary': return 'secondary';
+          case 'Νομικό Πρόσωπο': return 'default';
+          case 'Δημ. Υπηρεσία': return 'secondary';
           default: return 'outline';
       }
   }
@@ -177,14 +173,14 @@ export default function ContactsPage() {
                   {filteredContacts.map((contact) => (
                     <TableRow key={contact.id}>
                       <TableCell className="font-medium flex items-center gap-2">
-                        <Avatar title={contact.name}><AvatarImage src={(contact as any).photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                        <Avatar title={contact.name}><AvatarImage src={contact.photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
                         {contact.name}
                       </TableCell>
-                      <TableCell><Badge variant={getBadgeVariant((contact as any).type)}>{(contact as any).type}</Badge></TableCell>
+                      <TableCell><Badge variant={getBadgeVariant(contact.entityType)}>{contact.entityType}</Badge></TableCell>
                       <TableCell>{contact.contactInfo?.email ? (<a href={`mailto:${contact.contactInfo.email}`} className="text-primary hover:underline">{contact.contactInfo.email}</a>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
                       <TableCell className="text-muted-foreground">{contact.contactInfo?.phone || 'N/A'}</TableCell>
-                      <TableCell className="text-muted-foreground">{contact.contactInfo?.afm || 'N/A'}</TableCell>
-                      <TableCell>{(contact as any).website ? (<Link href={(contact as any).website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1"><LinkIcon size={14}/>Επίσκεψη</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
+                      <TableCell className="text-muted-foreground">{contact.afm || 'N/A'}</TableCell>
+                      <TableCell>{contact.socials?.website ? (<Link href={contact.socials.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1"><LinkIcon size={14}/>Επίσκεψη</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

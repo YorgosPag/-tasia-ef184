@@ -3,19 +3,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { collection, onSnapshot, query as firestoreQuery } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
+import { ContactFormValues } from '../lib/validation/contactSchema';
 
-export interface Contact {
+// Combine the form values with an ID and createdAt
+export interface Contact extends ContactFormValues {
   id: string;
-  name: string;
-  type: 'Company' | 'Individual' | 'Lawyer' | 'Notary' | 'Supplier' | 'Public Service';
-  logoUrl?: string;
-  website?: string;
-  contactInfo: {
-    email?: string;
-    phone?: string;
-    address?: string;
-    afm?: string;
-  };
   createdAt: any;
 }
 
