@@ -1,24 +1,44 @@
 
-'use client';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import '@/tasia/theme/global.tasia.css';
+import { ThemeProvider } from '@/shared/components/theme-provider';
+import { AuthProvider } from '@/shared/hooks/use-auth';
+import { Toaster } from '@/shared/components/ui/toaster';
+import { QueryProvider } from '@/shared/hooks/use-query-provider';
+import { SidebarProvider } from '@/shared/components/ui/sidebar';
+import { DataProvider } from '@/shared/hooks/use-data-store';
 
-import React from 'react';
-import { AppShell } from '@/shared/components/layout/app-shell';
-import { AppSidebar } from '@/shared/components/layout/sidebar';
-import { useCurrentDomain } from '@/shared/hooks/useCurrentDomain';
 
-export default function NestorRootLayout({
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+
+export const metadata: Metadata = {
+  title: 'TASIA',
+  description: 'Real Estate Management Platform',
+};
+
+export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
-  const domain = useCurrentDomain();
-
+}>) {
+  
   return (
-    <div className={domain}>
-      <div className="flex min-h-screen">
-        <AppSidebar />
-        <AppShell>{children}</AppShell>
-      </div>
-    </div>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} tasia`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <QueryProvider>
+            <AuthProvider>
+              <DataProvider>
+                <SidebarProvider>
+                    {children}
+                    <Toaster />
+                </SidebarProvider>
+              </DataProvider>
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
