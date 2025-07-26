@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
   DialogClose,
   DialogTrigger,
 } from '@/shared/components/ui/dialog';
