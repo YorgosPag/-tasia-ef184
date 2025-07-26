@@ -165,7 +165,8 @@ export function useProjectsPage() {
 
   const filteredProjects = useMemo(() => {
     if (!allProjects) return [];
-    return allProjects.filter((project) => {
+    const sortedProjects = [...allProjects].sort((a, b) => a.title.localeCompare(b.title));
+    return sortedProjects.filter((project) => {
       const query = searchQuery.toLowerCase();
       const companyName = getCompanyName(project.companyId).toLowerCase();
       return (
