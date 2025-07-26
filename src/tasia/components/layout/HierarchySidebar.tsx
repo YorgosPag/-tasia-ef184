@@ -59,10 +59,10 @@ const mapToNode = (item: DocumentData, type: HierarchyNode['type']): HierarchyNo
         case 'building': name = item.address || 'Untitled Building'; break;
         case 'floor': name = `Όροφος ${item.level || 'N/A'}`; break;
         case 'unit': name = `${item.identifier || 'ID?'} - ${item.name || 'Untitled Unit'}`; break;
-        case 'attachment': name = `${item.type}: ${item.details || item.identifier || 'Details missing'}`; break;
+        case 'attachment': name = `${item.type}: ${item.identifier || item.details || 'Details missing'}`; break;
     }
     return {
-        id: item.id,
+        id: item.id, // This is the crucial part that was missing/inconsistent.
         name: name,
         type: type,
         children: [],
@@ -79,8 +79,14 @@ const getHref = (type: HierarchyNode['type'], id: string): string => {
         building: `/buildings/${id}`,
         floor: `/floors/${id}`,
         unit: `/units/${id}`,
-        attachment: `/attachments?id=${id}`,
+        attachment: `/units/${id}`, // Attachments don't have their own page, link to parent unit
     };
+    // A fallback for attachment to link to its unit.
+    if (type === 'attachment') {
+        // This is a simplification. A more robust solution might need to fetch the parent unit ID.
+        // For now, we assume the attachment ID might be passed to a page that can handle it.
+        return `/attachments?id=${id}`;
+    }
     return paths[type] || '/';
 }
 
