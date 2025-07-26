@@ -2,8 +2,6 @@
 'use server';
 
 import { clearTasiaData as clearTasia } from '@/shared/lib/clear';
-import { seedNestorData as seedNestor } from '@/nestor/lib/nestor-seed';
-import { clearNestorData as clearNestor } from '@/nestor/lib/nestor-clear';
 import { db } from './firebase';
 import { doc, getDoc, collection, query, limit, getDocs } from 'firebase/firestore';
 import { logActivity } from './logger';
@@ -58,29 +56,9 @@ export async function clearTasiaDataAction(userId: string) {
 }
 
 export async function seedNestorDataAction(userId: string) {
-    if (!(await isAdmin(userId))) {
-        return { success: false, error: 'Unauthorized: Only admins can seed data.' };
-    }
-    try {
-        await seedNestor();
-        await logActivity('SEED_DATA', { entityType: 'database', details: { app: 'NESTOR' }, userId });
-        return { success: true };
-    } catch (error) {
-        console.error('NESTOR Seeding failed:', error);
-        return { success: false, error: (error as Error).message };
-    }
+    return { success: false, error: 'Nestor app has been removed.' };
 }
 
 export async function clearNestorDataAction(userId: string) {
-     if (!userId) {
-       return { success: false, error: 'Unauthorized: You must be logged in to clear data.' };
-    }
-    try {
-        await clearNestor();
-        await logActivity('CLEAR_DATA', { entityType: 'database', details: { app: 'NESTOR' }, userId });
-        return { success: true };
-    } catch (error) {
-        console.error('NESTOR Clearing failed:', error);
-        return { success: false, error: (error as Error).message };
-    }
+     return { success: false, error: 'Nestor app has been removed.' };
 }

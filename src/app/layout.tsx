@@ -12,7 +12,6 @@ import { AppShell } from '@/tasia/components/layout/app-shell';
 import { ProtectedRoute } from '@/shared/components/auth/protected-route';
 
 import '@/tasia/theme/global.tasia.css';
-import '@/nestor/theme/global.nestor.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
