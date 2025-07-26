@@ -28,8 +28,6 @@ interface HierarchyNode {
 // --- Data Fetching ---
 const fetchChildren = async (parentId: string, parentType: HierarchyNode['type']): Promise<any[]> => {
     let q;
-    // Using simpler queries that are more likely to be covered by default indexes
-    // or are easier to create single-field indexes for.
     switch(parentType) {
         case 'company':
             q = query(collection(db, 'projects'), where('companyId', '==', parentId), orderBy('title'));
@@ -56,12 +54,12 @@ const fetchChildren = async (parentId: string, parentType: HierarchyNode['type']
 const mapToNode = (item: any, type: HierarchyNode['type']): HierarchyNode => {
     let name = 'Unknown';
     switch(type) {
-        case 'company': name = item.name; break;
-        case 'project': name = item.title; break;
-        case 'building': name = item.address; break;
-        case 'floor': name = `Όροφος ${item.level}`; break;
-        case 'unit': name = `${item.identifier} - ${item.name}`; break;
-        case 'attachment': name = `${item.type}: ${item.details || item.identifier || 'N/A'}`; break;
+        case 'company': name = item.name || 'Untitled Company'; break;
+        case 'project': name = item.title || 'Untitled Project'; break;
+        case 'building': name = item.address || 'Untitled Building'; break;
+        case 'floor': name = `Όροφος ${item.level || 'N/A'}`; break;
+        case 'unit': name = `${item.identifier || 'ID?'} - ${item.name || 'Untitled Unit'}`; break;
+        case 'attachment': name = `${item.type}: ${item.details || item.identifier || item.id}`; break;
     }
     return {
         id: item.id,
@@ -74,16 +72,16 @@ const mapToNode = (item: any, type: HierarchyNode['type']): HierarchyNode => {
 };
 
 const getHref = (type: HierarchyNode['type'], id: string): string => {
-    if (!type || !id) return '/'; // Safeguard
-    const basePath = {
-        company: `/projects?companyId=${id}`,
-        project: `/projects/${id}`,
-        building: `/buildings/${id}`,
-        floor: `/floors/${id}`,
-        unit: `/units/${id}`,
-        attachment: `/attachments?id=${id}`,
-    }[type];
-    return basePath || '/';
+    if (!id) return '/';
+    switch (type) {
+        case 'company': return `/projects?companyId=${id}`;
+        case 'project': return `/projects/${id}`;
+        case 'building': return `/buildings/${id}`;
+        case 'floor': return `/floors/${id}`;
+        case 'unit': return `/units/${id}`;
+        case 'attachment': return `/attachments?id=${id}`;
+        default: return '/';
+    }
 }
 
 
@@ -127,7 +125,7 @@ const HierarchyNodeComponent = ({ node }: { node: HierarchyNode }) => {
     }, [pathname, node.id, loadChildren]);
 
 
-    const hasChildren = !['unit', 'attachment'].includes(node.type); // Simple check to see if node type can have children
+    const hasChildren = !['unit', 'attachment'].includes(node.type);
 
     const iconMap: Record<HierarchyNode['type'], React.ElementType> = {
         company: Building2, project: Briefcase, building: Building, floor: Layers, unit: LayoutTemplate, attachment: Paperclip
