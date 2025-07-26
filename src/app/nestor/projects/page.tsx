@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useProjectsPage } from '@/shared/hooks/use-projects-page';

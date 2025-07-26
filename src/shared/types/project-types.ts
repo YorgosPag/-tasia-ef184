@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { Timestamp } from 'firebase/firestore';
 import type { Project } from '@/shared/hooks/use-data-store';
-import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
+import { projectSchema } from '@/components/projects/ProjectDialogForm';
 
 export interface ChecklistItem {
     task: string;
