@@ -4,7 +4,7 @@
 import React, { Fragment } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/lib/utils';
 import {
   Tooltip,
   TooltipContent,

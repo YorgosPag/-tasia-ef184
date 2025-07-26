@@ -6,7 +6,7 @@ import {
   serverTimestamp,
   doc,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '@/shared/lib/firebase';
 import { customListsData, policeStationsData } from './nestor-data';
 import { contactsData } from './nestor-contacts-data';
 

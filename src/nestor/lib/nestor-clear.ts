@@ -6,7 +6,7 @@ import {
   getDocs,
   query,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '@/shared/lib/firebase';
 
 const BATCH_LIMIT = 499; // Firestore batch limit is 500
 

@@ -1,5 +1,3 @@
-
-
 export const customListsData = [
   {
     id: 'doy',
@@ -539,5 +537,3 @@ export const policeStationsData = [
   { id: 'ps_032', name: 'ΑΣΤΥΝΟΜΙΚΟ ΤΜΗΜΑ ΔΙΟΝΥΣΟΥ', type: 'policeStation' },
   { id: 'ps_033', name: 'ΤΜΗΜΑ ΕΛΕΓΧΟΥ ΔΙΑΒΑΤΗΡΙΩΝ ΝΙΚΗΣ', type: 'policeStation' },
 ];
-
-    
