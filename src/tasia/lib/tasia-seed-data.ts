@@ -5,7 +5,7 @@ type UnitStatus = 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημέν�
 
 // Authoritative list of all contacts
 export const contactsData: any[] = [
-    { _id: 'contact_comp1', type: 'Company', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111', afm: '123456789' }, logoUrl: 'https://placehold.co/100x100.png' },
+    { _id: 'contact_1', type: 'Company', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111', afm: '123456789' }, logoUrl: 'https://placehold.co/100x100.png' },
     { _id: 'contact_comp2', type: 'Company', name: 'UrbanScapes ΕΠΕ', website: 'https://urbanscapes.example.com', contactInfo: { email: 'contact@urbanscapes.example.com', phone: '2102222222', afm: '987654321' }, logoUrl: 'https://placehold.co/100x100.png' },
     { _id: 'contact_ind1', type: 'Individual', name: 'Γιώργος Παπαδόπουλος', contactInfo: { email: 'gpapadopoulos@email.com', phone: '6971234567' } },
     { _id: 'contact_law1', type: 'Lawyer', name: 'Αθηνά Νομικού', contactInfo: { email: 'anomikou@lawfirm.gr', phone: '2109876543' } },
@@ -17,7 +17,7 @@ export const contactsData: any[] = [
 
 // Companies that can own projects, linking to their contact entry
 export const companiesData: any[] = [
-    { _id: 'comp1', _contactId: 'contact_comp1', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111', afm: '123456789' }, logoUrl: 'https://placehold.co/100x100.png' },
+    { _id: 'comp1', _contactId: 'contact_1', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111', afm: '123456789' }, logoUrl: 'https://placehold.co/100x100.png' },
     { _id: 'comp2', _contactId: 'contact_comp2', name: 'UrbanScapes ΕΠΕ', website: 'https://urbanscapes.example.com', contactInfo: { email: 'contact@urbanscapes.example.com', phone: '2102222222', afm: '987654321' }, logoUrl: 'https://placehold.co/100x100.png' }
 ];
 
