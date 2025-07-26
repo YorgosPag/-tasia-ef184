@@ -19,7 +19,7 @@ import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/shared/components/ui/badge';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/tasia/hooks/use-toast';
 
 interface LogEntry {
   id: string;

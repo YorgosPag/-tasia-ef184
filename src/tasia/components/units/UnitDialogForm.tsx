@@ -34,7 +34,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { Loader2, Wand2 } from 'lucide-react';
 import { Separator } from '@/shared/components/ui/separator';
 import { generateNextUnitIdentifier } from '@/shared/lib/identifier-generator';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/tasia/hooks/use-toast';
 
 export const unitSchema = z.object({
   existingUnitId: z.string().optional(),

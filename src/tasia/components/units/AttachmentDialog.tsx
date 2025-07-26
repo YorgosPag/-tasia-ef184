@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { generateNextAttachmentIdentifier } from '@/lib/identifier-generator';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/tasia/hooks/use-toast';
 import { useParams } from 'next/navigation';
 
 export const attachmentSchema = z.object({

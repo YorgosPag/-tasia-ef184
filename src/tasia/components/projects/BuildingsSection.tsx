@@ -37,7 +37,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PlusCircle, Loader2, Edit, Trash2 } from 'lucide-react';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/tasia/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { format } from 'date-fns';
 import Image from 'next/image';

@@ -15,7 +15,7 @@ import {
 } from 'firebase/firestore';
 import { db, storage } from '@/shared/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/tasia/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 import { FloorInfoHeader } from './FloorInfoHeader';
