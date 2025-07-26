@@ -1,4 +1,3 @@
-
 'use client';
-import ContactsPage from '@/tasia/components/contacts/page';
+import ContactsPage from '@/components/contacts/page';
 export default ContactsPage;
