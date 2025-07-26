@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, Timestamp, doc, updateDoc, deleteDoc, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,10 +15,27 @@ import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
 import { formatDate } from '@/tasia/lib/project-helpers';
 import { useAuth } from '@/shared/hooks/use-auth';
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/tasia/types/project-types';
+import { useQuery } from '@tanstack/react-query';
+
+
+async function fetchProjects(): Promise<Project[]> {
+    const projectsCollection = collection(db, 'projects');
+    const q = query(projectsCollection);
+    const snapshot = await getDocs(q);
+    const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+    // Sort client-side
+    projects.sort((a, b) => a.title.localeCompare(b.title));
+    return projects;
+}
 
 
 export function useProjectsPage() {
-  const { projects: allProjects, companies, isLoading, addProject } = useDataStore();
+  const { companies, isLoading: isLoadingCompanies, addProject } = useDataStore();
+  const { data: allProjects = [], isLoading: isLoadingProjects } = useQuery<Project[]>({
+      queryKey: ['projects'],
+      queryFn: fetchProjects,
+  });
+
   const { isEditor } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -187,6 +204,8 @@ export function useProjectsPage() {
     }));
     exportToJson(dataToExport, 'projects');
   }, [filteredProjects, getCompanyName]);
+
+  const isLoading = isLoadingProjects || isLoadingCompanies;
 
   return {
     filteredProjects,
