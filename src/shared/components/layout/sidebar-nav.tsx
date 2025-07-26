@@ -40,6 +40,7 @@ const tasiaProjectToolsNav = [
   { href: '/projects', label: 'Έργα', icon: Briefcase },
   { href: '/leads', label: 'Leads', icon: Wallet },
   { href: '/meetings', label: 'Συσκέψεις', icon: MessageSquare },
+  { href: '/contracts', label: 'Συμβόλαια', icon: FileText },
   { href: '/work-stages', label: 'Στάδια Εργασιών', icon: GanttChartSquare },
   { href: '/calendar', label: 'Ημερολόγιο', icon: Calendar },
   { href: '/architect-desk', label: 'Architect\'s Desk', icon: FilePen },
