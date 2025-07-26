@@ -16,7 +16,7 @@ import { ContractsSection } from '@/tasia/components/projects/ContractsSection';
 import { MaterialsSection } from '@/tasia/components/projects/MaterialsSection';
 import { MeetingsSection } from '@/tasia/components/projects/MeetingsSection';
 import { ProjectActivityTimeline } from '@/tasia/components/projects/ProjectActivityTimeline';
-import type { WorkStage, ChecklistItem, WorkStageWithSubstages, WorkStageComment } from './types';
+import type { WorkStage, ChecklistItem, WorkStageWithSubstages, WorkStageComment } from '@/tasia/app/projects/[id]/types';
 
 
 // Main type for the project page
