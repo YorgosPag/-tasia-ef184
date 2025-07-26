@@ -18,6 +18,21 @@ import { contactSchema, ContactFormValues } from '@/shared/lib/validation/contac
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
 
+function deepClean(obj: any) {
+  for (const key in obj) {
+    if (obj[key] === undefined) {
+      delete obj[key];
+    } else if (typeof obj[key] === 'object' && obj[key] !== null && !(obj[key] instanceof Date) && !(obj[key] instanceof Timestamp)) {
+      deepClean(obj[key]);
+      if (Object.keys(obj[key]).length === 0) {
+        delete obj[key];
+      }
+    }
+  }
+  return obj;
+}
+
+
 export default function EditContactPage() {
     const router = useRouter();
     const params = useParams();
@@ -95,24 +110,11 @@ export default function EditContactPage() {
                 dataToUpdate.identity.issueDate = null;
             }
 
-            // Clean up undefined values before sending to Firestore
-            Object.keys(dataToUpdate).forEach(key => {
-                if (dataToUpdate[key] === undefined) {
-                    delete dataToUpdate[key];
-                }
-            });
-             // Deep clean for nested objects like 'identity'
-            if (dataToUpdate.identity) {
-                Object.keys(dataToUpdate.identity).forEach(key => {
-                    if (dataToUpdate.identity[key] === undefined) {
-                        delete dataToUpdate.identity[key];
-                    }
-                });
-            }
-            delete dataToUpdate.id;
+            const cleanedData = deepClean(dataToUpdate);
+            delete cleanedData.id;
 
             const docRef = doc(db, 'contacts', contactId);
-            await updateDoc(docRef, dataToUpdate);
+            await updateDoc(docRef, cleanedData);
 
             await logActivity('UPDATE_CONTACT', {
                 entityId: contactId,

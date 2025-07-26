@@ -18,6 +18,20 @@ import { contactSchema, ContactFormValues } from '@/shared/lib/validation/contac
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
 
+function deepClean(obj: any) {
+  for (const key in obj) {
+    if (obj[key] === undefined) {
+      delete obj[key];
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      deepClean(obj[key]);
+      if (Object.keys(obj[key]).length === 0) {
+        delete obj[key];
+      }
+    }
+  }
+  return obj;
+}
+
 export default function NewContactPage() {
     const router = useRouter();
     const { toast } = useToast();
@@ -51,23 +65,12 @@ export default function NewContactPage() {
         if (data.identity?.issueDate) dataToSave.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
         else if (dataToSave.identity) dataToSave.identity.issueDate = null;
 
-        // Clean up undefined values before sending to Firestore
-        Object.keys(dataToSave).forEach(key => {
-            if (dataToSave[key] === undefined) delete dataToSave[key];
-        });
-        // Deep clean for nested objects
-        if (dataToSave.identity) {
-            Object.keys(dataToSave.identity).forEach(key => {
-                if (dataToSave.identity[key] === undefined) {
-                    delete dataToSave.identity[key];
-                }
-            });
-        }
+        const cleanedData = deepClean(dataToSave);
 
 
         try {
             const docRef = await addDoc(collection(db, 'contacts'), {
-                ...dataToSave,
+                ...cleanedData,
                 createdAt: serverTimestamp(),
                 createdBy: user?.uid,
             });
