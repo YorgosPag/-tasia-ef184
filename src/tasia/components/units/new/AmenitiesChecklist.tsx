@@ -1,8 +1,8 @@
 
 'use client';
 
-import { Checkbox } from '@/shared/components/ui/checkbox';
-import { FormField, FormItem, FormLabel, FormControl } from '@/shared/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
+import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { AMENITIES_LIST } from '@/tasia/lib/unit-helpers';
 
 export function AmenitiesChecklist({ control }: { control: any }) {

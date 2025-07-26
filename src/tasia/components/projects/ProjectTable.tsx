@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
+} from '@/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -21,9 +21,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from '@/shared/components/ui/alert-dialog';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Copy } from 'lucide-react';
 import { Company } from '@/shared/hooks/use-data-store';
 import {
@@ -31,8 +31,8 @@ import {
   getCompanyName,
 } from '@/tasia/lib/project-helpers';
 import type { ProjectWithWorkStageSummary } from '@/shared/types/project-types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip';
-import { Progress } from '@/shared/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 
 
 interface WorkStageStatusBadgeProps {

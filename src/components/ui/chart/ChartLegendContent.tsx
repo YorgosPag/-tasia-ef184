@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import { cn } from "@/lib/utils"
+import { cn } from "@/shared/lib/utils"
 import { useChart } from "./ChartContainer"
 import { getPayloadConfigFromPayload } from "./chartHelpers"
 

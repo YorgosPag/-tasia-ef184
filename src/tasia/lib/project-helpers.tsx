@@ -4,7 +4,7 @@
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { Timestamp } from 'firebase/firestore';
-import { Company } from '@/hooks/use-data-store';
+import { Company } from '@/shared/hooks/use-data-store';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';

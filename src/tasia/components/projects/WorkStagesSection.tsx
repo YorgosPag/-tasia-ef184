@@ -11,7 +11,7 @@ import { WorkStageFormDialog } from './work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from './work-stages/WorkStageAccordion';
 import type { Project, WorkStage } from '@/tasia/app/projects/[id]/page';
 import { WorkStagesEmptyState } from './work-stages/WorkStagesEmptyState';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/shared/hooks/use-auth';
 
 interface WorkStagesSectionProps {
     project: Project;
