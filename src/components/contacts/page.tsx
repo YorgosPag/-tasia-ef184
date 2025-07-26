@@ -12,39 +12,17 @@ import {
   TableRow,
 } from '@/shared/components/ui/table';
 import { Input } from '@/shared/components/ui/input';
-import { PlusCircle, Loader2, Link as LinkIcon, Download, Search, Edit } from 'lucide-react';
-import { useToast } from '@/shared/hooks/use-toast';
+import { PlusCircle, Loader2, Download, Search, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
-import Link from 'next/link';
 import { exportToJson } from '@/shared/lib/exporter';
 import { useAuth } from '@/shared/hooks/use-auth';
 import { Badge } from '@/shared/components/ui/badge';
 import { useContacts, type Contact } from '@/shared/hooks/use-contacts';
+import { ContactDetailView } from './ContactDetailView';
 
-export default function ContactsPage() {
-  const { isEditor } = useAuth();
+function ContactList({ contacts, onSelectContact, selectedContactId }: { contacts: Contact[], onSelectContact: (contact: Contact) => void, selectedContactId: string | null }) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const { contacts, isLoading } = useContacts();
-
-  const filteredContacts = useMemo(() => {
-    if (!contacts) return [];
-    return contacts.filter(contact => {
-      const query = searchQuery.toLowerCase();
-      return (
-        contact.name.toLowerCase().includes(query) ||
-        (contact.entityType && contact.entityType.toLowerCase().includes(query)) ||
-        (contact.emails && contact.emails.some(e => e.value.toLowerCase().includes(query))) ||
-        (contact.phones && contact.phones.some(p => p.value.toLowerCase().includes(query))) ||
-        (contact.afm && contact.afm.toLowerCase().includes(query))
-      );
-    });
-  }, [contacts, searchQuery]);
-
-  const handleExport = () => {
-    exportToJson(filteredContacts, 'contacts');
-  };
 
   const getBadgeVariant = (type?: Contact['entityType']) => {
       switch(type) {
@@ -53,19 +31,71 @@ export default function ContactsPage() {
           default: return 'outline';
       }
   }
-  
-  const getPrimaryEmail = (contact: Contact) => contact.emails?.[0]?.value || 'N/A';
-  const getPrimaryPhone = (contact: Contact) => contact.phones?.[0]?.value || 'N/A';
-  const getPrimaryWebsite = (contact: Contact) => {
-    if (Array.isArray(contact.socials)) {
-        return contact.socials.find(s => s.type === 'Website')?.url;
-    }
-    return undefined;
-  };
-
 
   return (
-    <div className="flex flex-col gap-8">
+    <Table>
+      <TableHeader>
+          <TableRow>
+              <TableHead>Όνομα</TableHead>
+              <TableHead>Τύπος</TableHead>
+          </TableRow>
+      </TableHeader>
+      <TableBody>
+        {contacts.map((contact) => (
+          <TableRow 
+            key={contact.id} 
+            onClick={() => onSelectContact(contact)}
+            className={`cursor-pointer ${selectedContactId === contact.id ? 'bg-muted hover:bg-muted' : ''}`}
+          >
+            <TableCell className="font-medium flex items-center gap-2">
+              <Avatar className="h-8 w-8"><AvatarImage src={contact.photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+              {contact.name}
+            </TableCell>
+            <TableCell><Badge variant={getBadgeVariant(contact.entityType)}>{contact.entityType}</Badge></TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+
+export default function ContactsPage() {
+  const { isEditor } = useAuth();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+  const { contacts, isLoading } = useContacts();
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+
+  const filteredContacts = useMemo(() => {
+    if (!contacts) return [];
+    return contacts.filter(contact => {
+      const query = searchQuery.toLowerCase();
+      return (
+        contact.name.toLowerCase().includes(query) ||
+        (contact.entityType && contact.entityType.toLowerCase().includes(query)) ||
+        (contact.afm && contact.afm.toLowerCase().includes(query))
+      );
+    });
+  }, [contacts, searchQuery]);
+  
+  // Select the first contact by default if the list is not empty
+  // and no contact is currently selected.
+  // This avoids an empty detail view on initial load.
+  if(!selectedContact && filteredContacts.length > 0) {
+      setSelectedContact(filteredContacts[0]);
+  }
+  
+  if (selectedContact && !filteredContacts.find(c => c.id === selectedContact.id)) {
+      setSelectedContact(filteredContacts[0] || null);
+  }
+
+  const handleExport = () => {
+    exportToJson(filteredContacts, 'contacts');
+  };
+
+  return (
+    <div className="flex flex-col gap-8 h-full">
        <div className="flex items-center justify-between">
          <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Επαφές
@@ -83,68 +113,28 @@ export default function ContactsPage() {
             )}
         </div>
       </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input type="search" placeholder="Αναζήτηση σε όνομα, τύπο, ΑΦΜ, email..." className="pl-10 w-full md:w-1/3" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}/>
-       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Λίστα Επαφών ({filteredContacts.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-          ) : filteredContacts.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Όνομα</TableHead>
-                        <TableHead>Τύπος</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Τηλέφωνο</TableHead>
-                        <TableHead>ΑΦΜ</TableHead>
-                        <TableHead>Website</TableHead>
-                        <TableHead className="text-right">Ενέργειες</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredContacts.map((contact) => {
-                      const primaryEmail = getPrimaryEmail(contact);
-                      const primaryPhone = getPrimaryPhone(contact);
-                      const primaryWebsite = getPrimaryWebsite(contact);
-                      return (
-                        <TableRow key={contact.id} className="group">
-                          <TableCell className="font-medium flex items-center gap-2">
-                            <Avatar title={contact.name}><AvatarImage src={contact.photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
-                            {contact.name}
-                          </TableCell>
-                          <TableCell><Badge variant={getBadgeVariant(contact.entityType)}>{contact.entityType}</Badge></TableCell>
-                          <TableCell>{primaryEmail !== 'N/A' ? (<a href={`mailto:${primaryEmail}`} className="text-primary hover:underline">{primaryEmail}</a>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
-                          <TableCell className="text-muted-foreground">{primaryPhone}</TableCell>
-                          <TableCell className="text-muted-foreground">{contact.afm || 'N/A'}</TableCell>
-                          <TableCell>{primaryWebsite ? (<Link href={primaryWebsite} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1"><LinkIcon size={14}/>Επίσκεψη</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                {isEditor && (
-                                    <Button asChild variant="ghost" size="icon">
-                                        <Link href={`/contacts/${contact.id}/edit`}>
-                                            <Edit className="h-4 w-4" />
-                                            <span className="sr-only">Επεξεργασία</span>
-                                        </Link>
-                                    </Button>
-                                )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-                </TableBody>
-              </Table>
-            </div>
-          ) : ( <p className="text-center text-muted-foreground py-8">{searchQuery ? 'Δεν βρέθηκαν επαφές.' : 'Δεν υπάρχουν καταχωρημένες επαφές.'}</p>)}
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 flex-1">
+        <div className="md:col-span-1 lg:col-span-1">
+           <Card className="h-full">
+            <CardHeader>
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input type="search" placeholder="Αναζήτηση επαφής..." className="pl-10 w-full" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}/>
+                </div>
+            </CardHeader>
+            <CardContent className="p-0">
+            {isLoading ? (
+                <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+            ) : (
+                <ContactList contacts={filteredContacts} onSelectContact={setSelectedContact} selectedContactId={selectedContact?.id || null} />
+            )}
+            </CardContent>
+           </Card>
+        </div>
+        <div className="md:col-span-2 lg:col-span-3">
+          <ContactDetailView contact={selectedContact} />
+        </div>
+      </div>
     </div>
   );
 }
