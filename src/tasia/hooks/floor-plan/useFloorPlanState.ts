@@ -2,12 +2,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useLocalStorageState } from '@/hooks/use-local-storage-state';
+import { useLocalStorageState } from '@/shared/hooks/use-local-storage-state';
 import { usePolygonDraw } from './usePolygonDraw';
 import { useZoom } from './useZoom';
 import { usePrecisionZoom } from './usePrecisionZoom';
-import { Unit } from '@/components/floor-plan/Unit';
-import { ALL_STATUSES, STATUS_COLOR_MAP } from '@/components/floor-plan/utils';
+import { Unit } from '@/tasia/components/floor-plan/Unit';
+import { ALL_STATUSES, STATUS_COLOR_MAP } from '@/tasia/components/floor-plan/utils';
 
 interface PageDimensions {
     width: number;
@@ -53,7 +53,7 @@ export function useFloorPlanState({ onPolygonDrawn }: useFloorPlanStateProps) {
         cancelDrawing,
     } = usePolygonDraw({ isEditMode, onPolygonDrawn });
 
-    const zoom = useZoom({ pdfContainerRef, pageDimensions });
+    const zoom = useZoom({ pdfContainerRef, pageDimensions, isPrecisionZooming: false });
     
     const isPrecisionZooming = usePrecisionZoom({
         isEditMode,

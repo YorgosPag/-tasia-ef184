@@ -1,46 +1,50 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import '@/tasia/theme/global.tasia.css';
-import { ThemeProvider } from '@/tasia/theme/theme-provider';
-import { AuthProvider } from '@/hooks/use-auth';
-import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
-import { Toaster } from '@/components/ui/toaster';
-import { QueryProvider } from '@/hooks/use-query-provider';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { DataProvider } from '@/hooks/use-data-store';
 
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+import { Timestamp } from 'firebase/firestore';
+import { format } from 'date-fns';
+import { Company } from '@/shared/hooks/use-data-store';
+import type { WorkStage, WorkStageWithSubstages, ChecklistItem } from '@/tasia/app/projects/[id]/types';
 
-export const metadata: Metadata = {
-  title: 'TASIA',
-  description: 'Real Estate Management Platform',
+export const formatDate = (timestamp?: Timestamp | Date) => {
+    if (!timestamp) return '-';
+    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
+    return format(date, 'dd/MM/yyyy');
+};
+  
+export const getStatusVariant = (status: WorkStage['status']) => {
+    switch (status) {
+        case 'Ολοκληρώθηκε': return 'default';
+        case 'Σε εξέλιξη': return 'secondary';
+        case 'Καθυστερεί': return 'destructive';
+        default: return 'outline';
+    }
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} tasia`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <QueryProvider>
-            <AuthProvider>
-              <DataProvider>
-                <SidebarProvider>
-                   <ProtectedRoute>
-                      {children}
-                    </ProtectedRoute>
-                    <Toaster />
-                </SidebarProvider>
-              </DataProvider>
-            </AuthProvider>
-          </QueryProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+export const getCompanyNames = (companyIds: string[] = [], companies: Company[]) => {
+    if (!companyIds || companyIds.length === 0) return 'Κανένας';
+    return companyIds.map(id => companies.find(c => c.id === id)?.name || id).join(', ');
+};
+
+export const formatCurrency = (value?: number) => {
+    if (value === undefined || value === null) return '-';
+    return `€${value.toLocaleString('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+export const calculateChecklistProgress = (checklist?: ChecklistItem[]): number => {
+    if (!checklist || checklist.length === 0) return 0;
+    const completedTasks = checklist.filter(item => item.completed).length;
+    return (completedTasks / checklist.length) * 100;
+};
+
+export const calculateStageProgress = (stage: WorkStageWithSubstages): number => {
+    const checklistProgress = calculateChecklistProgress(stage.checklist);
+    
+    if (stage.workSubstages?.length > 0) {
+        const substagesProgressValues = stage.workSubstages.map(ss => calculateChecklistProgress(ss.checklist));
+        const totalSubstageProgress = substagesProgressValues.reduce((acc, p) => acc + p, 0) / stage.workSubstages.length;
+        // Weighted average: 50% for own checklist, 50% for substages
+        return (checklistProgress * 0.5) + (totalSubstageProgress * 0.5);
+    }
+
+    return checklistProgress;
 }

@@ -4,13 +4,13 @@
 
 import { useMemo, useState } from 'react';
 import { useUnits } from '@/tasia/hooks/use-units';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/shared/components/ui/input';
 import { Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { UnitCard } from '@/tasia/components/units/UnitCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 
 export default function UnitsPage() {
   const { data: units = [], isLoading } = useUnits();

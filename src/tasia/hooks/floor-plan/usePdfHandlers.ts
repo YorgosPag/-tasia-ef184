@@ -3,7 +3,7 @@
 
 import { useState, useCallback, MutableRefObject } from 'react';
 import { PDFPageProxy } from 'react-pdf';
-import { Unit } from '@/components/floor-plan/FloorPlanViewer';
+import { Unit } from '@/tasia/components/floor-plan/Unit';
 
 interface PageDimensions {
   width: number;
@@ -16,6 +16,7 @@ interface UsePdfHandlersProps {
   isEditMode: boolean;
   isLocked: boolean;
   draggingPoint: { unitId: string; pointIndex: number } | null;
+  setUnits: React.Dispatch<React.SetStateAction<Unit[]>>;
   lastMouseEvent: MutableRefObject<MouseEvent | null>;
   setDrawingPolygon: React.Dispatch<React.SetStateAction<{ x: number; y: number }[]>>;
   setDraggingPoint: React.Dispatch<React.SetStateAction<{ unitId: string; pointIndex: number } | null>>;
@@ -34,6 +35,7 @@ export function usePdfHandlers({
   isEditMode,
   isLocked,
   draggingPoint,
+  setUnits,
   lastMouseEvent,
   setDrawingPolygon,
   setDraggingPoint,
@@ -131,15 +133,28 @@ export function usePdfHandlers({
     if (isLocked || !draggingPoint) return;
     const svgPoint = getSvgPoint(event);
     if (!svgPoint) return;
-    
-    // This now only calls the parent update function
-    // The parent is responsible for updating the local state and then firestore
-    onUnitPointsUpdate(draggingPoint.unitId, [{ x: svgPoint.x, y: svgPoint.y, pointIndex: draggingPoint.pointIndex } as any]);
+
+    setUnits((prevUnits) =>
+      prevUnits.map((unit) => {
+        if (unit.id === draggingPoint.unitId) {
+          const newPoints = [...(unit.polygonPoints || [])];
+          newPoints[draggingPoint.pointIndex] = { x: svgPoint.x, y: svgPoint.y };
+          return { ...unit, polygonPoints: newPoints };
+        }
+        return unit;
+      })
+    );
   };
 
   const handleMouseUp = () => {
     if (draggingPoint) {
-      // Finalization is handled by the parent component now, we just stop the dragging state
+      setUnits((prevUnits) => {
+        const unit = prevUnits.find((u) => u.id === draggingPoint.unitId);
+        if (unit && unit.polygonPoints) {
+          onUnitPointsUpdate(unit.id, unit.polygonPoints);
+        }
+        return prevUnits;
+      });
       setDraggingPoint(null);
     }
   };

@@ -2,8 +2,8 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
 import {
   Minus,
   Plus,
@@ -14,7 +14,7 @@ import {
   Pencil,
   Undo2,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/lib/utils';
 
 interface ToolbarProps {
   numPages: number | null;

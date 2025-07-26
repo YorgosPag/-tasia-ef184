@@ -1,3 +1,4 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -7,12 +8,13 @@ import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "***REMOVED***",
-    authDomain: "tasia-6f77i.firebaseapp.com",
-    projectId: "tasia-6f77i",
-    storageBucket: "tasia-6f77i.appspot.com",
-    messagingSenderId: "204877276202",
-    appId: "1:204877276202:web:31db4eb5b1c1b7c4078f53"
+    apiKey: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process***REMOVED***.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase

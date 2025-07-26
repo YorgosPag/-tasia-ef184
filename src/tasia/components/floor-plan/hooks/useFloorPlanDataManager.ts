@@ -15,10 +15,10 @@ import {
   getDocs,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
-import { logActivity } from '@/lib/logger';
-import { UnitFormValues, unitSchema } from '@/components/units/UnitDialogForm';
+import { db } from '@/shared/lib/firebase';
+import { useToast } from '@/shared/hooks/use-toast';
+import { logActivity } from '@/shared/lib/logger';
+import { UnitFormValues, unitSchema } from '@/tasia/components/units/UnitDialogForm';
 import { Unit } from '../Unit';
 
 interface UseFloorPlanDataManagerProps {

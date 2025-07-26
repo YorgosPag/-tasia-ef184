@@ -1,46 +1,71 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import '@/tasia/theme/global.tasia.css';
-import { ThemeProvider } from '@/tasia/theme/theme-provider';
-import { AuthProvider } from '@/hooks/use-auth';
-import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
-import { Toaster } from '@/components/ui/toaster';
-import { QueryProvider } from '@/hooks/use-query-provider';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { DataProvider } from '@/hooks/use-data-store';
+
+'use client';
+
+import React from 'react';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { FloorPlanLoader } from './FloorPlanLoader';
+import type { Unit } from '@/tasia/components/floor-plan/Unit';
+import { useFloorPlanDataManager } from '@/tasia/components/floor-plan/hooks/useFloorPlanDataManager';
+import { UnitDialogForm } from '@/tasia/components/units/UnitDialogForm';
 
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+interface FloorPlanCardProps {
+  floorId: string;
+  floorPlanUrl?: string;
+  initialUnits: Unit[];
+  onUnitClick: (unitId: string) => void;
+}
 
-export const metadata: Metadata = {
-  title: 'TASIA',
-  description: 'Real Estate Management Platform',
-};
+/**
+ * A card component that conditionally renders the FloorPlanViewer if a URL
+ * is provided, or a placeholder message if not.
+ * It now manages its own data fetching via the FloorPlanViewer.
+ */
+export function FloorPlanCard({
+  floorId,
+  floorPlanUrl,
+  initialUnits,
+  onUnitClick,
+}: FloorPlanCardProps) {
+  const dataManager = useFloorPlanDataManager({ floorId, initialUnits });
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  
+  const handlePolygonDrawn = (points: { x: number, y: number }[]) => {
+    dataManager.setDrawingPolygon(points);
+    dataManager.setIsDialogOpen(true);
+  }
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} tasia`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <QueryProvider>
-            <AuthProvider>
-              <DataProvider>
-                <SidebarProvider>
-                   <ProtectedRoute>
-                      {children}
-                    </ProtectedRoute>
-                    <Toaster />
-                </SidebarProvider>
-              </DataProvider>
-            </AuthProvider>
-          </QueryProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <Card className="p-0">
+      <CardContent className="p-0">
+        {floorPlanUrl ? (
+          <FloorPlanLoader
+            pdfUrl={floorPlanUrl}
+            units={dataManager.units}
+            setUnits={dataManager.setUnits}
+            onPolygonDrawn={handlePolygonDrawn}
+            onUnitPointsUpdate={dataManager.handleUnitPointsUpdate}
+            onUnitClick={onUnitClick}
+            onUnitDelete={dataManager.handleDeleteUnit}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
+            <p className="text-muted-foreground">Δεν έχει ανέβει κάτοψη για αυτόν τον όροφο.</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Χρησιμοποιήστε το πεδίο παραπάνω για να ανεβάσετε ένα αρχείο PDF.
+            </p>
+          </div>
+        )}
+      </CardContent>
+      <UnitDialogForm
+        open={dataManager.isDialogOpen}
+        onOpenChange={dataManager.setIsDialogOpen}
+        onSubmit={dataManager.form.handleSubmit(dataManager.onSubmitUnit)}
+        form={dataManager.form}
+        isSubmitting={dataManager.isSubmitting}
+        editingUnit={dataManager.editingUnit}
+        drawingPolygon={dataManager.drawingPolygon}
+        availableUnits={dataManager.unitsWithoutPolygon}
+      />
+    </Card>
   );
 }

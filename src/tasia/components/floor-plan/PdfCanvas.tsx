@@ -7,7 +7,7 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { Loader2 } from 'lucide-react';
 import { Unit } from './Unit';
-import { usePdfHandlers } from './hooks/usePdfHandlers';
+import { usePdfHandlers } from '@/tasia/hooks/floor-plan/usePdfHandlers';
 import { DrawingLayers } from './DrawingLayers';
 import { UnitLayers } from './UnitLayers';
 

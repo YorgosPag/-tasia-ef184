@@ -1,14 +1,15 @@
 
+
 'use client';
 
 import React, { useState } from 'react';
 import { doc, updateDoc, arrayUnion, arrayRemove, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { db, storage } from '@/shared/lib/firebase';
+import { useToast } from '@/shared/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
 import { Loader2, Upload, Trash2, CameraOff } from 'lucide-react';
 import Image from 'next/image';
 import { Unit } from '@/tasia/hooks/use-unit-details';

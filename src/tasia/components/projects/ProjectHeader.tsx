@@ -1,46 +1,43 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import '@/tasia/theme/global.tasia.css';
-import { ThemeProvider } from '@/tasia/theme/theme-provider';
-import { AuthProvider } from '@/hooks/use-auth';
-import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
-import { Toaster } from '@/components/ui/toaster';
-import { QueryProvider } from '@/hooks/use-query-provider';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { DataProvider } from '@/hooks/use-data-store';
 
+'use client';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Badge } from '@/shared/components/ui/badge';
+import Image from 'next/image';
+import { format } from 'date-fns';
+import { Timestamp } from 'firebase/firestore';
+import type { Project } from '@/tasia/app/projects/[id]/page';
 
-export const metadata: Metadata = {
-  title: 'TASIA',
-  description: 'Real Estate Management Platform',
+interface ProjectHeaderProps {
+    project: Project;
+}
+
+const formatDate = (timestamp?: Timestamp | Date) => {
+    if (!timestamp) return '-';
+    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
+    return format(date, 'dd/MM/yyyy');
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} tasia`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <QueryProvider>
-            <AuthProvider>
-              <DataProvider>
-                <SidebarProvider>
-                   <ProtectedRoute>
-                      {children}
-                    </ProtectedRoute>
-                    <Toaster />
-                </SidebarProvider>
-              </DataProvider>
-            </AuthProvider>
-          </QueryProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+export function ProjectHeader({ project }: ProjectHeaderProps) {
+    return (
+        <Card>
+            <CardHeader>
+            <CardTitle>{project.title}</CardTitle>
+            <CardDescription>{project.location} | Προθεσμία: {formatDate(project.deadline)} | Κατάσταση: {project.status}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6 md:flex-row">
+                {project.photoUrl && (
+                    <div className="md:w-1/3 relative aspect-[4/3]">
+                        <Image src={project.photoUrl} alt={`Photo of ${project.title}`} fill className="rounded-lg object-cover" loading="lazy"/>
+                    </div>
+                )}
+                <div className="flex-1 space-y-4">
+                    {project.description && <p className="text-sm text-muted-foreground">{project.description}</p>}
+                    {project.tags && project.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2">{project.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}</div>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    );
 }

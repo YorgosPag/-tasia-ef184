@@ -3,7 +3,7 @@
 'use client';
 
 import { collection, Timestamp, getDocs, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/shared/lib/firebase';
 import { useQuery } from '@tanstack/react-query';
 
 export interface Unit {
