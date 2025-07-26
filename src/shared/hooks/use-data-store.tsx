@@ -80,7 +80,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     setIsLoading(true);
 
-    const q = (collectionName: string) => query(collection(db, collectionName), orderBy('createdAt', 'desc'));
+    const q = (collectionName: string) => query(collection(db, collectionName));
 
     const unsubscribeCompanies = onSnapshot(q('companies'), 
         (snapshot) => setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company))),
