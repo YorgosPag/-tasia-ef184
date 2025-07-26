@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useAuth } from './use-auth';
 import { logActivity } from '@/shared/lib/logger';
@@ -80,31 +80,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     setIsLoading(true);
 
-    const q = (collectionName: string) => query(collection(db, collectionName));
+    const companiesQuery = query(collection(db, 'companies'));
+    const projectsQuery = query(collection(db, 'projects'));
+    const buildingsQuery = query(collection(db, 'buildings'));
 
-    const unsubscribeCompanies = onSnapshot(q('companies'), 
+    const unsubscribeCompanies = onSnapshot(companiesQuery, 
         (snapshot) => setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company))),
         (err) => console.error("Error fetching companies:", err)
     );
-    const unsubscribeProjects = onSnapshot(q('projects'), 
-        (snapshot) => setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project))),
-        (err) => console.error("Error fetching projects:", err)
+    const unsubscribeProjects = onSnapshot(projectsQuery, 
+        (snapshot) => {
+            setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
+            setIsLoading(false); // Consider loading done when main data arrives
+        },
+        (err) => {
+            console.error("Error fetching projects:", err);
+            setIsLoading(false);
+        }
     );
-    const unsubscribeBuildings = onSnapshot(q('buildings'), 
+    const unsubscribeBuildings = onSnapshot(buildingsQuery, 
         (snapshot) => setBuildings(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Building))),
         (err) => console.error("Error fetching buildings:", err)
     );
-    
-    // We can consider loading done when projects (the main entity) are loaded.
-    const unsubscribeLoadingCheck = onSnapshot(q('projects'), () => {
-        setIsLoading(false);
-    });
 
     return () => {
         unsubscribeCompanies();
         unsubscribeProjects();
         unsubscribeBuildings();
-        unsubscribeLoadingCheck();
     };
 
   }, [user]);
