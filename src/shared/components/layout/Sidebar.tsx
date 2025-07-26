@@ -4,7 +4,7 @@
 import * as React from "react"
 import {
   Sidebar,
-} from "@/shared/components/ui/sidebar"
+} from "@/components/ui/sidebar"
 import { SidebarNav } from "./sidebar-nav"
 
 export function AppSidebar() {
