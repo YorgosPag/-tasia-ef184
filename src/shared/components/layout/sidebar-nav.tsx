@@ -33,16 +33,11 @@ import {
   Building2,
   FolderKanban,
   FilePen,
+  Library,
 } from 'lucide-react';
 
-const tasiaNav = [
+const tasiaProjectToolsNav = [
   { href: '/projects', label: 'Έργα', icon: Briefcase },
-  { href: '/contacts', label: 'Επαφές', icon: Users },
-  { href: '/companies', label: 'Εταιρείες', icon: Building2 },
-  { href: '/buildings', label: 'Κτίρια', icon: Building },
-  { href: '/floors', label: 'Όροφοι', icon: Layers },
-  { href: '/units', label: 'Ακίνητα', icon: Home },
-  { href: '/attachments', label: 'Παρακολουθήματα', icon: ClipboardList },
   { href: '/leads', label: 'Leads', icon: Wallet },
   { href: '/meetings', label: 'Συσκέψεις', icon: MessageSquare },
   { href: '/work-stages', label: 'Στάδια Εργασιών', icon: GanttChartSquare },
@@ -50,6 +45,15 @@ const tasiaNav = [
   { href: '/architect-desk', label: 'Architect\'s Desk', icon: FilePen },
   { href: '/assignments', label: 'Οι Αναθέσεις μου', icon: ClipboardList },
 ];
+
+const entitiesNav = [
+    { href: '/companies', label: 'Εταιρείες', icon: Building2 },
+    { href: '/contacts', label: 'Επαφές', icon: Users },
+    { href: '/buildings', label: 'Κτίρια', icon: Building },
+    { href: '/floors', label: 'Όροφοι', icon: Layers },
+    { href: '/units', label: 'Ακίνητα', icon: Home },
+    { href: '/attachments', label: 'Παρακολουθήματα', icon: ClipboardList },
+]
 
 const nestorNav = [
   { href: '/nestor/dashboard', label: 'Πίνακας Ελέγχου', icon: LayoutGrid },
@@ -83,13 +87,26 @@ export function SidebarNav() {
       
       <SidebarGroup>
         <SidebarGroupLabel>TASIA Real Estate</SidebarGroupLabel>
-        {tasiaNav.map((item) => (
+        {tasiaProjectToolsNav.map((item) => (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
               {item.label}
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
+      </SidebarGroup>
+      
+       <SidebarSeparator />
+
+        <SidebarGroup>
+            <SidebarGroupLabel>Οντότητες</SidebarGroupLabel>
+            {entitiesNav.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
+                  {item.label}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
       </SidebarGroup>
       
       <SidebarSeparator />
