@@ -14,7 +14,7 @@ const BATCH_LIMIT = 499; // Firestore batch limit is 500
 
 /**
  * Deletes all documents from a specified collection in batches.
- * @param collectionName The name of the collection to clear.
+ * @param collectionPath The name of the collection to clear.
  */
 async function clearCollection(collectionPath: string) {
     const collectionRef = collection(db, collectionPath);
@@ -72,15 +72,6 @@ export async function clearTasiaData() {
         }
         // After clearing sub-collections, clear the workStages collection itself
         await clearCollection(`projects/${projectDoc.id}/workStages`);
-
-        const buildingsSnapshot = await getDocs(collection(projectDoc.ref, 'buildings'));
-        for(const buildingDoc of buildingsSnapshot.docs) {
-            const floorsSnapshot = await getDocs(collection(buildingDoc.ref, 'floors'));
-            for(const floorDoc of floorsSnapshot.docs) {
-                 await clearCollection(`projects/${projectDoc.id}/buildings/${buildingDoc.id}/floors/${floorDoc.id}/units`);
-            }
-            await clearCollection(`projects/${projectDoc.id}/buildings/${buildingDoc.id}/floors`);
-        }
         await clearCollection(`projects/${projectDoc.id}/buildings`);
     }
 

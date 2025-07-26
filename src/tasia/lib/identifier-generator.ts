@@ -2,7 +2,7 @@
 'use server';
 
 import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/shared/lib/firebase';
 
 // --- Type Definitions ---
 

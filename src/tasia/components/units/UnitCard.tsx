@@ -13,7 +13,7 @@ interface Unit {
   id: string;
   name: string;
   type?: string;
-  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος';
+  status: 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος' | 'Προς Ενοικίαση';
   area?: number;
   price?: number;
   bedrooms?: number;

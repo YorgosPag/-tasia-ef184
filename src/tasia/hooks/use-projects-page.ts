@@ -13,7 +13,7 @@ import { logActivity } from '@/shared/lib/logger';
 import { exportToJson } from '@/shared/lib/exporter';
 import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
 import { formatDate } from '@/tasia/lib/project-helpers';
-import { useAuth } from '../hooks/use-auth';
+import { useAuth } from '@/shared/hooks/use-auth';
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/tasia/types/project-types';
 
 
