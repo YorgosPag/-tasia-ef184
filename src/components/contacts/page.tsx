@@ -35,8 +35,8 @@ export default function ContactsPage() {
       return (
         contact.name.toLowerCase().includes(query) ||
         (contact.entityType && contact.entityType.toLowerCase().includes(query)) ||
-        (contact.contactInfo?.email && contact.contactInfo.email.toLowerCase().includes(query)) ||
-        (contact.contactInfo?.phone && contact.contactInfo.phone.toLowerCase().includes(query)) ||
+        (contact.emails && contact.emails.some(e => e.value.toLowerCase().includes(query))) ||
+        (contact.phones && contact.phones.some(p => p.value.toLowerCase().includes(query))) ||
         (contact.afm && contact.afm.toLowerCase().includes(query))
       );
     });
@@ -53,6 +53,11 @@ export default function ContactsPage() {
           default: return 'outline';
       }
   }
+  
+  const getPrimaryEmail = (contact: Contact) => contact.emails?.[0]?.value || 'N/A';
+  const getPrimaryPhone = (contact: Contact) => contact.phones?.[0]?.value || 'N/A';
+  const getPrimaryWebsite = (contact: Contact) => contact.socials?.find(s => s.type === 'Website')?.url;
+
 
   return (
     <div className="flex flex-col gap-8">
@@ -99,31 +104,36 @@ export default function ContactsPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredContacts.map((contact) => (
-                    <TableRow key={contact.id} className="group">
-                      <TableCell className="font-medium flex items-center gap-2">
-                        <Avatar title={contact.name}><AvatarImage src={contact.photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
-                        {contact.name}
-                      </TableCell>
-                      <TableCell><Badge variant={getBadgeVariant(contact.entityType)}>{contact.entityType}</Badge></TableCell>
-                      <TableCell>{contact.contactInfo?.email ? (<a href={`mailto:${contact.contactInfo.email}`} className="text-primary hover:underline">{contact.contactInfo.email}</a>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
-                      <TableCell className="text-muted-foreground">{contact.contactInfo?.phone || 'N/A'}</TableCell>
-                      <TableCell className="text-muted-foreground">{contact.afm || 'N/A'}</TableCell>
-                      <TableCell>{contact.socials?.website ? (<Link href={contact.socials.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1"><LinkIcon size={14}/>Επίσκεψη</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            {isEditor && (
-                                <Button asChild variant="ghost" size="icon">
-                                    <Link href={`/contacts/${contact.id}/edit`}>
-                                        <Edit className="h-4 w-4" />
-                                        <span className="sr-only">Επεξεργασία</span>
-                                    </Link>
-                                </Button>
-                            )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {filteredContacts.map((contact) => {
+                      const primaryEmail = getPrimaryEmail(contact);
+                      const primaryPhone = getPrimaryPhone(contact);
+                      const primaryWebsite = getPrimaryWebsite(contact);
+                      return (
+                        <TableRow key={contact.id} className="group">
+                          <TableCell className="font-medium flex items-center gap-2">
+                            <Avatar title={contact.name}><AvatarImage src={contact.photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                            {contact.name}
+                          </TableCell>
+                          <TableCell><Badge variant={getBadgeVariant(contact.entityType)}>{contact.entityType}</Badge></TableCell>
+                          <TableCell>{primaryEmail !== 'N/A' ? (<a href={`mailto:${primaryEmail}`} className="text-primary hover:underline">{primaryEmail}</a>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
+                          <TableCell className="text-muted-foreground">{primaryPhone}</TableCell>
+                          <TableCell className="text-muted-foreground">{contact.afm || 'N/A'}</TableCell>
+                          <TableCell>{primaryWebsite ? (<Link href={primaryWebsite} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1"><LinkIcon size={14}/>Επίσκεψη</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                {isEditor && (
+                                    <Button asChild variant="ghost" size="icon">
+                                        <Link href={`/contacts/${contact.id}/edit`}>
+                                            <Edit className="h-4 w-4" />
+                                            <span className="sr-only">Επεξεργασία</span>
+                                        </Link>
+                                    </Button>
+                                )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
                 </TableBody>
               </Table>
             </div>

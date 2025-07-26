@@ -29,21 +29,23 @@ export const identityTaxSchema = z.object({
 });
 
 export const contactInfoSchema = z.object({
-  contactInfo: z.object({
-    email: z.string().email('Μη έγκυρο email').or(z.literal('')).optional(),
-    phone: z.string().optional(),
-    landline: z.string().optional(),
-  }).optional(),
+    emails: z.array(z.object({
+        type: z.enum(['Προσωπικό', 'Επαγγελματικό']).default('Προσωπικό'),
+        value: z.string().email({ message: 'Μη έγκυρο email.' }),
+    })).optional(),
+    phones: z.array(z.object({
+        type: z.enum(['Κινητό', 'Σταθερό', 'Επαγγελματικό']).default('Κινητό'),
+        value: z.string().min(1, { message: 'Ο αριθμός είναι υποχρεωτικός.' }),
+        indicators: z.array(z.enum(['Viber', 'WhatsApp', 'Telegram'])).optional(),
+    })).optional(),
 });
 
+
 export const socialsSchema = z.object({
-  socials: z.object({
-    website: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
-    linkedin: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
-    facebook: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
-    instagram: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
-    tiktok: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
-  }).optional(),
+    socials: z.array(z.object({
+        type: z.enum(['Website', 'LinkedIn', 'Facebook', 'Instagram', 'TikTok']).default('Website'),
+        url: z.string().url({ message: 'Μη έγκυρο URL.' }),
+    })).optional(),
 });
 
 export const addressSchema = z.object({

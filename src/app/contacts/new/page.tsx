@@ -29,8 +29,9 @@ export default function NewContactPage() {
             entityType: 'Φυσικό Πρόσωπο',
             photoUrl: '',
             identity: { type: 'Ταυτότητα', number: '', issuingAuthority: '' },
-            contactInfo: { email: '', phone: '', landline: ''},
-            socials: { website: '', linkedin: '', facebook: ''},
+            emails: [],
+            phones: [],
+            socials: [],
             address: { street: '', number: '', city: '', postalCode: ''},
             job: { role: '', specialty: ''},
             notes: ''
