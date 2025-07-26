@@ -12,7 +12,7 @@ export default function RootPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/tasia/dashboard');
+    router.replace('/dashboard');
   }, [router]);
 
   return (

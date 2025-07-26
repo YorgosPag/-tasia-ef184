@@ -1,16 +1,12 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Redirect / to /tasia/dashboard
+  // Redirect / to /dashboard
   async redirects() {
     return [
       {
         source: '/',
-        destination: '/tasia/dashboard',
-        permanent: true,
-      },
-       {
-        source: '/dashboard',
-        destination: '/tasia/dashboard',
+        destination: '/dashboard',
         permanent: true,
       },
     ];

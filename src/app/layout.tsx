@@ -1,38 +1,37 @@
 
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import '@/tasia/theme/global.tasia.css';
-import { ThemeProvider } from '@/shared/components/theme-provider';
+'use client';
+
+import React from 'react';
+import { AppShell } from '@/shared/components/layout/app-shell';
+import { ThemeProvider } from '@/tasia/components/theme-provider';
 import { AuthProvider } from '@/shared/hooks/use-auth';
-import { Toaster } from '@/shared/components/ui/toaster';
-import { QueryProvider } from '@/shared/hooks/use-query-provider';
-import { SidebarProvider } from '@/shared/components/ui/sidebar';
 import { DataProvider } from '@/shared/hooks/use-data-store';
+import { QueryProvider } from '@/shared/hooks/use-query-provider';
+import { Toaster } from '@/shared/components/ui/toaster';
+import { SidebarProvider } from '@/shared/components/ui/sidebar';
 
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-
-export const metadata: Metadata = {
-  title: 'TASIA',
-  description: 'Real Estate Management Platform',
-};
+import '@/tasia/theme/global.tasia.css';
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} tasia`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <QueryProvider>
             <AuthProvider>
               <DataProvider>
                 <SidebarProvider>
-                    {children}
-                    <Toaster />
+                   <AppShell>{children}</AppShell>
+                   <Toaster />
                 </SidebarProvider>
               </DataProvider>
             </AuthProvider>
