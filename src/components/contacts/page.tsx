@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/shared/components/ui/table';
 import { Input } from '@/shared/components/ui/input';
-import { PlusCircle, Loader2, Link as LinkIcon, Download, Search } from 'lucide-react';
+import { PlusCircle, Loader2, Link as LinkIcon, Download, Search, Edit } from 'lucide-react';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
@@ -87,10 +87,20 @@ export default function ContactsPage() {
           ) : filteredContacts.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader><TableRow><TableHead>Όνομα</TableHead><TableHead>Τύπος</TableHead><TableHead>Email</TableHead><TableHead>Τηλέφωνο</TableHead><TableHead>ΑΦΜ</TableHead><TableHead>Website</TableHead></TableRow></TableHeader>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Όνομα</TableHead>
+                        <TableHead>Τύπος</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Τηλέφωνο</TableHead>
+                        <TableHead>ΑΦΜ</TableHead>
+                        <TableHead>Website</TableHead>
+                        <TableHead className="text-right">Ενέργειες</TableHead>
+                    </TableRow>
+                </TableHeader>
                 <TableBody>
                   {filteredContacts.map((contact) => (
-                    <TableRow key={contact.id}>
+                    <TableRow key={contact.id} className="group">
                       <TableCell className="font-medium flex items-center gap-2">
                         <Avatar title={contact.name}><AvatarImage src={contact.photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
                         {contact.name}
@@ -100,6 +110,18 @@ export default function ContactsPage() {
                       <TableCell className="text-muted-foreground">{contact.contactInfo?.phone || 'N/A'}</TableCell>
                       <TableCell className="text-muted-foreground">{contact.afm || 'N/A'}</TableCell>
                       <TableCell>{contact.socials?.website ? (<Link href={contact.socials.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1"><LinkIcon size={14}/>Επίσκεψη</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            {isEditor && (
+                                <Button asChild variant="ghost" size="icon">
+                                    <Link href={`/contacts/${contact.id}/edit`}>
+                                        <Edit className="h-4 w-4" />
+                                        <span className="sr-only">Επεξεργασία</span>
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
