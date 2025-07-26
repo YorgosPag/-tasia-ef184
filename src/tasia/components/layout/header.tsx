@@ -19,12 +19,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogIn, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { Breadcrumbs } from './breadcrumbs';
+import { Breadcrumbs } from '@/shared/components/layout/breadcrumbs';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
 
-const ModeToggle = dynamic(() => import('@/tasia/components/layout/mode-toggle').then(mod => mod.ModeToggle), {
+const ModeToggle = dynamic(() => import('@/components/layout/mode-toggle').then(mod => mod.ModeToggle), {
   loading: () => <Skeleton className="h-8 w-8 rounded-full" />,
   ssr: false,
 });
@@ -105,5 +105,3 @@ export function AppHeader() {
     </header>
   );
 }
-
-    
