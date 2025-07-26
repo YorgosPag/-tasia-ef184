@@ -1,10 +1,11 @@
+
 'use client';
 
 import React from 'react';
-import { useUnits, Unit } from '@/tasia/hooks/use-units';
+import { useUnits } from '@/tasia/hooks/use-units';
 import { UnitCard } from '@/tasia/components/units/UnitCard';
 import { Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/shared/components/ui/input';
 import { Search } from 'lucide-react';
 
 export default function UnitsPage() {
