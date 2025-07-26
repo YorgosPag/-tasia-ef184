@@ -115,34 +115,47 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {/* 3. Στοιχεία Επικοινωνίας */}
       <AccordionItem value="contact">
         <AccordionTrigger>Στοιχεία Επικοινωνίας</AccordionTrigger>
-        <AccordionContent className="space-y-4 p-1">
-            {renderField('emails', 'Emails', 
+        <AccordionContent className="space-y-6 p-1 pt-4">
+             {/* Emails Section */}
+            <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                    <FormLabel>Emails</FormLabel>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => appendEmail({ type: 'Προσωπικό', value: '' })}>
+                        <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Email
+                    </Button>
+                </div>
                 <div className="w-full space-y-2">
                     {emailFields.map((field, index) => (
-                    <div key={field.id} className="flex items-end gap-2 p-2 border rounded-md">
+                    <div key={field.id} className="flex items-end gap-2 p-2 border rounded-md bg-muted/30">
                         <FormField control={form.control} name={`emails.${index}.type`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Τύπος</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Προσωπικό">Προσωπικό</SelectItem><SelectItem value="Επαγγελματικό">Επαγγελματικό</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name={`emails.${index}.value`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Email</FormLabel><FormControl><Input {...field} type="email" /></FormControl><FormMessage /></FormItem>)} />
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeEmail(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                     </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendEmail({ type: 'Προσωπικό', value: '' })}><PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Email</Button>
                 </div>
-            )}
-             {renderField('phones', 'Τηλέφωνα', 
+            </div>
+
+            {/* Phones Section */}
+            <div className="space-y-2">
+                 <div className="flex justify-between items-center">
+                    <FormLabel>Τηλέφωνα</FormLabel>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => appendPhone({ type: 'Κινητό', value: '', indicators: [] })}>
+                        <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Τηλεφώνου
+                    </Button>
+                </div>
                 <div className="w-full space-y-2">
                     {phoneFields.map((field, index) => (
-                    <div key={field.id} className="flex flex-col gap-3 p-2 border rounded-md">
+                    <div key={field.id} className="flex flex-col gap-3 p-3 border rounded-md bg-muted/30">
                         <div className="flex items-end gap-2">
                             <FormField control={form.control} name={`phones.${index}.type`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Τύπος</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Κινητό">Κινητό</SelectItem><SelectItem value="Σταθερό">Σταθερό</SelectItem><SelectItem value="Επαγγελματικό">Επαγγελματικό</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                             <FormField control={form.control} name={`phones.${index}.value`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Αριθμός</FormLabel><FormControl><Input {...field} type="tel" /></FormControl><FormMessage /></FormItem>)} />
                             <Button type="button" variant="ghost" size="icon" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                         </div>
-                        <FormField control={form.control} name={`phones.${index}.indicators`} render={() => (<FormItem><div className="flex items-center space-x-4">{PHONE_INDICATORS.map(indicator => (<FormField key={indicator} control={form.control} name={`phones.${index}.indicators`} render={({ field }) => (<FormItem className="flex items-center space-x-2"><FormControl><Checkbox checked={field.value?.includes(indicator)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), indicator]) : field.onChange(field.value?.filter(v => v !== indicator))}}/></FormControl><FormLabel className="font-normal text-sm">{indicator}</FormLabel></FormItem>)}/>))}</div><FormMessage /></FormItem>)}/>
+                        <FormField control={form.control} name={`phones.${index}.indicators`} render={() => (<FormItem><div className="flex items-center space-x-4 pl-1 pt-2">{PHONE_INDICATORS.map(indicator => (<FormField key={indicator} control={form.control} name={`phones.${index}.indicators`} render={({ field }) => (<FormItem className="flex items-center space-x-2"><FormControl><Checkbox checked={field.value?.includes(indicator)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), indicator]) : field.onChange(field.value?.filter(v => v !== indicator))}}/></FormControl><FormLabel className="font-normal text-sm">{indicator}</FormLabel></FormItem>)}/>))}</div><FormMessage /></FormItem>)}/>
                     </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendPhone({ type: 'Κινητό', value: '', indicators: [] })}><PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Τηλεφώνου</Button>
                 </div>
-            )}
+            </div>
         </AccordionContent>
       </AccordionItem>
       
@@ -150,18 +163,23 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       <AccordionItem value="socials">
         <AccordionTrigger>Κοινωνικά Δίκτυα &amp; Websites</AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
-             {renderField('socials', 'Links', 
+            <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                    <FormLabel>Links</FormLabel>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => appendSocial({ type: 'Website', url: '' })}>
+                        <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Link
+                    </Button>
+                </div>
                 <div className="w-full space-y-2">
                     {socialFields.map((field, index) => (
-                    <div key={field.id} className="flex items-end gap-2 p-2 border rounded-md">
+                    <div key={field.id} className="flex items-end gap-2 p-2 border rounded-md bg-muted/30">
                         <FormField control={form.control} name={`socials.${index}.type`} render={({ field }) => (<FormItem className="w-1/3"><FormLabel className="text-xs">Τύπος</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Website">Website</SelectItem><SelectItem value="LinkedIn">LinkedIn</SelectItem><SelectItem value="Facebook">Facebook</SelectItem><SelectItem value="Instagram">Instagram</SelectItem><SelectItem value="TikTok">TikTok</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name={`socials.${index}.url`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeSocial(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                     </div>
                     ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => appendSocial({ type: 'Website', url: '' })}><PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Link</Button>
                 </div>
-            )}
+            </div>
         </AccordionContent>
       </AccordionItem>
 
