@@ -5,11 +5,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Button } from '@/components/ui/button';
+import { db } from '@/shared/lib/firebase';
+import { Button } from '@/shared/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
+import { Card } from '@/shared/components/ui/card';
+import { Form } from '@/shared/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';

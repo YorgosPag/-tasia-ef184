@@ -3,19 +3,19 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Textarea } from '@/shared/components/ui/textarea';
 import { Unit } from '@/tasia/hooks/use-unit-details';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/shared/components/ui/switch';
+import { Separator } from '@/shared/components/ui/separator';
 import { AMENITIES_LIST, KITCHEN_LAYOUTS, ORIENTATIONS } from '@/tasia/lib/unit-helpers';
 import { AreaInputs } from './new/AreaInputs';
 import { AmenitiesChecklist } from './new/AmenitiesChecklist';
 import type { NewUnitFormValues as UnitFormValues } from '@/tasia/lib/unit-helpers';
-import { Card } from '@/components/ui/card';
+import { Card } from '@/shared/components/ui/card';
 
 
 interface UnitDetailsFormProps {

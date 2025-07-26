@@ -5,15 +5,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { collection, onSnapshot, query as firestoreQuery, doc, updateDoc, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/shared/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { useToast } from '@/shared/hooks/use-toast';
+import { Button } from '@/shared/components/ui/button';
 import { Loader2, PlusCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
 import { AttachmentsListTable } from '@/tasia/components/attachments/AttachmentsListTable';
-import { logActivity } from '@/lib/logger';
+import { logActivity } from '@/shared/lib/logger';
 import { getAttachmentDataFromForm } from '@/tasia/lib/unit-helpers';
 import { attachmentSchema, AttachmentFormValues } from '@/tasia/components/units/AttachmentDialog';
 

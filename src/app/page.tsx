@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect } from 'react';
@@ -10,7 +11,7 @@ export default function Home() {
 
   useEffect(() => {
     // Redirect to the projects page by default
-    router.replace('/tasia/projects');
+    router.replace('/projects');
   }, [router]);
 
   return (

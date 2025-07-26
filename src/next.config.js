@@ -6,12 +6,12 @@ const withBundleAnalyzer = nextBundleAnalyzer({
 });
 
 const nextConfig = {
-  // Redirect / to /tasia/projects
+  // Redirect / to /projects
   async redirects() {
     return [
       {
         source: '/',
-        destination: '/tasia/projects',
+        destination: '/projects',
         permanent: true,
       },
     ];

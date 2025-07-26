@@ -8,6 +8,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    // Redirect to the projects page by default
     router.replace('/tasia/projects');
   }, [router]);
 

@@ -1,8 +1,8 @@
 
+
 'use client';
 
 import { AppSidebar } from '@/shared/components/layout/sidebar';
-import { AppShell as SharedAppShell } from '@/shared/components/layout/AppShell';
 import { AppHeader } from '@/shared/components/layout/Header';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
