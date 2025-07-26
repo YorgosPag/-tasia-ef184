@@ -61,7 +61,7 @@ const mapToNode = (item: any, type: HierarchyNode['type']): HierarchyNode => {
         case 'building': name = item.address; break;
         case 'floor': name = `Όροφος ${item.level}`; break;
         case 'unit': name = `${item.identifier} - ${item.name}`; break;
-        case 'attachment': name = `${item.type}: ${item.details}`; break;
+        case 'attachment': name = `${item.type}: ${item.details || item.identifier || 'N/A'}`; break;
     }
     return {
         id: item.id,
@@ -74,22 +74,16 @@ const mapToNode = (item: any, type: HierarchyNode['type']): HierarchyNode => {
 };
 
 const getHref = (type: HierarchyNode['type'], id: string): string => {
-    switch (type) {
-        case 'company':
-            return `/projects?companyId=${id}`;
-        case 'project':
-            return `/projects/${id}`;
-        case 'building':
-            return `/buildings/${id}`;
-        case 'floor':
-            return `/floors/${id}`;
-        case 'unit':
-            return `/units/${id}`;
-        case 'attachment':
-            return `/attachments?id=${id}`;
-        default:
-            return '/';
-    }
+    if (!type || !id) return '/'; // Safeguard
+    const basePath = {
+        company: `/projects?companyId=${id}`,
+        project: `/projects/${id}`,
+        building: `/buildings/${id}`,
+        floor: `/floors/${id}`,
+        unit: `/units/${id}`,
+        attachment: `/attachments?id=${id}`,
+    }[type];
+    return basePath || '/';
 }
 
 
