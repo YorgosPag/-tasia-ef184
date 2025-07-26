@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,8 +13,8 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Button } from '@/components/ui/button';
+import { db } from '@/shared/lib/firebase';
+import { Button } from '@/shared/components/ui/button';
 import {
   Table,
   TableBody,
@@ -21,7 +22,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/shared/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -32,18 +33,18 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/shared/components/ui/alert-dialog";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PlusCircle, Loader2, Edit, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/shared/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { format } from 'date-fns';
 import Image from 'next/image';
-import { logActivity } from '@/lib/logger';
+import { logActivity } from '@/shared/lib/logger';
 import { BuildingFormDialog, buildingSchema, BuildingFormValues } from './BuildingFormDialog';
-import type { Project } from '@/app/projects/[id]/page';
-import { useAuth } from '@/hooks/use-auth';
+import type { Project } from '@/tasia/app/projects/[id]/page';
+import { useAuth } from '@/shared/hooks/use-auth';
 
 // Re-declaring Building type locally as it's not exported from the page
 interface Building {

@@ -1,8 +1,7 @@
-
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/shared/hooks/use-auth';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from '@/shared/components/ui/toaster';
 import { QueryProvider } from '@/shared/hooks/use-query-provider';
 import { SidebarProvider } from '@/shared/components/ui/sidebar';
 import { DataProvider } from '@/shared/hooks/use-data-store';

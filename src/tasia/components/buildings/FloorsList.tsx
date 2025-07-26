@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,8 +12,8 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Button } from '@/components/ui/button';
+import { db } from '@/shared/lib/firebase';
+import { Button } from '@/shared/components/ui/button';
 import {
   Table,
   TableBody,
@@ -20,7 +21,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/shared/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -30,7 +31,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from '@/components/ui/dialog';
+} from '@/shared/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -38,17 +39,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+} from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/shared/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { format } from 'date-fns';
-import { logActivity } from '@/lib/logger';
-import { useAuth } from '@/hooks/use-auth';
+import { logActivity } from '@/shared/lib/logger';
+import { useAuth } from '@/shared/hooks/use-auth';
 import type { Building } from '@/tasia/app/buildings/[id]/page';
 
 const floorSchema = z.object({

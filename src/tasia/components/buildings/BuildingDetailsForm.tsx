@@ -3,11 +3,11 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import type { Building, BuildingFormValues } from '@/app/buildings/[id]/page';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
+import { Textarea } from '@/shared/components/ui/textarea';
+import type { Building, BuildingFormValues } from '@/tasia/app/buildings/[id]/page';
 
 interface BuildingDetailsFormProps {
   form: UseFormReturn<BuildingFormValues>;
