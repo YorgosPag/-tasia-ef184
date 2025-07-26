@@ -3,12 +3,12 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import { Unit } from './Unit';
 import { useFloorPlanState } from '@/tasia/hooks/floor-plan/useFloorPlanState';
 import { Toolbar } from './Toolbar';
 import { InfoPanel } from './InfoPanel';
 import { StatusFilter } from './StatusFilter';
 import { PdfCanvas } from './PdfCanvas';
+import type { Unit } from './Unit';
 
 interface FloorPlanViewerProps {
   pdfUrl: string;
