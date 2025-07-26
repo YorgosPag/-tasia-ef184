@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
@@ -8,7 +9,7 @@ import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import { useDataStore } from '@/hooks/use-data-store';
+import { useDataStore, Project, Company } from '@/hooks/use-data-store';
 import { logActivity } from '@/lib/logger';
 import { exportToJson } from '@/lib/exporter';
 import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
