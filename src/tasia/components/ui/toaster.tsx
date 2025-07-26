@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useToast } from "@/tasia/hooks/use-toast"
+import { useToast } from "@/shared/hooks/use-toast"
 import {
   Toast,
   ToastClose,
@@ -34,3 +34,4 @@ export function Toaster() {
     </ToastProvider>
   )
 }
+
