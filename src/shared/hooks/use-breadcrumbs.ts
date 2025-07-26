@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { doc, getDoc, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { BreadcrumbItem } from '@/components/layout/breadcrumbs';
+import type { BreadcrumbItem } from '@/shared/components/layout/breadcrumbs';
 
 // Cache to avoid re-fetching the same documents within a session
 const docCache = new Map<string, DocumentData | null>();

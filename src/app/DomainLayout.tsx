@@ -3,13 +3,13 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import { AppShell as TasiaAppShell } from '@/tasia/components/layout/app-shell';
+import NestorLayout from '@/nestor/app/(main)/layout';
 
 // Dynamically import CSS files
 import '@/tasia/theme/global.tasia.css';
 import '@/nestor/theme/global.nestor.css';
 
-// Dynamically import shell components
-const TasiaAppShell = React.lazy(() => import('@/tasia/components/layout/app-shell').then(module => ({ default: module.AppShell })));
 const NestorAppShell = React.lazy(() => import('@/nestor/app/(main)/layout').then(module => ({ default: module.default })));
 
 

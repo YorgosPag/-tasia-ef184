@@ -22,7 +22,8 @@
     "paths": {
       "@/*": ["./*"],
       "@/tasia/*": ["./tasia/*"],
-      "@/nestor/*": ["./nestor/*"]
+      "@/nestor/*": ["./nestor/*"],
+      "@/shared/*": ["./shared/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/nestor/**/*.ts", "src/nestor/**/*.tsx", "src/tasia/**/*.ts", "src/tasia/**/*.tsx"],

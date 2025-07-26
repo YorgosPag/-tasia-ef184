@@ -1,13 +1,15 @@
 
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ThemeProvider } from '@/tasia/theme/theme-provider';
-import { AuthProvider } from '@/hooks/use-auth';
-import { Toaster } from '@/components/ui/toaster';
-import { QueryProvider } from '@/hooks/use-query-provider';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { DataProvider } from '@/hooks/use-data-store';
+import { ThemeProvider } from '@/shared/components/theme-provider';
+import { AuthProvider } from '@/shared/hooks/use-auth';
+import { Toaster } from '@/shared/components/ui/toaster';
+import { QueryProvider } from '@/shared/hooks/use-query-provider';
+import { SidebarProvider } from '@/shared/components/ui/sidebar';
+import { DataProvider } from '@/shared/hooks/use-data-store';
 import { DomainLayout } from './DomainLayout';
+import '@/tasia/theme/global.tasia.css';
+import '@/nestor/theme/global.nestor.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 

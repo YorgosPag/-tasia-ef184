@@ -3,7 +3,7 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc, serverTimestamp, collection, getDocs, query, limit } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 type UserRole = 'admin' | 'editor' | 'viewer';
