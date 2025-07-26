@@ -51,7 +51,7 @@ import {
 import { useAuth } from "@/shared/hooks/use-auth";
 import { cn } from "@/shared/lib/utils";
 import dynamic from "next/dynamic";
-import { InstructionsDialog } from '@/shared/components/layout/instructions-dialog';
+import { InstructionsDialog } from './instructions-dialog';
 
 
 

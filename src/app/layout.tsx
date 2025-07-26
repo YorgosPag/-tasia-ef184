@@ -31,12 +31,10 @@ export default function RootLayout({
           <AuthProvider>
             <DataProvider>
               <SidebarProvider>
-                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                    <DomainLayout>
-                        {children}
-                    </DomainLayout>
-                    <Toaster />
-                </ThemeProvider>
+                  <DomainLayout>
+                      {children}
+                  </DomainLayout>
+                  <Toaster />
               </SidebarProvider>
             </DataProvider>
           </AuthProvider>

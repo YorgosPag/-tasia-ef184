@@ -3,10 +3,7 @@
 import * as React from "react"
 import {
   Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-} from "@/components/ui/sidebar"
+} from "@/shared/components/ui/sidebar"
 import { SidebarNav } from "./sidebar-nav"
 
 export function AppSidebar() {

@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { SidebarTrigger } from '@/shared/components/ui/sidebar';
+import { SidebarTrigger } from '@/shared/components/ui/sidebar/sidebar-trigger';
+import { useSidebar } from '@/shared/components/ui/sidebar/sidebar-context';
 import { Button } from '@/shared/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import {
@@ -22,7 +23,6 @@ import { Breadcrumbs } from './breadcrumbs';
 import { useBreadcrumbs } from '@/shared/hooks/use-breadcrumbs';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import dynamic from 'next/dynamic';
-import { useSidebar } from '@/shared/components/ui/sidebar';
 
 const ModeToggle = dynamic(() => import('@/shared/components/layout/mode-toggle').then(mod => mod.ModeToggle), {
   loading: () => <Skeleton className="h-8 w-8 rounded-full" />,
