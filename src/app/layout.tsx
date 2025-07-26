@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/shared/components/theme-provider';
 import { AuthProvider } from '@/shared/hooks/use-auth';
 import { Toaster } from '@/shared/components/ui/toaster';
 import { QueryProvider } from '@/shared/hooks/use-query-provider';
-import { SidebarProvider } from '@/shared/components/ui/sidebar';
+import { SidebarProvider } from '@/shared/components/ui/sidebar/sidebar-provider';
 import { DataProvider } from '@/shared/hooks/use-data-store';
 import { DomainLayout } from './DomainLayout';
 import '@/tasia/theme/global.tasia.css';
