@@ -4,11 +4,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { auth } from '@/shared/lib/firebase';
+import { SidebarTrigger } from '@/shared/components/ui/sidebar';
+import { useIsMobile } from '@/shared/hooks/use-mobile';
+import { Button } from '@/shared/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,12 +16,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/shared/components/ui/dropdown-menu';
 import { LogIn, LogOut } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/shared/hooks/use-auth';
 import { Breadcrumbs } from './breadcrumbs';
-import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useBreadcrumbs } from '@/shared/hooks/use-breadcrumbs';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 import dynamic from 'next/dynamic';
 
 const ModeToggle = dynamic(() => import('@/shared/components/layout/mode-toggle').then(mod => mod.ModeToggle), {
