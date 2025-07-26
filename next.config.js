@@ -1,13 +1,12 @@
 
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Redirect / to /projects
+  // Redirect / to /dashboard
   async redirects() {
     return [
       {
         source: '/',
-        destination: '/projects',
+        destination: '/dashboard',
         permanent: true,
       },
     ];

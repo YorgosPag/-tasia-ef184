@@ -197,7 +197,7 @@ export function ProjectDialogForm({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, 'PPP', { locale: el })
+                            format(new Date(field.value), 'PPP', { locale: el })
                           ) : (
                             <span>Επιλέξτε ημερομηνία</span>
                           )}
@@ -208,7 +208,7 @@ export function ProjectDialogForm({
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={field.value}
+                        selected={field.value ? new Date(field.value) : undefined}
                         onSelect={field.onChange}
                         disabled={(date) =>
                           date < new Date(new Date().setHours(0, 0, 0, 0))
