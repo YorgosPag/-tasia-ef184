@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -106,7 +105,7 @@ export function UnitDetailsPageView({
                 <AttachmentsListTable
                   attachments={attachments}
                   onEdit={handleEditAttachment}
-                  unitsMap={new Map()}
+                  unitsMap={new Map([[unit.id, unit]])}
                 />
               </CardContent>
             </Card>
