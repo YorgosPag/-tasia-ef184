@@ -8,7 +8,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryProvider } from '@/hooks/use-query-provider';
-import { SidebarProvider } from '@/shared/components/layout/Sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { DataProvider } from '@/hooks/use-data-store';
 
 
