@@ -1,7 +1,6 @@
 
 'use server';
 
-import { seedTasiaData as seedTasia } from '@/tasia/lib/tasia-seed';
 import { clearTasiaData as clearTasia } from '@/shared/lib/clear';
 import { seedNestorData as seedNestor } from '@/nestor/lib/nestor-seed';
 import { clearNestorData as clearNestor } from '@/nestor/lib/nestor-clear';
@@ -35,9 +34,9 @@ export async function seedTasiaDataAction(userId: string) {
         return { success: false, error: 'Unauthorized: Only admins can seed data.' };
     }
     try {
-        await seedTasia();
+        // await seedTasia(); // Seeding function is removed as requested
         await logActivity('SEED_DATA', { entityType: 'database', details: { app: 'TASIA' }, userId });
-        return { success: true };
+        return { success: true, message: "Tasia seeding function is currently disabled." };
     } catch (error) {
         console.error('TASIA Seeding failed:', error);
         return { success: false, error: (error as Error).message };
