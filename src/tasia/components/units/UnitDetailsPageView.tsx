@@ -8,11 +8,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { ArrowLeft, Loader2, PlusCircle } from 'lucide-react';
 import { UnitDetailsForm } from './UnitDetailsForm';
-import type { NewUnitFormValues as UnitFormValues } from '@/tasia/lib/unit-helpers';
-import { AttachmentDialog, AttachmentFormValues } from '@/tasia/components/units/AttachmentDialog';
-import { UnitsListTable } from '@/tasia/components/floors/UnitsListTable';
-import { Unit } from '@/tasia/hooks/use-unit-details';
-import { UnitContactForm } from './UnitContactForm';
+import type { NewUnitFormValues as UnitFormValues } from '../../lib/unit-helpers';
+import { AttachmentDialog, AttachmentFormValues } from './AttachmentDialog';
+import { UnitsListTable } from '../floors/UnitsListTable';
+import { Unit } from '../../hooks/use-unit-details';
+import { UnitContactForm } from '../units/UnitContactForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UnitFloorPlansTab } from './tabs/UnitFloorPlansTab';
 import { UnitPhotosTab } from './tabs/UnitPhotosTab';
@@ -146,5 +146,3 @@ export function UnitDetailsPageView({
     </div>
   );
 }
-
-    

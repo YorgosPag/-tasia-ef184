@@ -6,42 +6,14 @@ const withBundleAnalyzer = nextBundleAnalyzer({
 });
 
 const nextConfig = {
-  async rewrites() {
+  // Redirect / to /projects
+  async redirects() {
     return [
-      // Rewrites for Tasia App
       {
-        source: '/attachments',
-        destination: '/tasia/attachments',
+        source: '/',
+        destination: '/projects',
+        permanent: true,
       },
-      {
-        source: '/buildings/:id',
-        destination: '/tasia/buildings/:id',
-      },
-      {
-        source: '/contacts',
-        destination: '/tasia/contacts',
-      },
-      {
-        source: '/floors/:id',
-        destination: '/tasia/floors/:id',
-      },
-      {
-        source: '/projects',
-        destination: '/tasia/projects',
-      },
-       {
-        source: '/projects/:id',
-        destination: '/tasia/projects/:id',
-      },
-      {
-        source: '/units',
-        destination: '/tasia/units',
-      },
-      {
-        source: '/units/:id',
-        destination: '/tasia/units/:id',
-      },
-      // You can add more rewrites for other Tasia pages here
     ];
   },
   images: {
