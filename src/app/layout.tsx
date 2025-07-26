@@ -10,7 +10,7 @@ import { QueryProvider } from '@/shared/hooks/use-query-provider';
 import { Toaster } from '@/shared/components/ui/toaster';
 import { SidebarProvider } from '@/shared/components/ui/sidebar';
 
-import '@/tasia/theme/global.tasia.css';
+import '@/app/globals.css';
 
 export default function RootLayout({
   children,
