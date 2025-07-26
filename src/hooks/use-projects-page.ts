@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
@@ -11,8 +10,8 @@ import { useToast } from '@/shared/hooks/use-toast';
 import { useDataStore, Project, Company } from '@/shared/hooks/use-data-store';
 import { logActivity } from '@/shared/lib/logger';
 import { exportToJson } from '@/shared/lib/exporter';
-import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
-import { formatDate } from '@/shared/lib/project-helpers';
+import { projectSchema } from '@/components/projects/ProjectDialogForm';
+import { formatDate } from '@/lib/project-helpers';
 import { useAuth } from './use-auth';
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/shared/types/project-types';
 
@@ -56,7 +55,7 @@ export function useProjectsPage() {
     form.reset({
       ...project,
       tags: project.tags?.join(', ') || '',
-      deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : project.deadline,
+      deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : new Date(project.deadline),
     });
     setIsDialogOpen(true);
   }, [form]);
@@ -78,7 +77,7 @@ export function useProjectsPage() {
       const newId = await addProject({
         ...clonedData,
         tags: clonedData.tags?.join(','),
-        deadline: clonedData.deadline instanceof Timestamp ? clonedData.deadline.toDate() : clonedData.deadline,
+        deadline: clonedData.deadline instanceof Timestamp ? clonedData.deadline.toDate() : new Date(clonedData.deadline),
       });
       toast({ title: 'Επιτυχία', description: `Το έργο '${projectToClone.title}' αντιγράφηκε.` });
       if(newId) {
@@ -165,7 +164,8 @@ export function useProjectsPage() {
 
   const filteredProjects = useMemo(() => {
     if (!allProjects) return [];
-    return allProjects.filter((project) => {
+    const sortedProjects = [...allProjects].sort((a, b) => a.title.localeCompare(b.title));
+    return sortedProjects.filter((project) => {
       const query = searchQuery.toLowerCase();
       const companyName = getCompanyName(project.companyId).toLowerCase();
       return (

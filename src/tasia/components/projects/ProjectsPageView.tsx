@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -10,7 +11,7 @@ import { ProjectDialogForm } from './ProjectDialogForm';
 import { Company } from '@/shared/hooks/use-data-store';
 import { UseFormReturn } from 'react-hook-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/tasia/types/project-types';
+import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/shared/types/project-types';
 import dynamic from 'next/dynamic';
 import { ProjectTableSkeleton } from './ProjectTableSkeleton';
 import { ProjectTable } from './ProjectTable';

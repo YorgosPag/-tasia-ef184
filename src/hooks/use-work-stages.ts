@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -24,10 +23,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/shared/hooks/use-toast';
 import { logActivity } from '@/shared/lib/logger';
-import { WorkStageFormValues, workStageSchema } from '@/tasia/components/projects/work-stages/workStageSchema';
+import { WorkStageFormValues, workStageSchema } from '@/components/projects/work-stages/workStageSchema';
 import type { WorkStage, WorkStageWithSubstages, Inspection } from '@/shared/types/project-types';
 import { exportToJson } from '@/shared/lib/exporter';
-import { formatDate } from '@/tasia/components/projects/work-stages/utils';
+import { formatDate } from '@/components/projects/work-stages/utils';
 import { useAuth } from './use-auth';
 
 
