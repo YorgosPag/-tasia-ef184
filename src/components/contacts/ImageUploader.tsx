@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -9,6 +10,7 @@ import { useToast } from '@/shared/hooks/use-toast';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '@/shared/lib/firebase';
 import { Progress } from '@/shared/components/ui/progress';
+import { Label } from '@/shared/components/ui/label';
 
 interface ImageUploaderProps {
   entityType: 'Φυσικό Πρόσωπο' | 'Νομικό Πρόσωπο' | 'Δημ. Υπηρεσία' | undefined;
@@ -121,7 +123,7 @@ export function ImageUploader({
   if (preview) {
     return (
       <div className="space-y-2">
-        <FormLabel>{getLabel()}</FormLabel>
+        <Label>{getLabel()}</Label>
         <div className="relative group aspect-square w-32">
           <Image src={preview} alt="Preview" layout="fill" className="rounded-md object-cover" />
            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
@@ -140,7 +142,7 @@ export function ImageUploader({
 
   return (
     <div className="space-y-2">
-      <FormLabel>{getLabel()}</FormLabel>
+      <Label>{getLabel()}</Label>
       <div
         {...getRootProps()}
         className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/80
