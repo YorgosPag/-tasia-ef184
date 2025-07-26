@@ -30,7 +30,7 @@ import {
   formatDate,
   getCompanyName,
 } from '@/tasia/lib/project-helpers';
-import type { ProjectWithWorkStageSummary } from '@/shared/types/project-types';
+import type { ProjectWithWorkStageSummary } from '@/tasia/types/project-types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip';
 import { Progress } from '@/shared/components/ui/progress';
 

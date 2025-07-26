@@ -38,7 +38,7 @@ import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { Company } from '@/shared/hooks/use-data-store';
-import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/shared/types/project-types';
+import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/tasia/types/project-types';
 
 export const projectSchema = z.object({
   id: z.string().optional(),
