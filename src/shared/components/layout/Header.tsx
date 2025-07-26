@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/shared/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { SidebarTrigger } from '@/shared/components/ui/sidebar';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { Button } from '@/shared/components/ui/button';
