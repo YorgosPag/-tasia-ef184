@@ -10,7 +10,7 @@ import { Company } from '@/shared/hooks/use-data-store';
 import { useWorkStages } from '@/tasia/hooks/use-work-stages';
 import { WorkStageFormDialog } from './WorkStageFormDialog';
 import { WorkStageAccordion } from './WorkStageAccordion';
-import type { Project, WorkStage } from '@/tasia/app/projects/[id]/page';
+import type { Project, WorkStage } from '@/tasia/types/project-types';
 import { WorkStagesEmptyState } from './WorkStagesEmptyState';
 import { useAuth } from '@/shared/hooks/use-auth';
 
