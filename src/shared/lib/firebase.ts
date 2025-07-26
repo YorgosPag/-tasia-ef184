@@ -24,17 +24,25 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 let analytics;
 
-// Conditionally initialize Analytics only if measurementId is available
-if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
-    isSupported().then((supported) => {
-        if (supported) {
-            try {
-                analytics = getAnalytics(app);
-            } catch (error) {
-                 console.error("Firebase Analytics initialization failed:", error);
-            }
-        }
-    });
+// Conditionally initialize Analytics only if all required configs are available
+if (
+  typeof window !== 'undefined' &&
+  firebaseConfig.apiKey &&
+  firebaseConfig.measurementId
+) {
+  isSupported().then((supported) => {
+    if (supported) {
+      try {
+        analytics = getAnalytics(app);
+      } catch (error) {
+        console.error("Firebase Analytics initialization failed:", error);
+      }
+    } else {
+        console.log("Firebase Analytics is not supported in this environment.");
+    }
+  });
+} else if (typeof window !== 'undefined') {
+    console.log("Firebase Analytics not initialized due to missing apiKey or measurementId.");
 }
 
 export { app, db, auth, storage, analytics };
