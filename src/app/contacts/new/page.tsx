@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Button } from '@/shared/components/ui/button';
@@ -40,63 +40,39 @@ export default function NewContactPage() {
     const onSubmit = async (data: ContactFormValues) => {
         setIsSubmitting(true);
         
-        // Sanitize data to remove undefined values before sending to Firestore
-        const dataToSave = { ...data };
-        Object.keys(dataToSave).forEach(key => {
-            const typedKey = key as keyof ContactFormValues;
-            if (dataToSave[typedKey] === undefined) {
-                delete dataToSave[typedKey];
-            }
-        });
-        
-        // Ensure nested objects are also sanitized
-        if (dataToSave.identity) {
-            Object.keys(dataToSave.identity).forEach(key => {
-                const typedKey = key as keyof NonNullable<ContactFormValues['identity']>;
-                if (dataToSave.identity![typedKey] === undefined) {
-                    delete dataToSave.identity![typedKey];
-                }
-            });
+        // Create a copy to manipulate for Firestore
+        const dataToSave: { [key: string]: any } = { ...data };
+
+        // Convert dates to Timestamps if they exist
+        if (dataToSave.birthDate) {
+            dataToSave.birthDate = Timestamp.fromDate(new Date(dataToSave.birthDate));
         }
-       if (dataToSave.contactInfo) {
-            Object.keys(dataToSave.contactInfo).forEach(key => {
-                const typedKey = key as keyof NonNullable<ContactFormValues['contactInfo']>;
-                if (dataToSave.contactInfo![typedKey] === undefined) {
-                    delete dataToSave.contactInfo![typedKey];
-                }
-            });
-        }
-        if (dataToSave.socials) {
-            Object.keys(dataToSave.socials).forEach(key => {
-                const typedKey = key as keyof NonNullable<ContactFormValues['socials']>;
-                if (dataToSave.socials![typedKey] === undefined) {
-                    delete dataToSave.socials![typedKey];
-                }
-            });
-        }
-        if (dataToSave.address) {
-            Object.keys(dataToSave.address).forEach(key => {
-                const typedKey = key as keyof NonNullable<ContactFormValues['address']>;
-                if (dataToSave.address![typedKey] === undefined) {
-                    delete dataToSave.address![typedKey];
-                }
-            });
-        }
-        if (dataToSave.job) {
-            Object.keys(dataToSave.job).forEach(key => {
-                 const typedKey = key as keyof NonNullable<ContactFormValues['job']>;
-                if (dataToSave.job![typedKey] === undefined) {
-                    delete dataToSave.job![typedKey];
-                }
-            });
+        if (dataToSave.identity?.issueDate) {
+            dataToSave.identity.issueDate = Timestamp.fromDate(new Date(dataToSave.identity.issueDate));
         }
 
+        // Sanitize data to remove undefined or empty values before sending to Firestore
+        Object.keys(dataToSave).forEach(key => {
+            const typedKey = key as keyof ContactFormValues;
+            if (dataToSave[typedKey] === undefined || dataToSave[typedKey] === '' || dataToSave[typedKey] === null) {
+                delete dataToSave[typedKey];
+            } else if (typeof dataToSave[typedKey] === 'object' && dataToSave[typedKey] !== null) {
+                 // Clean nested objects
+                 Object.keys(dataToSave[typedKey]).forEach(nestedKey => {
+                     if (dataToSave[typedKey][nestedKey] === undefined || dataToSave[typedKey][nestedKey] === '' || dataToSave[typedKey][nestedKey] === null) {
+                         delete dataToSave[typedKey][nestedKey];
+                     }
+                 });
+                 // Delete the whole nested object if it's empty after cleaning
+                 if (Object.keys(dataToSave[typedKey]).length === 0) {
+                     delete dataToSave[typedKey];
+                 }
+            }
+        });
 
         try {
             const docRef = await addDoc(collection(db, 'contacts'), {
                 ...dataToSave,
-                birthDate: data.birthDate || null,
-                'identity.issueDate': data.identity?.issueDate || null,
                 createdAt: serverTimestamp(),
                 createdBy: user?.uid,
             });

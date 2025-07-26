@@ -34,6 +34,7 @@ export default function EditContactPage() {
         if (!contactId) return;
 
         const fetchContact = async () => {
+            setIsLoading(true);
             try {
                 const docRef = doc(db, 'contacts', contactId);
                 const docSnap = await getDoc(docRef);
