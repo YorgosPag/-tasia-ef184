@@ -5,8 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { SidebarTrigger } from '@/shared/components/ui/sidebar/sidebar-trigger';
-import { useSidebar } from '@/shared/components/ui/sidebar/sidebar-context';
+import { SidebarTrigger, useSidebar } from '@/shared/components/ui/sidebar';
 import { Button } from '@/shared/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import {
