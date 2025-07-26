@@ -11,28 +11,26 @@ import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebas
 import { storage } from '@/shared/lib/firebase';
 import { Progress } from '@/shared/components/ui/progress';
 import { Label } from '@/shared/components/ui/label';
+import { useFormContext } from 'react-hook-form';
 
 interface ImageUploaderProps {
   entityType: 'Φυσικό Πρόσωπο' | 'Νομικό Πρόσωπο' | 'Δημ. Υπηρεσία' | undefined;
   entityId?: string;
   initialImageUrl?: string | null;
-  onUploadComplete: (url: string) => void;
-  onDelete: () => void;
-  onFileSelect?: (file: File | null) => void;
+  onFileSelect: (file: File | null) => void;
 }
 
 export function ImageUploader({
   entityType,
   entityId,
   initialImageUrl,
-  onUploadComplete,
-  onDelete,
   onFileSelect,
 }: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(initialImageUrl || null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
+  const form = useFormContext(); // Get form context
 
   useEffect(() => {
     setPreview(initialImageUrl || null);
@@ -51,80 +49,37 @@ export function ImageUploader({
         toast({ variant: 'destructive', title: 'Το αρχείο είναι πολύ μεγάλο', description: 'Παρακαλώ επιλέξτε αρχείο μικρότερο από 2MB.' });
         return;
       }
-
-      setPreview(URL.createObjectURL(file));
       
-      // If it's a new contact, defer upload. Otherwise, upload immediately.
-      if (!entityId) {
-        onFileSelect?.(file);
-      } else {
-        handleUpload(file);
-      }
+      const filePreviewUrl = URL.createObjectURL(file);
+      setPreview(filePreviewUrl);
+      onFileSelect(file);
+      // Manually mark the form as dirty when a new file is selected
+      form.setValue('photoUrl', filePreviewUrl, { shouldDirty: true });
     },
-    [entityType, entityId, toast, onFileSelect]
+    [entityType, toast, onFileSelect, form]
   );
-  
-  const handleUpload = (file: File) => {
-    if (!entityId) {
-       // This case is now handled by the parent component for new contacts.
-       // The toast here is a fallback, but shouldn't be hit with the new logic.
-       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η επαφή πρέπει να αποθηκευτεί πρώτα.' });
-       setPreview(initialImageUrl || null); // revert preview
-       return;
-    }
-    const filePath = `contact-images/${entityId}/${file.name}`;
-    const storageRef = ref(storage, filePath);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
-      },
-      (error) => {
-        setIsUploading(false);
-        setPreview(initialImageUrl || null); // Revert preview on error
-        console.error('Upload failed:', error);
-        toast({ variant: 'destructive', title: 'Το ανέβασμα απέτυχε', description: error.message });
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          onUploadComplete(downloadURL);
-          setIsUploading(false);
-          toast({ title: 'Επιτυχία', description: 'Η εικόνα ανέβηκε.' });
-        });
-      }
-    );
-  };
   
   const handleDelete = async () => {
     if (!preview) return;
 
-    // For new contacts, just clear the local file
-    if (!entityId) {
-        setPreview(null);
-        onDelete();
-        return;
-    }
-
-    // For existing contacts, delete from storage
-    const storageRef = ref(storage, preview);
-    try {
-        await deleteObject(storageRef);
-    } catch (error: any) {
-        if (error.code !== 'storage/object-not-found') {
-            console.error("Error deleting image from storage:", error);
-            toast({ variant: 'destructive', title: 'Σφάλμα Διαγραφής', description: 'Δεν ήταν δυνατή η διαγραφή της εικόνας από το storage.' });
-            return;
+    // For existing contacts with an image on storage
+    if (entityId && initialImageUrl) {
+        const storageRef = ref(storage, initialImageUrl);
+        try {
+            await deleteObject(storageRef);
+        } catch (error: any) {
+            if (error.code !== 'storage/object-not-found') {
+                console.error("Error deleting image from storage:", error);
+                toast({ variant: 'destructive', title: 'Σφάλμα Διαγραφής', description: 'Δεν ήταν δυνατή η διαγραφή της εικόνας από το storage.' });
+                return;
+            }
         }
     }
+    
     setPreview(null);
-    onDelete();
-    toast({ title: 'Επιτυχία', description: 'Η εικόνα διαγράφηκε.' });
+    onFileSelect(null);
+    form.setValue('photoUrl', '', { shouldDirty: true });
+    toast({ title: 'Επιτυχία', description: 'Η εικόνα αφαιρέθηκε.' });
   }
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

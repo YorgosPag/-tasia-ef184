@@ -19,7 +19,7 @@ import { ImageUploader } from './ImageUploader';
 
 interface ContactFormProps {
   form: UseFormReturn<ContactFormValues>;
-  onFileSelect?: (file: File | null) => void;
+  onFileSelect: (file: File | null) => void;
 }
 
 export function ContactForm({ form, onFileSelect }: ContactFormProps) {
@@ -31,17 +31,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const { fields: socialFields, append: appendSocial, remove: removeSocial } = useFieldArray({ control: form.control, name: "socials" });
 
   const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
-
-  const handleUploadComplete = (url: string) => {
-    form.setValue('photoUrl', url, { shouldDirty: true });
-    onFileSelect?.(null); // Clear pending file on successful upload
-  };
   
-  const handleImageDelete = async () => {
-    form.setValue('photoUrl', '', { shouldDirty: true });
-    onFileSelect?.(null);
-  };
-
   const renderField = (name: any, label: string, children: React.ReactNode) => (
     <div className="flex flex-col md:flex-row md:items-start md:gap-4 space-y-2 md:space-y-0">
         <FormLabel className="md:w-40 md:text-right md:pt-2.5 shrink-0">{label}</FormLabel>
@@ -73,8 +63,6 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                         entityType={entityType}
                         entityId={contactId}
                         initialImageUrl={form.getValues('photoUrl')}
-                        onUploadComplete={handleUploadComplete}
-                        onDelete={handleImageDelete}
                         onFileSelect={onFileSelect}
                     />
                 )}
