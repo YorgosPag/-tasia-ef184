@@ -1,4 +1,5 @@
 
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import '@/tasia/theme/global.tasia.css';
@@ -45,3 +46,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

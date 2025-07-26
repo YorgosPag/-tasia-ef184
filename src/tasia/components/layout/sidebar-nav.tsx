@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -50,10 +51,8 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
+import { InstructionsDialog } from "@/components/layout/instructions-dialog";
 
-const InstructionsDialog = dynamic(() => import('@/nestor/components/InstructionsDialog').then(mod => mod.InstructionsDialog), {
-    ssr: false,
-});
 
 
 const NavLink = ({
@@ -337,3 +336,5 @@ export function SidebarNav() {
     </>
   );
 }
+
+    

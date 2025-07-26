@@ -1,3 +1,4 @@
+
 {
   "compilerOptions": {
     "target": "ES2017",
@@ -20,9 +21,12 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "@/tasia/*": ["./src/tasia/*"],
       "@/nestor/*": ["./src/nestor/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/nestor/**/*.ts", "src/nestor/**/*.tsx"],
   "exclude": ["node_modules"]
 }
+
+    
