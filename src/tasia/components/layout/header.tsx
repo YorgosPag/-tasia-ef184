@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,7 +20,7 @@ import { LogIn, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Breadcrumbs } from './breadcrumbs';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '../../ui/skeleton';
 import dynamic from 'next/dynamic';
 
 const ModeToggle = dynamic(() => import('./mode-toggle').then(mod => mod.ModeToggle), {
