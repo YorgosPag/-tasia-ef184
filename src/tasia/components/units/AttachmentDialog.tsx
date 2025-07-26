@@ -4,14 +4,14 @@
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/shared/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -19,8 +19,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+} from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
 import { Loader2, Wand2 } from 'lucide-react';
 import {
     Select,
@@ -28,9 +28,9 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { generateNextAttachmentIdentifier } from '@/lib/identifier-generator';
+} from '@/shared/components/ui/select';
+import { Switch } from '@/shared/components/ui/switch';
+import { generateNextAttachmentIdentifier } from '@/shared/lib/identifier-generator';
 import { useToast } from '@/tasia/hooks/use-toast';
 import { useParams } from 'next/navigation';
 
