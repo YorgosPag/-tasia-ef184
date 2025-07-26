@@ -209,5 +209,3 @@ export function useProjectsPage() {
     handleDeleteProject,
   };
 }
-
-    

@@ -45,5 +45,3 @@ export const getStatusLabel = (status: string) => {
 export const getCompanyName = (companyId: string, companies: Company[]) => {
   return companies.find((c) => c.id === companyId)?.name || companyId;
 };
-
-    
