@@ -21,9 +21,10 @@
     ],
     "paths": {
       "@/*": ["./*"],
+      "@/tasia/*": ["./tasia/*"],
       "@/nestor/*": ["./nestor/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/nestor/**/*.ts", "src/nestor/**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/nestor/**/*.ts", "src/nestor/**/*.tsx", "src/tasia/**/*.ts", "src/tasia/**/*.tsx"],
   "exclude": ["node_modules"]
 }

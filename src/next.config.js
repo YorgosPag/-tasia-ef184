@@ -5,21 +5,45 @@ const withBundleAnalyzer = nextBundleAnalyzer({
   enabled: process***REMOVED***.ANALYZE === 'true',
 });
 
-// Detect current domain context (e.g., "nestor" or "tasia")
-const PROJECT = process***REMOVED***.PROJECT || 'tasia';
-
 const nextConfig = {
-  // Optional: Conditional redirect based on domain
-  async redirects() {
+  async rewrites() {
     return [
+      // Rewrites for Tasia App
       {
-        source: '/',
-        destination: PROJECT === 'nestor' ? '/nestor/projects' : '/projects',
-        permanent: true,
+        source: '/attachments',
+        destination: '/tasia/attachments',
       },
+      {
+        source: '/buildings/:id',
+        destination: '/tasia/buildings/:id',
+      },
+      {
+        source: '/contacts',
+        destination: '/tasia/contacts',
+      },
+      {
+        source: '/floors/:id',
+        destination: '/tasia/floors/:id',
+      },
+      {
+        source: '/projects',
+        destination: '/tasia/projects',
+      },
+       {
+        source: '/projects/:id',
+        destination: '/tasia/projects/:id',
+      },
+      {
+        source: '/units',
+        destination: '/tasia/units',
+      },
+      {
+        source: '/units/:id',
+        destination: '/tasia/units/:id',
+      },
+      // You can add more rewrites for other Tasia pages here
     ];
   },
-
   images: {
     remotePatterns: [
       {
@@ -36,8 +60,6 @@ const nextConfig = {
       },
     ],
   },
-
-  // Optional: Add more project-specific config below if needed
 };
 
 export default withBundleAnalyzer(nextConfig);
