@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -17,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui
 import { UnitFloorPlansTab } from './tabs/UnitFloorPlansTab';
 import { UnitPhotosTab } from './tabs/UnitPhotosTab';
 import { UnitContractsTab } from './tabs/UnitContractsTab';
+import { AttachmentsListTable } from '@/tasia/components/attachments/AttachmentsListTable';
 
 interface UnitDetailsPageViewProps {
   unit: Unit;
