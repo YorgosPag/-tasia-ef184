@@ -24,6 +24,8 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 let analytics;
 
+console.log('Firebase DB object:', db);
+
 // Conditionally initialize Analytics only if all required configs are available
 if (
   typeof window !== 'undefined' &&
