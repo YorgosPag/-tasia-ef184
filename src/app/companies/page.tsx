@@ -27,6 +27,8 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/shared/components/ui/alert-dialog";
 import { Form } from "@/shared/components/ui/form";
 import { Input } from '@/shared/components/ui/input';
@@ -213,3 +215,5 @@ export default function CompaniesPage() {
     </div>
   );
 }
+
+    
