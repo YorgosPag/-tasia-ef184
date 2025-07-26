@@ -78,9 +78,9 @@ export default function NewContactPage() {
             toast({ title: "Επιτυχία", description: `Η επαφή "${data.name}" δημιουργήθηκε.` });
             router.push('/contacts');
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error adding contact: ", error);
-            toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν ήταν δυνατή η δημιουργία της επαφής." });
+            toast({ variant: "destructive", title: "Σφάλμα", description: `Δεν ήταν δυνατή η δημιουργία της επαφής: ${error.message}` });
         } finally {
             setIsSubmitting(false);
         }

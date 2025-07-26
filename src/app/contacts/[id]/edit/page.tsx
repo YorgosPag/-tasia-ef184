@@ -116,12 +116,12 @@ export default function EditContactPage() {
                 description: `Οι αλλαγές στην επαφή "${data.name}" αποθηκεύτηκαν.`,
             });
             router.push('/contacts');
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error updating contact: ", error);
             toast({
                 variant: "destructive",
                 title: "Σφάλμα",
-                description: "Δεν ήταν δυνατή η ενημέρωση της επαφής.",
+                description: `Δεν ήταν δυνατή η ενημέρωση της επαφής: ${error.message}`,
             });
         } finally {
             setIsSubmitting(false);
