@@ -34,10 +34,13 @@ import {
   FolderKanban,
   FilePen,
   Library,
+  ChevronDown,
 } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
+import { cn } from '@/shared/lib/utils';
 
 const tasiaProjectToolsNav = [
-  { href: '/projects', label: 'Έργα', icon: Briefcase },
+  { href: '/contacts', label: 'Επαφές', icon: Users },
   { href: '/leads', label: 'Leads', icon: Wallet },
   { href: '/meetings', label: 'Συσκέψεις', icon: MessageSquare },
   { href: '/contracts', label: 'Συμβόλαια', icon: FileText },
@@ -49,7 +52,7 @@ const tasiaProjectToolsNav = [
 
 const entitiesNav = [
     { href: '/companies', label: 'Εταιρείες', icon: Building2 },
-    { href: '/contacts', label: 'Επαφές', icon: Users },
+    { href: '/projects', label: 'Έργα', icon: Briefcase },
     { href: '/buildings', label: 'Κτίρια', icon: Building },
     { href: '/floors', label: 'Όροφοι', icon: Layers },
     { href: '/units', label: 'Ακίνητα', icon: Home },
@@ -70,6 +73,24 @@ const nestorNav = [
 const managementNav = [
   { href: '/custom-lists', label: 'Προσ. Λίστες', icon: List },
 ]
+
+const AccordionTriggerNoChevron = React.forwardRef<
+  React.ElementRef<typeof AccordionTrigger>,
+  React.ComponentPropsWithoutRef<typeof AccordionTrigger>
+>(({ className, children, ...props }, ref) => (
+  <AccordionTrigger
+    ref={ref}
+    className={cn(
+      "p-0 hover:no-underline",
+      className
+    )}
+    {...props}
+  >
+    <div className="flex-1">{children}</div>
+  </AccordionTrigger>
+));
+AccordionTriggerNoChevron.displayName = "AccordionTriggerNoChevron"
+
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -99,16 +120,24 @@ export function SidebarNav() {
       
        <SidebarSeparator />
 
-        <SidebarGroup>
-            <SidebarGroupLabel>Οντότητες</SidebarGroupLabel>
-            {entitiesNav.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
-                  {item.label}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-      </SidebarGroup>
+        <Accordion type="multiple" className="w-full px-2" defaultValue={['entities']}>
+            <AccordionItem value="entities" className="border-none">
+                <AccordionTriggerNoChevron>
+                    <SidebarGroupLabel className="p-0 transition-none">Οντότητες</SidebarGroupLabel>
+                </AccordionTriggerNoChevron>
+                <AccordionContent className="p-0 pt-1">
+                    <SidebarGroup className="p-0">
+                         {entitiesNav.map((item) => (
+                          <SidebarMenuItem key={item.href}>
+                            <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
+                              {item.label}
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))}
+                    </SidebarGroup>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
       
       <SidebarSeparator />
 
