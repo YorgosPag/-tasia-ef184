@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -15,14 +16,13 @@ import { format } from 'date-fns';
 import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { ImageUploader } from './ImageUploader';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
 
 interface ContactFormProps {
   form: UseFormReturn<ContactFormValues>;
+  onFileSelect?: (file: File | null) => void;
 }
 
-export function ContactForm({ form }: ContactFormProps) {
+export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const entityType = form.watch('entityType');
   const contactId = form.getValues('id'); // Assuming 'id' is part of the form values when editing
 
@@ -34,12 +34,12 @@ export function ContactForm({ form }: ContactFormProps) {
 
   const handleUploadComplete = (url: string) => {
     form.setValue('photoUrl', url, { shouldDirty: true });
+    onFileSelect?.(null); // Clear pending file on successful upload
   };
   
   const handleImageDelete = async () => {
-    // This function will be passed to the uploader.
-    // The uploader handles Storage deletion. Here we just clear the form field.
     form.setValue('photoUrl', '', { shouldDirty: true });
+    onFileSelect?.(null);
   };
 
 
@@ -61,6 +61,7 @@ export function ContactForm({ form }: ContactFormProps) {
                   initialImageUrl={form.getValues('photoUrl')}
                   onUploadComplete={handleUploadComplete}
                   onDelete={handleImageDelete}
+                  onFileSelect={onFileSelect}
                 />
             </div>
           )}

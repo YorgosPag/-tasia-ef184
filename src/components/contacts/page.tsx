@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -79,16 +80,14 @@ export default function ContactsPage() {
     });
   }, [contacts, searchQuery]);
   
-  // Select the first contact by default if the list is not empty
-  // and no contact is currently selected.
-  // This avoids an empty detail view on initial load.
-  if(!selectedContact && filteredContacts.length > 0) {
+  useEffect(() => {
+    if (!selectedContact && filteredContacts.length > 0) {
       setSelectedContact(filteredContacts[0]);
-  }
-  
-  if (selectedContact && !filteredContacts.find(c => c.id === selectedContact.id)) {
-      setSelectedContact(filteredContacts[0] || null);
-  }
+    } else if (selectedContact && !filteredContacts.some(c => c.id === selectedContact.id)) {
+      setSelectedContact(filteredContacts.length > 0 ? filteredContacts[0] : null);
+    }
+  }, [filteredContacts, selectedContact]);
+
 
   const handleExport = () => {
     exportToJson(filteredContacts, 'contacts');

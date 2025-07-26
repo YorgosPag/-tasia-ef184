@@ -5,8 +5,9 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { collection, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { collection, addDoc, serverTimestamp, Timestamp, updateDoc, doc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/shared/lib/firebase';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
@@ -22,6 +23,7 @@ export default function NewContactPage() {
     const { toast } = useToast();
     const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [fileToUpload, setFileToUpload] = useState<File | null>(null);
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactSchema),
@@ -42,39 +44,15 @@ export default function NewContactPage() {
     const onSubmit = async (data: ContactFormValues) => {
         setIsSubmitting(true);
         
-        // Create a copy to manipulate for Firestore
         const dataToSave: { [key: string]: any } = { ...data };
 
-        // Convert dates to Timestamps if they exist
-        if (data.birthDate) {
-            dataToSave.birthDate = Timestamp.fromDate(new Date(data.birthDate));
-        } else {
-            dataToSave.birthDate = null;
-        }
+        if (data.birthDate) dataToSave.birthDate = Timestamp.fromDate(new Date(data.birthDate));
+        else dataToSave.birthDate = null;
+        if (data.identity?.issueDate) dataToSave.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
+        else if (dataToSave.identity) dataToSave.identity.issueDate = null;
 
-        if (data.identity?.issueDate) {
-            dataToSave.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
-        } else if (dataToSave.identity) {
-            dataToSave.identity.issueDate = null;
-        }
-
-        // Sanitize data to remove undefined or empty values before sending to Firestore
         Object.keys(dataToSave).forEach(key => {
-            const typedKey = key as keyof ContactFormValues;
-            if (dataToSave[typedKey] === undefined || dataToSave[typedKey] === '') {
-                delete dataToSave[typedKey];
-            } else if (typeof dataToSave[typedKey] === 'object' && dataToSave[typedKey] !== null) {
-                 // Clean nested objects
-                 Object.keys(dataToSave[typedKey]).forEach(nestedKey => {
-                     if (dataToSave[typedKey][nestedKey] === undefined || dataToSave[typedKey][nestedKey] === '' || dataToSave[typedKey][nestedKey] === null) {
-                         delete dataToSave[typedKey][nestedKey];
-                     }
-                 });
-                 // Delete the whole nested object if it's empty after cleaning
-                 if (Object.keys(dataToSave[typedKey]).length === 0) {
-                     delete dataToSave[typedKey];
-                 }
-            }
+            if (dataToSave[key] === undefined) delete dataToSave[key];
         });
 
         try {
@@ -83,23 +61,26 @@ export default function NewContactPage() {
                 createdAt: serverTimestamp(),
                 createdBy: user?.uid,
             });
-            await logActivity('CREATE_CONTACT', {
-                entityId: docRef.id,
-                entityType: 'contact',
-                name: data.name
-            });
-            toast({
-                title: "Επιτυχία",
-                description: `Η επαφή "${data.name}" δημιουργήθηκε.`,
-            });
+            
+            await logActivity('CREATE_CONTACT', { entityId: docRef.id, entityType: 'contact', name: data.name });
+
+            if (fileToUpload) {
+                toast({ title: "Η επαφή αποθηκεύτηκε", description: "Ανέβασμα φωτογραφίας..." });
+                const filePath = `contact-images/${docRef.id}/${fileToUpload.name}`;
+                const storageRef = ref(storage, filePath);
+                await uploadBytes(storageRef, fileToUpload);
+                const downloadURL = await getDownloadURL(storageRef);
+
+                await updateDoc(docRef, { photoUrl: downloadURL });
+                await logActivity('UPDATE_CONTACT', { entityId: docRef.id, entityType: 'contact', changes: { photoUrl: downloadURL } });
+            }
+
+            toast({ title: "Επιτυχία", description: `Η επαφή "${data.name}" δημιουργήθηκε.` });
             router.push('/contacts');
+
         } catch (error) {
             console.error("Error adding contact: ", error);
-            toast({
-                variant: "destructive",
-                title: "Σφάλμα",
-                description: "Δεν ήταν δυνατή η δημιουργία της επαφής.",
-            });
+            toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν ήταν δυνατή η δημιουργία της επαφής." });
         } finally {
             setIsSubmitting(false);
         }
@@ -124,7 +105,7 @@ export default function NewContactPage() {
                         <CardDescription>Συμπληρώστε τα παρακάτω πεδία για να δημιουργήσετε μια νέα επαφή.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                         <ContactForm form={form} />
+                         <ContactForm form={form} onFileSelect={setFileToUpload} />
                     </CardContent>
                 </Card>
             </form>

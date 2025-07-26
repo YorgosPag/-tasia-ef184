@@ -42,9 +42,9 @@ export default function EditContactPage() {
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Convert Firestore Timestamps back to JS Dates for the form
                     const formData = {
                         ...data,
+                        id: docSnap.id,
                         birthDate: data.birthDate instanceof Timestamp ? data.birthDate.toDate() : null,
                         'identity.issueDate': data.identity?.issueDate instanceof Timestamp ? data.identity.issueDate.toDate() : null,
                     };
@@ -70,7 +70,6 @@ export default function EditContactPage() {
         
         const dataToUpdate: { [key: string]: any } = { ...data };
         
-        // Convert dates back to Timestamps for Firestore, only if they exist
         if (data.birthDate) {
             dataToUpdate.birthDate = Timestamp.fromDate(new Date(data.birthDate));
         } else {
@@ -83,12 +82,12 @@ export default function EditContactPage() {
             dataToUpdate.identity.issueDate = null;
         }
 
-        // Sanitize undefined values
         Object.keys(dataToUpdate).forEach(key => {
             if (dataToUpdate[key] === undefined) {
                 delete dataToUpdate[key];
             }
         });
+        delete dataToUpdate.id; // Don't save id inside the document
 
         try {
             const docRef = doc(db, 'contacts', contactId);

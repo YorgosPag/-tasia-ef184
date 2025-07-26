@@ -18,6 +18,7 @@ interface ImageUploaderProps {
   initialImageUrl?: string | null;
   onUploadComplete: (url: string) => void;
   onDelete: () => void;
+  onFileSelect?: (file: File | null) => void;
 }
 
 export function ImageUploader({
@@ -26,6 +27,7 @@ export function ImageUploader({
   initialImageUrl,
   onUploadComplete,
   onDelete,
+  onFileSelect,
 }: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(initialImageUrl || null);
   const [isUploading, setIsUploading] = useState(false);
@@ -51,15 +53,23 @@ export function ImageUploader({
       }
 
       setPreview(URL.createObjectURL(file));
-      handleUpload(file);
+      
+      // If it's a new contact, defer upload. Otherwise, upload immediately.
+      if (!entityId) {
+        onFileSelect?.(file);
+      } else {
+        handleUpload(file);
+      }
     },
-    [entityType, toast]
+    [entityType, entityId, toast, onFileSelect]
   );
   
   const handleUpload = (file: File) => {
     if (!entityId) {
+       // This case is now handled by the parent component for new contacts.
+       // The toast here is a fallback, but shouldn't be hit with the new logic.
        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η επαφή πρέπει να αποθηκευτεί πρώτα.' });
-       setPreview(null);
+       setPreview(initialImageUrl || null); // revert preview
        return;
     }
     const filePath = `contact-images/${entityId}/${file.name}`;
@@ -93,11 +103,19 @@ export function ImageUploader({
   
   const handleDelete = async () => {
     if (!preview) return;
+
+    // For new contacts, just clear the local file
+    if (!entityId) {
+        setPreview(null);
+        onDelete();
+        return;
+    }
+
+    // For existing contacts, delete from storage
     const storageRef = ref(storage, preview);
     try {
         await deleteObject(storageRef);
     } catch (error: any) {
-        // It's okay if the file doesn't exist in storage (e.g., old URL)
         if (error.code !== 'storage/object-not-found') {
             console.error("Error deleting image from storage:", error);
             toast({ variant: 'destructive', title: 'Σφάλμα Διαγραφής', description: 'Δεν ήταν δυνατή η διαγραφή της εικόνας από το storage.' });
@@ -125,7 +143,7 @@ export function ImageUploader({
       <div className="space-y-2">
         <Label>{getLabel()}</Label>
         <div className="relative group aspect-square w-32">
-          <Image src={preview} alt="Preview" layout="fill" className="rounded-md object-cover" />
+          <Image src={preview} alt="Preview" width={128} height={128} className="rounded-md object-cover" />
            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
                <Button type="button" size="icon" variant="ghost" className="text-white hover:text-white" {...getRootProps()}>
                   <Pencil className="h-5 w-5" />
