@@ -39,9 +39,9 @@ import { Form } from '@/shared/components/ui/form';
 
 export default function ContactsPage() {
   const { isEditor } = useAuth();
-  const [isSubmitting, setIsSubmitting = useState(false);
-  const [isDialogOpen, setIsDialogOpen = useState(false);
-  const [searchQuery, setSearchQuery = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
   const { contacts, isLoading } = useContacts();
