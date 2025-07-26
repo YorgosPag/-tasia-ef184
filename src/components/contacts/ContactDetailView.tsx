@@ -93,8 +93,9 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
           </Avatar>
           <div>
             <CardTitle className="text-2xl">{contact.name}</CardTitle>
-            <CardDescription>
-                <Badge variant={getBadgeVariant(contact.entityType)}>{contact.entityType}</Badge>
+            <CardDescription className="flex flex-col mt-1">
+              <span>{contact.entityType || '-'}</span>
+              <span className="text-xs">{contact.job?.role || '-'}</span>
             </CardDescription>
           </div>
         </div>
@@ -113,7 +114,7 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
             <DetailRow label="Επώνυμο" value={contact.lastName} />
             <DetailRow label="Πατρώνυμο" value={contact.fatherName} />
             <DetailRow label="Μητρώνυμο" value={contact.motherName} />
-            <DetailRow label="Ημ/νία Γέννησης" value={formatDate(contact.birthDate)} icon={Cake} />
+            <DetailRow label="Ημ/νία Γέννησης" value={formatDate(contact.birthDate)} />
             <DetailRow label="Τόπος Γέννησης" value={contact.birthPlace} />
           </DetailSection>
         )}
