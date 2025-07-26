@@ -95,11 +95,20 @@ export default function EditContactPage() {
                 dataToUpdate.identity.issueDate = null;
             }
 
+            // Clean up undefined values before sending to Firestore
             Object.keys(dataToUpdate).forEach(key => {
                 if (dataToUpdate[key] === undefined) {
                     delete dataToUpdate[key];
                 }
             });
+             // Deep clean for nested objects like 'identity'
+            if (dataToUpdate.identity) {
+                Object.keys(dataToUpdate.identity).forEach(key => {
+                    if (dataToUpdate.identity[key] === undefined) {
+                        delete dataToUpdate.identity[key];
+                    }
+                });
+            }
             delete dataToUpdate.id;
 
             const docRef = doc(db, 'contacts', contactId);

@@ -51,9 +51,19 @@ export default function NewContactPage() {
         if (data.identity?.issueDate) dataToSave.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
         else if (dataToSave.identity) dataToSave.identity.issueDate = null;
 
+        // Clean up undefined values before sending to Firestore
         Object.keys(dataToSave).forEach(key => {
             if (dataToSave[key] === undefined) delete dataToSave[key];
         });
+        // Deep clean for nested objects
+        if (dataToSave.identity) {
+            Object.keys(dataToSave.identity).forEach(key => {
+                if (dataToSave.identity[key] === undefined) {
+                    delete dataToSave.identity[key];
+                }
+            });
+        }
+
 
         try {
             const docRef = await addDoc(collection(db, 'contacts'), {
