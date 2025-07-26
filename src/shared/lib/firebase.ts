@@ -12,9 +12,9 @@ import { getFunctions } from 'firebase/functions'; // Αν χρησιμοποι�
 // Θα τα βρεις στην κονσόλα του Firebase: Project settings (γρανάζι) -> Your apps -> Web app
 const firebaseConfig = {
   apiKey: "***REMOVED***",
-  authDomain: "tasia-ef184.firebaseapp.com",
-  projectId: "tasia-ef184",
-  storageBucket: "tasia-ef184.appspot.com",
+  authDomain: "tasia-6f77i.firebaseapp.com",
+  projectId: "tasia-6f77i",
+  storageBucket: "tasia-6f77i.appspot.com",
   messagingSenderId: "204877276202",
   appId: "1:204877276202:web:31db4eb5b1c1b7c4078f53"
 };
