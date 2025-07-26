@@ -1,50 +1,40 @@
+// src/shared/lib/firebase.ts
+'use client'; // Είναι σημαντικό αν χρησιμοποιείς Next.js App Router
 
-// Import the functions you need from the SDKs you need
-import { initializeApp, getApp, getApps } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { getStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth'; // Αν χρησιμοποιείς Auth
+import { getStorage } from 'firebase/storage'; // Αν χρησιμοποιείς Storage
+import { getFunctions } from 'firebase/functions'; // Αν χρησιμοποιείς Functions
 
-// Your web app's Firebase configuration
+// Βήμα 1: Συμπλήρωσε τα δικά σου Firebase Config στοιχεία
+// Θα τα βρεις στην κονσόλα του Firebase: Project settings (γρανάζι) -> Your apps -> Web app
 const firebaseConfig = {
-    apiKey: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process***REMOVED***.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_APP_ID,
-    measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: "***REMOVED***",
+  authDomain: "tasia-6f77i.firebaseapp.com",
+  projectId: "tasia-6f77i",
+  storageBucket: "tasia-6f77i.appspot.com",
+  messagingSenderId: "204877276202",
+  appId: "1:204877276202:web:31db4eb5b1c1b7c4078f53"
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
-let analytics;
-
-console.log('Firebase DB object:', db);
-
-// Conditionally initialize Analytics only if all required configs are available
-if (
-  typeof window !== 'undefined' &&
-  firebaseConfig.apiKey &&
-  firebaseConfig.measurementId
-) {
-  isSupported().then((supported) => {
-    if (supported) {
-      try {
-        analytics = getAnalytics(app);
-      } catch (error) {
-        console.error("Firebase Analytics initialization failed:", error);
-      }
-    } else {
-        console.log("Firebase Analytics is not supported in this environment.");
-    }
-  });
-} else if (typeof window !== 'undefined') {
-    console.log("Firebase Analytics not initialized due to missing apiKey or measurementId.");
+// Βήμα 2: Αρχικοποίηση Firebase app
+let app;
+if (!getApps().length) {
+  // Αν δεν υπάρχει ήδη app, αρχικοποίησέ το
+  app = initializeApp(firebaseConfig);
+} else {
+  // Αν υπάρχει ήδη app (π.χ. σε hot reload στο Next.js), χρησιμοποίησε το υπάρχον
+  app = getApp();
 }
 
-export { app, db, auth, storage, analytics };
+// Βήμα 3: Λήψη υπηρεσιών Firebase
+// Εξαγωγή των υπηρεσιών για χρήση σε άλλα μέρη της εφαρμογής
+export const db = getFirestore(app);
+export const auth = getAuth(app); // Αν χρησιμοποιείς Firebase Authentication
+export const storage = getStorage(app); // Αν χρησιμοποιείς Firebase Storage
+export const functions = getFunctions(app); // Αν χρησιμοποιείς Firebase Functions (π.χ. για Cloud Functions)
+
+// Βήμα 4: Πρόσθεσε αυτό το console.log για debugging
+console.log('Firebase App Initialized:', app.name);
+console.log('Firestore DB instance:', db.app.name);
