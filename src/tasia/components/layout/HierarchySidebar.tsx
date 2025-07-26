@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -27,20 +28,26 @@ interface HierarchyNode {
 }
 
 // --- Utility: Get Href from Type ---
-const getHref = (type: NodeType, id: string): string => {
-  if (!id || !type) return '/'; // fallback
-  
-  const paths: Record<NodeType, string> = {
-    company: `/projects?companyId=${id}`,
-    project: `/projects/${id}`,
-    building: `/buildings/${id}`,
-    floor: `/floors/${id}`,
-    unit: `/units/${id}`,
-    attachment: `/attachments?id=${id}`, // special case
+const getHref = (type: string, id: string): string => {
+  if (!id || typeof id !== 'string') return '/';
+
+  const paths: Record<NodeType, (id: string) => string> = {
+    company: (id) => `/projects?companyId=${id}`,
+    project: (id) => `/projects/${id}`,
+    building: (id) => `/buildings/${id}`,
+    floor: (id) => `/floors/${id}`,
+    unit: (id) => `/units/${id}`,
+    attachment: (id) => `/attachments?id=${id}`,
   };
 
-  return paths[type] ?? '/';
+  if (!Object.hasOwn(paths, type)) {
+    console.warn(`⚠️ Unknown node type in getHref: '${type}'`);
+    return '/';
+  }
+
+  return paths[type as NodeType](id);
 };
+
 
 // --- Data Fetching ---
 const fetchChildren = async (parentId: string, parentType: NodeType): Promise<DocumentData[]> => {
@@ -72,6 +79,9 @@ const fetchChildren = async (parentId: string, parentType: NodeType): Promise<Do
 
 // --- Mapper: DocumentData to HierarchyNode ---
 const mapToNode = (item: DocumentData, type: NodeType): HierarchyNode => {
+    if (!item.id || !type) {
+        console.error('❌ mapToNode received invalid data:', item, type);
+    }
   let name = 'Unknown';
 
   switch (type) {
@@ -168,13 +178,13 @@ const HierarchyNodeComponent = ({ node }: { node: HierarchyNode }) => {
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle} className="w-full">
       <div className={cn("flex items-center gap-1.5 w-full pr-2 rounded-md", isActive && "bg-accent/50")}>
-        <Link href={href} className="flex-1">
+        <Link href={href || '/'} className="flex-1">
           <div className="flex items-center gap-2 p-2 text-sm hover:bg-accent/80 rounded-md">
             <Icon className="h-4 w-4 text-muted-foreground" />
             <span className="truncate">{node.name}</span>
           </div>
         </Link>
-        {['company', 'project', 'building', 'floor'].includes(node.type) && (
+        {['company', 'project', 'building', 'floor', 'unit'].includes(node.type) && (
           <CollapsibleTrigger asChild>
             <button className="p-1 rounded-md hover:bg-accent/80">
               <ChevronRight className={cn("h-4 w-4 transition-transform", isOpen && "rotate-90")} />
