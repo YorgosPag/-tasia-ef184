@@ -17,7 +17,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/shared/components/ui/alert-dialog";
-import type { WorkStage, WorkStageWithSubstages } from '@/tasia/types/project-types';
+import type { WorkStage, WorkStageWithSubstages } from '@/shared/types/project-types';
 import { Checklist } from './Checklist';
 import { formatDate, getCompanyNames, formatCurrency, getStatusVariant, calculateChecklistProgress } from './utils';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';

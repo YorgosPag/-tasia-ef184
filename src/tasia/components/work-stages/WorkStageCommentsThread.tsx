@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { formatDistanceToNow } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { MessageSquare } from 'lucide-react';
-import type { WorkStageComment } from '@/tasia/types/project-types';
+import type { WorkStageComment } from '@/shared/types/project-types';
 
 interface WorkStageCommentsThreadProps {
     comments: WorkStageComment[];

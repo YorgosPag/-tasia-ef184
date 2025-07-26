@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
@@ -14,7 +14,7 @@ import { exportToJson } from '@/shared/lib/exporter';
 import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
 import { formatDate } from '@/tasia/lib/project-helpers';
 import { useAuth } from '@/shared/hooks/use-auth';
-import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/tasia/types/project-types';
+import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/shared/types/project-types';
 
 
 export function useProjectsPage() {
@@ -165,7 +165,8 @@ export function useProjectsPage() {
 
   const filteredProjects = useMemo(() => {
     if (!allProjects) return [];
-    return allProjects.filter((project) => {
+    const sortedProjects = [...allProjects].sort((a, b) => a.title.localeCompare(b.title));
+    return sortedProjects.filter((project) => {
       const query = searchQuery.toLowerCase();
       const companyName = getCompanyName(project.companyId).toLowerCase();
       return (

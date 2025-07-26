@@ -2,7 +2,7 @@
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Company } from '@/shared/hooks/use-data-store';
-import type { WorkStage, WorkStageWithSubstages, ChecklistItem } from '@/tasia/types/project-types';
+import type { WorkStage, WorkStageWithSubstages, ChecklistItem } from '@/shared/types/project-types';
 
 export const formatDate = (timestamp?: Timestamp | Date) => {
     if (!timestamp) return '-';

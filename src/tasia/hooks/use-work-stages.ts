@@ -25,7 +25,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/shared/hooks/use-toast';
 import { logActivity } from '@/shared/lib/logger';
 import { WorkStageFormValues, workStageSchema } from '@/tasia/components/projects/work-stages/workStageSchema';
-import type { WorkStage, WorkStageWithSubstages } from '@/tasia/types/project-types';
+import type { WorkStage, WorkStageWithSubstages } from '@/shared/types/project-types';
 import { exportToJson } from '@/shared/lib/exporter';
 import { formatDate } from '@/tasia/components/projects/work-stages/utils';
 import { useAuth } from '@/shared/hooks/use-auth';
