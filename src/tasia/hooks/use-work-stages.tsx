@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -19,17 +18,17 @@ import {
   arrayUnion,
   setDoc,
 } from 'firebase/firestore';
-import { db, storage } from '@/lib/firebase';
+import { db, storage } from '@/shared/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
-import { logActivity } from '@/lib/logger';
-import { WorkStageFormValues, workStageSchema } from '../components/projects/work-stages/workStageSchema';
-import type { WorkStage, WorkStageWithSubstages, Inspection } from '@/app/(tasia)/projects/[id]/types';
-import { exportToJson } from '@/lib/exporter';
-import { formatDate } from '../components/projects/work-stages/utils';
-import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/shared/hooks/use-toast';
+import { logActivity } from '@/shared/lib/logger';
+import { WorkStageFormValues, workStageSchema } from '@/tasia/components/projects/work-stages/workStageSchema';
+import type { WorkStage, WorkStageWithSubstages, Inspection } from '@/tasia/app/projects/[id]/types';
+import { exportToJson } from '@/shared/lib/exporter';
+import { formatDate } from '@/tasia/components/projects/work-stages/utils';
+import { useAuth } from '@/shared/hooks/use-auth';
 
 
 export function useWorkStages(projectId: string, projectTitle: string) {

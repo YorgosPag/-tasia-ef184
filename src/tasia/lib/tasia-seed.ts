@@ -9,7 +9,7 @@ import {
   DocumentReference,
   Timestamp,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/shared/lib/firebase';
 import { companiesData, projectsData, buildingsData, floorsData, unitsData, contactsData } from './tasia-seed-data';
 
 export async function seedTasiaData() {

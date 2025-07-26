@@ -26,6 +26,7 @@ export default function RootLayout({
   
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <body>
         <QueryProvider>
           <AuthProvider>
             <DataProvider>
@@ -40,6 +41,7 @@ export default function RootLayout({
             </DataProvider>
           </AuthProvider>
         </QueryProvider>
+      </body>
     </html>
   );
 }
