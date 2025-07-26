@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const personalInfoSchema = z.object({
+  id: z.string().optional(), // Keep ID for editing context
   name: z.string().min(1, 'Το όνομα/επωνυμία είναι υποχρεωτικό.'),
   entityType: z.enum(['Φυσικό Πρόσωπο', 'Νομικό Πρόσωπο', 'Δημ. Υπηρεσία']),
   
@@ -31,7 +32,7 @@ export const identityTaxSchema = z.object({
 export const contactInfoSchema = z.object({
     emails: z.array(z.object({
         type: z.enum(['Προσωπικό', 'Επαγγελματικό']).default('Προσωπικό'),
-        value: z.string().email({ message: 'Μη έγκυρο email.' }),
+        value: z.string().email({ message: 'Μη έγκυρο email.' }).or(z.literal('')),
     })).optional(),
     phones: z.array(z.object({
         type: z.enum(['Κινητό', 'Σταθερό', 'Επαγγελματικό']).default('Κινητό'),
@@ -44,7 +45,7 @@ export const contactInfoSchema = z.object({
 export const socialsSchema = z.object({
     socials: z.array(z.object({
         type: z.enum(['Website', 'LinkedIn', 'Facebook', 'Instagram', 'TikTok']).default('Website'),
-        url: z.string().url({ message: 'Μη έγκυρο URL.' }),
+        url: z.string().url({ message: 'Μη έγκυρο URL.' }).or(z.literal('')),
     })).optional(),
 });
 
