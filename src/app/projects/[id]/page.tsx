@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/shared/lib/firebase';
 import { Loader2 } from 'lucide-react';
 import { ProjectHeader } from '@/tasia/components/projects/ProjectHeader';
 import { BuildingsSection } from '@/tasia/components/projects/BuildingsSection';
@@ -13,8 +13,8 @@ import { ContractsSection } from '@/tasia/components/projects/ContractsSection';
 import { MaterialsSection } from '@/tasia/components/projects/MaterialsSection';
 import { MeetingsSection } from '@/tasia/components/projects/MeetingsSection';
 import { ProjectActivityTimeline } from '@/tasia/components/projects/ProjectActivityTimeline';
-import { useDataStore } from '@/hooks/use-data-store';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDataStore } from '@/shared/hooks/use-data-store';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 
 
 export interface Project {

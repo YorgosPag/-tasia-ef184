@@ -15,6 +15,7 @@ import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/tasia/typ
 import dynamic from 'next/dynamic';
 import { ProjectTableSkeleton } from './ProjectTableSkeleton';
 import { ProjectTable } from './ProjectTable';
+import { useProjectsPage } from '@/tasia/hooks/use-projects-page';
 
 
 interface ProjectsPageViewProps {
