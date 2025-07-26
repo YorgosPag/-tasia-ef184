@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -10,7 +11,7 @@ import Image from 'next/image';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { Timestamp } from 'firebase/firestore';
-import type { WorkStage } from '@/tasia/app/projects/[id]/types';
+import type { WorkStage } from '@/tasia/types/project-types';
 
 interface WorkStagePhotoGalleryProps {
     stage: WorkStage;
