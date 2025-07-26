@@ -51,19 +51,18 @@ const fetchChildren = async (parentId: string, parentType: HierarchyNode['type']
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
-const mapToNode = (itemDoc: DocumentData, type: HierarchyNode['type']): HierarchyNode => {
+const mapToNode = (item: DocumentData, type: HierarchyNode['type']): HierarchyNode => {
     let name = 'Unknown';
-    const item = { id: itemDoc.id, ...itemDoc.data() };
     switch(type) {
         case 'company': name = item.name || 'Untitled Company'; break;
         case 'project': name = item.title || 'Untitled Project'; break;
         case 'building': name = item.address || 'Untitled Building'; break;
         case 'floor': name = `Όροφος ${item.level || 'N/A'}`; break;
         case 'unit': name = `${item.identifier || 'ID?'} - ${item.name || 'Untitled Unit'}`; break;
-        case 'attachment': name = `${item.type}: ${item.details || item.identifier || item.id}`; break;
+        case 'attachment': name = `${item.type}: ${item.details || item.identifier || 'Details missing'}`; break;
     }
     return {
-        id: item.id, // Ensure we use the document ID
+        id: item.id,
         name: name,
         type: type,
         children: [],
@@ -74,15 +73,15 @@ const mapToNode = (itemDoc: DocumentData, type: HierarchyNode['type']): Hierarch
 
 const getHref = (type: HierarchyNode['type'], id: string): string => {
     if (!id) return '#';
-    switch (type) {
-        case 'company': return `/projects?companyId=${id}`;
-        case 'project': return `/projects/${id}`;
-        case 'building': return `/buildings/${id}`;
-        case 'floor': return `/floors/${id}`;
-        case 'unit': return `/units/${id}`;
-        case 'attachment': return `/attachments?id=${id}`;
-        default: return '/';
-    }
+    const paths: Record<HierarchyNode['type'], string> = {
+        company: `/projects?companyId=${id}`,
+        project: `/projects/${id}`,
+        building: `/buildings/${id}`,
+        floor: `/floors/${id}`,
+        unit: `/units/${id}`,
+        attachment: `/attachments?id=${id}`,
+    };
+    return paths[type] || '/';
 }
 
 
@@ -173,7 +172,7 @@ export const HierarchySidebar = () => {
             setIsLoading(true);
             const companiesQuery = query(collection(db, 'companies'), orderBy('name'));
             const companiesSnapshot = await getDocs(companiesQuery);
-            setCompanies(companiesSnapshot.docs.map(doc => mapToNode(doc, 'company')));
+            setCompanies(companiesSnapshot.docs.map(doc => mapToNode({ id: doc.id, ...doc.data() }, 'company')));
             setIsLoading(false);
         };
         fetchInitialData();
