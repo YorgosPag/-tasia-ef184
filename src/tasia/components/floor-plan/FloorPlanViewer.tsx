@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/shared/components/ui/card';
 import { Unit } from './Unit';
 import { useFloorPlanState } from '@/tasia/hooks/floor-plan/useFloorPlanState';
 import { Toolbar } from './Toolbar';
