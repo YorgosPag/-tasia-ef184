@@ -9,7 +9,7 @@ import { Company } from '@/shared/hooks/use-data-store';
 import { useWorkStages } from '@/tasia/hooks/use-work-stages';
 import { WorkStageFormDialog } from './work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from './work-stages/WorkStageAccordion';
-import type { Project, WorkStage } from '@/app/(tasia)/projects/[id]/page';
+import type { Project, WorkStage } from '@/tasia/app/projects/[id]/page';
 import { WorkStagesEmptyState } from './work-stages/WorkStagesEmptyState';
 import { useAuth } from '@/shared/hooks/use-auth';
 
@@ -113,6 +113,3 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         </Card>
     );
 }
-    
-
-    

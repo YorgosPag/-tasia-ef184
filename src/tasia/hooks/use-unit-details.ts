@@ -15,11 +15,11 @@ import {
   addDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/shared/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
-import { logActivity } from '@/lib/logger';
+import { useToast } from '@/shared/hooks/use-toast';
+import { logActivity } from '@/shared/lib/logger';
 import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/tasia/lib/unit-helpers';
 import type { NewUnitFormValues as UnitFormValues } from '@/tasia/lib/unit-helpers';
 import { AttachmentFormValues, attachmentSchema } from '@/tasia/components/units/AttachmentDialog';
@@ -260,5 +260,3 @@ export function useUnitDetails() {
     getStatusClass,
   };
 }
-
-    

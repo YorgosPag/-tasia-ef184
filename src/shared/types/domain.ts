@@ -1,3 +1,4 @@
+
 /**
  * Defines the possible application domains.
  */

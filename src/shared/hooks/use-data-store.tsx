@@ -3,9 +3,9 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query as firestoreQuery, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useAuth } from './use-auth';
-import { logActivity } from '@/lib/logger';
+import { db } from '@/shared/lib/firebase';
+import { useAuth } from '@/shared/hooks/use-auth';
+import { logActivity } from '@/shared/lib/logger';
 import { useQuery } from '@tanstack/react-query';
 
 // --- Interfaces ---
