@@ -63,7 +63,6 @@ const entitiesNav = [
 const nestorNav = [
   { href: '/nestor/dashboard', label: 'Πίνακας Ελέγχου', icon: LayoutGrid },
   { href: '/nestor/projects', label: 'Λίστα Έργων', icon: FileBox },
-  { href: '/nestor/contacts', label: 'Λίστα Επαφών', icon: BookUser },
   { href: '/nestor/reports', label: 'Αναφορές', icon: BarChart3 },
   { href: '/nestor/offers', label: 'Προσφορές Προμηθευτών', icon: Award },
   { href: '/nestor/interventions', label: 'Παρεμβάσεις Έργων', icon: PenTool },
