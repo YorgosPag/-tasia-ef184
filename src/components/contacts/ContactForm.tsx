@@ -14,6 +14,9 @@ import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
 import { Checkbox } from '@/shared/components/ui/checkbox';
+import { ImageUploader } from './ImageUploader';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/shared/lib/firebase';
 
 interface ContactFormProps {
   form: UseFormReturn<ContactFormValues>;
@@ -21,11 +24,24 @@ interface ContactFormProps {
 
 export function ContactForm({ form }: ContactFormProps) {
   const entityType = form.watch('entityType');
+  const contactId = form.getValues('id'); // Assuming 'id' is part of the form values when editing
+
   const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({ control: form.control, name: "emails" });
   const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({ control: form.control, name: "phones" });
   const { fields: socialFields, append: appendSocial, remove: removeSocial } = useFieldArray({ control: form.control, name: "socials" });
 
   const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
+
+  const handleUploadComplete = (url: string) => {
+    form.setValue('photoUrl', url, { shouldDirty: true });
+  };
+  
+  const handleImageDelete = async () => {
+    // This function will be passed to the uploader.
+    // The uploader handles Storage deletion. Here we just clear the form field.
+    form.setValue('photoUrl', '', { shouldDirty: true });
+  };
+
 
   return (
     <Accordion type="multiple" defaultValue={['personal', 'identity', 'contact']} className="w-full">
@@ -33,10 +49,22 @@ export function ContactForm({ form }: ContactFormProps) {
       <AccordionItem value="personal">
         <AccordionTrigger>Βασικά Στοιχεία</AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
-          <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Όνομα/Επωνυμία</FormLabel><FormControl><Input {...field} placeholder="π.χ. Γιώργος Παπαδόπουλος ή DevConstruct AE" /></FormControl><FormMessage /></FormItem>)} />
           <FormField control={form.control} name="entityType" render={({ field }) => (<FormItem><FormLabel>Τύπος Οντότητας</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Φυσικό Πρόσωπο">Φυσικό Πρόσωπο</SelectItem><SelectItem value="Νομικό Πρόσωπο">Νομικό Πρόσωπο</SelectItem><SelectItem value="Δημ. Υπηρεσία">Δημ. Υπηρεσία</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-          <FormField control={form.control} name="photoUrl" render={({ field }) => (<FormItem><FormLabel>URL Φωτογραφίας/Λογοτύπου</FormLabel><FormControl><Input {...field} placeholder="https://example.com/photo.jpg" /></FormControl><FormMessage /></FormItem>)} />
           
+           {entityType && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+               <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Όνομα/Επωνυμία</FormLabel><FormControl><Input {...field} placeholder="π.χ. Γιώργος Παπαδόπουλος ή DevConstruct AE" /></FormControl><FormMessage /></FormItem>)} />
+
+                <ImageUploader 
+                  entityType={entityType}
+                  entityId={contactId}
+                  initialImageUrl={form.getValues('photoUrl')}
+                  onUploadComplete={handleUploadComplete}
+                  onDelete={handleImageDelete}
+                />
+            </div>
+          )}
+
           {/* --- Fields only for Individuals --- */}
           {entityType === 'Φυσικό Πρόσωπο' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
@@ -44,7 +72,7 @@ export function ContactForm({ form }: ContactFormProps) {
               <FormField control={form.control} name="lastName" render={({ field }) => (<FormItem><FormLabel>Επώνυμο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="fatherName" render={({ field }) => (<FormItem><FormLabel>Πατρώνυμο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="motherName" render={({ field }) => (<FormItem><FormLabel>Μητρώνυμο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="birthDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Ημ/νία Γέννησης</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(field.value, 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} captionLayout="dropdown-buttons" fromYear={1930} toYear={new Date().getFullYear()} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="birthDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Ημ/νία Γέννησης</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} captionLayout="dropdown-buttons" fromYear={1930} toYear={new Date().getFullYear()} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="birthPlace" render={({ field }) => (<FormItem><FormLabel>Τόπος Γέννησης</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
             </div>
           )}
@@ -60,7 +88,7 @@ export function ContactForm({ form }: ContactFormProps) {
                 <>
                     <FormField control={form.control} name="identity.type" render={({ field }) => (<FormItem><FormLabel>Τύπος Ταυτοποίησης</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="Ταυτότητα">Ταυτότητα</SelectItem><SelectItem value="Διαβατήριο">Διαβατήριο</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="identity.number" render={({ field }) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="identity.issueDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Ημ/νία Έκδοσης</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(field.value, 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="identity.issueDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Ημ/νία Έκδοσης</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="identity.issuingAuthority" render={({ field }) => (<FormItem><FormLabel>Εκδούσα Αρχή</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </>
               )}
