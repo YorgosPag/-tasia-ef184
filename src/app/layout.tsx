@@ -3,15 +3,12 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import '@/tasia/theme/global.tasia.css';
 import { ThemeProvider } from '@/components/theme-provider';
-import { AppShell } from '@/shared/components/layout/AppShell';
-import { AppSidebar } from '@/shared/components/layout/Sidebar';
 import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryProvider } from '@/hooks/use-query-provider';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { DataProvider } from '@/hooks/use-data-store';
-import { useCurrentDomain } from '@/shared/hooks/useCurrentDomain';
 
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -36,10 +33,7 @@ export default function RootLayout({
               <DataProvider>
                 <SidebarProvider>
                    <ProtectedRoute>
-                      <div className="flex min-h-screen">
-                        <AppSidebar />
-                        <AppShell>{children}</AppShell>
-                      </div>
+                      {children}
                     </ProtectedRoute>
                     <Toaster />
                 </SidebarProvider>
