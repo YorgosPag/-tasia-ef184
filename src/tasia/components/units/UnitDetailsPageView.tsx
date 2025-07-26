@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -9,13 +10,13 @@ import { ArrowLeft, Loader2, PlusCircle } from 'lucide-react';
 import { UnitDetailsForm } from './UnitDetailsForm';
 import type { NewUnitFormValues as UnitFormValues } from '@/tasia/lib/unit-helpers';
 import { AttachmentDialog, AttachmentFormValues } from './AttachmentDialog';
+import { UnitsListTable } from '@/tasia/components/floors/UnitsListTable';
 import { Unit } from '@/tasia/hooks/use-unit-details';
 import { UnitContactForm } from './UnitContactForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { UnitFloorPlansTab } from './tabs/UnitFloorPlansTab';
 import { UnitPhotosTab } from './tabs/UnitPhotosTab';
 import { UnitContractsTab } from './tabs/UnitContractsTab';
-import { AttachmentsListTable } from '@/tasia/components/attachments/AttachmentsListTable';
 
 interface UnitDetailsPageViewProps {
   unit: Unit;
@@ -102,10 +103,10 @@ export function UnitDetailsPageView({
                 <p className="text-sm text-muted-foreground mb-4">
                   Διαχειριστείτε τις θέσεις στάθμευσης, αποθήκες κ.λπ. που συνδέονται με αυτό το ακίνητο.
                 </p>
-                <AttachmentsListTable
-                  attachments={attachments}
-                  onEdit={handleEditAttachment}
-                  unitsMap={new Map([[unit.id, unit]])}
+                <UnitsListTable
+                  units={attachments}
+                  onEditUnit={handleEditAttachment}
+                  onDeleteUnit={handleDeleteAttachment}
                 />
               </CardContent>
             </Card>
