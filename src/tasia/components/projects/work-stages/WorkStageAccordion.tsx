@@ -7,9 +7,9 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
+} from '@/shared/components/ui/accordion';
 import { Company } from '@/shared/hooks/use-data-store';
-import type { WorkStage, WorkStageWithSubstages } from '@/tasia/app/projects/[id]/types';
+import type { WorkStage, WorkStageWithSubstages } from '@/tasia/types/project-types';
 import { WorkStageItem } from './WorkStageItem';
 import { WorkStageDetails } from './WorkStageDetails';
 

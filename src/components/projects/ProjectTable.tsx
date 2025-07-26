@@ -21,7 +21,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from '@/shared/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Copy } from 'lucide-react';
@@ -31,7 +31,7 @@ import {
   getCompanyName,
 } from '@/lib/project-helpers';
 import type { ProjectWithWorkStageSummary } from '@/types/project-types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip';
 import { Progress } from '../ui/progress';
 
 

@@ -2,8 +2,8 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
 import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical, DollarSign, AlertCircle, Link2 } from 'lucide-react';
 import { Company } from '@/shared/hooks/use-data-store';
 import {
@@ -16,11 +16,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import type { WorkStage, WorkStageWithSubstages, ChecklistItem } from '@/tasia/app/projects/[id]/types';
+} from "@/shared/components/ui/alert-dialog";
+import type { WorkStage, WorkStageWithSubstages, ChecklistItem } from '@/tasia/types/project-types';
 import { Checklist } from './Checklist';
 import { formatDate, getCompanyNames, formatCurrency, getStatusVariant, calculateChecklistProgress } from './utils';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
 import { WorkStagePhotoGallery } from './WorkStagePhotoGallery';
 import { WorkStageCommentsThread } from './WorkStageCommentsThread';
 import { WorkStageCommentForm } from './WorkStageCommentForm';

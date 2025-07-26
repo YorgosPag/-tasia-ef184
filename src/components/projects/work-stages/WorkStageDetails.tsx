@@ -16,11 +16,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/shared/components/ui/alert-dialog";
 import type { WorkStage, WorkStageWithSubstages, ChecklistItem } from '@/app/projects/[id]/page';
 import { Checklist } from './Checklist';
 import { formatDate, getCompanyNames, formatCurrency, getStatusVariant, calculateChecklistProgress } from './utils';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
 import { WorkStagePhotoGallery } from './WorkStagePhotoGallery';
 import { WorkStageCommentsThread } from './WorkStageCommentsThread';
 import { WorkStageCommentForm } from './WorkStageCommentForm';

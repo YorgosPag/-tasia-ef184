@@ -7,7 +7,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
+} from '@/shared/components/ui/accordion';
 import { Company } from '@/hooks/use-data-store';
 import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
 import { WorkStageItem } from './WorkStageItem';
