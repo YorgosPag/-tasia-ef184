@@ -25,14 +25,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, Copy } from 'lucide-react';
-import { Company } from '@/hooks/use-data-store';
+import { Company } from '@/shared/hooks/use-data-store';
 import {
   formatDate,
   getCompanyName,
 } from '@/lib/project-helpers';
 import type { ProjectWithWorkStageSummary } from '@/types/project-types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { Progress } from '../ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 
 
 interface WorkStageStatusBadgeProps {

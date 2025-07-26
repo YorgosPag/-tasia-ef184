@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from './use-auth';
+import { useAuth } from '@/shared/hooks/use-auth';
 import { logActivity } from '@/lib/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 

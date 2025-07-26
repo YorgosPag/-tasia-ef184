@@ -1,8 +1,8 @@
 
 'use client';
 import { useCallback, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useLocalStorageState } from '../use-local-storage-state';
+import { useToast } from '@/shared/hooks/use-toast';
+import { useLocalStorageState } from '@/shared/hooks/use-local-storage-state';
 import { useParams } from 'next/navigation';
 
 interface Point {

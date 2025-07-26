@@ -45,26 +45,12 @@ const FormField = <
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
-  const form = useFormContext()
+  const { getFieldState, formState } = useFormContext()
 
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
   }
   
-  if (!form) {
-    // This can happen if FormLabel or other components are used outside of a FormProvider.
-    // Return a default state to avoid crashing.
-    return {
-      id: itemContext.id,
-      name: fieldContext.name,
-      formItemId: `${itemContext.id}-form-item`,
-      formDescriptionId: `${itemContext.id}-form-item-description`,
-      formMessageId: `${itemContext.id}-form-item-message`,
-      error: undefined,
-    }
-  }
-
-  const { getFieldState, formState } = form
   const fieldState = getFieldState(fieldContext.name, formState)
 
   const { id } = itemContext
