@@ -18,10 +18,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/tasia/*": ["./src/tasia/*"],
-      "@/nestor/*": ["./src/nestor/*"],
-      "@/shared/*": ["./src/shared/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts"],
