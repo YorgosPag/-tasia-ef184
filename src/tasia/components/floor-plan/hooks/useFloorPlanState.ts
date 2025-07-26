@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useLocalStorageState } from '@/hooks/use-local-storage-state';
+import { useLocalStorageState } from '@/shared/hooks/use-local-storage-state';
 import { usePolygonDraw } from './usePolygonDraw';
 import { useZoom } from './useZoom';
 import { usePrecisionZoom } from './usePrecisionZoom';
