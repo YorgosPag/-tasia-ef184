@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect } from 'react';
@@ -10,8 +9,8 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to the projects page by default
-    router.replace('/projects');
+    // Redirect to the dashboard page by default
+    router.replace('/dashboard');
   }, [router]);
 
   return (

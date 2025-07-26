@@ -1,17 +1,6 @@
 
-import SimpleSidebar from '@/components/SimpleSidebar';
-import SimpleHeader from '@/components/SimpleHeader';
-
+// This file is no longer needed as the layout is handled by the root layout.
+// You can delete this file.
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex">
-      <SimpleSidebar />
-      <div className="flex-1 flex flex-col">
-        <SimpleHeader />
-        <main className="p-4 flex-1">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+    return <>{children}</>;
 }
