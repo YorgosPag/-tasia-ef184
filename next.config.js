@@ -1,3 +1,4 @@
+
 /** @type {import('next').NextConfig} */
 import nextBundleAnalyzer from '@next/bundle-analyzer';
 

@@ -6,6 +6,12 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, getDoc, serverTimestamp, collection, getDocs, query, limit } from 'firebase/firestore';
 import { auth, db } from '@/shared/lib/firebase';
 
+// --- Developer Configuration ---
+// Set to true to bypass Firebase Auth and log in as a mock admin user.
+// Set to false for standard Firebase authentication.
+const BYPASS_AUTH = true;
+
+// --- Interfaces ---
 type UserRole = 'admin' | 'editor' | 'viewer';
 
 interface AuthContextType {
@@ -16,6 +22,7 @@ interface AuthContextType {
   isEditor: boolean;
 }
 
+// --- Context Definition ---
 const AuthContext = createContext<AuthContextType>({
   user: undefined,
   role: null,
@@ -24,6 +31,8 @@ const AuthContext = createContext<AuthContextType>({
   isEditor: false,
 });
 
+
+// --- Helper Functions ---
 async function findOrCreateUserDocument(user: User): Promise<UserRole> {
     const userDocRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userDocRef);
@@ -31,8 +40,6 @@ async function findOrCreateUserDocument(user: User): Promise<UserRole> {
     if (userDoc.exists()) {
         return userDoc.data().role as UserRole;
     } else {
-        // Document does not exist, so create it.
-        // Check if this is the very first user to determine role.
         const usersRef = collection(db, 'users');
         const querySnapshot = await getDocs(query(usersRef, limit(1)));
         const isFirstUser = querySnapshot.empty;
@@ -50,13 +57,27 @@ async function findOrCreateUserDocument(user: User): Promise<UserRole> {
     }
 }
 
-
+// --- AuthProvider Component ---
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // If bypass is enabled, immediately set a mock user and skip Firebase.
+    if (BYPASS_AUTH) {
+      setUser({ 
+        uid: 'fake-admin-user-uid', 
+        email: 'dev-admin@example.com',
+        displayName: 'Dev Admin',
+        photoURL: '',
+      } as User);
+      setRole('admin');
+      setIsLoading(false);
+      return;
+    }
+
+    // Standard Firebase authentication flow
     const unsubscribeAuth = onAuthStateChanged(auth, async (userAuth) => {
       if (userAuth) {
         setUser(userAuth);
@@ -65,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setRole(userRole);
         } catch (error) {
           console.error("Error finding or creating user document:", error);
-          setRole(null); // Fallback to no role on error
+          setRole(null);
         } finally {
           setIsLoading(false);
         }
@@ -82,13 +103,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = role === 'admin';
   const isEditor = role === 'admin' || role === 'editor';
 
+  const value = { user, role, isLoading, isAdmin, isEditor };
+
   return (
-    <AuthContext.Provider value={{ user, role, isLoading, isAdmin, isEditor }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+// --- Custom Hook ---
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
