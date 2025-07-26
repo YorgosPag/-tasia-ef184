@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,12 +9,12 @@ import { Button } from '@/shared/components/ui/button';
 import { Loader2, PlusCircle, Search } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
-import { AttachmentFormValues, AttachmentDialog, attachmentSchema } from '@/tasia/components/units/AttachmentDialog';
+import { AttachmentFormValues, AttachmentDialog, attachmentSchema } from '@/components/units/AttachmentDialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getUnitDataFromForm, getAttachmentDataFromForm } from '@/tasia/lib/unit-helpers';
+import { getAttachmentDataFromForm } from '@/lib/unit-helpers';
 import { logActivity } from '@/shared/lib/logger';
-import { AttachmentsListTable } from '@/tasia/components/attachments/AttachmentsListTable';
+import { AttachmentsListTable } from '@/components/attachments/AttachmentsListTable';
 
 export interface Attachment extends AttachmentFormValues {
     id: string;
