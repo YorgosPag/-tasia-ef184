@@ -29,7 +29,7 @@ import { Company } from '@/hooks/use-data-store';
 import {
   formatDate,
   getCompanyName,
-} from '@/lib/project-helpers';
+} from '@/tasia/lib/project-helpers';
 import type { ProjectWithWorkStageSummary } from '@/types/project-types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';

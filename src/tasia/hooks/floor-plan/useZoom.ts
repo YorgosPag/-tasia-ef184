@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { useLocalStorageState } from '@/shared/hooks/use-local-storage-state';
+import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 
 interface UseZoomProps {
   pdfContainerRef: React.RefObject<HTMLDivElement>;

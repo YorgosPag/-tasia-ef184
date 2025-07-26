@@ -1,13 +1,12 @@
 
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Progress } from '@/shared/components/ui/progress';
-import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Button } from '@/shared/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Plus, FileText, MessageSquare, Save } from 'lucide-react';
 import type { WorkStage } from '@/tasia/app/projects/[id]/page';
 import { calculateChecklistProgress, formatDate } from './utils';

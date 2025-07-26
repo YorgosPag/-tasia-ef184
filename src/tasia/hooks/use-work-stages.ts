@@ -18,17 +18,17 @@ import {
   arrayUnion,
   setDoc,
 } from 'firebase/firestore';
-import { db, storage } from '@/shared/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/shared/hooks/use-toast';
-import { logActivity } from '@/shared/lib/logger';
+import { useToast } from '@/hooks/use-toast';
+import { logActivity } from '@/lib/logger';
 import { WorkStageFormValues, workStageSchema } from '@/tasia/components/projects/work-stages/workStageSchema';
-import type { WorkStage, WorkStageWithSubstages, Inspection } from '@/tasia/app/projects/[id]/types';
-import { exportToJson } from '@/shared/lib/exporter';
+import type { WorkStage, WorkStageWithSubstages, Inspection } from '@/app/projects/[id]/page';
+import { exportToJson } from '@/lib/exporter';
 import { formatDate } from '@/tasia/components/projects/work-stages/utils';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 
 
 export function useWorkStages(projectId: string, projectTitle: string) {
@@ -431,5 +431,3 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         handleExport,
     };
 }
-
-    

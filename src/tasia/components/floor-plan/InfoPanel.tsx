@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent } from '@/shared/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ZoomIn, Unlock } from 'lucide-react';
 
 interface InfoPanelProps {

@@ -3,9 +3,9 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { Form } from '@/shared/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
 import { ArrowLeft, Loader2, PlusCircle } from 'lucide-react';
 import { UnitDetailsForm } from './UnitDetailsForm';
 import type { NewUnitFormValues as UnitFormValues } from '@/tasia/lib/unit-helpers';
@@ -13,7 +13,7 @@ import { AttachmentDialog, AttachmentFormValues } from './AttachmentDialog';
 import { UnitsListTable } from '@/tasia/components/floors/UnitsListTable';
 import { Unit } from '@/tasia/hooks/use-unit-details';
 import { UnitContactForm } from './UnitContactForm';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UnitFloorPlansTab } from './tabs/UnitFloorPlansTab';
 import { UnitPhotosTab } from './tabs/UnitPhotosTab';
 import { UnitContractsTab } from './tabs/UnitContractsTab';

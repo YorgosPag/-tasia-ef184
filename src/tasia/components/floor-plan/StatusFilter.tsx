@@ -2,9 +2,9 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Label } from '@/shared/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { STATUS_COLOR_MAP, ALL_STATUSES } from './utils';
 import type { Unit } from './Unit';
 

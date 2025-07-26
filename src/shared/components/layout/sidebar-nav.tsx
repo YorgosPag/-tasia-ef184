@@ -48,7 +48,7 @@ import {
   ListChecks,
   Archive,
 } from "lucide-react";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { InstructionsDialog } from './instructions-dialog';
