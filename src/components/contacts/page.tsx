@@ -56,7 +56,12 @@ export default function ContactsPage() {
   
   const getPrimaryEmail = (contact: Contact) => contact.emails?.[0]?.value || 'N/A';
   const getPrimaryPhone = (contact: Contact) => contact.phones?.[0]?.value || 'N/A';
-  const getPrimaryWebsite = (contact: Contact) => contact.socials?.find(s => s.type === 'Website')?.url;
+  const getPrimaryWebsite = (contact: Contact) => {
+    if (Array.isArray(contact.socials)) {
+        return contact.socials.find(s => s.type === 'Website')?.url;
+    }
+    return undefined;
+  };
 
 
   return (
