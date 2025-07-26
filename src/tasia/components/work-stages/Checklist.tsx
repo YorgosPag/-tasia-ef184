@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -7,7 +8,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Button } from '@/shared/components/ui/button';
 import { Plus, FileText, MessageSquare, Save } from 'lucide-react';
-import type { WorkStage } from '@/tasia/app/projects/[id]/types';
+import type { WorkStage } from '@/tasia/types/project-types';
 import { calculateChecklistProgress, formatDate } from './utils';
 
 

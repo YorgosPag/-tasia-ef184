@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState } from 'react';
@@ -10,7 +9,7 @@ import { Company } from '@/shared/hooks/use-data-store';
 import { useWorkStages } from '@/tasia/hooks/use-work-stages';
 import { WorkStageFormDialog } from '@/tasia/components/projects/work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from '@/tasia/components/projects/work-stages/WorkStageAccordion';
-import type { Project, WorkStage } from '@/tasia/app/projects/[id]/page';
+import type { Project, WorkStage } from '@/tasia/types/project-types';
 import { WorkStagesEmptyState } from '@/tasia/components/projects/work-stages/WorkStagesEmptyState';
 import { useAuth } from '@/shared/hooks/use-auth';
 

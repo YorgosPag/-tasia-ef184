@@ -100,7 +100,7 @@ export function SidebarNav() {
       <SidebarHeader>
         <div className="flex items-center gap-2 p-2">
           <Briefcase className="h-8 w-8 text-primary" />
-          <span className="text-lg font-semibold">TASIA</span>
+          <span className="text-lg font-semibold">Ευρετήριο Ακινήτων</span>
         </div>
       </SidebarHeader>
 

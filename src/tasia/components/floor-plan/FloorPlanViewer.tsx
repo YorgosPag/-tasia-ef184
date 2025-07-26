@@ -38,7 +38,7 @@ export function FloorPlanViewer(props: FloorPlanViewerProps) {
       <Toolbar {...state.zoom} {...state} numPages={1} />
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-4">
         <div className="lg:col-span-3">
-          <PdfCanvas {...props} {...state} zoom={state.zoom} />
+          <PdfCanvas {...props} {...state} />
         </div>
         <div className="flex flex-col gap-2 lg:col-span-1">
           <InfoPanel {...state} />
