@@ -8,7 +8,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/tasia/components/auth/protected-route';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryProvider } from '@/hooks/use-query-provider';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/shared/components/layout/Sidebar';
 import { DataProvider } from '@/hooks/use-data-store';
 
 
@@ -46,4 +46,3 @@ export default function RootLayout({
     </html>
   );
 }
-
