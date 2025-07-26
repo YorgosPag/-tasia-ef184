@@ -35,6 +35,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { useContacts, type Contact } from '@/shared/hooks/use-contacts';
 import { contactSchema, ContactFormValues } from '@/shared/lib/validation/contactSchema';
 import { ContactForm } from './ContactForm';
+import { Form } from '@/shared/components/ui/form';
 
 export default function ContactsPage() {
   const { isEditor } = useAuth();
