@@ -1,3 +1,4 @@
+
 // src/shared/lib/firebase.ts
 'use client'; // Είναι σημαντικό αν χρησιμοποιείς Next.js App Router
 
