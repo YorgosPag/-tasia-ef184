@@ -1,13 +1,12 @@
 
 'use client';
 
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ThemeProvider } from '@/shared/components/theme-provider';
+import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/shared/hooks/use-auth';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryProvider } from '@/shared/hooks/use-query-provider';
-import { SidebarProvider } from '@/shared/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { DataProvider } from '@/shared/hooks/use-data-store';
 import React from 'react';
 import { usePathname } from 'next/navigation';
@@ -51,9 +50,11 @@ export default function RootLayout({
           <AuthProvider>
             <DataProvider>
               <SidebarProvider>
-                <DomainSpecificLayout>
-                  {children}
-                </DomainSpecificLayout>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                    <DomainSpecificLayout>
+                    {children}
+                    </DomainSpecificLayout>
+                </ThemeProvider>
               </SidebarProvider>
             </DataProvider>
           </AuthProvider>
