@@ -1,10 +1,11 @@
+
 'use client';
 
 import React, { useMemo } from 'react';
 import { Badge } from '@/shared/components/ui/badge';
 import { Progress } from '@/shared/components/ui/progress';
 import { getStatusVariant, calculateStageProgress } from './utils';
-import type { WorkStageWithSubstages } from '@/tasia/app/projects/[id]/types';
+import type { WorkStageWithSubstages } from '@/tasia/types/project-types';
 
 interface WorkStageItemProps {
     stage: WorkStageWithSubstages;
