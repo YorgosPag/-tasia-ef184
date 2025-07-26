@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { AppShell } from '@/shared/components/layout/AppShell';
-import { AppSidebar } from '@/shared/components/layout/Sidebar';
+import { AppSidebar } from '@/shared/components/layout/sidebar';
 import { useCurrentDomain } from '@/shared/hooks/useCurrentDomain';
 
 export default function NestorRootLayout({

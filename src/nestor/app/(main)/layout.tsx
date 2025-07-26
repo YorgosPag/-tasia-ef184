@@ -1,7 +1,7 @@
 
 'use client';
 
-import { AppSidebar } from '@/shared/components/layout/Sidebar';
+import { AppSidebar } from '@/shared/components/layout/sidebar';
 import { AppShell } from '@/shared/components/layout/AppShell';
 
 export default function NestorLayout({

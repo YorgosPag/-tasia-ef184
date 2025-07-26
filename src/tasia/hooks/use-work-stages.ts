@@ -18,15 +18,15 @@ import {
   arrayUnion,
   setDoc,
 } from 'firebase/firestore';
-import { db, storage } from '@/lib/firebase';
+import { db, storage } from '@/shared/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
-import { logActivity } from '@/lib/logger';
+import { useToast } from '@/shared/hooks/use-toast';
+import { logActivity } from '@/shared/lib/logger';
 import { WorkStageFormValues, workStageSchema } from '@/tasia/components/projects/work-stages/workStageSchema';
 import type { WorkStage, WorkStageWithSubstages } from '@/tasia/app/projects/[id]/types';
-import { exportToJson } from '@/lib/exporter';
+import { exportToJson } from '@/shared/lib/exporter';
 import { formatDate } from '@/tasia/components/projects/work-stages/utils';
 import { useAuth } from '@/shared/hooks/use-auth';
 

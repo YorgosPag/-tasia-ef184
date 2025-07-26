@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React from 'react';
@@ -7,22 +6,22 @@ import { useRouter } from 'next/navigation';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useDataStore } from '@/hooks/use-data-store';
+import { useDataStore } from '@/shared/hooks/use-data-store';
 import { useUnitLocationState } from '@/tasia/hooks/useUnitLocationState';
 import { newUnitSchema, getUnitDataFromForm, MULTI_FLOOR_TYPES } from '@/tasia/lib/unit-helpers';
 import type { NewUnitFormValues } from '@/tasia/lib/unit-helpers';
-import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Form } from '@/shared/components/ui/form';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/shared/components/ui/card';
 import { UnitLocationSelector } from '@/tasia/components/units/new/UnitLocationSelector';
 import { AreaInputs } from '@/tasia/components/units/new/AreaInputs';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '@/shared/components/ui/separator';
 import { AmenitiesChecklist } from '@/tasia/components/units/new/AmenitiesChecklist';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { db } from '@/lib/firebase';
+import { db } from '@/shared/lib/firebase';
 import { doc, writeBatch, serverTimestamp, collection, addDoc, getDoc } from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
-import { logActivity } from '@/lib/logger';
+import { useToast } from '@/shared/hooks/use-toast';
+import { logActivity } from '@/shared/lib/logger';
 
 
 export default function NewUnitPage() {

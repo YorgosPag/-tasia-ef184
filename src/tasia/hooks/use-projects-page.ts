@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
