@@ -19,18 +19,9 @@ import {
   DialogClose,
   DialogTrigger,
 } from '@/shared/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/components/ui/form";
 import { Input } from '@/shared/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { PlusCircle, Loader2, Link as LinkIcon, Download, Search } from 'lucide-react';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -38,65 +29,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avat
 import Link from 'next/link';
 import { exportToJson } from '@/shared/lib/exporter';
 import { useAuth } from '@/shared/hooks/use-auth';
-import { collection, onSnapshot, addDoc, serverTimestamp, query as firestoreQuery } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
-import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/shared/components/ui/badge';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/shared/components/ui/select";
-
-export interface Contact {
-  id: string;
-  name: string;
-  type: 'Company' | 'Individual' | 'Lawyer' | 'Notary' | 'Supplier' | 'Public Service';
-  logoUrl?: string;
-  website?: string;
-  contactInfo: {
-    email?: string;
-    phone?: string;
-    address?: string;
-    afm?: string;
-  };
-  createdAt: any;
-}
-
-const contactSchema = z.object({
-  name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
-  type: z.enum(['Company', 'Individual', 'Lawyer', 'Notary', 'Supplier', 'Public Service']),
-  logoUrl: z.string().url({ message: "Το URL του λογότυπου δεν είναι έγκυρο." }).or(z.literal('')),
-  website: z.string().url({ message: "Το URL του website δεν είναι έγκυρο." }).or(z.literal('')),
-  contactInfo: z.object({
-      email: z.string().email({ message: "Το email δεν είναι έγκυρο." }).or(z.literal('')),
-      phone: z.string().optional(),
-      address: z.string().optional(),
-      afm: z.string().optional(),
-  })
-});
-
-type ContactFormValues = z.infer<typeof contactSchema>;
-
-async function fetchContacts(): Promise<Contact[]> {
-  const contactsCollection = collection(db, 'contacts');
-  // Removed orderBy to prevent index errors
-  const q = firestoreQuery(contactsCollection);
-  
-  return new Promise((resolve, reject) => {
-    onSnapshot(q, (snapshot) => {
-      const contacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contact));
-      // Sort on the client side
-      contacts.sort((a, b) => a.name.localeCompare(b.name));
-      resolve(contacts);
-    }, (error) => {
-      console.error("Failed to fetch contacts:", error);
-      reject(error);
-    });
-  });
-}
+import { useContacts, type Contact } from '@/shared/hooks/use-contacts';
+import { contactSchema, ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import { ContactForm } from './ContactForm';
 
 export default function ContactsPage() {
   const { isEditor } = useAuth();
@@ -105,19 +43,20 @@ export default function ContactsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
-  const { data: contacts = [], isLoading } = useQuery({
-      queryKey: ['contacts'],
-      queryFn: fetchContacts
-  });
+  const { contacts, isLoading } = useContacts();
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
       name: '',
-      type: 'Individual',
-      logoUrl: '',
-      website: '',
-      contactInfo: { email: '', phone: '', address: '', afm: '' }
+      entityType: 'Φυσικό Πρόσωπο',
+      photoUrl: '',
+      identity: { type: 'Ταυτότητα', number: '', issuingAuthority: '' },
+      contactInfo: { email: '', phone: '', landline: ''},
+      socials: { website: '', linkedin: '', facebook: ''},
+      address: { street: '', number: '', city: '', postalCode: ''},
+      job: { role: '', specialty: ''},
+      notes: ''
     },
   });
   
@@ -197,33 +136,16 @@ export default function ContactsPage() {
                     Νέα Επαφή
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="max-w-2xl">
                     <DialogHeader>
                     <DialogTitle>Δημιουργία Νέας Επαφής</DialogTitle>
                     </DialogHeader>
                     <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-                        <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Όνομα/Επωνυμία</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                        <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    <SelectItem value="Individual">Φυσικό Πρόσωπο</SelectItem>
-                                    <SelectItem value="Company">Εταιρεία</SelectItem>
-                                    <SelectItem value="Lawyer">Δικηγόρος</SelectItem>
-                                    <SelectItem value="Notary">Συμβολαιογράφος</SelectItem>
-                                    <SelectItem value="Supplier">Προμηθευτής</SelectItem>
-                                    <SelectItem value="Public Service">Δημόσια Υπηρεσία</SelectItem>
-                                </SelectContent>
-                            </Select><FormMessage /></FormItem>)}/>
-                        <FormField control={form.control} name="logoUrl" render={({ field }) => (<FormItem><FormLabel>URL Λογοτύπου</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                        <FormField control={form.control} name="website" render={({ field }) => (<FormItem><FormLabel>Website</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                        <FormField control={form.control} name="contactInfo.address" render={({ field }) => (<FormItem><FormLabel>Διεύθυνση</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                        <FormField control={form.control} name="contactInfo.afm" render={({ field }) => (<FormItem><FormLabel>ΑΦΜ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                        <FormField control={form.control} name="contactInfo.phone" render={({ field }) => (<FormItem><FormLabel>Τηλέφωνο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                        <FormField control={form.control} name="contactInfo.email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                        <DialogFooter>
-                        <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
-                        <Button type="submit" disabled={isSubmitting || isLoading}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Δημιουργία</Button>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="max-h-[80vh] overflow-y-auto pr-6">
+                        <ContactForm form={form} />
+                        <DialogFooter className="mt-4 sticky bottom-0 bg-background py-4">
+                          <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
+                          <Button type="submit" disabled={isSubmitting || isLoading}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Δημιουργία</Button>
                         </DialogFooter>
                     </form>
                     </Form>
@@ -251,7 +173,7 @@ export default function ContactsPage() {
                   {filteredContacts.map((contact) => (
                     <TableRow key={contact.id}>
                       <TableCell className="font-medium flex items-center gap-2">
-                        <Avatar title={contact.name}><AvatarImage src={contact.logoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                        <Avatar title={contact.name}><AvatarImage src={contact.photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
                         {contact.name}
                       </TableCell>
                       <TableCell><Badge variant={getBadgeVariant(contact.type)}>{contact.type}</Badge></TableCell>
