@@ -37,6 +37,7 @@ import { logActivity } from '@/shared/lib/logger';
 import { CompanyFormDialog, companySchema, CompanyFormValues } from '@/components/companies/CompanyFormDialog';
 import { updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
+import { Input } from '@/shared/components/ui/input';
 
 export default function CompaniesPage() {
   const { companies, isLoading, addCompany } = useDataStore();
