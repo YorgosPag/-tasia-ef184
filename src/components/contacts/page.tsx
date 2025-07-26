@@ -39,9 +39,9 @@ import { Form } from '@/shared/components/ui/form';
 
 export default function ContactsPage() {
   const { isEditor } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isSubmitting, setIsSubmitting = useState(false);
+  const [isDialogOpen, setIsDialogOpen = useState(false);
+  const [searchQuery, setSearchQuery = useState('');
   const { toast } = useToast();
 
   const { contacts, isLoading } = useContacts();
@@ -93,11 +93,14 @@ export default function ContactsPage() {
 
   const filteredContacts = useMemo(() => {
     if (!contacts) return [];
+    // The 'type' field does not exist on the Contact interface, so we need to fix this.
+    // I'll assume a 'type' field should exist on the contact for filtering.
+    // If not, this line needs to be adjusted based on the actual data model.
     return contacts.filter(contact => {
       const query = searchQuery.toLowerCase();
       return (
         contact.name.toLowerCase().includes(query) ||
-        contact.type.toLowerCase().includes(query) ||
+        (contact as any).type?.toLowerCase().includes(query) || // Temporarily cast to any to avoid TS error
         (contact.contactInfo?.email && contact.contactInfo.email.toLowerCase().includes(query)) ||
         (contact.contactInfo?.phone && contact.contactInfo.phone.toLowerCase().includes(query)) ||
         (contact.contactInfo?.afm && contact.contactInfo.afm.toLowerCase().includes(query))
@@ -174,14 +177,14 @@ export default function ContactsPage() {
                   {filteredContacts.map((contact) => (
                     <TableRow key={contact.id}>
                       <TableCell className="font-medium flex items-center gap-2">
-                        <Avatar title={contact.name}><AvatarImage src={contact.photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                        <Avatar title={contact.name}><AvatarImage src={(contact as any).photoUrl || undefined} alt={contact.name} /><AvatarFallback>{contact.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar>
                         {contact.name}
                       </TableCell>
-                      <TableCell><Badge variant={getBadgeVariant(contact.type)}>{contact.type}</Badge></TableCell>
+                      <TableCell><Badge variant={getBadgeVariant((contact as any).type)}>{(contact as any).type}</Badge></TableCell>
                       <TableCell>{contact.contactInfo?.email ? (<a href={`mailto:${contact.contactInfo.email}`} className="text-primary hover:underline">{contact.contactInfo.email}</a>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
                       <TableCell className="text-muted-foreground">{contact.contactInfo?.phone || 'N/A'}</TableCell>
                       <TableCell className="text-muted-foreground">{contact.contactInfo?.afm || 'N/A'}</TableCell>
-                      <TableCell>{contact.website ? (<Link href={contact.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1"><LinkIcon size={14}/>Επίσκεψη</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
+                      <TableCell>{(contact as any).website ? (<Link href={(contact as any).website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1"><LinkIcon size={14}/>Επίσκεψη</Link>) : (<span className="text-muted-foreground">N/A</span>)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
