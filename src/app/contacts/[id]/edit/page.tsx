@@ -6,7 +6,8 @@ import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db, storage } from '@/shared/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
@@ -25,6 +26,7 @@ export default function EditContactPage() {
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [fileToUpload, setFileToUpload] = useState<File | null>(null);
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactSchema),
@@ -68,30 +70,41 @@ export default function EditContactPage() {
     const onSubmit = async (data: ContactFormValues) => {
         setIsSubmitting(true);
         
-        const dataToUpdate: { [key: string]: any } = { ...data };
-        
-        if (data.birthDate) {
-            dataToUpdate.birthDate = Timestamp.fromDate(new Date(data.birthDate));
-        } else {
-            dataToUpdate.birthDate = null;
-        }
-
-        if (data.identity?.issueDate) {
-            dataToUpdate.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
-        } else if (dataToUpdate.identity) {
-            dataToUpdate.identity.issueDate = null;
-        }
-
-        Object.keys(dataToUpdate).forEach(key => {
-            if (dataToUpdate[key] === undefined) {
-                delete dataToUpdate[key];
-            }
-        });
-        delete dataToUpdate.id; // Don't save id inside the document
+        let newPhotoUrl = data.photoUrl;
 
         try {
+             if (fileToUpload) {
+                toast({ title: "Ενημέρωση επαφής", description: "Ανέβασμα νέας φωτογραφίας..." });
+                const filePath = `contact-images/${contactId}/${fileToUpload.name}`;
+                const storageRef = ref(storage, filePath);
+                await uploadBytes(storageRef, fileToUpload);
+                newPhotoUrl = await getDownloadURL(storageRef);
+            }
+
+            const dataToUpdate: { [key: string]: any } = { ...data, photoUrl: newPhotoUrl };
+            
+            if (data.birthDate) {
+                dataToUpdate.birthDate = Timestamp.fromDate(new Date(data.birthDate));
+            } else {
+                dataToUpdate.birthDate = null;
+            }
+
+            if (data.identity?.issueDate) {
+                dataToUpdate.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
+            } else if (dataToUpdate.identity) {
+                dataToUpdate.identity.issueDate = null;
+            }
+
+            Object.keys(dataToUpdate).forEach(key => {
+                if (dataToUpdate[key] === undefined) {
+                    delete dataToUpdate[key];
+                }
+            });
+            delete dataToUpdate.id;
+
             const docRef = doc(db, 'contacts', contactId);
             await updateDoc(docRef, dataToUpdate);
+
             await logActivity('UPDATE_CONTACT', {
                 entityId: contactId,
                 entityType: 'contact',
@@ -138,7 +151,7 @@ export default function EditContactPage() {
                         <CardDescription>Ενημερώστε τα παρακάτω πεδία για να επεξεργαστείτε την επαφή.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                         <ContactForm form={form} />
+                         <ContactForm form={form} onFileSelect={setFileToUpload} />
                     </CardContent>
                 </Card>
             </form>
