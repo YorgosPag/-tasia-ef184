@@ -2,39 +2,32 @@
 'use client';
 
 import { Inter } from 'next/font/google';
-import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/shared/hooks/use-auth';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from '@/shared/components/ui/toaster';
 import { QueryProvider } from '@/shared/hooks/use-query-provider';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/shared/components/ui/sidebar';
 import { DataProvider } from '@/shared/hooks/use-data-store';
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import { AppShell as TasiaAppShell } from '@/tasia/components/layout/app-shell';
-import NestorLayout from '@/nestor/app/(main)/layout';
+import { ThemeProvider } from "@/shared/components/theme-provider";
+import TasiaLayout from '@/tasia/app/layout';
+import NestorLayout from '@/nestor/app/layout';
 
 import '@/tasia/theme/global.tasia.css';
 import '@/nestor/theme/global.nestor.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-const NestorAppShell = React.lazy(() => import('@/nestor/app/(main)/layout').then(module => ({ default: module.default })));
 
 function DomainSpecificLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isNestor = pathname.startsWith('/nestor');
-  const domainClass = isNestor ? 'nestor' : 'tasia';
   
-  const AppShell = isNestor ? NestorAppShell : TasiaAppShell;
+  if (isNestor) {
+      return <NestorLayout>{children}</NestorLayout>;
+  }
   
-  return (
-      <body className={`${inter.variable} ${domainClass}`}>
-          <React.Suspense fallback={<div>Loading...</div>}>
-            <AppShell>{children}</AppShell>
-          </React.Suspense>
-          <Toaster />
-      </body>
-  );
+  return <TasiaLayout>{children}</TasiaLayout>
 }
 
 
@@ -43,22 +36,27 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
+  const pathname = usePathname();
+  const domainClass = pathname.startsWith('/nestor') ? 'nestor' : 'tasia';
+
   return (
-    <html lang="en" suppressHydrationWarning>
-        <QueryProvider>
-          <AuthProvider>
-            <DataProvider>
-              <SidebarProvider>
-                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <html lang="el" suppressHydrationWarning>
+      <body className={`${inter.variable} ${domainClass}`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <QueryProvider>
+              <AuthProvider>
+                <DataProvider>
+                  <SidebarProvider>
                     <DomainSpecificLayout>
-                    {children}
+                        {children}
                     </DomainSpecificLayout>
-                </ThemeProvider>
-              </SidebarProvider>
-            </DataProvider>
-          </AuthProvider>
-        </QueryProvider>
+                  </SidebarProvider>
+                </DataProvider>
+              </AuthProvider>
+            </QueryProvider>
+            <Toaster />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

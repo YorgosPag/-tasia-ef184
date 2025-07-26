@@ -4,9 +4,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDataStore, Company } from '@/shared/hooks/use-data-store';
 import { ProjectHeader } from '@/tasia/components/projects/ProjectHeader';
 import { BuildingsSection } from '@/tasia/components/projects/BuildingsSection';
@@ -15,7 +15,7 @@ import { ContractsSection } from '@/tasia/components/projects/ContractsSection';
 import { MaterialsSection } from '@/tasia/components/projects/MaterialsSection';
 import { MeetingsSection } from '@/tasia/components/projects/MeetingsSection';
 import { ProjectActivityTimeline } from '@/tasia/components/projects/ProjectActivityTimeline';
-import type { WorkStage, ChecklistItem, WorkStageWithSubstages, WorkStageComment } from './types';
+import type { WorkStage, ChecklistItem, WorkStageWithSubstages, WorkStageComment } from '@/tasia/app/projects/[id]/types';
 
 
 // Main type for the project page

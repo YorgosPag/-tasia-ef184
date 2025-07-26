@@ -1,11 +1,10 @@
 
-
 'use client';
 
 import { useState } from 'react';
-import { CardFooter } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Textarea } from '@/shared/components/ui/textarea';
+import { CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare } from 'lucide-react';
 import { useAuth } from '@/shared/hooks/use-auth';
 

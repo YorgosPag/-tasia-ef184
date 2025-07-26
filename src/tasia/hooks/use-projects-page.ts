@@ -1,20 +1,20 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/shared/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
-import { useDataStore, Project, Company } from '@/hooks/use-data-store';
-import { logActivity } from '@/lib/logger';
-import { exportToJson } from '@/lib/exporter';
+import { useToast } from '@/shared/hooks/use-toast';
+import { useDataStore } from '@/shared/hooks/use-data-store';
+import { logActivity } from '@/shared/lib/logger';
+import { exportToJson } from '@/shared/lib/exporter';
 import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
-import { formatDate } from '@/lib/project-helpers';
-import { useAuth } from '@/hooks/use-auth';
-import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/types/project-types';
+import { formatDate } from '@/tasia/lib/project-helpers';
+import { useAuth } from '@/shared/hooks/use-auth';
+import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/shared/types/project-types';
 
 
 export function useProjectsPage() {

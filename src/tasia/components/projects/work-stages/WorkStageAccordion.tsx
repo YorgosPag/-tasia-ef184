@@ -8,8 +8,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Company } from '@/hooks/use-data-store';
-import type { WorkStage, WorkStageWithSubstages } from '@/app/projects/[id]/page';
+import { Company } from '@/shared/hooks/use-data-store';
+import type { WorkStage, WorkStageWithSubstages } from '@/tasia/app/projects/[id]/types';
 import { WorkStageItem } from './WorkStageItem';
 import { WorkStageDetails } from './WorkStageDetails';
 

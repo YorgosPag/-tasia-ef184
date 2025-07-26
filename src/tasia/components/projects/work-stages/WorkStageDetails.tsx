@@ -5,7 +5,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, GitMerge, Briefcase, FileText, Calendar, Clock, User, CheckCircle, GripVertical, DollarSign, AlertCircle, Link2 } from 'lucide-react';
-import { Company } from '@/hooks/use-data-store';
+import { Company } from '@/shared/hooks/use-data-store';
 import {
     AlertDialog,
     AlertDialogAction,

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Plus, FileText, MessageSquare, Save } from 'lucide-react';
-import type { WorkStage } from '@/tasia/app/projects/[id]/page';
+import type { WorkStage } from '@/tasia/app/projects/[id]/types';
 import { calculateChecklistProgress, formatDate } from './utils';
 
 

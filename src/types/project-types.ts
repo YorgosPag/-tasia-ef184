@@ -1,7 +1,8 @@
 
+
 import { z } from 'zod';
-import type { Project } from '@/hooks/use-data-store';
-import { projectSchema } from '@/components/projects/ProjectDialogForm';
+import type { Project } from '@/shared/hooks/use-data-store';
+import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
 
 export interface ProjectWithWorkStageSummary extends Project {
     workStageSummary?: {

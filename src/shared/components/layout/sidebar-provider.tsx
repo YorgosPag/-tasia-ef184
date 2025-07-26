@@ -3,10 +3,10 @@
 
 import * as React from "react"
 import { useIsMobile } from "@/shared/hooks/use-mobile"
-import { cn } from "@/lib/utils"
+import { cn } from "@/shared/lib/utils"
 import {
   TooltipProvider,
-} from "@/components/ui/tooltip"
+} from "@/shared/components/ui/tooltip"
 import { SidebarContext } from "./sidebar-context"
 import { getCookie, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_COOKIE_NAME, SIDEBAR_KEYBOARD_SHORTCUT, SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON } from "./sidebar-utils"
 

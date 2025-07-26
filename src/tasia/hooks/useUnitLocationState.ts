@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { Company, Project, Building } from '@/hooks/use-data-store';
+import type { Company, Project, Building } from '@/shared/hooks/use-data-store';
 import type { UseFormReturn } from 'react-hook-form';
 import type { NewUnitFormValues } from '@/tasia/lib/unit-helpers';
 

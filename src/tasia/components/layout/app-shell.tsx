@@ -1,7 +1,7 @@
 
 'use client';
 
-import { AppSidebar } from '@/shared/components/layout/Sidebar';
+import { AppSidebar } from '@/tasia/components/layout/sidebar';
 import { AppShell as SharedAppShell } from '@/shared/components/layout/AppShell';
 import { AppHeader } from '@/shared/components/layout/Header';
 

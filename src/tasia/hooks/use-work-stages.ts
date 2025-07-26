@@ -25,10 +25,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { logActivity } from '@/lib/logger';
 import { WorkStageFormValues, workStageSchema } from '@/tasia/components/projects/work-stages/workStageSchema';
-import type { WorkStage, WorkStageWithSubstages, Inspection } from '@/app/projects/[id]/page';
+import type { WorkStage, WorkStageWithSubstages } from '@/tasia/app/projects/[id]/types';
 import { exportToJson } from '@/lib/exporter';
 import { formatDate } from '@/tasia/components/projects/work-stages/utils';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/shared/hooks/use-auth';
 
 
 export function useWorkStages(projectId: string, projectTitle: string) {
@@ -388,7 +388,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                 deadline: formatDate(stage.deadline),
                 budgetedCost: stage.budgetedCost,
                 actualCost: stage.actualCost,
-                inspections: stage.inspections?.map(i => `${i.text} (Status: ${i.status})`).join('; ')
+                
             };
             if (stage.workSubstages.length === 0) {
                 return [baseStage];
@@ -402,7 +402,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
                 deadline: formatDate(substage.deadline),
                 budgetedCost: substage.budgetedCost,
                 actualCost: substage.actualCost,
-                inspections: substage.inspections?.map(i => `${i.text} (Status: ${i.status})`).join('; ')
+                
             }));
             return [baseStage, ...substages];
         });

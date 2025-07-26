@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { Timestamp } from 'firebase/firestore';
-import type { WorkStage } from '@/tasia/app/projects/[id]/page';
+import type { WorkStage } from '@/tasia/app/projects/[id]/types';
 
 interface WorkStagePhotoGalleryProps {
     stage: WorkStage;
