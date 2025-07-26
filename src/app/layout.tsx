@@ -2,7 +2,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import '@/tasia/theme/global.tasia.css';
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider } from '@/tasia/theme/theme-provider';
 import { AuthProvider } from '@/hooks/use-auth';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Toaster } from '@/components/ui/toaster';
