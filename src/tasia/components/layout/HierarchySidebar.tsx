@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, DocumentData } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -26,7 +26,7 @@ interface HierarchyNode {
 }
 
 // --- Data Fetching ---
-const fetchChildren = async (parentId: string, parentType: HierarchyNode['type']): Promise<any[]> => {
+const fetchChildren = async (parentId: string, parentType: HierarchyNode['type']): Promise<DocumentData[]> => {
     let q;
     switch(parentType) {
         case 'company':
@@ -51,8 +51,9 @@ const fetchChildren = async (parentId: string, parentType: HierarchyNode['type']
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
 
-const mapToNode = (item: any, type: HierarchyNode['type']): HierarchyNode => {
+const mapToNode = (itemDoc: DocumentData, type: HierarchyNode['type']): HierarchyNode => {
     let name = 'Unknown';
+    const item = { id: itemDoc.id, ...itemDoc.data() };
     switch(type) {
         case 'company': name = item.name || 'Untitled Company'; break;
         case 'project': name = item.title || 'Untitled Project'; break;
@@ -62,7 +63,7 @@ const mapToNode = (item: any, type: HierarchyNode['type']): HierarchyNode => {
         case 'attachment': name = `${item.type}: ${item.details || item.identifier || item.id}`; break;
     }
     return {
-        id: item.id,
+        id: item.id, // Ensure we use the document ID
         name: name,
         type: type,
         children: [],
@@ -72,7 +73,7 @@ const mapToNode = (item: any, type: HierarchyNode['type']): HierarchyNode => {
 };
 
 const getHref = (type: HierarchyNode['type'], id: string): string => {
-    if (!id) return '/';
+    if (!id) return '#';
     switch (type) {
         case 'company': return `/projects?companyId=${id}`;
         case 'project': return `/projects/${id}`;
@@ -172,7 +173,7 @@ export const HierarchySidebar = () => {
             setIsLoading(true);
             const companiesQuery = query(collection(db, 'companies'), orderBy('name'));
             const companiesSnapshot = await getDocs(companiesQuery);
-            setCompanies(companiesSnapshot.docs.map(doc => mapToNode({ id: doc.id, ...doc.data() }, 'company')));
+            setCompanies(companiesSnapshot.docs.map(doc => mapToNode(doc, 'company')));
             setIsLoading(false);
         };
         fetchInitialData();
