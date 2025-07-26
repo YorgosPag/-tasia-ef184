@@ -2,8 +2,10 @@
 'use client';
 
 import React from 'react';
+import { Inter } from 'next/font/google';
+import { cn } from '@/shared/lib/utils';
 import { AppShell } from '@/shared/components/layout/app-shell';
-import { ThemeProvider } from '@/tasia/components/theme-provider';
+import { ThemeProvider } from '@/shared/components/theme-provider';
 import { AuthProvider } from '@/shared/hooks/use-auth';
 import { DataProvider } from '@/shared/hooks/use-data-store';
 import { QueryProvider } from '@/shared/hooks/use-query-provider';
@@ -12,6 +14,11 @@ import { SidebarProvider } from '@/shared/components/ui/sidebar';
 
 import '@/app/globals.css';
 
+const fontSans = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -19,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

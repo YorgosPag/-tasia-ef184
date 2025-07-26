@@ -49,6 +49,9 @@
     
     /* Radius */
     --radius: 0.5rem;
+
+    /* Font */
+    --font-sans: "Inter", sans-serif;
   }
  
   .dark {
@@ -101,9 +104,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-sans;
+    @apply bg-background text-foreground;
   }
 }
