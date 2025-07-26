@@ -8,6 +8,8 @@ import { SidebarProvider } from '@/shared/components/ui/sidebar';
 import { DataProvider } from '@/shared/hooks/use-data-store';
 import React from 'react';
 import { ThemeProvider } from "@/shared/components/theme-provider";
+import { AppShell } from '@/tasia/components/layout/app-shell';
+import { ProtectedRoute } from '@/shared/components/auth/protected-route';
 
 import '@/tasia/theme/global.tasia.css';
 import '@/nestor/theme/global.nestor.css';
@@ -34,7 +36,11 @@ export default function RootLayout({
               <AuthProvider>
                 <DataProvider>
                   <SidebarProvider>
-                    {children}
+                    <ProtectedRoute>
+                        <AppShell>
+                            {children}
+                        </AppShell>
+                    </ProtectedRoute>
                   </SidebarProvider>
                 </DataProvider>
               </AuthProvider>
