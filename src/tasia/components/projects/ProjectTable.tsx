@@ -29,10 +29,10 @@ import { Company } from '@/shared/hooks/use-data-store';
 import {
   formatDate,
   getCompanyName,
-} from '@/shared/lib/project-helpers';
+} from '@/lib/project-helpers';
 import type { ProjectWithWorkStageSummary } from '@/shared/types/project-types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip';
-import { Progress } from '@/shared/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 
 
 interface WorkStageStatusBadgeProps {

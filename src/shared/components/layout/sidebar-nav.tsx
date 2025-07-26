@@ -17,7 +17,7 @@ import {
     SidebarMenuSubItem,
     SidebarMenuSubButton,
     SidebarContent,
-} from "@/shared/components/ui/sidebar";
+} from "@/components/ui/sidebar";
 import {
   LayoutGrid,
   FolderKanban,
@@ -49,7 +49,7 @@ import {
   Archive,
 } from "lucide-react";
 import { useAuth } from "@/shared/hooks/use-auth";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { InstructionsDialog } from './instructions-dialog';
 
