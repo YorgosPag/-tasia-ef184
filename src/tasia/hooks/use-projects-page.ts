@@ -1,8 +1,7 @@
 
-
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -13,7 +12,7 @@ import { useDataStore, Project, Company } from '@/hooks/use-data-store';
 import { logActivity } from '@/lib/logger';
 import { exportToJson } from '@/lib/exporter';
 import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
-import { formatDate } from '@/tasia/lib/project-helpers';
+import { formatDate } from '@/lib/project-helpers';
 import { useAuth } from '@/hooks/use-auth';
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/types/project-types';
 
