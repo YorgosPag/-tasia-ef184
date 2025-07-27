@@ -6,7 +6,6 @@ import {
   collection,
   query,
   getDocs,
-  where,
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 
