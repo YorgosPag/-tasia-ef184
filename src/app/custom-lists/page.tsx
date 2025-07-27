@@ -4,6 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { SimpleListsTab } from '@/features/custom-lists/components/SimpleListsTab';
+import { LargeListsTab } from '@/features/custom-lists/components/LargeListsTab';
 
 export default function CustomListsPage() {
   return (
@@ -16,12 +17,16 @@ export default function CustomListsPage() {
       </div>
 
       <Tabs defaultValue="simple-lists" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="simple-lists">Απλές Λίστες</TabsTrigger>
+          <TabsTrigger value="large-lists">Μεγάλες Λίστες</TabsTrigger>
           <TabsTrigger value="complex-entities">Σύνθετες Οντότητες</TabsTrigger>
         </TabsList>
         <TabsContent value="simple-lists" className="mt-4">
           <SimpleListsTab />
+        </TabsContent>
+        <TabsContent value="large-lists" className="mt-4">
+          <LargeListsTab />
         </TabsContent>
         <TabsContent value="complex-entities" className="mt-4">
           <Card>
