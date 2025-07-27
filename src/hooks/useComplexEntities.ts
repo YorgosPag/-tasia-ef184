@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useReducer, Dispatch } from 'react';
+import { useState, useEffect, useCallback, useReducer } from 'react';
 import {
   collection,
   query,
@@ -43,12 +43,14 @@ interface State {
 
 type Action =
   | { type: 'FETCH_INIT' }
+  | { type: 'FETCH_TYPES_INIT' }
   | { type: 'FETCH_TYPES_SUCCESS'; payload: string[] }
-  | { type: 'FETCH_DATA_SUCCESS'; payload: { entities: ComplexEntity[]; newKeys: string[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null; hasMore: boolean } }
+  | { type: 'FETCH_DATA_SUCCESS'; payload: { entities: ComplexEntity[]; newKeys: string[] } }
   | { type: 'FETCH_FAILURE'; payload: string }
   | { type: 'RESET_STATE'; payload: { type?: string } }
   | { type: 'SET_PAGE'; payload: number }
-  | { type: 'SET_PAGINATION_DOCS'; payload: { page: number; doc: QueryDocumentSnapshot<DocumentData> | null }};
+  | { type: 'SET_PAGINATION_DOCS'; payload: { page: number; doc: QueryDocumentSnapshot<DocumentData> | null } }
+  | { type: 'SET_TOTAL_COUNT', payload: number | null };
 
 // --- Reducer Function for State Management ---
 const initialState: State = {
@@ -70,25 +72,25 @@ function reducer(state: State, action: Action): State {
       return {
         ...initialState,
         listTypes: state.listTypes,
+        isLoadingListTypes: state.isLoadingListTypes,
         isLoading: !!action.payload.type,
       };
     case 'FETCH_INIT':
       return { ...state, isLoading: true, error: null };
+    case 'FETCH_TYPES_INIT':
+        return { ...state, isLoadingListTypes: true };
     case 'FETCH_TYPES_SUCCESS':
       return { ...state, listTypes: action.payload, isLoadingListTypes: false };
     case 'FETCH_DATA_SUCCESS':
-      const newTotal = state.totalCount === null ? action.payload.entities.length : state.totalCount;
-      const totalPages = Math.ceil(newTotal / PAGE_SIZE);
-      const estimatedTotal = state.page >= totalPages && !action.payload.hasMore
-        ? state.page * PAGE_SIZE + action.payload.entities.length - PAGE_SIZE
-        : newTotal + (action.payload.hasMore ? PAGE_SIZE : 0);
-        
+      const currentTotal = state.totalCount ?? 0;
+      const newTotal = state.page * PAGE_SIZE < currentTotal ? currentTotal : state.page * PAGE_SIZE + (action.payload.entities.length === PAGE_SIZE ? 1 : 0);
+
       return {
         ...state,
         isLoading: false,
         entities: action.payload.entities,
         allKeysFromType: action.payload.newKeys.length > 0 ? action.payload.newKeys : state.allKeysFromType,
-        totalCount: state.totalCount === null || estimatedTotal > state.totalCount ? estimatedTotal : state.totalCount,
+        totalCount: newTotal,
         initialDataLoaded: true,
       };
     case 'SET_PAGINATION_DOCS':
@@ -99,33 +101,29 @@ function reducer(state: State, action: Action): State {
       return { ...state, isLoading: false, error: action.payload };
     case 'SET_PAGE':
       return { ...state, page: action.payload };
+    case 'SET_TOTAL_COUNT':
+        return {...state, totalCount: action.payload };
     default:
       return state;
   }
 }
 
 // --- Helper Functions ---
-
 /**
- * Fetches the distinct `type` values from the collection.
- * This is slower for the initial load but guarantees finding all types.
+ * Fetches the distinct `type` values from the main collection.
+ * This can be slow on very large collections but is robust.
  */
-async function fetchDistinctTypes(dispatch: Dispatch<Action>) {
-    try {
-        // This query can be slow on large collections. For optimization, a separate `types` collection is recommended.
-        const q = query(collection(db, 'tsia-complex-entities'));
-        const snapshot = await getDocs(q);
-        const types = new Set<string>();
-        snapshot.forEach(doc => {
-            const type = doc.data().type;
-            if (type) types.add(type);
-        });
-        dispatch({ type: 'FETCH_TYPES_SUCCESS', payload: Array.from(types).sort() });
-    } catch (err) {
-        console.error("Failed to fetch list types", err);
-        dispatch({ type: 'FETCH_FAILURE', payload: "Αδυναμία φόρτωσης τύπων λίστας." });
-    }
+async function getDistinctTypes(): Promise<string[]> {
+    const q = query(collection(db, 'tsia-complex-entities'));
+    const snapshot = await getDocs(q);
+    const types = new Set<string>();
+    snapshot.forEach(doc => {
+        const type = doc.data().type;
+        if (type) types.add(type);
+    });
+    return Array.from(types).sort((a, b) => a.localeCompare(b));
 }
+
 
 /**
  * Builds the array of Firestore query constraints based on the current state.
@@ -149,7 +147,7 @@ function buildQueryConstraints(
     if (direction === 'next' && pageDocs[page - 1]) {
         constraints.push(startAfter(pageDocs[page - 1]));
     } else if (direction === 'prev' && page > 1 && pageDocs[page - 2]) {
-        constraints.push(endBefore(pageDocs[page-2]));
+        constraints.push(endBefore(pageDocs[page - 2]));
         constraints.push(limitToLast(PAGE_SIZE));
     } else {
         constraints.push(limit(PAGE_SIZE));
@@ -163,7 +161,7 @@ function buildQueryConstraints(
  * Fetches a single page of entities from Firestore.
  */
 async function fetchEntitiesPage(
-    dispatch: Dispatch<Action>,
+    dispatch: React.Dispatch<Action>,
     type: string,
     filters: Record<string, string>,
     pageDocs: (QueryDocumentSnapshot<DocumentData> | null)[],
@@ -189,10 +187,8 @@ async function fetchEntitiesPage(
         }
 
         const lastDoc = documentSnapshots.docs.length > 0 ? documentSnapshots.docs[documentSnapshots.docs.length - 1] : null;
-        const firstDoc = documentSnapshots.docs.length > 0 ? documentSnapshots.docs[0] : null;
-        const hasMore = documentSnapshots.docs.length === PAGE_SIZE;
 
-        dispatch({ type: 'FETCH_DATA_SUCCESS', payload: { entities: newEntities, newKeys, lastDoc, hasMore } });
+        dispatch({ type: 'FETCH_DATA_SUCCESS', payload: { entities: newEntities, newKeys } });
         dispatch({ type: 'SET_PAGINATION_DOCS', payload: { page: page, doc: lastDoc } });
 
     } catch (err: any) {
@@ -207,9 +203,20 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   const [state, dispatch] = useReducer(reducer, initialState);
   const [debouncedFilters] = useDebounce(columnFilters, 500);
   
-  useEffect(() => {
-    fetchDistinctTypes(dispatch);
+  const fetchListTypes = useCallback(async () => {
+    dispatch({ type: 'FETCH_TYPES_INIT' });
+    try {
+        const types = await getDistinctTypes();
+        dispatch({ type: 'FETCH_TYPES_SUCCESS', payload: types });
+    } catch (err) {
+        console.error("Failed to fetch list types", err);
+        dispatch({ type: 'FETCH_FAILURE', payload: "Αδυναμία φόρτωσης τύπων λίστας." });
+    }
   }, []);
+
+  useEffect(() => {
+    fetchListTypes();
+  }, [fetchListTypes]);
 
   useEffect(() => {
     dispatch({ type: 'RESET_STATE', payload: { type } });
@@ -241,7 +248,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     }
   }, [type, debouncedFilters, state.page, state.pageDocs]);
 
-  const canGoNext = state.totalCount !== null ? (state.page * PAGE_SIZE) < state.totalCount : false;
+  const canGoNext = state.entities.length === PAGE_SIZE;
   
   return {
     entities: state.entities,
