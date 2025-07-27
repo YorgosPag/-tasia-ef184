@@ -111,18 +111,20 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
            {entityType && (
             <div className="space-y-4 border-t pt-4">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
-                  <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">{entityType === 'Φυσικό Πρόσωπο' ? 'Ονοματεπώνυμο' : 'Επωνυμία'}</FormLabel>
-                  <div className="flex-1 space-y-2">
-                    <FormField control={form.control} name="name" render={({ field }) => (
-                        <FormItem>
-                            <FormControl><Input {...field} placeholder={entityType === 'Φυσικό Πρόσωπο' ? "π.χ. Γιώργος Παπαδόπουλος" : "π.χ. DevConstruct AE"} /></FormControl>
-                            <FormDescription>Το πλήρες όνομα ή η εμπορική επωνυμία.</FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                  </div>
-              </div>
+             {entityType !== 'Φυσικό Πρόσωπο' && (
+                <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
+                    <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Επωνυμία</FormLabel>
+                    <div className="flex-1 space-y-2">
+                      <FormField control={form.control} name="name" render={({ field }) => (
+                          <FormItem>
+                              <FormControl><Input {...field} placeholder="π.χ. DevConstruct AE" /></FormControl>
+                              <FormDescription>Το πλήρες όνομα ή η εμπορική επωνυμία.</FormDescription>
+                              <FormMessage />
+                          </FormItem>
+                      )} />
+                    </div>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
                   <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">{entityType === 'Φυσικό Πρόσωπο' ? 'Φωτογραφία' : 'Λογότυπο'}</FormLabel>
                    <div className="flex-1">
