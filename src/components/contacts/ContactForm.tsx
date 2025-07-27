@@ -67,6 +67,17 @@ const socialIcons: { [key: string]: React.ElementType } = {
     default: LinkIcon,
 };
 
+const addressFieldsMap: {formKey: keyof ContactFormValues['addresses'][0], label: string, algoliaKey: string}[] = [
+    { formKey: 'settlements', label: 'Οικισμός', algoliaKey: 'Οικισμοί' },
+    { formKey: 'municipalLocalCommunities', label: 'Δημοτική/Τοπική Κοινότητα', algoliaKey: 'Δημοτικές/Τοπικές Κοινότητες' },
+    { formKey: 'municipalUnities', label: 'Δημοτική Ενότητα', algoliaKey: 'Δημοτικές Ενότητες' },
+    { formKey: 'municipality', label: 'Δήμος', algoliaKey: 'Δήμοι' },
+    { formKey: 'regionalUnities', label: 'Περιφερειακή Ενότητα', algoliaKey: 'Περιφερειακές ενότητες' },
+    { formKey: 'regions', label: 'Περιφέρεια', algoliaKey: 'Περιφέρειες' },
+    { formKey: 'decentralizedAdministrations', label: 'Αποκεντρωμένη Διοίκηση', algoliaKey: 'Αποκεντρωμένες Διοικήσεις' },
+    { formKey: 'largeGeographicUnits', label: 'Μεγάλη Γεωγραφική Ενότητα', algoliaKey: 'Μεγάλες γεωγραφικές ενότητες' },
+];
+
 
 export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const entityType = form.watch('entityType');
@@ -81,21 +92,10 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
     const address = form.watch(`addresses.${index}`);
     return [address.street, address.number, address.settlements, address.postalCode, address.country].filter(Boolean).join(' ');
   }
-  
-  const addressFieldsMap = [
-    { name: 'settlements', label: 'Οικισμός', algoliaKey: 'Οικισμοί' },
-    { name: 'municipalLocalCommunities', label: 'Δημοτική/Τοπική Κοινότητα', algoliaKey: 'Δημοτικές/Τοπικές Κοινότητες' },
-    { name: 'municipalUnities', label: 'Δημοτική Ενότητα', algoliaKey: 'Δημοτικές Ενότητες' },
-    { name: 'municipality', label: 'Δήμος', algoliaKey: 'Δήμοι' },
-    { name: 'regionalUnities', label: 'Περιφερειακή Ενότητα', algoliaKey: 'Περιφερειακές ενότητες' },
-    { name: 'regions', label: 'Περιφέρεια', algoliaKey: 'Περιφέρειες' },
-    { name: 'decentralizedAdministrations', label: 'Αποκεντρωμένη Διοίκηση', algoliaKey: 'Αποκεντρωμένες Διοικήσεις' },
-    { name: 'largeGeographicUnits', label: 'Μεγάλη Γεωγραφική Ενότητα', algoliaKey: 'Μεγάλες γεωγραφικές ενότητες' },
-  ];
 
   const handleAddressSelect = (index: number, hit: any) => {
      addressFieldsMap.forEach(field => {
-        form.setValue(`addresses.${index}.${field.name}` as any, hit[field.algoliaKey] || '', { shouldDirty: true });
+        form.setValue(`addresses.${index}.${field.formKey}`, hit[field.algoliaKey] || '', { shouldDirty: true });
      })
   };
 
@@ -474,9 +474,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                         
                         {addressFieldsMap.map(f => (
                            <AddressAutocompleteInput 
-                                key={f.name}
+                                key={f.formKey}
                                 form={form}
-                                name={`addresses.${index}.${f.name}`}
+                                name={`addresses.${index}.${f.formKey}`}
                                 label={f.label}
                                 algoliaKey={f.algoliaKey}
                                 onSelect={(hit: any) => handleAddressSelect(index, hit)}

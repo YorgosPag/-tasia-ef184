@@ -7,7 +7,7 @@ import algoliasearch from 'algoliasearch/lite';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/shared/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList, CommandInput as AlgoliaCommandInput } from '@/shared/components/ui/command';
 import { useDebounce } from 'use-debounce';
 import type { UseFormReturn } from 'react-hook-form';
 
@@ -19,67 +19,68 @@ const searchClient = algoliasearch(
 
 const Autocomplete = ({ form, name, label, onSelect, algoliaKey }: { form: UseFormReturn, name: string, label: string, onSelect: (hit: any) => void, algoliaKey: string }) => {
   const [isOpen, setIsOpen] = useState(false);
-  // Use the form's value as the source of truth for the input's initial state
   const [inputValue, setInputValue] = useState(form.getValues(name) || '');
   const [debouncedQuery] = useDebounce(inputValue, 300);
 
   const { hits } = useHits();
   const { refine } = useSearchBox();
 
+  const currentFieldValue = form.watch(name);
+  
+  // Sync local input state when the form value changes externally
+  useEffect(() => {
+    if (currentFieldValue !== inputValue) {
+      setInputValue(currentFieldValue || '');
+    }
+  }, [currentFieldValue]);
+
+  // Refine algolia search when the user stops typing
   useEffect(() => {
     refine(debouncedQuery);
   }, [debouncedQuery, refine]);
   
   const handleSelect = (hit: any) => {
-    onSelect(hit);
+    onSelect(hit); // This will populate all other fields
     const selectedLabel = hit[algoliaKey] || '';
+    form.setValue(name, selectedLabel, { shouldDirty: true, shouldValidate: true });
     setInputValue(selectedLabel);
-    form.setValue(name, selectedLabel, { shouldDirty: true });
     setIsOpen(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    form.setValue(name, value, { shouldDirty: true });
+    form.setValue(name, value, { shouldDirty: true }); // Update the form field in real-time
     if (!isOpen) {
       setIsOpen(true);
     }
   };
+
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <FormField
         control={form.control}
         name={name}
-        render={({ field }) => {
-          // Sync internal state if form value changes externally (e.g., from another autocomplete)
-          useEffect(() => {
-            if (field.value !== inputValue) {
-              setInputValue(field.value || '');
-            }
-          }, [field.value]);
-
-          return (
+        render={({ field }) => (
             <FormItem className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
               <FormLabel className="w-40 text-left sm:text-right shrink-0">{label}</FormLabel>
               <div className="flex-1 w-full">
                 <PopoverTrigger asChild>
                   <FormControl>
-                    <Input
-                      {...field}
-                      value={inputValue}
-                      onChange={handleInputChange}
-                      onClick={() => setIsOpen(true)}
-                      className="text-left"
-                    />
+                     <Input
+                        {...field}
+                        value={inputValue}
+                        onChange={handleInputChange}
+                        onClick={() => setIsOpen(true)}
+                        className="text-left"
+                      />
                   </FormControl>
                 </PopoverTrigger>
                 <FormMessage />
               </div>
             </FormItem>
-          );
-        }}
+          )}
       />
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
         <Command>
