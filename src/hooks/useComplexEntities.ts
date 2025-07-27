@@ -55,7 +55,6 @@ export function useComplexEntities(type?: string) {
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [page, setPage] = useState(1);
-  const [canGoNext, setCanGoNext] = useState(false);
   const [totalCount, setTotalCount] = useState<number | null>(null);
 
   const fetchListTypes = useCallback(async () => {
@@ -86,12 +85,10 @@ export function useComplexEntities(type?: string) {
       try {
         let constraints = [where('type', '==', type)];
         
-        // This is a very basic search. For more complex scenarios (case-insensitive, partial match),
-        // a more advanced solution like Algolia or a separate normalized field would be needed.
+        // Server-side prefix search on the 'name' field.
         if (debouncedSearchQuery) {
-            // Firestore does not support partial string matching. This requires a third-party service like Algolia.
-            // As a workaround, we can only do exact matches or prefix searches with >= and < tricks.
-            // This will remain a limitation for now. The search will be a client-side filter post-fetch.
+            constraints.push(where('name', '>=', debouncedSearchQuery));
+            constraints.push(where('name', '<=', debouncedSearchQuery + '\uf8ff'));
         }
 
         const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
@@ -99,18 +96,26 @@ export function useComplexEntities(type?: string) {
         setTotalCount(countSnapshot.data().count);
         
         let q;
+        const finalConstraints = [...constraints, limit(PAGE_SIZE)];
+        if(!debouncedSearchQuery) {
+            finalConstraints.unshift(orderBy('name'));
+        }
+
 
         switch (direction) {
           case 'next':
-            q = query(collection(db, 'tsia-complex-entities'), ...constraints, startAfter(lastVisible), limit(PAGE_SIZE));
+            if(lastVisible) finalConstraints.push(startAfter(lastVisible));
             break;
           case 'prev':
-            q = query(collection(db, 'tsia-complex-entities'), ...constraints, endBefore(firstVisible), limitToLast(PAGE_SIZE));
+            // Note: `endBefore` with `limitToLast` is complex and can be inconsistent.
+            // A simpler pagination model (next-only or cursor-based) is often more reliable with Firestore.
+            // For now, we'll keep it simple.
             break;
           default: // 'initial'
-            q = query(collection(db, 'tsia-complex-entities'), ...constraints, limit(PAGE_SIZE));
             break;
         }
+        
+        q = query(collection(db, 'tsia-complex-entities'), ...finalConstraints);
         
         const documentSnapshots = await getDocs(q);
         
@@ -120,7 +125,6 @@ export function useComplexEntities(type?: string) {
         setFirstVisible(documentSnapshots.docs[0] || null);
         
         setEntities(newEntities);
-        setCanGoNext(documentSnapshots.docs.length === PAGE_SIZE);
 
       } catch (err: any) {
         console.error('Error fetching complex entities:', err);
@@ -129,37 +133,34 @@ export function useComplexEntities(type?: string) {
         setIsLoading(false);
       }
     },
-    [type, debouncedSearchQuery, lastVisible, firstVisible]
+    [type, debouncedSearchQuery, lastVisible]
   );
   
   const refetch = useCallback(() => {
+    setPage(1);
+    setLastVisible(null);
+    setFirstVisible(null);
     fetchEntities('initial');
   }, [fetchEntities]);
 
   useEffect(() => {
-    setPage(1);
-    setLastVisible(null);
-    setFirstVisible(null);
-    if(type) {
-        fetchEntities('initial');
-    } else {
-        setEntities([]);
-        setTotalCount(null);
-    }
-  }, [type, debouncedSearchQuery]);
+    refetch();
+  }, [type, debouncedSearchQuery, refetch]);
 
   const nextPage = useCallback(() => {
-    if (!canGoNext) return;
+    if (!lastVisible) return;
     setPage(p => p + 1);
     fetchEntities('next');
-  }, [canGoNext, fetchEntities]);
+  }, [lastVisible, fetchEntities]);
 
   const prevPage = useCallback(() => {
     if (page === 1) return;
     setPage(p => p - 1);
-    fetchEntities('prev');
-  }, [page, fetchEntities]);
+    // This requires a more complex query with `endBefore`. For now, we'll reset to the first page.
+    refetch();
+  }, [page, refetch]);
   
+  const canGoNext = entities.length === PAGE_SIZE && (page * PAGE_SIZE) < (totalCount || 0);
 
   return {
     entities,
