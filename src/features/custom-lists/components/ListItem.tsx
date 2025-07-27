@@ -1,3 +1,5 @@
+/home/user/studio/src/features/custom-lists/components/ListItem.tsx
+
 
 'use client';
 
