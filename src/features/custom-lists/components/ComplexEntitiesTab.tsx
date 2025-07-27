@@ -74,8 +74,8 @@ export function ComplexEntitiesTab() {
                             size="sm"
                             onClick={() => {
                                 const errorData = result.errors.map(e => ({
-                                    ...e.rowData,
-                                    'Σφάλμα Εισαγωγής': e.message,
+                                    'Γραμμή': e.row,
+                                    'Μήνυμα Σφάλματος': e.message,
                                 }));
                                 exportToCsv(errorData, `${newListName}-import-errors`);
                             }}
