@@ -17,11 +17,16 @@ import { Checkbox } from '@/shared/components/ui/checkbox';
 import { ImageUploader } from './ImageUploader';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
 import { Label } from '@/shared/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+
 
 interface ContactFormProps {
   form: UseFormReturn<ContactFormValues>;
   onFileSelect: (file: File | null) => void;
 }
+
+const SOCIAL_TYPES = ['Website', 'LinkedIn', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
+
 
 export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const entityType = form.watch('entityType');
@@ -64,7 +69,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                     >
                       <FormItem>
                         <FormControl>
-                          <RadioGroupItem value="Φυσικό Πρόσωπο" className="sr-only" />
+                          <RadioGroupItem value="Φυσικό Πρόσωπο" id="Φυσικό Πρόσωπο" className="sr-only" />
                         </FormControl>
                         <Label
                           htmlFor="Φυσικό Πρόσωπο"
@@ -79,7 +84,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                       </FormItem>
                       <FormItem>
                         <FormControl>
-                            <RadioGroupItem value="Νομικό Πρόσωπο" className="sr-only" />
+                            <RadioGroupItem value="Νομικό Πρόσωπο" id="Νομικό Πρόσωπο" className="sr-only" />
                         </FormControl>
                         <Label
                           htmlFor="Νομικό Πρόσωπο"
@@ -94,7 +99,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                       </FormItem>
                        <FormItem>
                         <FormControl>
-                            <RadioGroupItem value="Δημ. Υπηρεσία" className="sr-only" />
+                            <RadioGroupItem value="Δημ. Υπηρεσία" id="Δημ. Υπηρεσία" className="sr-only" />
                         </FormControl>
                          <Label
                           htmlFor="Δημ. Υπηρεσία"
@@ -215,17 +220,20 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
         <AccordionContent className="space-y-4 p-1">
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                    <FormLabel>Links</FormLabel>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => appendSocial({ type: 'Website', url: '' })}>
+                    <FormLabel>Σύνδεσμοι</FormLabel>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => appendSocial({ type: 'Website', label: 'Επαγγελματικό', url: '' })}>
                         <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Link
                     </Button>
                 </div>
                 <div className="w-full space-y-2">
                     {socialFields.map((field, index) => (
-                    <div key={field.id} className="flex items-end gap-2 p-2 border rounded-md bg-muted/30">
-                        <FormField control={form.control} name={`socials.${index}.type`} render={({ field }) => (<FormItem className="w-1/3"><FormLabel className="text-xs">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`socials.${index}.url`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeSocial(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-end gap-2 p-3 border rounded-md bg-muted/30">
+                        <FormField control={form.control} name={`socials.${index}.type`} render={({ field }) => (<FormItem><FormLabel className="text-xs">Τύπος</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{SOCIAL_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name={`socials.${index}.label`} render={({ field }) => (<FormItem><FormLabel className="text-xs">Χαρακτηρισμός</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Επαγγελματικό">Επαγγελματικό</SelectItem><SelectItem value="Προσωπικό">Προσωπικό</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name={`socials.${index}.url`} render={({ field }) => (<FormItem className="lg:col-span-3"><FormLabel className="text-xs">URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <div className="lg:col-span-3 flex justify-end">
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeSocial(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                        </div>
                     </div>
                     ))}
                 </div>
