@@ -12,7 +12,7 @@ import { useDebounce } from 'use-debounce';
 
 const searchClient = algoliasearch(
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID!,
-  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY!,
+  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!, // CORRECT: Using search-only key
 );
 
 const Autocomplete = ({ control, name, label, onSelect, indexName }: any) => {
@@ -104,7 +104,7 @@ const Autocomplete = ({ control, name, label, onSelect, indexName }: any) => {
 };
 
 export function AddressAutocompleteInput({ control, name, label, onSelect, indexName }: any) {
-  if (!process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY || !indexName) {
+  if (!process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY || !indexName) {
     return (
         <div className="text-destructive text-xs p-2 rounded-md bg-destructive/10">
             Η αναζήτηση Algolia δεν έχει ρυθμιστεί. Βεβαιωθείτε ότι οι μεταβλητές περιβάλλοντος υπάρχουν.
@@ -114,7 +114,7 @@ export function AddressAutocompleteInput({ control, name, label, onSelect, index
 
   return (
     <InstantSearch searchClient={searchClient} indexName={indexName}>
-        <Configure filters={`type:'Διοικητική Διαίρεση Ελλάδας'`} hitsPerPage={5} attributesToRetrieve={[label]} />
+        <Configure hitsPerPage={5} />
         <Autocomplete control={control} name={name} label={label} onSelect={onSelect} indexName={indexName} />
     </InstantSearch>
   );
