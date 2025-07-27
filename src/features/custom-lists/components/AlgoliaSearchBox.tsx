@@ -20,7 +20,7 @@ import { Loader2 } from 'lucide-react';
 
 const searchClient = algoliasearch(
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID!,
-  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!,
+  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY!,
 );
 
 const PREFERRED_COLUMN_ORDER = [
@@ -119,11 +119,11 @@ function Hits({ onHitsChange }: { onHitsChange: (hits: any[]) => void }) {
 
 
 export function AlgoliaSearchBox({ indexName, listType, onHitsChange }: { indexName: string, listType: string, onHitsChange: (hits: any[]) => void }) {
-  if (!indexName || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY) {
+  if (!indexName || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY) {
     return (
       <div className="text-destructive-foreground bg-destructive border border-destructive p-4 rounded-md">
         <strong>Σφάλμα Ρύθμισης Algolia:</strong> Οι μεταβλητές περιβάλλοντος για το Algolia δεν έχουν ρυθμιστεί σωστά.
-        Παρακαλώ, ελέγξτε τα `NEXT_PUBLIC_ALGOLIA_APP_ID` και `NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY` στο `***REMOVED***.local` αρχείο σας.
+        Παρακαλώ, ελέγξτε τα `NEXT_PUBLIC_ALGOLIA_APP_ID` και `NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY` στο `***REMOVED***.local` αρχείο σας.
       </div>
     );
   }
@@ -131,7 +131,7 @@ export function AlgoliaSearchBox({ indexName, listType, onHitsChange }: { indexN
   return (
     <div className="w-full">
         <InstantSearch searchClient={searchClient} indexName={indexName}>
-            <Configure filters={`type:'${listType}'`} hitsPerPage={50} />
+            {listType && <Configure filters={`type:'${listType}'`} hitsPerPage={50} />}
             <div className="grid grid-cols-1 gap-4">
                 <SearchBox />
                 <Hits onHitsChange={onHitsChange} />
