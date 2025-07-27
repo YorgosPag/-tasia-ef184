@@ -28,11 +28,17 @@ const BATCH_LIMIT = 400; // Keep it safely below the 500 limit
 
 /**
  * Processes a file (Excel or CSV) for bulk import into Firestore.
- * @param file The file to process.
- * @param listName The user-defined name for the list (acts as the 'type').
+ * @param formData The FormData object containing the file and listName.
  * @returns A promise that resolves with the import result.
  */
-export async function processImportFile(file: File, listName: string): Promise<ImportResult> {
+export async function processImportFile(formData: FormData): Promise<ImportResult> {
+  const file = formData.get('file') as File;
+  const listName = formData.get('listName') as string;
+
+  if (!file || !listName) {
+      throw new Error("File and list name are required.");
+  }
+  
   const result: ImportResult = {
     totalRows: 0,
     unitsCreated: 0,

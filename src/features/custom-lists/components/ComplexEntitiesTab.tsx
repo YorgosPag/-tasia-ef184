@@ -55,7 +55,12 @@ export function ComplexEntitiesTab() {
         });
 
         try {
-            const result = await processImportFile(selectedFile, newListName);
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('listName', newListName);
+            
+            // This now correctly passes the file to the server action
+            const result = await processImportFile(formData);
 
             if (result.errors.length > 0) {
                  toast({
