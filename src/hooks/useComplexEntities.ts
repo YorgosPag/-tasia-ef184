@@ -14,7 +14,6 @@ import {
   where,
   endBefore,
   limitToLast,
-  collectionGroup,
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useDebounce } from 'use-debounce';
@@ -45,6 +44,7 @@ export function useComplexEntities(type?: string) {
   const [entities, setEntities] = useState<ComplexEntity[]>([]);
   const [listTypes, setListTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingListTypes, setIsLoadingListTypes] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
@@ -54,7 +54,7 @@ export function useComplexEntities(type?: string) {
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
   const fetchListTypes = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoadingListTypes(true);
     try {
         const types = await getDistinctTypes();
         setListTypes(types);
@@ -62,7 +62,7 @@ export function useComplexEntities(type?: string) {
         console.error("Failed to fetch list types", err);
         setError("Αδυναμία φόρτωσης τύπων λίστας.");
     } finally {
-        setIsLoading(false);
+        setIsLoadingListTypes(false);
     }
   }, []);
 
@@ -94,16 +94,7 @@ export function useComplexEntities(type?: string) {
         if (direction === 'next' && lastDoc) {
           q = query(baseQuery, ...constraints, startAfter(lastDoc), limit(PAGE_SIZE));
         } else if (direction === 'prev' && firstDoc) {
-          const prevQuery = query(baseQuery, ...constraints, endBefore(firstDoc), limitToLast(PAGE_SIZE));
-          const documentSnapshots = await getDocs(prevQuery);
-          const newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
-          setEntities(newEntities);
-          setFirstDoc(documentSnapshots.docs[0] || null);
-          setLastDoc(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
-          setPage(p => p - 1);
-          setCanGoNext(true);
-          setIsLoading(false);
-          return;
+          q = query(baseQuery, ...constraints, endBefore(firstDoc), limitToLast(PAGE_SIZE));
         } else {
           // First page
           q = query(baseQuery, ...constraints, limit(PAGE_SIZE));
@@ -113,12 +104,16 @@ export function useComplexEntities(type?: string) {
         const documentSnapshots = await getDocs(q);
         const newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
 
-        setEntities(newEntities);
-        setFirstDoc(documentSnapshots.docs[0] || null);
-        setLastDoc(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+        if (newEntities.length > 0) {
+            setEntities(newEntities);
+            setFirstDoc(documentSnapshots.docs[0] || null);
+            setLastDoc(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+        }
+        
         setCanGoNext(documentSnapshots.docs.length === PAGE_SIZE);
 
-        if(direction === 'next') setPage(p => p + 1);
+        if(direction === 'next' && newEntities.length > 0) setPage(p => p + 1);
+        if(direction === 'prev' && newEntities.length > 0) setPage(p => p - 1);
 
       } catch (err: any) {
         console.error('Error fetching complex entities:', err);
@@ -130,9 +125,25 @@ export function useComplexEntities(type?: string) {
     [type, lastDoc, firstDoc, debouncedSearchQuery]
   );
   
+  const nextPage = useCallback(() => {
+    if (canGoNext) {
+        fetchEntities('next');
+    }
+  }, [canGoNext, fetchEntities]);
+
+  const prevPage = useCallback(() => {
+    if (page > 1) {
+        fetchEntities('prev');
+    }
+  }, [page, fetchEntities]);
+  
   useEffect(() => {
-    fetchEntities('first');
-  }, [type, debouncedSearchQuery, fetchEntities]);
+    if(type) {
+        fetchEntities('first');
+    } else {
+        setEntities([]);
+    }
+  }, [type, debouncedSearchQuery]); // Removed fetchEntities from dependency array as it's stable
 
   return {
     entities,
@@ -145,9 +156,10 @@ export function useComplexEntities(type?: string) {
     canGoNext,
     canGoPrev: page > 1,
     listTypes,
+    isLoadingListTypes,
     refetch: () => {
         fetchListTypes();
-        fetchEntities('first');
+        if (type) fetchEntities('first');
     },
   };
 }
