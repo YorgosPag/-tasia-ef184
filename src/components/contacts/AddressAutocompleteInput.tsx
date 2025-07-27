@@ -58,9 +58,9 @@ const Autocomplete = ({ form, name, label, onSelect, indexName, algoliaKey }: an
           }, [field.value]);
 
           return (
-            <FormItem className="flex items-center gap-4">
-              <FormLabel className="w-40 text-right">{label}</FormLabel>
-              <div className="flex-1">
+            <FormItem className="flex items-start sm:items-center gap-4 flex-col sm:flex-row">
+              <FormLabel className="w-40 text-left sm:text-right shrink-0">{label}</FormLabel>
+              <div className="flex-1 w-full">
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Input
