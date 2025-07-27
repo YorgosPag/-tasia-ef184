@@ -44,39 +44,39 @@ export function EditableList({ list }: EditableListProps) {
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
-      deleteList(list.id, list.title);
-    }
+    deleteList(list.id, list.title);
   }
 
   return (
     <AccordionItem value={list.id}>
       <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
-        <div className="flex-1 flex items-center gap-4">
-            {isEditingTitle ? (
-                <Input
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    onBlur={handleTitleBlur}
-                    onKeyDown={(e) => e.key === 'Enter' && handleTitleBlur()}
-                    autoFocus
-                    className="h-8"
-                    onClick={(e) => e.stopPropagation()}
-                />
-            ) : (
-                <div className="text-left">
-                    <p className="font-bold text-base">{list.title}</p>
-                    <p className="text-sm text-muted-foreground">{list.description}</p>
-                </div>
-            )}
-        </div>
-        <div className="flex items-center gap-2 ml-4">
-            {!list.isProtected && (
-                 <Button variant="ghost" size="icon" onClick={(e) => {e.stopPropagation(); setIsEditingTitle(true)}}><Edit className="h-4 w-4" /></Button>
-            )}
-            {!list.isProtected && (
-                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={handleDelete}><Trash2 className="h-4 w-4" /></Button>
-            )}
+        <div className="flex w-full items-center justify-between">
+            <div className="flex-1 flex items-center gap-4">
+                {isEditingTitle ? (
+                    <Input
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        onBlur={handleTitleBlur}
+                        onKeyDown={(e) => e.key === 'Enter' && handleTitleBlur()}
+                        autoFocus
+                        className="h-8"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                ) : (
+                    <div className="text-left">
+                        <p className="font-bold text-base">{list.title}</p>
+                        <p className="text-sm text-muted-foreground">{list.description}</p>
+                    </div>
+                )}
+            </div>
+            <div className="flex items-center gap-2 ml-4">
+                {!list.isProtected && (
+                    <Button variant="ghost" size="icon" onClick={(e) => {e.stopPropagation(); setIsEditingTitle(true)}}><Edit className="h-4 w-4" /></Button>
+                )}
+                {!list.isProtected && (
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={handleDelete}><Trash2 className="h-4 w-4" /></Button>
+                )}
+            </div>
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pt-4 border-t">
@@ -110,3 +110,4 @@ export function EditableList({ list }: EditableListProps) {
     </AccordionItem>
   );
 }
+
