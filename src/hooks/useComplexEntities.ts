@@ -48,8 +48,8 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   const [isLoadingListTypes, setIsLoadingListTypes] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const [pageDocs, setPageDocs] = useState<(QueryDocumentSnapshot<DocumentData> | null)[]>([null]);
   const [page, setPage] = useState(1);
+  const [pageDocs, setPageDocs] = useState<(QueryDocumentSnapshot<DocumentData> | null)[]>([null]);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [allKeysFromType, setAllKeysFromType] = useState<string[]>([]);
@@ -77,12 +77,11 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     if (!type) {
       setEntities([]);
       setTotalCount(0);
-      setInitialDataLoaded(true);
+      if(!initialDataLoaded) setInitialDataLoaded(true);
       return;
     }
     setIsLoading(true);
     setError(null);
-    if(direction === 'initial') setInitialDataLoaded(false);
 
     try {
       const constraints: QueryConstraint[] = [where('type', '==', type)];
@@ -94,7 +93,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         }
       }
 
-      if (direction === 'initial') {
+      if (direction === 'initial' || totalCount === null) {
         const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
         const countSnapshot = await getCountFromServer(countQuery);
         setTotalCount(countSnapshot.data().count);
@@ -115,7 +114,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       const documentSnapshots = await getDocs(finalQuery);
       
       if (!documentSnapshots.empty) {
-        if(direction === 'initial' || allKeysFromType.length === 0) {
+        if(allKeysFromType.length === 0) {
             const firstItemKeys = Object.keys(documentSnapshots.docs[0].data());
             setAllKeysFromType(firstItemKeys);
         }
@@ -128,7 +127,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
 
       } else {
         setEntities([]);
-        if(direction === 'initial' && allKeysFromType.length === 0){
+        if(allKeysFromType.length === 0){
              const keysQuery = query(collection(db, 'tsia-complex-entities'), where('type', '==', type), limit(1));
              const keysSnapshot = await getDocs(keysQuery);
              if(!keysSnapshot.empty) {
@@ -141,22 +140,23 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       setError('Αποτυχία φόρτωσης δεδομένων. ' + err.message);
     } finally {
       setIsLoading(false);
-      if(direction === 'initial') setInitialDataLoaded(true);
+      if(!initialDataLoaded) setInitialDataLoaded(true);
     }
-  }, [type, debouncedFilters, pageDocs, allKeysFromType.length]);
+  }, [type, debouncedFilters, pageDocs, allKeysFromType.length, initialDataLoaded, totalCount]);
 
   const resetAndFetch = useCallback(() => {
       setPage(1);
       setPageDocs([null]);
       setTotalCount(null);
       setEntities([]);
+      setAllKeysFromType([]);
+      setInitialDataLoaded(false);
       if(type) {
         fetchPage(1, 'initial');
       }
   }, [type, fetchPage]);
 
   useEffect(() => {
-    setAllKeysFromType([]);
     resetAndFetch();
   }, [type, debouncedFilters]);
   
@@ -167,17 +167,12 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   }, [page, fetchPage]);
 
   const prevPage = useCallback(() => {
-    // Re-fetching previous pages is complex with startAfter.
-    // A full reset to the desired page is simpler for now.
     const newPage = Math.max(1, page - 1);
-    setPage(1); // Reset to page 1
-    setPageDocs([null]); // Clear cursors
-    setTotalCount(null); // Recalculate total
-    setEntities([]); // Clear current data
+    setPage(1);
+    setPageDocs([null]); 
+    setTotalCount(null); 
+    setEntities([]);
     if(type) {
-        // This will now fetch from the beginning. To go to a specific page `n`,
-        // one would typically fetch n*PAGE_SIZE docs and take the last one as cursor,
-        // which is inefficient. Resetting is a pragmatic choice here.
         fetchPage(1, 'initial'); 
     }
   }, [page, type, fetchPage]);
