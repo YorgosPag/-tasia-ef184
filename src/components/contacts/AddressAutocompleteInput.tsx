@@ -17,7 +17,7 @@ const searchClient = algoliasearch(
 
 const Autocomplete = ({ control, name, label, onSelect, indexName }: any) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(control.getValues(name) || '');
+  const [inputValue, setInputValue] = useState(''); 
   const [debouncedQuery] = useDebounce(inputValue, 300);
 
   const { hits } = useHits();
@@ -52,7 +52,7 @@ const Autocomplete = ({ control, name, label, onSelect, indexName }: any) => {
         render={({ field }) => {
           // Sync internal state if form value changes externally
           useEffect(() => {
-            if(field.value !== inputValue) {
+            if (field.value !== inputValue) {
               setInputValue(field.value || '');
             }
           }, [field.value]);
