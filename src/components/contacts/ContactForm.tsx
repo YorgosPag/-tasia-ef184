@@ -261,8 +261,13 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
         <AccordionItem value="job">
             <AccordionTrigger>Επαγγελματικά Στοιχεία</AccordionTrigger>
             <AccordionContent className="space-y-4 p-1">
-                {renderField('job.role', 'Ρόλος', <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-                {renderField('job.specialty', 'Ειδικότητα', <FormField control={form.control} name="job.specialty" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem><FormLabel>Ρόλος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="job.specialty" render={({ field }) => (<FormItem><FormLabel>Ειδικότητα</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <div className="md:col-span-2">
+                        <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem><FormLabel>Επιχείρηση/Οργανισμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    </div>
+                </div>
             </AccordionContent>
         </AccordionItem>
       )}
