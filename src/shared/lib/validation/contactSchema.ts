@@ -25,18 +25,26 @@ export const identityTaxSchema = z.object({
     issueDate: z.date().optional().nullable(),
     issuingAuthority: z.string().optional(),
   }).optional(),
-  afm: z.string().optional(),
+  afm: z.string()
+    .optional()
+    .refine(val => !val || /^\d{9}$/.test(val), {
+        message: 'Το ΑΦΜ πρέπει να αποτελείται από ακριβώς 9 ψηφία.'
+    }),
   doy: z.string().optional(),
 });
 
 export const contactInfoSchema = z.object({
     emails: z.array(z.object({
         type: z.string().default('Προσωπικό'),
-        value: z.string().email({ message: 'Μη έγκυρο email.' }).or(z.literal('')),
+        value: z.string().email({ message: 'Μη έγκυρη διεύθυνση email.' }).or(z.literal('')),
     })).optional(),
     phones: z.array(z.object({
         type: z.string().default('Κινητό'),
-        value: z.string().min(1, { message: 'Ο αριθμός είναι υποχρεωτικός.' }),
+        value: z.string()
+          .min(1, { message: 'Ο αριθμός είναι υποχρεωτικός.' })
+          .refine(val => /^\d{10}$/.test(val), {
+            message: 'Ο αριθμός τηλεφώνου πρέπει να έχει 10 ψηφία.'
+          }),
         indicators: z.array(z.enum(['Viber', 'WhatsApp', 'Telegram'])).optional(),
     })).optional(),
 });
@@ -56,7 +64,9 @@ export const addressSchema = z.object({
     number: z.string().optional(),
     city: z.string().optional(),
     region: z.string().optional(), // Νομός / Περιοχή
-    postalCode: z.string().optional(),
+    postalCode: z.string().optional().refine(val => !val || /^\d{5}$/.test(val), {
+        message: 'Ο Τ.Κ. πρέπει να αποτελείται από 5 ψηφία.'
+    }),
     municipality: z.string().optional(),
   }).optional(),
 });
