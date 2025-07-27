@@ -28,6 +28,17 @@ interface ContactFormProps {
 
 const SOCIAL_TYPES = ['Website', 'LinkedIn', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
 
+const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
+    Viber: (props) => (
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M16.4,4.1c-1-0.8-2.3-1.3-3.8-1.3c-0.1,0-0.2,0-0.3,0c-0.1,0-0.2,0-0.3,0c-3.1,0-5.8,1.7-7.2,4.2c-0.1,0.2-0.1,0.4-0.1,0.6 c0,0.4,0.1,0.7,0.3,1c0,0,0,0,0,0c0.6,0.8,1.3,1.6,2.1,2.3c0.1,0.1,0.1,0.1,0.2,0.2c0.5,0.5,1,1,1.6,1.4c0.1,0.1,0.2,0.1,0.3,0.2 c1.4,0.9,3.1,1.4,4.8,1.4h0.1c0,0,0,0,0,0c0.5,0,1-0.1,1.5-0.2c0.7-0.2,1.4-0.5,2-0.9c0.2-0.1,0.4-0.3,0.5-0.5 c2.2-2,3.3-4.5,3.3-7.2C20.5,7.7,18.8,5.5,16.4,4.1z M17.2,12.5c-0.5,0.4-1.1,0.7-1.8,0.8c-0.5,0.1-1,0.2-1.5,0.2c0,0,0,0,0,0 c-1.5,0-2.9-0.4-4.2-1.2c-0.1,0-0.2-0.1-0.3-0.1c-0.6-0.4-1.1-0.9-1.6-1.4c-0.1,0-0.1-0.1-0.2-0.1C7,10,6.4,9.3,5.8,8.5 c0,0,0,0,0-0.1c-0.1-0.2-0.1-0.3-0.1-0.4c0-0.1,0-0.2,0-0.3c1.2-2.1,3.6-3.6,6.2-3.6c0.1,0,0.2,0,0.3,0c0.1,0,0.2,0,0.3,0 c1.3,0,2.5,0.4,3.3,1.1c1.9,1.5,3.4,3.4,3.4,5.8C19.4,9.5,18.6,11.2,17.2,12.5z" /></svg>
+    ),
+    WhatsApp: (props) => (
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.5,2,2,6.5,2,12c0,1.8,0.5,3.5,1.4,5.1L2,22l5.3-1.4c1.5,0.8,3.2,1.3,4.8,1.3h0c5.5,0,10-4.5,10-10 c0-5.5-4.5-10-10-10z M16.3,14.6c-0.2-0.1-1.1-0.5-1.3-0.6c-0.2-0.1-0.3-0.1-0.5,0.1c-0.1,0.2-0.5,0.6-0.6,0.7C14,14.9,13.9,15,13.8,14.9 c-0.1,0-0.3-0.1-0.6-0.2c-0.8-0.3-1.6-0.9-2.2-1.6c-0.5-0.6-0.8-1.2-1-1.8c-0.1-0.3,0-0.4,0.1-0.5C10.1,10.6,10.2,10.5,10.3,10.4 c0.1-0.1,0.2-0.2,0.2-0.4c0.1-0.1,0-0.3,0-0.4C10.5,9.6,10,8.5,9.8,8C9.6,7.5,9.4,7.6,9.2,7.6c-0.1,0-0.3,0-0.5,0 c-0.2,0-0.5,0.1-0.7,0.3c-0.2,0.2-0.8,0.7-0.8,1.8c0,1.1,0.8,2,0.9,2.2c0.1,0.2,1.6,2.6,4,3.6c2.4,1,2.4,0.7,2.8,0.6 c0.4-0.1,1.1-0.5,1.3-0.9c0.2-0.4,0.2-0.8,0.1-0.9C16.6,14.7,16.5,14.7,16.3,14.6z" /></svg>
+    ),
+    Telegram: (props) => (
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12,2c5.5,0,10,4.5,10,10s-4.5,10-10,10S2,17.5,2,12S6.5,2,12,2z M15.1,8.4l-0.3,0c-0.1,0-0.3,0.1-0.4,0.2 l-3.9,3.7c-0.1,0.1-0.3,0.2-0.4,0.2s-0.3-0.1-0.4-0.2l-0.7-0.7c-0.2-0.2-0.5-0.2-0.7,0s-0.2,0.5,0,0.7l0.7,0.7 c0.1,0.1,0.3,0.2,0.4,0.2s0.3-0.1,0.4-0.2l3.9-3.7c0.1-0.1,0.3-0.2,0.4-0.2s0.3,0.1,0.4,0.2l-1.9,3.1c-0.1,0.1-0.1,0.3,0,0.4 c0.1,0.1,0.3,0.2,0.4,0.1l3.1-1.9c0.1-0.1,0.2-0.3,0.1-0.4C15.5,8.5,15.3,8.4,15.1,8.4z" /></svg>
+    ),
+  };
 
 export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const entityType = form.watch('entityType');
@@ -236,7 +247,47 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                             <FormField control={form.control} name={`phones.${index}.value`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Αριθμός</FormLabel><FormControl><Input {...field} type="tel" /></FormControl><FormMessage /></FormItem>)} />
                             <Button type="button" variant="ghost" size="icon" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                         </div>
-                        <FormField control={form.control} name={`phones.${index}.indicators`} render={() => (<FormItem><div className="flex items-center space-x-4 pl-1 pt-2">{PHONE_INDICATORS.map(indicator => (<FormField key={indicator} control={form.control} name={`phones.${index}.indicators`} render={({ field }) => (<FormItem className="flex items-center space-x-2"><FormControl><Checkbox checked={field.value?.includes(indicator)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), indicator]) : field.onChange(field.value?.filter(v => v !== indicator))}}/></FormControl><FormLabel className="font-normal text-sm">{indicator}</FormLabel></FormItem>)}/>))}</div><FormMessage /></FormItem>)}/>
+                        <FormField
+                        control={form.control}
+                        name={`phones.${index}.indicators`}
+                        render={() => (
+                            <FormItem>
+                                <div className="flex items-center space-x-4 pl-1 pt-2">
+                                {PHONE_INDICATORS.map((indicator) => {
+                                    const Icon = PhoneIndicatorIcons[indicator];
+                                    return (
+                                        <FormField
+                                            key={indicator}
+                                            control={form.control}
+                                            name={`phones.${index}.indicators`}
+                                            render={({ field }) => (
+                                            <FormItem className="flex items-center space-x-2">
+                                                <FormControl>
+                                                <Checkbox
+                                                    checked={field.value?.includes(indicator)}
+                                                    onCheckedChange={(checked) => {
+                                                    return checked
+                                                        ? field.onChange([...(field.value || []), indicator])
+                                                        : field.onChange(
+                                                            field.value?.filter((v) => v !== indicator)
+                                                        );
+                                                    }}
+                                                />
+                                                </FormControl>
+                                                <FormLabel className="font-normal text-sm flex items-center gap-1.5">
+                                                    {Icon && <Icon className="h-4 w-4"/>}
+                                                    {indicator}
+                                                </FormLabel>
+                                            </FormItem>
+                                            )}
+                                        />
+                                    );
+                                })}
+                                </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                     </div>
                     ))}
                 </div>
