@@ -11,6 +11,7 @@ import { DataTable } from './DataTable';
 import { columns } from './columns';
 import { processImportFile } from '@/lib/importer';
 import { useToast } from '@/shared/hooks/use-toast';
+import { exportToCsv } from '@/lib/exportUtils';
 
 export function ComplexEntitiesTab() {
     const { toast } = useToast();
@@ -60,7 +61,23 @@ export function ComplexEntitiesTab() {
                  toast({
                     variant: 'destructive',
                     title: `Η εισαγωγή ολοκληρώθηκε με ${result.errors.length} σφάλματα`,
-                    description: `Ελέγξτε τις γραμμές: ${result.errors.map(e => e.row).slice(0, 5).join(', ')}...`,
+                    description: `Το αρχείο καταγραφής είναι έτοιμο για λήψη.`,
+                    duration: 10000,
+                    action: (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                const errorData = result.errors.map(e => ({
+                                    ...e.rowData,
+                                    'Σφάλμα Εισαγωγής': e.message,
+                                }));
+                                exportToCsv(errorData, `${newListName}-import-errors`);
+                            }}
+                        >
+                            Λήψη
+                        </Button>
+                    ),
                 });
             } else {
                 toast({

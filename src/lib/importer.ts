@@ -18,7 +18,7 @@ interface ImportRow {
 interface ImportResult {
   totalRows: number;
   unitsCreated: number;
-  errors: { row: number; message: string }[];
+  errors: { rowData: ImportRow, message: string }[];
 }
 
 const BATCH_LIMIT = 400; // Keep it safely below the 500 limit
@@ -50,15 +50,11 @@ export async function processImportFile(file: File, listName: string): Promise<I
 
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    const rowIndex = i + 2; // Excel rows are 1-based, +1 for header
-
+    
     try {
-      // The importer will now accept any columns and create fields dynamically.
-      // The `name` field is expected for duplicate checking, but other columns are flexible.
       if (!row.name) {
-          // For simplicity, we'll use 'name' as a loose unique identifier to avoid obvious duplicates.
-          // A more robust solution might involve a compound key or user-defined unique column.
-          // For now, we are skipping duplicate checks to allow flexible data structure.
+          result.errors.push({ rowData: row, message: 'Missing required column: name' });
+          continue; // Skip this row
       }
       
       const newDocRef = doc(collectionRef);
@@ -80,7 +76,7 @@ export async function processImportFile(file: File, listName: string): Promise<I
         writeCount = 0;
       }
     } catch (error: any) {
-      result.errors.push({ row: rowIndex, message: error.message });
+      result.errors.push({ rowData: row, message: error.message });
     }
   }
 
