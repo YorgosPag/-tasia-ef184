@@ -77,7 +77,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     if (!type) {
       setEntities([]);
       setTotalCount(0);
-      if(!initialDataLoaded) setInitialDataLoaded(true);
+      setInitialDataLoaded(true);
       return;
     }
     setIsLoading(true);
@@ -113,21 +113,19 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       const finalQuery = query(baseQuery, ...constraints);
       const documentSnapshots = await getDocs(finalQuery);
       
-      if (!documentSnapshots.empty) {
+      const newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
+      
+      if (documentSnapshots.docs.length > 0) {
         if(allKeysFromType.length === 0) {
-            const firstItemKeys = Object.keys(documentSnapshots.docs[0].data());
-            setAllKeysFromType(firstItemKeys);
+            setAllKeysFromType(Object.keys(newEntities[0]));
         }
-        setEntities(documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity)));
         setPageDocs(prev => {
           const newDocs = [...prev];
           newDocs[pageNumber] = documentSnapshots.docs[documentSnapshots.docs.length - 1];
           return newDocs;
         });
-
       } else {
-        setEntities([]);
-        if(allKeysFromType.length === 0){
+         if(allKeysFromType.length === 0){
              const keysQuery = query(collection(db, 'tsia-complex-entities'), where('type', '==', type), limit(1));
              const keysSnapshot = await getDocs(keysQuery);
              if(!keysSnapshot.empty) {
@@ -135,6 +133,8 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
              }
         }
       }
+      setEntities(newEntities);
+
     } catch (err: any) {
       console.error('Error fetching complex entities:', err);
       setError('Αποτυχία φόρτωσης δεδομένων. ' + err.message);
@@ -167,15 +167,10 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   }, [page, fetchPage]);
 
   const prevPage = useCallback(() => {
-    const newPage = Math.max(1, page - 1);
-    setPage(1);
-    setPageDocs([null]); 
-    setTotalCount(null); 
-    setEntities([]);
-    if(type) {
-        fetchPage(1, 'initial'); 
-    }
-  }, [page, type, fetchPage]);
+    // This is simplified as a full reset to avoid complex state management
+    // of previous page cursors. For this app's use case, it's acceptable.
+    resetAndFetch();
+  }, [resetAndFetch]);
 
   const canGoNext = totalCount !== null ? (page * PAGE_SIZE) < totalCount : false;
 
