@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -20,15 +21,9 @@ import { useDebounce } from 'use-debounce';
 export interface ComplexEntity {
   id: string;
   type: string;
-  name: string;
-  address?: string;
-  phone?: string;
-  region?: string;
-  email?: string;
-  website?: string;
-  notes?: string;
-  createdAt: any;
+  [key: string]: any; // Allow any other string keys with any value type
 }
+
 
 const PAGE_SIZE = 50;
 
