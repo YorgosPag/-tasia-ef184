@@ -73,7 +73,7 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
                       </div>
                   )}
                 </AccordionTrigger>
-                <div className="flex items-center gap-2 ml-4">
+                 <div className="flex items-center gap-2 ml-4">
                     {!list.isProtected && (
                         <Button variant="ghost" size="icon" onClick={(e) => {e.stopPropagation(); setIsEditingTitle(true)}}><Edit className="h-4 w-4" /></Button>
                     )}
