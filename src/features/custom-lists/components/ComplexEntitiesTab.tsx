@@ -64,63 +64,66 @@ export function ComplexEntitiesTab() {
     }
   }, [isLoadingListTypes, listTypes, selectedListType]);
 
-  const columnDefs = useMemo<ColumnDef<ComplexEntity>[]>(() => {
-    const keys = allKeysFromType;
-    if (keys.length === 0) return [];
+  const generateColumns = useCallback(
+    (keys: string[]): ColumnDef<ComplexEntity>[] => {
+      if (keys.length === 0) return [];
+
+      const columnsToShow = keys.filter(key => !['id', 'type', 'createdAt', 'uniqueKey'].includes(key));
       
-    const columnsToShow = keys.filter(key => !['id', 'type', 'createdAt', 'uniqueKey'].includes(key));
-    
-    // Sort columns based on preferred order, putting others at the end
-    columnsToShow.sort((a, b) => {
-        const indexA = PREFERRED_COLUMN_ORDER.indexOf(a);
-        const indexB = PREFERRED_COLUMN_ORDER.indexOf(b);
-        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-        if (indexA === -1) return 1;
-        if (indexB === -1) return -1;
-        return indexA - indexB;
-    });
-    
-    return columnsToShow.map(key => ({
-      accessorKey: key,
-      header: ({ column }) => (
-          <div className="flex flex-col gap-2">
-              <Button
-                variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-                className="justify-start p-0 hover:bg-transparent"
-              >
-              {key}
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-              </Button>
-              <Input
-                placeholder={`Αναζήτηση...`}
-                value={tempFilters[key] || ''}
-                onChange={(event) => {
-                    const value = event.target.value;
-                    setTempFilters(prev => ({ ...prev, [key]: value }));
-                }}
-                 onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setColumnFilters(prev => ({...prev, [key]: tempFilters[key] || '' }));
-                    }
+      columnsToShow.sort((a, b) => {
+          const indexA = PREFERRED_COLUMN_ORDER.indexOf(a);
+          const indexB = PREFERRED_COLUMN_ORDER.indexOf(b);
+          if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
+          return indexA - indexB;
+      });
+      
+      return columnsToShow.map(key => ({
+        accessorKey: key,
+        header: ({ column }) => (
+            <div className="flex flex-col gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                  className="justify-start p-0 hover:bg-transparent"
+                >
+                {key}
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+                <Input
+                  placeholder={`Αναζήτηση...`}
+                  value={tempFilters[key] || ''}
+                  onChange={(event) => {
+                      const value = event.target.value;
+                      setTempFilters(prev => ({ ...prev, [key]: value }));
                   }}
-                 onBlur={() => {
-                    setColumnFilters(prev => ({...prev, [key]: tempFilters[key] || '' }));
-                 }}
-                className="h-8"
-                onClick={(e) => e.stopPropagation()}
-              />
-          </div>
-      ),
-      cell: ({ row }) => {
-          const value = row.getValue(key);
-          if (value && typeof value === 'object' && 'toDate' in value) {
-              return (value as any).toDate().toLocaleDateString();
-          }
-          return value as React.ReactNode;
-      }
-    }));
-  }, [allKeysFromType, tempFilters]);
+                   onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setColumnFilters(prev => ({...prev, [key]: tempFilters[key] || '' }));
+                      }
+                    }}
+                   onBlur={() => {
+                      setColumnFilters(prev => ({...prev, [key]: tempFilters[key] || '' }));
+                   }}
+                  className="h-8"
+                  onClick={(e) => e.stopPropagation()}
+                />
+            </div>
+        ),
+        cell: ({ row }) => {
+            const value = row.getValue(key);
+            if (value && typeof value === 'object' && 'toDate' in value) {
+                return (value as any).toDate().toLocaleDateString();
+            }
+            return value as React.ReactNode;
+        }
+      }));
+    },
+    [tempFilters] // Keep dependency here to read latest filter values
+  );
+
+  const columnDefs = useMemo(() => generateColumns(allKeysFromType), [allKeysFromType, generateColumns]);
   
   // Reset columns and filters when list type changes
   useEffect(() => {
