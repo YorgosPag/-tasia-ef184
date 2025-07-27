@@ -143,7 +143,7 @@ export function useComplexEntities(type?: string) {
     } else {
         setEntities([]);
     }
-  }, [type, debouncedSearchQuery]); // Removed fetchEntities from dependency array as it's stable
+  }, [type, debouncedSearchQuery, fetchEntities]);
 
   return {
     entities,
