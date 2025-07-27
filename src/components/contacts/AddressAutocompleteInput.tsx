@@ -17,11 +17,8 @@ const searchClient = algoliasearch(
 
 const Autocomplete = ({ control, name, label, onSelect }: any) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  // This internal state will be synced with the form state
   const [inputValue, setInputValue] = useState(''); 
   const [debouncedQuery] = useDebounce(inputValue, 300);
-
   const { hits } = useHits();
 
   const handleSelect = (hit: any) => {
@@ -35,7 +32,7 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, fieldOnChange: (...event: any[]) => void) => {
     const value = e.target.value;
     setInputValue(value);
-    fieldOnChange(value); // This updates the react-hook-form state
+    fieldOnChange(value);
     if (!isOpen) {
       setIsOpen(true);
     }
@@ -47,9 +44,8 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
         control={control}
         name={name}
         render={({ field }) => {
-          // Sync local state with form state
           useEffect(() => {
-            setInputValue(field.value || '');
+            if(field.value) setInputValue(field.value);
           }, [field.value]);
 
           return (
@@ -100,7 +96,15 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
 };
 
 export function AddressAutocompleteInput({ control, name, label, onSelect }: any) {
-  const indexName = 'prod_tsia-complex-entities'; 
+  const indexName = process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!; 
+
+  if (!process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY || !indexName) {
+    return (
+        <div className="text-destructive text-xs p-2 rounded-md bg-destructive/10">
+            Η αναζήτηση Algolia δεν έχει ρυθμιστεί. Βεβαιωθείτε ότι οι μεταβλητές περιβάλλοντος υπάρχουν.
+        </div>
+    )
+  }
 
   return (
     <InstantSearch searchClient={searchClient} indexName={indexName}>
