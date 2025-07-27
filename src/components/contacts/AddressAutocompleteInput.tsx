@@ -9,15 +9,18 @@ import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/shared/components/ui/command';
 import { useDebounce } from 'use-debounce';
+import type { UseFormReturn } from 'react-hook-form';
+
 
 const searchClient = algoliasearch(
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID!,
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!,
 );
 
-const Autocomplete = ({ form, name, label, onSelect, indexName, algoliaKey }: any) => {
+const Autocomplete = ({ form, name, label, onSelect, algoliaKey }: { form: UseFormReturn, name: string, label: string, onSelect: (hit: any) => void, algoliaKey: string }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(''); 
+  // Use the form's value as the source of truth for the input's initial state
+  const [inputValue, setInputValue] = useState(form.getValues(name) || '');
   const [debouncedQuery] = useDebounce(inputValue, 300);
 
   const { hits } = useHits();
@@ -50,7 +53,7 @@ const Autocomplete = ({ form, name, label, onSelect, indexName, algoliaKey }: an
         control={form.control}
         name={name}
         render={({ field }) => {
-          // Sync internal state if form value changes externally
+          // Sync internal state if form value changes externally (e.g., from another autocomplete)
           useEffect(() => {
             if (field.value !== inputValue) {
               setInputValue(field.value || '');
@@ -68,6 +71,7 @@ const Autocomplete = ({ form, name, label, onSelect, indexName, algoliaKey }: an
                       value={inputValue}
                       onChange={handleInputChange}
                       onClick={() => setIsOpen(true)}
+                      className="text-left"
                     />
                   </FormControl>
                 </PopoverTrigger>
@@ -103,7 +107,7 @@ const Autocomplete = ({ form, name, label, onSelect, indexName, algoliaKey }: an
   );
 };
 
-export function AddressAutocompleteInput({ form, name, label, onSelect, indexName, algoliaKey }: any) {
+export function AddressAutocompleteInput({ form, name, label, onSelect, indexName, algoliaKey }: { form: UseFormReturn, name: string, label: string, onSelect: (hit: any) => void, indexName: string, algoliaKey: string }) {
   if (!process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY || !indexName) {
     return (
         <div className="text-destructive text-xs p-2 rounded-md bg-destructive/10">
@@ -115,7 +119,7 @@ export function AddressAutocompleteInput({ form, name, label, onSelect, indexNam
   return (
     <InstantSearch searchClient={searchClient} indexName={indexName}>
         <Configure hitsPerPage={5} />
-        <Autocomplete form={form} name={name} label={label} onSelect={onSelect} indexName={indexName} algoliaKey={algoliaKey} />
+        <Autocomplete form={form} name={name} label={label} onSelect={onSelect} algoliaKey={algoliaKey} />
     </InstantSearch>
   );
 }
