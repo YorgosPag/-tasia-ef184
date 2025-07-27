@@ -217,13 +217,13 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
                           <DetailRow label="Τοπωνύμιο" value={address.toponym} />
                           <DetailRow label="Τ.Κ." value={address.postalCode} />
                           <DetailRow label="Οικισμός" value={address.settlements} />
-                          <DetailRow label="Δημ./Τοπ. Κοινότητα" value={address.municipalLocalCommunities} />
-                          <DetailRow label="Δημ. Ενότητα" value={address.municipalUnities} />
+                          <DetailRow label="Δημοτική/Τοπική Κοινότητα" value={address.municipalLocalCommunities} />
+                          <DetailRow label="Δημοτική Ενότητα" value={address.municipalUnities} />
                           <DetailRow label="Δήμος" value={address.municipality} />
-                          <DetailRow label="Περιφ. Ενότητα" value={address.regionalUnities} />
+                          <DetailRow label="Περιφερειακή Ενότητα" value={address.regionalUnities} />
                           <DetailRow label="Περιφέρεια" value={address.regions} />
-                          <DetailRow label="Αποκ. Διοίκηση" value={address.decentralizedAdministrations} />
-                          <DetailRow label="Μεγ. Γεωγ. Ενότητα" value={address.largeGeographicUnits} />
+                          <DetailRow label="Αποκεντρωμένη Διοίκηση" value={address.decentralizedAdministrations} />
+                          <DetailRow label="Μεγάλη Γεωγραφική Ενότητα" value={address.largeGeographicUnits} />
                           <DetailRow label="Χώρα" value={address.country} />
                         </div>
                     </div>

@@ -69,14 +69,14 @@ export const addressSchema = z.object({
         postalCode: z.string().optional().refine(val => !val || /^\d{5}$/.test(val), {
             message: 'Ο Τ.Κ. πρέπει να αποτελείται από 5 ψηφία.'
         }),
-        largeGeographicUnits: z.string().optional(),
-        decentralizedAdministrations: z.string().optional(),
-        regions: z.string().optional(),
-        regionalUnities: z.string().optional(),
-        municipality: z.string().optional(),
-        municipalUnities: z.string().optional(),
-        municipalLocalCommunities: z.string().optional(),
         settlements: z.string().optional(),
+        municipalLocalCommunities: z.string().optional(),
+        municipalUnities: z.string().optional(),
+        municipality: z.string().optional(),
+        regionalUnities: z.string().optional(),
+        regions: z.string().optional(),
+        decentralizedAdministrations: z.string().optional(),
+        largeGeographicUnits: z.string().optional(),
         country: z.string().optional().default('Ελλάδα'),
     })).optional(),
 });
