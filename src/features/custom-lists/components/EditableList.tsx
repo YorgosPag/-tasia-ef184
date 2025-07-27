@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -10,6 +9,7 @@ import {
 } from '@/shared/components/ui/accordion';
 import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { Input } from '@/shared/components/ui/input';
 import { Plus, Loader2, Edit, Trash2 } from 'lucide-react';
 import { type CustomList, useCustomLists } from '@/hooks/useCustomLists';
 import { ListItem } from './ListItem';
@@ -45,7 +45,7 @@ export function EditableList({ list }: EditableListProps) {
     <AccordionItem value={list.id}>
       <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
         <div className="flex-1 flex items-center gap-4">
-             {isEditingTitle ? (
+            {isEditingTitle ? (
                 <Input
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
