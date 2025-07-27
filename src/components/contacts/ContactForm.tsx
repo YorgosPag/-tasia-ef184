@@ -28,16 +28,15 @@ interface ContactFormProps {
 
 const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
     Viber: (props) => (
-      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M14.49,11.33c-.34-.51-1.09-.6-1.5-.27l-1.34,1.17c-.12,.1-.25,.16-.4,.16s-.28-.06-.39-.16c-1.2-1.2-2.33-2.5-2.88-3.79-.1-.26-.05-.56,.13-.75l1.34-1.18c.33-.31,.4-.86,.18-1.28-.22-.42-1.63-2.58-1.83-2.92-.19-.34-.6-.52-1-.49l-1.6,.12c-.41,.03-.78,.27-1,.6-.22,.33-1.14,1.5-1.14,3.22,0,2.22,1.21,4.4,3.48,6.62,2.28,2.22,4.42,3.44,6.67,3.44,1.72,0,2.89-.92,3.22-1.14,.33-.22,.57-.59,.6-1l.12-1.6c.03-.41-.15-.81-.49-1-.34-.2-2.5-1.61-2.92-1.83Z"/></svg>
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#8a53a5" d="M14.49 11.33c-.34-.51-1.09-.6-1.5-.27l-1.34 1.17c-.12.1-.25.16-.4.16s-.28-.06-.39-.16c-1.2-1.2-2.33-2.5-2.88-3.79-.1-.26-.05-.56.13-.75l1.34-1.18c.33-.31.4-.86.18-1.28-.22-.42-1.63-2.58-1.83-2.92-.19-.34-.6-.52-1-.49l-1.6.12c-.41.03-.78.27-1,.6-.22.33-1.14 1.5-1.14 3.22 0 2.22 1.21 4.4 3.48 6.62 2.28 2.22 4.42 3.44 6.67 3.44 1.72 0 2.89-.92 3.22-1.14.33-.22.57-.59.6-1l.12-1.6c.03-.41-.15-.81-.49-1-.34-.2-2.5-1.61-2.92-1.83z"/></svg>
     ),
     WhatsApp: (props) => (
-     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.05,4.94A9.92,9.92,0,0,0,12,2,10,10,0,0,0,2,12a10,10,0,0,0,10,10,10,10,0,0,0,7.07-2.93,9.94,9.94,0,0,0,0-14.14Zm-1.42,12.72a8.38,8.38,0,0,1-11.89,0,8.38,8.38,0,0,1,0-11.89,8.38,8.38,0,0,1,11.89,0,8.38,8.38,0,0,1,0,11.89Zm-2.12-2.83a.5.5,0,0,1-.63.07,7.2,7.2,0,0,1-3.13-2.12,7.31,7.31,0,0,1-1.87-2.9,1.2,1.2,0,0,1,.07-.74,1.5,1.5,0,0,1,1.52-1.52.5.5,0,0,1,.39.19l.79,1.11a.5.5,0,0,1-.06.63,4.29,4.29,0,0,0-.56.88.5.5,0,0,0,.12.56,6.72,6.72,0,0,0,2.5,2.5.5.5,0,0,0,.56.12,4.29,4.29,0,0,0,.88-.56.5.5,0,0,1,.63-.06l1.11,.79A.5.5,0,0,1,15.51,14.83Z"/></svg>
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#25D366" d="M19.05 4.94A9.92 9.92 0 0 0 12 2 10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 7.07-2.93A9.94 9.94 0 0 0 19.05 4.94M12 20.5A8.5 8.5 0 1 1 20.5 12 8.5 8.5 0 0 1 12 20.5m4.37-5.02a.5.5 0 0 1-.63.07 7.2 7.2 0 0 1-3.13-2.12 7.31 7.31 0 0 1-1.87-2.9 1.2 1.2 0 0 1 .07-.74 1.5 1.5 0 0 1 1.52-1.52.5.5 0 0 1 .39.19l.79 1.11a.5.5 0 0 1-.06.63 4.29 4.29 0 0 0-.56.88.5.5 0 0 0 .12.56 6.72 6.72 0 0 0 2.5 2.5.5.5 0 0 0 .56.12 4.29 4.29 0 0 0 .88-.56.5.5 0 0 1 .63-.06l1.11.79a.5.5 0 0 1 .19.39.5.5 0 0 1-.19.39Z"/></svg>
     ),
     Telegram: (props) => (
-      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm5.44,7.4L15.33,16a.41.41,0,0,1-.41.2.43.43,0,0,1-.18,0L12.5,14.8l-2.09,2.1a.42.42,0,0,1-.3.1.41.41,0,0,1-.41-.4V14.1L5.14,12.3a.41.41,0,0,1,0-.76L16.6,6.6A.41.41,0,0,1,17.44,7.4Z"/></svg>
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#2AABEE" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.69 7.6-1.11 7.4a.41.41 0 0 1-.41.2.43.43 0 0 1-.18 0L12.5 14.8l-2.09 2.1a.42.42 0 0 1-.3.1.41.41 0 0 1-.41-.4V14.1L5.14 12.3a.41.41 0 0 1 0-.76l11.46-4.9a.41.41 0 0 1 .8.8z"/></svg>
     ),
 };
-
 
 const SOCIAL_TYPES = ['Website', 'LinkedIn', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
 const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
@@ -55,7 +54,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
   const getFullAddress = (index: number) => {
     const address = form.watch(`addresses.${index}`);
-    return [address.street, address.number, address.city, address.postalCode].filter(Boolean).join(' ');
+    return [address.street, address.number, address.city, address.postalCode, address.country].filter(Boolean).join(' ');
   }
 
   return (
@@ -345,7 +344,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
           <div className="flex justify-end">
-             <Button type="button" variant="ghost" size="sm" onClick={() => appendAddress({ type: 'Κύρια' })}>
+             <Button type="button" variant="ghost" size="sm" onClick={() => appendAddress({ type: 'Κύρια', country: 'Ελλάδα' })}>
                 <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
             </Button>
           </div>
@@ -371,6 +370,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                         <FormField control={form.control} name={`addresses.${index}.postalCode`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ταχ. Κώδικας</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                         <FormField control={form.control} name={`addresses.${index}.city`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Πόλη</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                         <FormField control={form.control} name={`addresses.${index}.municipality`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Δήμος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.country`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Χώρα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                      </div>
                       {googleMapsUrl && (
                         <div className="flex justify-end pt-2">

@@ -69,6 +69,7 @@ export const addressSchema = z.object({
             message: 'Ο Τ.Κ. πρέπει να αποτελείται από 5 ψηφία.'
         }),
         municipality: z.string().optional(),
+        country: z.string().optional(),
     })).optional(),
 });
 

@@ -175,7 +175,7 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
 
         <DetailSection title="Διευθύνσεις" icon={Map} alwaysShow>
             {contact.addresses?.map((address, i) => {
-                 const fullAddress = [address.street, address.number, address.city, address.postalCode].filter(Boolean).join(' ');
+                 const fullAddress = [address.street, address.number, address.city, address.postalCode, address.country].filter(Boolean).join(', ');
                  const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
                  return (
                     <div key={i} className="p-3 rounded-md bg-muted/30">
