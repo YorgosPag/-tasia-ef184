@@ -86,7 +86,6 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       try {
         let constraints: QueryConstraint[] = [where('type', '==', type)];
 
-        // Add constraints for column filters using exact match (==)
         for (const key in debouncedFilters) {
             const value = debouncedFilters[key];
             if (value) {
@@ -101,27 +100,17 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         let finalQuery;
         const baseQuery = collection(db, 'tsia-complex-entities');
         
-        // Firestore requires that if you have an inequality filter (<, <=, >, >=), your first sorting must be on the same field.
-        // Since we only use '==' now, we can sort by any field. We'll default to name for consistency.
         constraints.push(orderBy('__name__')); 
         
-
-        switch (direction) {
-          case 'next':
-            if(lastVisible) constraints.push(startAfter(lastVisible));
-            constraints.push(limit(PAGE_SIZE));
-            break;
-          case 'prev':
-             if (firstVisible) {
-                constraints.push(endBefore(firstVisible), limitToLast(PAGE_SIZE));
-             } else {
-                 constraints.push(limit(PAGE_SIZE));
-             }
-            break;
-          default: // 'initial'
-            constraints.push(limit(PAGE_SIZE));
-            break;
+        if (direction === 'next' && lastVisible) {
+            constraints.push(startAfter(lastVisible));
+        } else if (direction === 'prev' && firstVisible) {
+            constraints.push(endBefore(firstVisible));
+            constraints.push(limitToLast(PAGE_SIZE));
+        } else {
+             constraints.push(limit(PAGE_SIZE));
         }
+        
 
         finalQuery = query(baseQuery, ...constraints);
         
@@ -148,14 +137,17 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     setPage(1);
     setLastVisible(null);
     setFirstVisible(null);
+    // The actual fetch is triggered by the useEffect below
+    // to avoid a direct dependency cycle in fetchEntities.
+  }, []);
+
+  useEffect(() => {
     if (type) {
       fetchEntities('initial');
     }
-  }, [type, fetchEntities]);
-
-  useEffect(() => {
-    refetch();
-  }, [type, debouncedFilters, refetch]);
+  // This useEffect should ONLY re-run when the type or debouncedFilters change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, debouncedFilters]);
 
   const nextPage = useCallback(() => {
     if(!lastVisible) return;
