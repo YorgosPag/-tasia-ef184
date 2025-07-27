@@ -9,7 +9,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
 import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, MapPin, Briefcase, Map, Home } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, Briefcase, Map } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
@@ -31,14 +31,14 @@ const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElemen
       <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#8a53a5" d="M14.49 11.33c-.34-.51-1.09-.6-1.5-.27l-1.34 1.17c-.12.1-.25.16-.4.16s-.28-.06-.39-.16c-1.2-1.2-2.33-2.5-2.88-3.79-.1-.26-.05-.56.13-.75l1.34-1.18c.33-.31.4-.86.18-1.28-.22-.42-1.63-2.58-1.83-2.92-.19-.34-.6-.52-1-.49l-1.6.12c-.41.03-.78.27-1,.6-.22.33-1.14 1.5-1.14 3.22 0 2.22 1.21 4.4 3.48 6.62 2.28 2.22 4.42 3.44 6.67 3.44 1.72 0 2.89-.92 3.22-1.14.33-.22.57-.59.6-1l.12-1.6c.03-.41-.15-.81-.49-1-.34-.2-2.5-1.61-2.92-1.83z"/></svg>
     ),
     WhatsApp: (props) => (
-      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#25D366" d="M19.05 4.94A9.92 9.92 0 0 0 12 2 10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 7.07-2.93A9.94 9.94 0 0 0 19.05 4.94M12 20.5A8.5 8.5 0 1 1 20.5 12 8.5 8.5 0 0 1 12 20.5m4.37-5.02a.5.5 0 0 1-.63.07 7.2 7.2 0 0 1-3.13-2.12 7.31 7.31 0 0 1-1.87-2.9 1.2 1.2 0 0 1 .07-.74 1.5 1.5 0 0 1 1.52-1.52.5.5 0 0 1 .39.19l.79 1.11a.5.5 0 0 1-.06.63 4.29 4.29 0 0 0-.56.88.5.5 0 0 0 .12.56 6.72 6.72 0 0 0 2.5 2.5.5.5 0 0 0 .56.12 4.29 4.29 0 0 0 .88-.56.5.5 0 0 1 .63-.06l1.11.79a.5.5 0 0 1 .19.39.5.5 0 0 1-.19.39Z"/></svg>
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#25D366" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22C17.52,22 22,17.52 22,12A10,10 0 0,0 12,2M17.04,15.58C16.73,15.75 15.46,16.38 15.21,16.47C14.96,16.56 14.76,16.6 14.56,16.5C14.36,16.41 13.61,16.14 12.72,15.26C11.66,14.2 11.06,13.06 10.92,12.79C10.78,12.53 10.92,12.37 11.06,12.24C11.18,12.12 11.33,11.93 11.47,11.78C11.6,11.64 11.65,11.53 11.74,11.39C11.83,11.25 11.79,11.14 11.72,11.03C11.65,10.92 11.13,9.65 10.92,9.13C10.71,8.61 10.5,8.69 10.36,8.69C10.22,8.69 10.02,8.69 9.82,8.69C9.62,8.69 9.32,8.78 9.07,9.02C8.82,9.27 8.2,9.82 8.2,11.08C8.2,12.35 9.1,13.54 9.24,13.7C9.38,13.86 11.12,16.54 13.8,17.65C16.48,18.75 16.48,18.33 16.89,18.28C17.3,18.24 18.23,17.68 18.45,17.08C18.67,16.48 18.67,16.02 18.6,15.91C18.54,15.81 18.34,15.75 18.1,15.64C17.85,15.53 17.35,15.73 17.04,15.58Z"/></svg>
     ),
     Telegram: (props) => (
-      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#2AABEE" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.69 7.6-1.11 7.4a.41.41 0 0 1-.41.2.43.43 0 0 1-.18 0L12.5 14.8l-2.09 2.1a.42.42 0 0 1-.3.1.41.41 0 0 1-.41-.4V14.1L5.14 12.3a.41.41 0 0 1 0-.76l11.46-4.9a.41.41 0 0 1 .8.8z"/></svg>
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#2AABEE" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.69 7.6l-1.11 7.4a.41.41 0 0 1-.41.2.43.43 0 0 1-.18 0L12.5 14.8l-2.09 2.1a.42.42 0 0 1-.3.1.41.41 0 0 1-.41-.4V14.1L5.14 12.3a.41.41 0 0 1 0-.76l11.46-4.9a.41.41 0 0 1 .8.8z"/></svg>
     ),
 };
 
-const SOCIAL_TYPES = ['Website', 'LinkedIn', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
+const SOCIAL_TYPES = ['Website', 'LinkedIn', 'YouTube', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
 const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
 const ADDRESS_TYPES = ['Κατοικίας', 'Επαγγελματική', 'Έδρα', 'Υποκατάστημα', 'Αποθήκη', 'Εξοχικό', 'Άλλο'];
 
@@ -143,7 +143,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
            {entityType && (
             <div className="space-y-4 border-t pt-4">
-             {entityType !== 'Φυσικό Πρόσωπο' && (
+              {entityType !== 'Φυσικό Πρόσωπο' && (
                 <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
                     <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Επωνυμία</FormLabel>
                     <div className="flex-1 space-y-2">
@@ -219,7 +219,6 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-6 p-1 pt-4">
-             {/* Emails Section */}
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
                     <h3 className="text-sm font-medium">Emails</h3>
@@ -229,16 +228,17 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                 </div>
                 <div className="w-full space-y-2">
                     {emailFields.map((field, index) => (
-                    <div key={field.id} className="flex items-end gap-2 p-2 border rounded-md bg-muted/30">
-                        <FormField control={form.control} name={`emails.${index}.type`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`emails.${index}.value`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Email</FormLabel><FormControl><Input {...field} type="email" /></FormControl><FormMessage /></FormItem>)} />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeEmail(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                    <div key={field.id} className="flex flex-col gap-2 p-3 border rounded-md bg-muted/30">
+                        <div className="flex items-center gap-4">
+                            <FormField control={form.control} name={`emails.${index}.type`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name={`emails.${index}.value`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Email</FormLabel><FormControl><Input {...field} type="email" /></FormControl><FormMessage /></FormItem>)} />
+                            <Button type="button" variant="ghost" size="icon" className="self-end" onClick={() => removeEmail(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                        </div>
                     </div>
                     ))}
                 </div>
             </div>
 
-            {/* Phones Section */}
             <div className="space-y-2">
                  <div className="flex justify-between items-center">
                     <h3 className="text-sm font-medium">Τηλέφωνα</h3>
@@ -249,10 +249,10 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                 <div className="w-full space-y-2">
                     {phoneFields.map((field, index) => (
                     <div key={field.id} className="flex flex-col gap-3 p-3 border rounded-md bg-muted/30">
-                        <div className="flex items-end gap-2">
+                        <div className="flex items-center gap-4">
                             <FormField control={form.control} name={`phones.${index}.type`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={form.control} name={`phones.${index}.value`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Αριθμός</FormLabel><FormControl><Input {...field} type="tel" /></FormControl><FormMessage /></FormItem>)} />
-                            <Button type="button" variant="ghost" size="icon" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                            <Button type="button" variant="ghost" size="icon" className="self-end" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                         </div>
                         <FormField
                         control={form.control}

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github, Map } from 'lucide-react';
+import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github, Map, Youtube } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import type { Contact } from '@/shared/hooks/use-contacts';
@@ -21,6 +21,7 @@ const socialIcons: { [key: string]: React.ElementType } = {
     Facebook: Facebook,
     Instagram: Instagram,
     GitHub: Github,
+    YouTube: Youtube,
     TikTok: Info, // Placeholder, no TikTok icon in lucide-react
     default: LinkIcon,
 };
