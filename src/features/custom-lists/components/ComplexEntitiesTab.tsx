@@ -34,10 +34,6 @@ export function ComplexEntitiesTab() {
     listTypes,
     isLoadingListTypes,
     refetch,
-    nextPage,
-    prevPage,
-    canGoNext,
-    canGoPrev,
   } = useComplexEntities(selectedListType || undefined);
 
   const [isImporting, setIsImporting] = useState(false);
@@ -184,8 +180,8 @@ export function ComplexEntitiesTab() {
           <div className="flex flex-col md:flex-row gap-4 mt-2">
             <Select onValueChange={setSelectedListType} value={selectedListType}>
                 <SelectTrigger className="w-full md:w-[250px]">
-                    <SelectValue placeholder={isLoadingListTypes ? "Φόρτωση λιστών..." : "Επιλέξτε λίστα..."}>
-                        {isLoadingListTypes ? <Loader2 className="h-4 w-4 animate-spin" /> : selectedListType || "Επιλέξτε λίστα..."}
+                     <SelectValue placeholder={isLoadingListTypes ? "Φόρτωση λιστών..." : "Επιλέξτε λίστα..."}>
+                        {isLoadingListTypes ? <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> <span>Φόρτωση...</span></div> : selectedListType || "Επιλέξτε λίστα..."}
                     </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -224,10 +220,6 @@ export function ComplexEntitiesTab() {
             <DataTable
               columns={columns}
               data={entities}
-              onNextPage={nextPage}
-              onPrevPage={prevPage}
-              canGoNext={canGoNext}
-              canGoPrev={canGoPrev}
             />
           )}
         </CardContent>

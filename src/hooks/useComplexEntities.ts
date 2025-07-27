@@ -50,11 +50,6 @@ export function useComplexEntities(type?: string) {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
-  const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-
   const fetchListTypes = useCallback(async () => {
     setIsLoadingListTypes(true);
     try {
@@ -73,7 +68,7 @@ export function useComplexEntities(type?: string) {
   }, [fetchListTypes]);
 
 
-  const fetchEntities = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
+  const fetchEntities = useCallback(async () => {
       if (!type) {
         setEntities([]);
         return;
@@ -81,37 +76,29 @@ export function useComplexEntities(type?: string) {
       setIsLoading(true);
       setError(null);
       try {
-        let constraints = [where('type', '==', type), limit(PAGE_SIZE + 1)]; // Fetch one extra to check for next page
-
-        if (direction === 'next' && lastVisible) {
-            constraints.push(startAfter(lastVisible));
-        } else if (direction === 'prev' && firstVisible) {
-            // Firestore doesn't have a simple previous page query, so we reverse the query
-            constraints = [where('type', '==', type), limitToLast(PAGE_SIZE), endBefore(firstVisible)];
-        } else {
-             // Initial fetch
-        }
-
+        let constraints = [where('type', '==', type)];
+        
+        // This is a very basic search. For more complex scenarios (case-insensitive, partial match),
+        // a more advanced solution like Algolia or a separate normalized field would be needed.
+        // This query looks for an exact match on any field. Due to Firestore limitations,
+        // we can't query across multiple fields dynamically. We will filter client-side for now.
         const q = query(collection(db, 'tsia-complex-entities'), ...constraints);
         
         const documentSnapshots = await getDocs(q);
         
-        const newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
+        let newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
         
-        const hasMore = newEntities.length > PAGE_SIZE;
-        if (hasMore) {
-            newEntities.pop(); // Remove the extra document
+        if (debouncedSearchQuery) {
+            const lowercasedQuery = debouncedSearchQuery.toLowerCase();
+            newEntities = newEntities.filter(entity => {
+                // Search across all values of an entity
+                return Object.values(entity).some(value => 
+                    String(value).toLowerCase().includes(lowercasedQuery)
+                );
+            });
         }
-
-        if (direction === 'prev' && documentSnapshots.docs.length < PAGE_SIZE) {
-            // We are at the first page
-        }
-
+        
         setEntities(newEntities);
-        setHasNextPage(hasMore);
-
-        setFirstVisible(documentSnapshots.docs[0] || null);
-        setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - (hasMore ? 2 : 1)] || null);
         
       } catch (err: any) {
         console.error('Error fetching complex entities:', err);
@@ -120,40 +107,21 @@ export function useComplexEntities(type?: string) {
         setIsLoading(false);
       }
     },
-    [type, debouncedSearchQuery, lastVisible, firstVisible]
+    [type, debouncedSearchQuery]
   );
   
   const refetch = useCallback(() => {
-    setPage(1);
-    setFirstVisible(null);
-    setLastVisible(null);
-    fetchEntities('initial');
+    fetchEntities();
   }, [fetchEntities]);
 
   useEffect(() => {
-    setPage(1);
-    setFirstVisible(null);
-    setLastVisible(null);
     if(type) {
-        fetchEntities('initial');
+        fetchEntities();
     } else {
         setEntities([]);
     }
-  }, [type, debouncedSearchQuery]); // Removed fetchEntities from dependency array
+  }, [type, debouncedSearchQuery, fetchEntities]);
   
-  const nextPage = () => {
-      if (hasNextPage) {
-          setPage(p => p + 1);
-          fetchEntities('next');
-      }
-  };
-
-  const prevPage = () => {
-      if (page > 1) {
-          setPage(p => p - 1);
-          fetchEntities('prev');
-      }
-  };
 
   return {
     entities,
@@ -164,9 +132,5 @@ export function useComplexEntities(type?: string) {
     listTypes,
     isLoadingListTypes,
     refetch,
-    nextPage,
-    prevPage,
-    canGoNext: hasNextPage,
-    canGoPrev: page > 1,
   };
 }
