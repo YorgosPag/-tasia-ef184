@@ -15,7 +15,7 @@ const searchClient = algoliasearch(
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!, // CORRECT: Using search-only key
 );
 
-const Autocomplete = ({ control, name, label, onSelect, indexName }: any) => {
+const Autocomplete = ({ control, name, label, onSelect, indexName, algoliaKey }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(''); 
   const [debouncedQuery] = useDebounce(inputValue, 300);
@@ -29,7 +29,7 @@ const Autocomplete = ({ control, name, label, onSelect, indexName }: any) => {
   
   const handleSelect = (hit: any) => {
     onSelect(hit);
-    const selectedLabel = hit[label] || '';
+    const selectedLabel = hit[algoliaKey] || '';
     setInputValue(selectedLabel);
     control.setValue(name, selectedLabel, { shouldDirty: true });
     setIsOpen(false);
@@ -85,10 +85,10 @@ const Autocomplete = ({ control, name, label, onSelect, indexName }: any) => {
                 {hits.map((hit) => (
                   <CommandItem
                     key={hit.objectID}
-                    value={hit[label] as string}
+                    value={hit[algoliaKey] as string}
                     onSelect={() => handleSelect(hit)}
                   >
-                    <span dangerouslySetInnerHTML={{ __html: (hit._highlightResult as any)?.[label]?.value || (hit[label] as string) }} />
+                    <span dangerouslySetInnerHTML={{ __html: (hit._highlightResult as any)?.[algoliaKey]?.value || (hit[algoliaKey] as string) }} />
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -103,7 +103,7 @@ const Autocomplete = ({ control, name, label, onSelect, indexName }: any) => {
   );
 };
 
-export function AddressAutocompleteInput({ control, name, label, onSelect, indexName }: any) {
+export function AddressAutocompleteInput({ control, name, label, onSelect, indexName, algoliaKey }: any) {
   if (!process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY || !indexName) {
     return (
         <div className="text-destructive text-xs p-2 rounded-md bg-destructive/10">
@@ -115,7 +115,7 @@ export function AddressAutocompleteInput({ control, name, label, onSelect, index
   return (
     <InstantSearch searchClient={searchClient} indexName={indexName}>
         <Configure hitsPerPage={5} />
-        <Autocomplete control={control} name={name} label={label} onSelect={onSelect} indexName={indexName} />
+        <Autocomplete control={control} name={name} label={label} onSelect={onSelect} indexName={indexName} algoliaKey={algoliaKey} />
     </InstantSearch>
   );
 }

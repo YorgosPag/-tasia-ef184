@@ -83,25 +83,25 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   }
   
   const handleAddressSelect = (index: number, hit: any) => {
-    form.setValue(`addresses.${index}.settlements`, hit['Οικισμός'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.municipalLocalCommunities`, hit['Δημοτική/Τοπική Κοινότητα'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.municipalUnities`, hit['Δημοτική Ενότητα'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.municipality`, hit['Δήμος'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.regionalUnities`, hit['Περιφερειακή Ενότητα'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.regions`, hit['Περιφέρεια'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.decentralizedAdministrations`, hit['Αποκεντρωμένη Διοίκηση'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.largeGeographicUnits`, hit['Μεγάλη Γεωγραφική Ενότητα'] || '', { shouldDirty: true });
+    form.setValue(`addresses.${index}.settlements`, hit['Οικισμοί'] || '', { shouldDirty: true });
+    form.setValue(`addresses.${index}.municipalLocalCommunities`, hit['Δημοτικές/Τοπικές Κοινότητες'] || '', { shouldDirty: true });
+    form.setValue(`addresses.${index}.municipalUnities`, hit['Δημοτικές Ενότητες'] || '', { shouldDirty: true });
+    form.setValue(`addresses.${index}.municipality`, hit['Δήμοι'] || '', { shouldDirty: true });
+    form.setValue(`addresses.${index}.regionalUnities`, hit['Περιφερειακές ενότητες'] || '', { shouldDirty: true });
+    form.setValue(`addresses.${index}.regions`, hit['Περιφέρειες'] || '', { shouldDirty: true });
+    form.setValue(`addresses.${index}.decentralizedAdministrations`, hit['Αποκεντρωμένες Διοικήσεις'] || '', { shouldDirty: true });
+    form.setValue(`addresses.${index}.largeGeographicUnits`, hit['Μεγάλες γεωγραφικές ενότητες'] || '', { shouldDirty: true });
   };
 
   const addressFieldsMap = [
-    { name: 'settlements', label: 'Οικισμός' },
-    { name: 'municipalLocalCommunities', label: 'Δημοτική/Τοπική Κοινότητα' },
-    { name: 'municipalUnities', label: 'Δημοτική Ενότητα' },
-    { name: 'municipality', label: 'Δήμος' },
-    { name: 'regionalUnities', label: 'Περιφερειακή Ενότητα' },
-    { name: 'regions', label: 'Περιφέρεια' },
-    { name: 'decentralizedAdministrations', label: 'Αποκεντρωμένη Διοίκηση' },
-    { name: 'largeGeographicUnits', label: 'Μεγάλη Γεωγραφική Ενότητα' },
+    { name: 'settlements', label: 'Οικισμός', algoliaKey: 'Οικισμοί' },
+    { name: 'municipalLocalCommunities', label: 'Δημοτική/Τοπική Κοινότητα', algoliaKey: 'Δημοτικές/Τοπικές Κοινότητες' },
+    { name: 'municipalUnities', label: 'Δημοτική Ενότητα', algoliaKey: 'Δημοτικές Ενότητες' },
+    { name: 'municipality', label: 'Δήμος', algoliaKey: 'Δήμοι' },
+    { name: 'regionalUnities', label: 'Περιφερειακή Ενότητα', algoliaKey: 'Περιφερειακές ενότητες' },
+    { name: 'regions', label: 'Περιφέρεια', algoliaKey: 'Περιφέρειες' },
+    { name: 'decentralizedAdministrations', label: 'Αποκεντρωμένη Διοίκηση', algoliaKey: 'Αποκεντρωμένες Διοικήσεις' },
+    { name: 'largeGeographicUnits', label: 'Μεγάλη Γεωγραφική Ενότητα', algoliaKey: 'Μεγάλες γεωγραφικές ενότητες' },
   ]
 
 
@@ -483,6 +483,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                                 control={form.control}
                                 name={`addresses.${index}.${f.name}`}
                                 label={f.label}
+                                algoliaKey={f.algoliaKey}
                                 onSelect={(hit: any) => handleAddressSelect(index, hit)}
                                 indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
                             />
