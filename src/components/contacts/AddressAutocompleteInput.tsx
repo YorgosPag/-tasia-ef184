@@ -15,10 +15,11 @@ const searchClient = algoliasearch(
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY!,
 );
 
-const Autocomplete = ({ control, name, label, onSelect }: any) => {
+const Autocomplete = ({ control, name, label, onSelect, indexName }: any) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(''); 
+  const [inputValue, setInputValue] = useState(control.getValues(name) || '');
   const [debouncedQuery] = useDebounce(inputValue, 300);
+
   const { hits } = useHits();
   const { refine } = useSearchBox();
 
@@ -30,14 +31,14 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
     onSelect(hit);
     const selectedLabel = hit[label] || '';
     setInputValue(selectedLabel);
-    control.setValue(name, selectedLabel);
+    control.setValue(name, selectedLabel, { shouldDirty: true });
     setIsOpen(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    control.setValue(name, value);
+    control.setValue(name, value, { shouldDirty: true });
     if (!isOpen) {
       setIsOpen(true);
     }
@@ -97,15 +98,12 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
             )}
           </CommandList>
         </Command>
-        <Configure query={debouncedQuery} hitsPerPage={5} attributesToRetrieve={[label]} />
       </PopoverContent>
     </Popover>
   );
 };
 
-export function AddressAutocompleteInput({ control, name, label, onSelect }: any) {
-  const indexName = process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!; 
-
+export function AddressAutocompleteInput({ control, name, label, onSelect, indexName }: any) {
   if (!process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY || !indexName) {
     return (
         <div className="text-destructive text-xs p-2 rounded-md bg-destructive/10">
@@ -116,8 +114,8 @@ export function AddressAutocompleteInput({ control, name, label, onSelect }: any
 
   return (
     <InstantSearch searchClient={searchClient} indexName={indexName}>
-        <Configure filters={`type:'Διοικητική Διαίρεση Ελλάδας'`} />
-        <Autocomplete control={control} name={name} label={label} onSelect={onSelect} />
+        <Configure filters={`type:'Διοικητική Διαίρεση Ελλάδας'`} hitsPerPage={5} attributesToRetrieve={[label]} />
+        <Autocomplete control={control} name={name} label={label} onSelect={onSelect} indexName={indexName} />
     </InstantSearch>
   );
 }
