@@ -145,14 +145,13 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         setIsLoading(false);
       }
     },
-    [type, debouncedFilters, lastVisible, firstVisible]
+    [type, debouncedFilters]
   );
   
   const refetch = useCallback(() => {
     setPage(1);
     setLastVisible(null);
     setFirstVisible(null);
-    // Directly call fetchEntities instead of waiting for useEffect
     if (type) {
       fetchEntities('initial');
     }
@@ -160,7 +159,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
 
   useEffect(() => {
     refetch();
-  }, [type, debouncedFilters, refetch]);
+  }, [type, debouncedFilters]);
 
   const nextPage = useCallback(() => {
     if(!lastVisible) return;
@@ -191,3 +190,4 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     totalCount,
   };
 }
+
