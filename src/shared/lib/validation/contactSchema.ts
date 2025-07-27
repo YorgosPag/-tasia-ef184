@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const personalInfoSchema = z.object({
@@ -96,4 +97,4 @@ export const contactSchema = personalInfoSchema
   .merge(jobInfoSchema)
   .merge(notesSchema);
 
-export type ContactFormValues = z.infer<typeof contactSchema];
+export type ContactFormValues = z.infer<typeof contactSchema>;
