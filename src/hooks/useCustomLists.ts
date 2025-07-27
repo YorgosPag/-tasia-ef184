@@ -121,19 +121,37 @@ export function useCustomLists() {
   }, [toast, user]);
 
   const deleteList = useCallback(async (listId: string, listTitle: string): Promise<boolean> => {
-      if(!user) return false;
-       if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${listTitle}" και όλα τα περιεχόμενά της;`)) {
-            return false;
-        }
-      // Note: This is a simple deletion. For production, check for dependencies before deleting.
-      try {
-        await deleteDoc(doc(db, 'tsia-custom-lists', listId));
-        toast({ title: 'Επιτυχία', description: 'Η λίστα διαγράφηκε.' });
+    if(!user) return false;
+    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${listTitle}" και όλα τα περιεχόμενά της;`)) {
+        return false;
+    }
+    try {
+        const batch = writeBatch(db);
+        const listRef = doc(db, 'tsia-custom-lists', listId);
+        
+        // 1. Get all items in the subcollection
+        const itemsQuery = query(collection(listRef, 'tsia-items'));
+        const itemsSnapshot = await getDocs(itemsQuery);
+        
+        // 2. Delete all items in the subcollection
+        itemsSnapshot.docs.forEach(itemDoc => {
+            batch.delete(itemDoc.ref);
+        });
+
+        // 3. Delete the parent list document
+        batch.delete(listRef);
+
+        // 4. Commit the batch
+        await batch.commit();
+        
+        toast({ title: 'Επιτυχία', description: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.' });
+        await logActivity('DELETE_LIST', { entityId: listId, entityType: 'custom-list', name: listTitle });
         return true;
-      } catch (error) {
+    } catch (error) {
+        console.error('Error deleting list:', error);
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
         return false;
-      }
+    }
   }, [toast, user]);
 
   const addItem = useCallback(async (listId: string, rawValue: string, hasCode?: boolean): Promise<boolean> => {
