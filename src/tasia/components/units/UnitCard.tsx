@@ -40,17 +40,19 @@ export function UnitCard({ unit }: UnitCardProps) {
              <div className="relative aspect-[4/3] w-full bg-muted/20">
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Image 
-                            src={imageUrl}
-                            alt={`Photo of ${unit.name}`}
-                            fill
-                            className="object-contain transition-transform duration-300 group-hover:scale-105 cursor-pointer"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            data-ai-hint="modern apartment interior"
-                        />
+                        <div className="relative w-full h-full cursor-pointer">
+                            <Image 
+                                src={imageUrl}
+                                alt={`Photo of ${unit.name}`}
+                                fill
+                                className="object-contain transition-transform duration-300 group-hover:scale-105"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                data-ai-hint="modern apartment interior"
+                            />
+                        </div>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl h-auto p-2">
-                        <img src={imageUrl} alt={`Photo of ${unit.name}`} className="max-w-full max-h-[80vh] mx-auto object-contain" />
+                    <DialogContent className="max-w-4xl h-auto p-2 bg-transparent border-none">
+                        <img src={imageUrl} alt={`Photo of ${unit.name}`} className="max-w-full max-h-[90vh] mx-auto object-contain" />
                     </DialogContent>
                 </Dialog>
                 <Badge className={`absolute top-2 right-2 ${getStatusClass(unit.status)}`}>

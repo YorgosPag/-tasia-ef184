@@ -92,27 +92,29 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
         {unit.photos && unit.photos.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {unit.photos.map((photo, index) => (
-              <Dialog key={index}>
-                <div className="relative group border rounded-lg overflow-hidden aspect-square">
-                    <DialogTrigger asChild>
-                        <Image
-                            src={photo.url}
-                            alt={photo.name || `Unit Photo ${index + 1}`}
-                            fill
-                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                            className="object-contain cursor-pointer"
-                        />
-                    </DialogTrigger>
-                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(photo)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+              <div key={index} className="relative group border rounded-lg overflow-hidden aspect-square">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <div className="relative w-full h-full cursor-pointer">
+                      <Image
+                          src={photo.url}
+                          alt={photo.name || `Unit Photo ${index + 1}`}
+                          fill
+                          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                          className="object-contain"
+                      />
                     </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl h-auto p-2 bg-transparent border-none">
+                      <img src={photo.url} alt={photo.name || `Unit Photo ${index + 1}`} className="max-w-full max-h-[90vh] mx-auto object-contain" />
+                  </DialogContent>
+                </Dialog>
+                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(photo)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-                <DialogContent className="max-w-4xl h-auto p-2">
-                    <img src={photo.url} alt={photo.name || `Unit Photo ${index + 1}`} className="max-w-full max-h-[80vh] mx-auto object-contain" />
-                </DialogContent>
-              </Dialog>
+              </div>
             ))}
           </div>
         ) : (
