@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github, Map, Youtube } from 'lucide-react';
+import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github, Youtube, Map, Send } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import type { Contact } from '@/shared/hooks/use-contacts';
@@ -35,8 +35,8 @@ const DetailSection = ({ title, children, icon, alwaysShow = false }: { title: s
 
     return (
         <div className="border-t pt-4 mt-4">
-            <h3 className="flex items-center text-lg font-semibold mb-3">
-                {React.createElement(icon, { className: 'mr-2 h-5 w-5 text-primary' })}
+            <h3 className="flex items-center text-lg font-semibold mb-3 text-primary">
+                {React.createElement(icon, { className: 'mr-2 h-5 w-5' })}
                 {title}
             </h3>
             <div className="space-y-3 pl-7">
@@ -46,8 +46,8 @@ const DetailSection = ({ title, children, icon, alwaysShow = false }: { title: s
     );
 };
 
-const DetailRow = ({ label, value, href, type }: { label: string; value?: string | null; href?: string, type?: string }) => {
-  if (!value) return null; // Don't render empty rows
+const DetailRow = ({ label, value, href, type, children }: { label: string; value?: string | null; href?: string, type?: string, children?: React.ReactNode }) => {
+  if (!value && !children) return null; // Don't render empty rows
 
   const content = href && value ? (
     <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{value}</a>
@@ -59,7 +59,7 @@ const DetailRow = ({ label, value, href, type }: { label: string; value?: string
     <div className="grid grid-cols-3 gap-2 text-sm">
       <dt className="font-medium text-muted-foreground">{label}</dt>
       <dd className="col-span-2 flex items-center gap-2">
-        {content}
+        {children || content}
         {type && <Badge variant="outline" className="text-xs">{type}</Badge>}
         </dd>
     </div>
@@ -156,7 +156,16 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
         </DetailSection>
 
         <DetailSection title="Στοιχεία Επικοινωνίας" icon={Phone} alwaysShow>
-            {contact.emails?.map((email, i) => <DetailRow key={i} label="Email" value={email.value} href={`mailto:${email.value}`} type={email.type}/>)}
+            {contact.emails?.map((email, i) => (
+                <DetailRow key={i} label="Email" value={email.value} type={email.type}>
+                     <div className="flex items-center gap-2">
+                        <a href={`mailto:${email.value}`} className="text-primary hover:underline">{email.value}</a>
+                        <a href={`mailto:${email.value}`} title={`Αποστολή σε ${email.value}`}>
+                            <Send className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors"/>
+                        </a>
+                    </div>
+                </DetailRow>
+            ))}
             {contact.phones?.map((phone, i) => <DetailRow key={i} label="Τηλέφωνο" value={phone.value} href={`tel:${phone.value}`} type={`${phone.type} ${phone.indicators?.join(', ')}`.trim()} />)}
         </DetailSection>
         

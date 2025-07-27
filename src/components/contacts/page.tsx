@@ -22,7 +22,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { useContacts, type Contact } from '@/shared/hooks/use-contacts';
 import { ContactDetailView } from './ContactDetailView';
 
-function ContactList({ contacts, onSelectContact, selectedContactId }: { contacts: Contact[], onSelectContact: (contact: Contact) => void, selectedContactId: string | null }) {
+function ContactList({ contacts, onSelectContact, selectedContactId }: { contacts: Contact[], onSelectContact: (id: string) => void, selectedContactId: string | null }) {
   const router = useRouter();
 
   const getBadgeVariant = (type?: Contact['entityType']) => {
@@ -45,7 +45,7 @@ function ContactList({ contacts, onSelectContact, selectedContactId }: { contact
         {contacts.map((contact) => (
           <TableRow 
             key={contact.id} 
-            onClick={() => onSelectContact(contact)}
+            onClick={() => onSelectContact(contact.id)}
             className={`cursor-pointer ${selectedContactId === contact.id ? 'bg-muted hover:bg-muted' : ''}`}
           >
             <TableCell className="font-medium flex items-center gap-2">
@@ -66,7 +66,7 @@ export default function ContactsPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const { contacts, isLoading } = useContacts();
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
 
   const filteredContacts = useMemo(() => {
     if (!contacts) return [];
@@ -81,12 +81,20 @@ export default function ContactsPage() {
   }, [contacts, searchQuery]);
   
   useEffect(() => {
-    if (!selectedContact && filteredContacts.length > 0) {
-      setSelectedContact(filteredContacts[0]);
-    } else if (selectedContact && !filteredContacts.some(c => c.id === selectedContact.id)) {
-      setSelectedContact(filteredContacts.length > 0 ? filteredContacts[0] : null);
+    // If there's no selection or the selected contact is no longer in the list,
+    // select the first one from the filtered list.
+    const currentSelection = filteredContacts.find(c => c.id === selectedContactId);
+    if (!currentSelection && filteredContacts.length > 0) {
+      setSelectedContactId(filteredContacts[0].id);
+    } else if (filteredContacts.length === 0) {
+        setSelectedContactId(null);
     }
-  }, [filteredContacts, selectedContact]);
+  }, [filteredContacts, selectedContactId]);
+  
+  const selectedContact = useMemo(() => {
+      if (!selectedContactId || !contacts) return null;
+      return contacts.find(c => c.id === selectedContactId) || null;
+  }, [contacts, selectedContactId]);
 
 
   const handleExport = () => {
@@ -125,7 +133,7 @@ export default function ContactsPage() {
             {isLoading ? (
                 <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
             ) : (
-                <ContactList contacts={filteredContacts} onSelectContact={setSelectedContact} selectedContactId={selectedContact?.id || null} />
+                <ContactList contacts={filteredContacts} onSelectContact={setSelectedContactId} selectedContactId={selectedContactId} />
             )}
             </CardContent>
            </Card>
