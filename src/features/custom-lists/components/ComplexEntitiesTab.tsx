@@ -35,7 +35,6 @@ export function ComplexEntitiesTab() {
   const { toast } = useToast();
   const [selectedListType, setSelectedListType] = useState<string>('');
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
-  const [columnDefs, setColumnDefs] = useState<ColumnDef<ComplexEntity>[]>([]);
   const [tempFilters, setTempFilters] = useState<Record<string, string>>({});
 
   const {
@@ -65,7 +64,10 @@ export function ComplexEntitiesTab() {
     }
   }, [isLoadingListTypes, listTypes, selectedListType]);
 
-  const generateColumns = useCallback((keys: string[]) => {
+  const columnDefs = useMemo<ColumnDef<ComplexEntity>[]>(() => {
+    const keys = allKeysFromType;
+    if (keys.length === 0) return [];
+      
     const columnsToShow = keys.filter(key => !['id', 'type', 'createdAt', 'uniqueKey'].includes(key));
     
     // Sort columns based on preferred order, putting others at the end
@@ -118,24 +120,13 @@ export function ComplexEntitiesTab() {
           return value as React.ReactNode;
       }
     }));
-  }, [tempFilters]);
-  
-  useEffect(() => {
-    if (allKeysFromType.length > 0) {
-      setColumnDefs(generateColumns(allKeysFromType));
-    }
-  }, [allKeysFromType, generateColumns]);
+  }, [allKeysFromType, tempFilters]);
   
   // Reset columns and filters when list type changes
   useEffect(() => {
       setColumnFilters({});
       setTempFilters({});
-      if(allKeysFromType.length > 0) {
-        setColumnDefs(generateColumns(allKeysFromType));
-      } else {
-        setColumnDefs([]);
-      }
-  }, [selectedListType, allKeysFromType, generateColumns]);
+  }, [selectedListType]);
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -295,4 +286,3 @@ export function ComplexEntitiesTab() {
     </div>
   );
 }
-
