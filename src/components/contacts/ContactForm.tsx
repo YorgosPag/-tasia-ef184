@@ -480,7 +480,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                         {addressFieldsMap.map(f => (
                            <AddressAutocompleteInput 
                                 key={f.name}
-                                control={form.control}
+                                form={form}
                                 name={`addresses.${index}.${f.name}`}
                                 label={f.label}
                                 algoliaKey={f.algoliaKey}

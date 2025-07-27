@@ -12,10 +12,10 @@ import { useDebounce } from 'use-debounce';
 
 const searchClient = algoliasearch(
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID!,
-  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!, // CORRECT: Using search-only key
+  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!,
 );
 
-const Autocomplete = ({ control, name, label, onSelect, indexName, algoliaKey }: any) => {
+const Autocomplete = ({ form, name, label, onSelect, indexName, algoliaKey }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(''); 
   const [debouncedQuery] = useDebounce(inputValue, 300);
@@ -31,14 +31,14 @@ const Autocomplete = ({ control, name, label, onSelect, indexName, algoliaKey }:
     onSelect(hit);
     const selectedLabel = hit[algoliaKey] || '';
     setInputValue(selectedLabel);
-    control.setValue(name, selectedLabel, { shouldDirty: true });
+    form.setValue(name, selectedLabel, { shouldDirty: true });
     setIsOpen(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    control.setValue(name, value, { shouldDirty: true });
+    form.setValue(name, value, { shouldDirty: true });
     if (!isOpen) {
       setIsOpen(true);
     }
@@ -47,7 +47,7 @@ const Autocomplete = ({ control, name, label, onSelect, indexName, algoliaKey }:
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <FormField
-        control={control}
+        control={form.control}
         name={name}
         render={({ field }) => {
           // Sync internal state if form value changes externally
@@ -103,7 +103,7 @@ const Autocomplete = ({ control, name, label, onSelect, indexName, algoliaKey }:
   );
 };
 
-export function AddressAutocompleteInput({ control, name, label, onSelect, indexName, algoliaKey }: any) {
+export function AddressAutocompleteInput({ form, name, label, onSelect, indexName, algoliaKey }: any) {
   if (!process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY || !indexName) {
     return (
         <div className="text-destructive text-xs p-2 rounded-md bg-destructive/10">
@@ -115,7 +115,7 @@ export function AddressAutocompleteInput({ control, name, label, onSelect, index
   return (
     <InstantSearch searchClient={searchClient} indexName={indexName}>
         <Configure hitsPerPage={5} />
-        <Autocomplete control={control} name={name} label={label} onSelect={onSelect} indexName={indexName} algoliaKey={algoliaKey} />
+        <Autocomplete form={form} name={name} label={label} onSelect={onSelect} indexName={indexName} algoliaKey={algoliaKey} />
     </InstantSearch>
   );
 }
