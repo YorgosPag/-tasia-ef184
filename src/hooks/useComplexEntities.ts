@@ -108,6 +108,12 @@ export function useComplexEntities(type?: string) {
             setEntities(newEntities);
             setFirstDoc(documentSnapshots.docs[0] || null);
             setLastDoc(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+        } else {
+           if(direction !== 'first') {
+              // if we are not on the first page and we get no results, it means we went too far
+              // so we should probably stay on the current page, but for simplicity we'll just clear it
+              setEntities([]);
+           }
         }
         
         setCanGoNext(documentSnapshots.docs.length === PAGE_SIZE);
@@ -143,7 +149,7 @@ export function useComplexEntities(type?: string) {
     } else {
         setEntities([]);
     }
-  }, [type, debouncedSearchQuery, fetchEntities]);
+  }, [type, debouncedSearchQuery]);
 
   return {
     entities,
