@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -41,6 +42,13 @@ export function EditableList({ list }: EditableListProps) {
     }
   };
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
+      deleteList(list.id, list.title);
+    }
+  }
+
   return (
     <AccordionItem value={list.id}>
       <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
@@ -62,12 +70,12 @@ export function EditableList({ list }: EditableListProps) {
                 </div>
             )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-4">
             {!list.isProtected && (
                  <Button variant="ghost" size="icon" onClick={(e) => {e.stopPropagation(); setIsEditingTitle(true)}}><Edit className="h-4 w-4" /></Button>
             )}
             {!list.isProtected && (
-                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); deleteList(list.id, list.title)}}><Trash2 className="h-4 w-4" /></Button>
+                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={handleDelete}><Trash2 className="h-4 w-4" /></Button>
             )}
         </div>
       </AccordionTrigger>
