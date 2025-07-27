@@ -8,6 +8,8 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { BedDouble, Bath, Square, ArrowRight } from 'lucide-react';
 import { getStatusClass } from '@/tasia/lib/unit-helpers';
+import { Dialog, DialogContent, DialogTrigger } from '@/shared/components/ui/dialog';
+import React from 'react';
 
 interface Unit {
   id: string;
@@ -31,22 +33,31 @@ export function UnitCard({ unit }: UnitCardProps) {
         return `€${price.toLocaleString('el-GR')}`;
     };
 
+    const imageUrl = unit.photoUrl || "https://placehold.co/600x400.png";
+
     return (
         <Card className="overflow-hidden group flex flex-col">
-            <Link href={`/units/${unit.id}`} className="flex flex-col h-full">
-                <div className="relative aspect-[4/3] w-full">
-                    <Image 
-                        src={unit.photoUrl || "https://placehold.co/600x400.png"}
-                        alt={`Photo of ${unit.name}`}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        data-ai-hint="modern apartment interior"
-                    />
-                     <Badge className={`absolute top-2 right-2 ${getStatusClass(unit.status)}`}>
-                        {unit.status}
-                    </Badge>
-                </div>
+             <div className="relative aspect-[4/3] w-full bg-muted/20">
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Image 
+                            src={imageUrl}
+                            alt={`Photo of ${unit.name}`}
+                            fill
+                            className="object-contain transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            data-ai-hint="modern apartment interior"
+                        />
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl h-auto p-2">
+                        <img src={imageUrl} alt={`Photo of ${unit.name}`} className="max-w-full max-h-[80vh] mx-auto object-contain" />
+                    </DialogContent>
+                </Dialog>
+                <Badge className={`absolute top-2 right-2 ${getStatusClass(unit.status)}`}>
+                    {unit.status}
+                </Badge>
+            </div>
+            <Link href={`/units/${unit.id}`} className="flex flex-col h-full flex-grow">
                 <CardHeader className="flex-grow">
                   <CardTitle>{unit.name}</CardTitle>
                   <CardDescription>{unit.type || 'Ακίνητο'}</CardDescription>
