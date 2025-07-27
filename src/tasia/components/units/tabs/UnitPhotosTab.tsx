@@ -100,7 +100,7 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
                             alt={photo.name || `Unit Photo ${index + 1}`}
                             fill
                             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                            className="object-cover cursor-pointer"
+                            className="object-contain cursor-pointer"
                         />
                     </DialogTrigger>
                     <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
