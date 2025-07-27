@@ -26,8 +26,6 @@ interface ContactFormProps {
   onFileSelect: (file: File | null) => void;
 }
 
-const SOCIAL_TYPES = ['Website', 'LinkedIn', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
-
 const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
     Viber: (props) => (
       <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M16.49,4.21c-1.35-1-3-1.6-4.88-1.6h-.06c-4.48,0-8.12,3.64-8.12,8.12,0,2.15.84,4.1,2.22,5.55l-2.1,6.3,6.58-2.18c1.37.89,2.98,1.4,4.68,1.4h.06c4.48,0,8.12-3.64,8.12-8.12-0-2.3-1-4.41-2.65-5.93l-1.85,1.85c1.07,1.04,1.72,2.44,1.72,4.08,0,3.14-2.56,5.7-5.7,5.7h-.06c-1.46,0-2.8-.56-3.83-1.49l-.23-.17-4.43,1.47,1.5-4.32-.19-.24c-1.04-1.34-1.66-2.98-1.66-4.76,0-3.14,2.56-5.7,5.7-5.7h.06c1.55,0,2.97.6,4.02,1.58Z"/></svg>
@@ -41,6 +39,10 @@ const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElemen
 };
 
 
+const SOCIAL_TYPES = ['Website', 'LinkedIn', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
+
+const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
+
 export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const entityType = form.watch('entityType');
   const contactId = form.getValues('id'); // Assuming 'id' is part of the form values when editing
@@ -49,8 +51,6 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({ control: form.control, name: "phones" });
   const { fields: socialFields, append: appendSocial, remove: removeSocial } = useFieldArray({ control: form.control, name: "socials" });
 
-  const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
-  
   return (
     <Accordion type="multiple" defaultValue={['personal', 'identity', 'contact', 'address', 'job', 'socials', 'notes']} className="w-full">
       {/* 1. Βασικά Στοιχεία */}
