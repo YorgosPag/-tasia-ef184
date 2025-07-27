@@ -4,7 +4,7 @@
 import React from 'react';
 import { UseFormReturn, useFieldArray } from 'react-hook-form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
@@ -49,14 +49,14 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
               control={form.control}
               name="entityType"
               render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel className="md:w-40 md:text-right md:pt-2.5 shrink-0">Τύπος Οντότητας</FormLabel>
-                  <FormControl>
+                <FormItem className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0 pt-2">
+                  <FormLabel className="sm:w-40 sm:text-right sm:pt-2 shrink-0">Τύπος Οντότητας</FormLabel>
+                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       value={field.value}
-                      className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                      className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1"
                     >
                       <FormItem>
                         <FormControl>
@@ -105,39 +105,48 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
 
            {entityType && (
             <div className="space-y-4 border-t pt-4">
-                 <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem className="w-full">
-                        <FormLabel>{entityType === 'Φυσικό Πρόσωπο' ? 'Ονοματεπώνυμο (πλήρες)' : 'Επωνυμία'}</FormLabel>
-                        <FormControl><Input {...field} placeholder={entityType === 'Φυσικό Πρόσωπο' ? "π.χ. Γιώργος Παπαδόπουλος" : "π.χ. DevConstruct AE"} /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )} />
-                
-                <ImageUploader 
-                    entityType={entityType}
-                    entityId={contactId}
-                    initialImageUrl={form.getValues('photoUrl')}
-                    onFileSelect={onFileSelect}
-                />
+              <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
+                  <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">{entityType === 'Φυσικό Πρόσωπο' ? 'Ονοματεπώνυμο' : 'Επωνυμία'}</FormLabel>
+                  <div className="flex-1 space-y-2">
+                    <FormField control={form.control} name="name" render={({ field }) => (
+                        <FormItem>
+                            <FormControl><Input {...field} placeholder={entityType === 'Φυσικό Πρόσωπο' ? "π.χ. Γιώργος Παπαδόπουλος" : "π.χ. DevConstruct AE"} /></FormControl>
+                            <FormDescription>Το πλήρες όνομα ή η εμπορική επωνυμία.</FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                  </div>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
+                  <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">{entityType === 'Φυσικό Πρόσωπο' ? 'Φωτογραφία' : 'Λογότυπο'}</FormLabel>
+                   <div className="flex-1">
+                      <ImageUploader 
+                          entityType={entityType}
+                          entityId={contactId}
+                          initialImageUrl={form.getValues('photoUrl')}
+                          onFileSelect={onFileSelect}
+                      />
+                  </div>
+              </div>
             </div>
           )}
 
-          {/* --- Fields only for Individuals --- */}
           {entityType === 'Φυσικό Πρόσωπο' && (
             <div className="space-y-4 border-t pt-4">
-                <FormField control={form.control} name="firstName" render={({ field }) => (<FormItem className="w-full"><FormLabel>Όνομα</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="lastName" render={({ field }) => (<FormItem className="w-full"><FormLabel>Επώνυμο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="fatherName" render={({ field }) => (<FormItem className="w-full"><FormLabel>Πατρώνυμο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="motherName" render={({ field }) => (<FormItem className="w-full"><FormLabel>Μητρώνυμο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="birthDate" render={({ field }) => (<FormItem className="w-full"><FormLabel>Ημ/νία Γέννησης</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} captionLayout="dropdown-buttons" fromYear={1930} toYear={new Date().getFullYear()} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-                <FormField control={form.control} name="birthPlace" render={({ field }) => (<FormItem className="w-full"><FormLabel>Τόπος Γέννησης</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="firstName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Όνομα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="lastName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Επώνυμο</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="fatherName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Πατρώνυμο</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="motherName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Μητρώνυμο</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="birthDate" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ημ/νία Γέννησης</FormLabel><div className="flex-1"><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} captionLayout="dropdown-buttons" fromYear={1930} toYear={new Date().getFullYear()} /></PopoverContent></Popover><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="birthPlace" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τόπος Γέννησης</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                </div>
             </div>
           )}
         </AccordionContent>
@@ -147,16 +156,18 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       <AccordionItem value="identity">
         <AccordionTrigger>Στοιχεία Ταυτότητας &amp; ΑΦΜ</AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
-             {entityType === 'Φυσικό Πρόσωπο' && (
-                <>
-                    <FormField control={form.control} name="identity.type" render={({ field }) => (<FormItem className="w-full"><FormLabel>Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="identity.number" render={({ field }) => (<FormItem className="w-full"><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="identity.issueDate" render={({ field }) => (<FormItem className="w-full"><FormLabel>Ημ/νία Έκδοσης</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="identity.issuingAuthority" render={({ field }) => (<FormItem className="w-full"><FormLabel>Εκδούσα Αρχή</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                </>
-              )}
-             <FormField control={form.control} name="afm" render={({ field }) => (<FormItem className="w-full"><FormLabel>ΑΦΜ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-             <FormField control={form.control} name="doy" render={({ field }) => (<FormItem className="w-full"><FormLabel>ΔΟΥ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 {entityType === 'Φυσικό Πρόσωπο' && (
+                    <>
+                        <FormField control={form.control} name="identity.type" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τύπος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name="identity.number" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Αριθμός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name="identity.issueDate" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ημ/νία Έκδοσης</FormLabel><div className="flex-1"><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name="identity.issuingAuthority" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Εκδ. Αρχή</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    </>
+                  )}
+                 <FormField control={form.control} name="afm" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">ΑΦΜ</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                 <FormField control={form.control} name="doy" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">ΔΟΥ</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+             </div>
         </AccordionContent>
       </AccordionItem>
       
@@ -167,7 +178,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
              {/* Emails Section */}
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                    <FormLabel>Emails</FormLabel>
+                    <h3 className="text-sm font-medium">Emails</h3>
                     <Button type="button" variant="ghost" size="sm" onClick={() => appendEmail({ type: 'Προσωπικό', value: '' })}>
                         <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Email
                     </Button>
@@ -186,7 +197,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
             {/* Phones Section */}
             <div className="space-y-2">
                  <div className="flex justify-between items-center">
-                    <FormLabel>Τηλέφωνα</FormLabel>
+                    <h3 className="text-sm font-medium">Τηλέφωνα</h3>
                     <Button type="button" variant="ghost" size="sm" onClick={() => appendPhone({ type: 'Κινητό', value: '', indicators: [] })}>
                         <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Τηλεφώνου
                     </Button>
@@ -213,7 +224,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
         <AccordionContent className="space-y-4 p-1">
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                    <FormLabel>Σύνδεσμοι</FormLabel>
+                     <h3 className="text-sm font-medium">Σύνδεσμοι</h3>
                     <Button type="button" variant="ghost" size="sm" onClick={() => appendSocial({ type: 'Website', label: 'Επαγγελματικό', url: '' })}>
                         <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Link
                     </Button>
@@ -239,12 +250,12 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
         <AccordionTrigger>Στοιχεία Διεύθυνσης</AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="address.street" render={({ field }) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="address.number" render={({ field }) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="address.region" render={({ field }) => (<FormItem><FormLabel>Περιοχή</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="address.postalCode" render={({ field }) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="address.city" render={({ field }) => (<FormItem><FormLabel>Πόλη</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="address.municipality" render={({ field }) => (<FormItem><FormLabel>Δήμος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="address.street" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Οδός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+              <FormField control={form.control} name="address.number" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Αριθμός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+              <FormField control={form.control} name="address.region" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Περιοχή</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+              <FormField control={form.control} name="address.postalCode" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ταχ. Κώδικας</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+              <FormField control={form.control} name="address.city" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Πόλη</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+              <FormField control={form.control} name="address.municipality" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Δήμος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
           </div>
         </AccordionContent>
       </AccordionItem>
@@ -255,11 +266,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
             <AccordionTrigger>Επαγγελματικά Στοιχεία</AccordionTrigger>
             <AccordionContent className="space-y-4 p-1">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem><FormLabel>Ρόλος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="job.specialty" render={({ field }) => (<FormItem><FormLabel>Ειδικότητα</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <div className="md:col-span-2">
-                        <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem><FormLabel>Επιχείρηση/Οργανισμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    </div>
+                    <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ρόλος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.specialty" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ειδικότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem className="flex items-center gap-4 md:col-span-2"><FormLabel className="w-40 text-right">Επιχείρηση/Οργανισμός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                 </div>
             </AccordionContent>
         </AccordionItem>
