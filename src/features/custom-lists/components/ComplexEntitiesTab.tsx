@@ -185,9 +185,15 @@ export function ComplexEntitiesTab() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoadingEntities && <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
-          {error && <p className="text-destructive text-center">{error}</p>}
-          {!isLoadingEntities && !error && selectedListType && (
+          {isLoadingEntities && selectedListType ? (
+             <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+          ) : error ? (
+            <p className="text-destructive text-center">{error}</p>
+          ) : !selectedListType ? (
+            <div className="text-center py-12 text-muted-foreground">
+                <p>Παρακαλώ επιλέξτε μια λίστα από το παραπάνω μενού για να δείτε τα περιεχόμενά της.</p>
+            </div>
+          ) : (
             <DataTable
               columns={columns}
               data={currentEntities}
@@ -197,11 +203,6 @@ export function ComplexEntitiesTab() {
               canGoPrev={canGoPrev}
             />
           )}
-           {!selectedListType && !isLoadingEntities && (
-             <div className="text-center py-12 text-muted-foreground">
-                <p>Παρακαλώ επιλέξτε μια λίστα από το παραπάνω μενού για να δείτε τα περιεχόμενά της.</p>
-            </div>
-           )}
         </CardContent>
       </Card>
     </div>
