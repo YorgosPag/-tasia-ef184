@@ -69,7 +69,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     fetchListTypes();
   }, [fetchListTypes]);
 
-  const fetchEntities = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
+  const fetchPage = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
     if (!type) {
       setEntities([]);
       setTotalCount(0);
@@ -90,7 +90,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
           }
       }
       
-      if(direction === 'initial' || totalCount === null) {
+      if(direction === 'initial') {
         const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints.filter(c => c.type !== 'orderBy' && c.type !== 'limit' && c.type !== 'startAfter' && c.type !== 'endBefore'));
         const countSnapshot = await getCountFromServer(countQuery);
         setTotalCount(countSnapshot.data().count);
@@ -135,15 +135,14 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     } finally {
       setIsLoading(false);
     }
-  }, [type, debouncedFilters, lastVisible, firstVisible, totalCount]);
+  }, [type, debouncedFilters, lastVisible, firstVisible]);
   
   const refetch = useCallback(() => {
     setPage(1);
     setLastVisible(null);
     setFirstVisible(null);
-    setTotalCount(null);
-    fetchEntities('initial');
-  }, [fetchEntities]);
+    fetchPage('initial');
+  }, [fetchPage]);
 
   useEffect(() => {
     if (type) {
@@ -152,20 +151,20 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       setEntities([]);
       setTotalCount(0);
     }
-  }, [type, debouncedFilters, refetch]);
+  }, [type, debouncedFilters]);
 
 
   const nextPage = useCallback(() => {
     setPage(p => p + 1);
-    fetchEntities('next');
-  }, [fetchEntities]);
+    fetchPage('next');
+  }, [fetchPage]);
 
   const prevPage = useCallback(() => {
     if (page > 1) {
       setPage(p => p - 1);
-      fetchEntities('prev');
+      fetchPage('prev');
     }
-  }, [page, fetchEntities]);
+  }, [page, fetchPage]);
   
   const canGoNext = totalCount !== null ? (page * PAGE_SIZE) < totalCount : false;
 
@@ -175,7 +174,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     error,
     listTypes,
     isLoadingListTypes,
-    refetch: fetchListTypes,
+    refetch,
     nextPage,
     prevPage,
     canGoNext,
