@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -116,18 +117,15 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
 
               <div className="space-y-2">
                 <h4 className="font-semibold text-sm">Υπάρχοντα Στοιχεία ({list.items.length})</h4>
-                {/* 
-                // list.items.length > 0 ? (
-                //   list.items.map(item => (
-                //     <ListItem key={item.id} item={item} listId={list.id} listTitle={list.title} hasCode={list.hasCode} />
-                //   ))
-                // ) : (
-                //   <p className="text-sm text-muted-foreground text-center py-4">Δεν υπάρχουν στοιχεία σε αυτή τη λίστα.</p>
-                // ) 
-                */}
-                <p className="text-red-500 font-bold py-4">
-                  Το preview της λίστας είναι προσωρινά απενεργοποιημένο για λόγους απόδοσης.
-                </p>
+                {
+                  list.items.length > 0 ? (
+                    list.items.map(item => (
+                      <ListItem key={item.id} item={item} listId={list.id} listKey={list.key} hasCode={list.hasCode} />
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">Δεν υπάρχουν στοιχεία σε αυτή τη λίστα.</p>
+                  )
+                }
               </div>
             </div>
           </AccordionContent>

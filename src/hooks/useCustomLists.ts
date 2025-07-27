@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -33,6 +34,7 @@ export interface ListItem {
 export interface CustomList {
   id: string;
   title: string;
+  key: string; // The new immutable key
   description?: string;
   hasCode?: boolean;
   isProtected?: boolean;
@@ -42,10 +44,10 @@ export interface CustomList {
 
 export type CreateListData = Omit<CustomList, 'id' | 'createdAt' | 'items'>;
 
-const listToContactFieldMap: Record<string, string> = {
-    'Ρόλοι': 'job.role',
-    'Ειδικότητες': 'job.specialty',
-    'ΔΟΥ': 'doy',
+const listKeyToContactFieldMap: Record<string, string> = {
+    'roles': 'job.role',
+    'specialties': 'job.specialty',
+    'doy': 'doy',
 }
 
 // --- Custom Hook ---
@@ -202,10 +204,10 @@ export function useCustomLists() {
      }
   }, [toast, user]);
 
-  const deleteItem = useCallback(async (listId: string, listTitle: string, itemId: string, itemValue: string): Promise<boolean> => {
+  const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string): Promise<boolean> => {
      if(!user) return false;
      
-     const contactField = listToContactFieldMap[listTitle];
+     const contactField = listKeyToContactFieldMap[listKey];
      if (contactField) {
         const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
         const snapshot = await getDocs(q);

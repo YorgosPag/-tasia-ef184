@@ -1,5 +1,3 @@
-/home/user/studio/src/features/custom-lists/components/ListItem.tsx
-
 
 'use client';
 
@@ -12,11 +10,11 @@ import { useCustomLists, type ListItem } from '@/hooks/useCustomLists';
 interface ListItemViewProps {
   item: ListItem;
   listId: string;
-  listTitle: string;
+  listKey: string;
   hasCode?: boolean;
 }
 
-export function ListItem({ item, listId, listTitle, hasCode }: ListItemViewProps) {
+export function ListItem({ item, listId, listKey, hasCode }: ListItemViewProps) {
   const { updateItem, deleteItem } = useCustomLists();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.value);
@@ -34,7 +32,7 @@ export function ListItem({ item, listId, listTitle, hasCode }: ListItemViewProps
   };
 
   const handleDelete = async () => {
-    await deleteItem(listId, listTitle, item.id, item.value);
+    await deleteItem(listId, listKey, item.id, item.value);
   }
 
   return (
