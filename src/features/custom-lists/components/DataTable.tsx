@@ -31,6 +31,7 @@ interface DataTableProps<TData, TValue> {
   totalCount: number | null;
   pageSize: number;
   activeFilters: Record<string, string>;
+  initialDataLoaded: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -44,6 +45,7 @@ export function DataTable<TData, TValue>({
   totalCount,
   pageSize,
   activeFilters,
+  initialDataLoaded
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const table = useReactTable({
@@ -60,6 +62,8 @@ export function DataTable<TData, TValue>({
   });
 
   const NoResultsMessage = () => {
+    if (!initialDataLoaded) return "Φόρτωση...";
+
     const totalPages = totalCount !== null ? Math.ceil(totalCount / pageSize) : 0;
     const activeFilterEntries = Object.entries(activeFilters).filter(([, value]) => value);
 
@@ -157,5 +161,3 @@ export function DataTable<TData, TValue>({
     </div>
   );
 }
-
-    

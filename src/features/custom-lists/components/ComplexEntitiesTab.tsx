@@ -39,6 +39,8 @@ export function ComplexEntitiesTab() {
     canGoPrev,
     totalCount,
     page,
+    initialDataLoaded,
+    allKeysFromType,
   } = useComplexEntities(selectedListType || undefined, columnFilters);
 
   const [isImporting, setIsImporting] = useState(false);
@@ -87,28 +89,20 @@ export function ComplexEntitiesTab() {
     }));
   }, [columnFilters]);
   
-  // Effect to generate columns.
-  // It runs only when the list type changes and brings new data for the first time
-  // or when data is loaded for the first time.
   useEffect(() => {
-    if (entities.length > 0) {
-      const firstItemKeys = Object.keys(entities[0]);
-      setColumnDefs(generateColumns(firstItemKeys));
-    } else if (!isLoading && selectedListType) {
-        // Fallback for empty list: check for keys in other lists of same type if available
-        // This part is complex, for now we will just show a default empty state
-        // or potentially pre-defined columns if we know them.
-        // For now, an empty column set is ok, the DataTable will show a message.
-        setColumnDefs(generateColumns(['name', 'address', 'region'])); // Default fallback
+    // Generate columns only when the type changes and we have a definitive set of keys.
+    // This prevents the columns from resetting when the data is temporarily empty during filtering.
+    if (allKeysFromType.length > 0) {
+      setColumnDefs(generateColumns(allKeysFromType));
+    } else {
+        // Fallback for an empty list or during initial load before keys are known
+        setColumnDefs(generateColumns(['name', 'address', 'region']));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entities, isLoading, selectedListType]);
+  }, [allKeysFromType, generateColumns]);
   
   // Reset columns and filters when list type changes
   useEffect(() => {
       setColumnFilters({});
-      // Don't reset columnDefs here to prevent flicker. 
-      // The effect above will handle regeneration.
   }, [selectedListType]);
 
 
@@ -260,6 +254,7 @@ export function ComplexEntitiesTab() {
               totalCount={totalCount}
               pageSize={PAGE_SIZE}
               activeFilters={columnFilters}
+              initialDataLoaded={initialDataLoaded}
             />
           )}
         </CardContent>
@@ -267,5 +262,3 @@ export function ComplexEntitiesTab() {
     </div>
   );
 }
-
-    
