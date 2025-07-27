@@ -91,20 +91,24 @@ export function ComplexEntitiesTab() {
   // It runs only when the list type changes and brings new data for the first time
   // or when data is loaded for the first time.
   useEffect(() => {
-      if (entities.length > 0 && columnDefs.length === 0) {
-          const firstItemKeys = Object.keys(entities[0]);
-          setColumnDefs(generateColumns(firstItemKeys));
-      } else if (columnDefs.length === 0 && !isLoading) {
-          // Fallback if the initial list is empty
-          setColumnDefs(generateColumns(['name', 'address', 'region']));
-      }
+    if (entities.length > 0) {
+      const firstItemKeys = Object.keys(entities[0]);
+      setColumnDefs(generateColumns(firstItemKeys));
+    } else if (!isLoading && selectedListType) {
+        // Fallback for empty list: check for keys in other lists of same type if available
+        // This part is complex, for now we will just show a default empty state
+        // or potentially pre-defined columns if we know them.
+        // For now, an empty column set is ok, the DataTable will show a message.
+        setColumnDefs(generateColumns(['name', 'address', 'region'])); // Default fallback
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entities, isLoading, generateColumns]);
+  }, [entities, isLoading, selectedListType]);
   
   // Reset columns and filters when list type changes
   useEffect(() => {
       setColumnFilters({});
-      setColumnDefs([]);
+      // Don't reset columnDefs here to prevent flicker. 
+      // The effect above will handle regeneration.
   }, [selectedListType]);
 
 
@@ -263,3 +267,5 @@ export function ComplexEntitiesTab() {
     </div>
   );
 }
+
+    

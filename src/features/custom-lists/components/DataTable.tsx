@@ -65,9 +65,9 @@ export function DataTable<TData, TValue>({
 
     if (activeFilterEntries.length > 0) {
       const [firstFilterKey, firstFilterValue] = activeFilterEntries[0];
-       const message = `Δεν βρέθηκαν αποτελέσματα στο φίλτρο "${firstFilterKey}" για την τιμή "${firstFilterValue}" σε αυτή τη σελίδα (${page}/${totalPages}).`;
+       let message = `Δεν βρέθηκαν αποτελέσματα στο φίλτρο "${firstFilterKey}" για την τιμή "${firstFilterValue}" σε αυτή τη σελίδα (${page}/${totalPages}).`;
        if (canGoNext) {
-           return `${message} Παρακαλώ, πατήστε "Επόμενη" για να ελέγξετε τις υπόλοιπες σελίδες.`
+           message += ' Παρακαλώ, πατήστε "Επόμενη" για να ελέγξετε τις υπόλοιπες σελίδες.'
        }
        return message;
     }
@@ -157,3 +157,5 @@ export function DataTable<TData, TValue>({
     </div>
   );
 }
+
+    

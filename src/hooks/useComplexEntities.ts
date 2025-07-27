@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   collection,
   query,
@@ -49,7 +49,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   const [isLoadingListTypes, setIsLoadingListTypes] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const [pageDocs, setPageDocs] = useState<(QueryDocumentSnapshot<DocumentData> | null)[]>([]);
+  const [pageDocs, setPageDocs] = useState<(QueryDocumentSnapshot<DocumentData> | null)[]>([null]);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState<number | null>(null);
 
@@ -82,11 +82,12 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     setError(null);
 
     try {
-      let constraints: QueryConstraint[] = [where('type', '==', type)];
+      const constraints: QueryConstraint[] = [where('type', '==', type)];
       for (const key in debouncedFilters) {
         const value = debouncedFilters[key];
         if (value) {
-            constraints.push(where(key, '==', value));
+          // Use exact match for filtering
+          constraints.push(where(key, '==', value));
         }
       }
 
@@ -95,14 +96,16 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         const countSnapshot = await getCountFromServer(countQuery);
         setTotalCount(countSnapshot.data().count);
       }
-
-      const baseQuery = collection(db, 'tsia-complex-entities');
-      constraints.push(orderBy('__name__'));
-
-      if (direction === 'next' && pageDocs[pageNumber - 1]) {
-        constraints.push(startAfter(pageDocs[pageNumber - 1]));
-      }
       
+      const baseQuery = collection(db, 'tsia-complex-entities');
+      constraints.push(orderBy('__name__')); // Consistent ordering
+
+      const lastDoc = pageDocs[pageNumber -1];
+
+      if (direction === 'next' && lastDoc) {
+        constraints.push(startAfter(lastDoc));
+      }
+
       constraints.push(limit(PAGE_SIZE));
 
       const finalQuery = query(baseQuery, ...constraints);
@@ -110,11 +113,13 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       
       if (!documentSnapshots.empty) {
         setEntities(documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity)));
+        
         setPageDocs(prev => {
           const newDocs = [...prev];
           newDocs[pageNumber] = documentSnapshots.docs[documentSnapshots.docs.length - 1];
           return newDocs;
         });
+
       } else {
         setEntities([]);
       }
@@ -126,38 +131,33 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     }
   }, [type, debouncedFilters, pageDocs, totalCount]);
 
+  const resetAndFetch = useCallback(() => {
+      setPage(1);
+      setPageDocs([null]);
+      setTotalCount(null);
+      if(type) {
+        fetchPage(1, 'initial');
+      }
+  }, [type, fetchPage]);
 
   useEffect(() => {
-    setPage(1);
-    setPageDocs([null]);
-    setTotalCount(null); // Reset count to force refetch on type/filter change
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    resetAndFetch();
   }, [type, debouncedFilters]);
   
-  useEffect(() => {
-    // This effect runs only when type/filters change and after state has been reset
-    if(type) {
-      fetchPage(1, 'initial');
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, debouncedFilters, pageDocs.length === 1 && pageDocs[0] === null]);
-
-
   const nextPage = useCallback(() => {
     const newPage = page + 1;
-    setPage(newPage);
     fetchPage(newPage, 'next');
+    setPage(newPage);
   }, [page, fetchPage]);
 
-  // Previous page logic needs to be re-thought as Firestore doesn't have a direct 'prev' cursor.
-  // The simplest way is to re-fetch up to the previous page.
   const prevPage = useCallback(() => {
-    if (page > 1) {
-      const newPage = page - 1;
-      setPage(newPage);
-      fetchPage(newPage, 'initial'); // Refetching up to the new page number
-    }
-  }, [page, fetchPage]);
+      // Re-fetching from the beginning up to the previous page's start is complex.
+      // A simpler UX is to just go back to page 1.
+      if (page > 1) {
+          resetAndFetch();
+      }
+  }, [page, resetAndFetch]);
+
   
   const canGoNext = totalCount !== null ? (page * PAGE_SIZE) < totalCount : false;
 
@@ -167,12 +167,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     error,
     listTypes,
     isLoadingListTypes,
-    refetch: () => {
-        setPage(1);
-        setPageDocs([null]);
-        setTotalCount(null);
-        fetchPage(1, 'initial');
-    },
+    refetch: resetAndFetch,
     nextPage,
     prevPage,
     canGoNext,
@@ -181,3 +176,5 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     page,
   };
 }
+
+    
