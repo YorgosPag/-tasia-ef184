@@ -122,5 +122,6 @@ export function useComplexEntities(type: string) {
     prevPage,
     canGoNext,
     canGoPrev: page > 1,
+    refetch: fetchEntities,
   };
 }

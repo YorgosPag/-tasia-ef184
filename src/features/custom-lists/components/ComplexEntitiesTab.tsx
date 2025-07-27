@@ -1,6 +1,7 @@
+
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -8,20 +9,84 @@ import { Loader2, Search, UploadCloud } from 'lucide-react';
 import { useComplexEntities } from '@/hooks/useComplexEntities';
 import { DataTable } from './DataTable';
 import { columns } from './columns';
-
+import { processImportFile } from '@/lib/importer';
+import { useToast } from '@/shared/hooks/use-toast';
 
 export function ComplexEntitiesTab() {
+    const { toast } = useToast();
     const {
         entities,
-        isLoading,
+        isLoading: isLoadingEntities,
         error,
         searchQuery,
         setSearchQuery,
         nextPage,
         prevPage,
         canGoNext,
-        canGoPrev
+        canGoPrev,
+        refetch, // Get refetch function
     } = useComplexEntities('policeStation'); // Example type
+
+    const [isImporting, setIsImporting] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [newListName, setNewListName] = useState('');
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            setSelectedFile(event.target.files[0]);
+        }
+    };
+
+    const handleImport = async () => {
+        if (!selectedFile || !newListName.trim()) {
+            toast({
+                variant: 'destructive',
+                title: 'Σφάλμα',
+                description: 'Παρακαλώ δώστε όνομα λίστας και επιλέξτε ένα αρχείο.',
+            });
+            return;
+        }
+
+        setIsImporting(true);
+        toast({
+            title: 'Η εισαγωγή ξεκίνησε',
+            description: 'Η λίστα σας επεξεργάζεται στο παρασκήνιο. Μπορείτε να συνεχίσετε την εργασία σας.',
+        });
+
+        try {
+            const result = await processImportFile(selectedFile, newListName);
+
+            if (result.errors.length > 0) {
+                 toast({
+                    variant: 'destructive',
+                    title: `Η εισαγωγή ολοκληρώθηκε με ${result.errors.length} σφάλματα`,
+                    description: `Ελέγξτε τις γραμμές: ${result.errors.map(e => e.row).slice(0, 5).join(', ')}...`,
+                });
+            } else {
+                toast({
+                    title: 'Επιτυχής Εισαγωγή',
+                    description: `Η λίστα "${newListName}" δημιουργήθηκε με ${result.unitsCreated} εγγραφές.`,
+                });
+            }
+            // Reset state and refetch data to show new list
+            setNewListName('');
+            setSelectedFile(null);
+            const fileInput = document.getElementById('import-file-input') as HTMLInputElement;
+            if(fileInput) fileInput.value = '';
+            refetch();
+
+        } catch (error: any) {
+            console.error('Import failed:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Η εισαγωγή απέτυχε',
+                description: error.message || 'Υπήρξε ένα απρόβλεπτο σφάλμα.',
+            });
+        } finally {
+            setIsImporting(false);
+        }
+    };
+
 
     return (
         <div className="space-y-4">
@@ -33,11 +98,24 @@ export function ComplexEntitiesTab() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center gap-4">
-                    <Input placeholder="Όνομα Νέας Λίστας..." className="max-w-xs" />
-                    <Input type="file" className="max-w-xs" disabled />
-                    <Button disabled>
-                        <UploadCloud className="mr-2 h-4 w-4" />
-                        Έναρξη Εισαγωγής (Σύντομα)
+                    <Input 
+                        placeholder="Όνομα Νέας Λίστας..." 
+                        className="max-w-xs"
+                        value={newListName}
+                        onChange={(e) => setNewListName(e.target.value)}
+                        disabled={isImporting} 
+                    />
+                    <Input 
+                        id="import-file-input"
+                        type="file" 
+                        className="max-w-xs" 
+                        onChange={handleFileChange}
+                        accept=".xlsx, .csv"
+                        disabled={!newListName.trim() || isImporting}
+                    />
+                    <Button onClick={handleImport} disabled={!selectedFile || !newListName.trim() || isImporting}>
+                        {isImporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UploadCloud className="mr-2 h-4 w-4" />}
+                        {isImporting ? 'Γίνεται Εισαγωγή...' : 'Έναρξη Εισαγωγής'}
                     </Button>
                 </CardContent>
             </Card>
@@ -57,9 +135,9 @@ export function ComplexEntitiesTab() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {isLoading && <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
+                    {isLoadingEntities && <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
                     {error && <p className="text-destructive text-center">{error}</p>}
-                    {!isLoading && !error && (
+                    {!isLoadingEntities && !error && (
                          <DataTable
                             columns={columns}
                             data={entities}
