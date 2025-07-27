@@ -121,10 +121,10 @@ export function ComplexEntitiesTab() {
   }, [tempFilters]);
   
   useEffect(() => {
-    if (allKeysFromType.length > 0 && columnDefs.length === 0) {
+    if (allKeysFromType.length > 0) {
       setColumnDefs(generateColumns(allKeysFromType));
     }
-  }, [allKeysFromType, generateColumns, columnDefs.length]);
+  }, [allKeysFromType, generateColumns]);
   
   // Reset columns and filters when list type changes
   useEffect(() => {
@@ -291,3 +291,4 @@ export function ComplexEntitiesTab() {
     </div>
   );
 }
+

@@ -89,7 +89,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       for (const key in debouncedFilters) {
         const value = debouncedFilters[key];
         if (value) {
-          constraints.push(where(key, '==', value));
+            constraints.push(where(key, '==', value));
         }
       }
 
