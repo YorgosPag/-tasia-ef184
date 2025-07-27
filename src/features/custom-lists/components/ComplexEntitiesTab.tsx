@@ -22,7 +22,7 @@ import {
 
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
-  const [selectedListType, setSelectedListType] = useState<string | undefined>(undefined);
+  const [selectedListType, setSelectedListType] = useState<string>('');
   
   const {
     entities,
@@ -37,7 +37,7 @@ export function ComplexEntitiesTab() {
     listTypes,
     isLoadingListTypes,
     refetch,
-  } = useComplexEntities(selectedListType);
+  } = useComplexEntities(selectedListType || undefined);
 
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -185,9 +185,9 @@ export function ComplexEntitiesTab() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading && <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
+          {isLoadingEntities && <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
           {error && <p className="text-destructive text-center">{error}</p>}
-          {!isLoading && !error && selectedListType && (
+          {!isLoadingEntities && !error && selectedListType && (
             <DataTable
               columns={columns}
               data={currentEntities}
@@ -197,7 +197,7 @@ export function ComplexEntitiesTab() {
               canGoPrev={canGoPrev}
             />
           )}
-           {!selectedListType && !isLoading && (
+           {!selectedListType && !isLoadingEntities && (
              <div className="text-center py-12 text-muted-foreground">
                 <p>Παρακαλώ επιλέξτε μια λίστα από το παραπάνω μενού για να δείτε τα περιεχόμενά της.</p>
             </div>
