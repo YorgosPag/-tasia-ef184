@@ -18,10 +18,9 @@ export interface ComplexEntity {
 }
 
 const fetchDistinctTypes = async (): Promise<string[]> => {
+    // Correctly fetch the 'title' from the 'tsia-custom-lists' which acts as the 'type' for complex entities.
     const q = query(collection(db, "tsia-custom-lists"), orderBy("title", "asc"));
     const snapshot = await getDocs(q);
-    // Assuming 'title' holds the name like 'Διοικητική Διαίρεση Ελλάδας'
-    // and we want to use this as the filter `type` in the `tsia-complex-entities` collection.
     return snapshot.docs.map(doc => doc.data().title);
 };
 
@@ -67,6 +66,7 @@ export function useComplexEntities(type?: string, searchQuery?: string) {
       // In an Algolia setup, refetching is handled by the search components.
       // We can keep this as a no-op or trigger a refresh in the Algolia component if needed.
       console.log("Refetch called, but data is now driven by Algolia.");
+      fetchListTypesCallback(); // Allow refetching list types
   };
 
   return {
