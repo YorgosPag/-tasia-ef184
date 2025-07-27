@@ -6,9 +6,6 @@ import {
   writeBatch,
   serverTimestamp,
   doc,
-  query,
-  where,
-  getDocs,
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import * as XLSX from 'xlsx';
@@ -61,19 +58,6 @@ export async function processImportFile(formData: FormData): Promise<ImportResul
     const row = data[i];
     
     try {
-      if (!row.name) {
-          result.errors.push({ rowData: row, message: 'Missing required column: name' });
-          continue; // Skip this row
-      }
-
-      // Check for duplicates based on name within the same list type
-      const q = query(collectionRef, where("type", "==", listName), where("name", "==", row.name));
-      const existingDocs = await getDocs(q);
-      if (!existingDocs.empty) {
-        result.errors.push({ rowData: row, message: `Duplicate entry for name: ${row.name}` });
-        continue;
-      }
-      
       const newDocRef = doc(collectionRef);
       
       const dataToSave = {
@@ -104,4 +88,3 @@ export async function processImportFile(formData: FormData): Promise<ImportResul
 
   return result;
 }
-
