@@ -75,7 +75,7 @@ export function WorkStagePhotoGallery({ stage, onPhotoUpload }: WorkStagePhotoGa
                                                     alt={`Progress photo ${index + 1}`}
                                                     width={400}
                                                     height={400}
-                                                    className="object-cover w-full h-full"
+                                                    className="object-contain w-full h-full"
                                                 />
                                             </CardContent>
                                             <div className="text-xs text-muted-foreground p-2 text-center">

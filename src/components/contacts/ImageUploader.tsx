@@ -98,7 +98,7 @@ export function ImageUploader({
       <div className="space-y-2">
         <Label>{getLabel()}</Label>
         <div className="relative group aspect-square w-32">
-          <Image src={preview} alt="Preview" width={128} height={128} className="rounded-md object-cover" />
+          <Image src={preview} alt="Preview" width={128} height={128} className="rounded-md object-contain" />
            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
                <Button type="button" size="icon" variant="ghost" className="text-white hover:text-white" {...getRootProps()}>
                   <Pencil className="h-5 w-5" />
