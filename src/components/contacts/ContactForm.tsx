@@ -82,17 +82,6 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
     return [address.street, address.number, address.settlements, address.postalCode, address.country].filter(Boolean).join(' ');
   }
   
-  const handleAddressSelect = (index: number, hit: any) => {
-    form.setValue(`addresses.${index}.settlements`, hit['Οικισμοί'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.municipalLocalCommunities`, hit['Δημοτικές/Τοπικές Κοινότητες'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.municipalUnities`, hit['Δημοτικές Ενότητες'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.municipality`, hit['Δήμοι'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.regionalUnities`, hit['Περιφερειακές ενότητες'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.regions`, hit['Περιφέρειες'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.decentralizedAdministrations`, hit['Αποκεντρωμένες Διοικήσεις'] || '', { shouldDirty: true });
-    form.setValue(`addresses.${index}.largeGeographicUnits`, hit['Μεγάλες γεωγραφικές ενότητες'] || '', { shouldDirty: true });
-  };
-
   const addressFieldsMap = [
     { name: 'settlements', label: 'Οικισμός', algoliaKey: 'Οικισμοί' },
     { name: 'municipalLocalCommunities', label: 'Δημοτική/Τοπική Κοινότητα', algoliaKey: 'Δημοτικές/Τοπικές Κοινότητες' },
@@ -102,7 +91,13 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
     { name: 'regions', label: 'Περιφέρεια', algoliaKey: 'Περιφέρειες' },
     { name: 'decentralizedAdministrations', label: 'Αποκεντρωμένη Διοίκηση', algoliaKey: 'Αποκεντρωμένες Διοικήσεις' },
     { name: 'largeGeographicUnits', label: 'Μεγάλη Γεωγραφική Ενότητα', algoliaKey: 'Μεγάλες γεωγραφικές ενότητες' },
-  ]
+  ];
+
+  const handleAddressSelect = (index: number, hit: any) => {
+     addressFieldsMap.forEach(field => {
+        form.setValue(`addresses.${index}.${field.name}` as any, hit[field.algoliaKey] || '', { shouldDirty: true });
+     })
+  };
 
 
   return (
@@ -559,5 +554,3 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
     </Accordion>
   );
 }
-
-    
