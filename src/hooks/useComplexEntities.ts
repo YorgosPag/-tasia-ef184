@@ -49,10 +49,7 @@ export function useComplexEntities(type?: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingListTypes, setIsLoadingListTypes] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [page, setPage] = useState(1);
-  const [canGoNext, setCanGoNext] = useState(true);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
@@ -75,7 +72,7 @@ export function useComplexEntities(type?: string) {
 
 
   const fetchEntities = useCallback(
-    async (direction: 'next' | 'prev' | 'first' = 'first') => {
+    async () => {
       if (!type) {
         setEntities([]);
         return;
@@ -86,43 +83,18 @@ export function useComplexEntities(type?: string) {
         let q;
         const baseQuery = collection(db, 'tsia-complex-entities');
         
-        // Base constraints
         let constraints = [where('type', '==', type), orderBy('name')];
 
         if (debouncedSearchQuery) {
             constraints.push(where('name', '>=', debouncedSearchQuery));
             constraints.push(where('name', '<=', debouncedSearchQuery + 'uf8ff'))
         }
-
-        if (direction === 'next' && lastDoc) {
-          q = query(baseQuery, ...constraints, startAfter(lastDoc), limit(PAGE_SIZE));
-        } else if (direction === 'prev' && firstDoc) {
-          q = query(baseQuery, ...constraints, endBefore(firstDoc), limitToLast(PAGE_SIZE));
-        } else {
-          // First page
-          q = query(baseQuery, ...constraints, limit(PAGE_SIZE));
-          setPage(1);
-        }
-
+        
+        q = query(baseQuery, ...constraints, limit(PAGE_SIZE));
+        
         const documentSnapshots = await getDocs(q);
         const newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
-
-        if (newEntities.length > 0) {
-            setEntities(newEntities);
-            setFirstDoc(documentSnapshots.docs[0] || null);
-            setLastDoc(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
-        } else {
-           if(direction !== 'first') {
-              // if we are not on the first page and we get no results, it means we went too far
-              // so we should probably stay on the current page, but for simplicity we'll just clear it
-              setEntities([]);
-           }
-        }
-        
-        setCanGoNext(documentSnapshots.docs.length === PAGE_SIZE);
-
-        if(direction === 'next' && newEntities.length > 0) setPage(p => p + 1);
-        if(direction === 'prev' && newEntities.length > 0) setPage(p => p - 1);
+        setEntities(newEntities);
 
       } catch (err: any) {
         console.error('Error fetching complex entities:', err);
@@ -131,29 +103,17 @@ export function useComplexEntities(type?: string) {
         setIsLoading(false);
       }
     },
-    [type, lastDoc, firstDoc, debouncedSearchQuery]
+    [type, debouncedSearchQuery]
   );
-  
-  const nextPage = useCallback(() => {
-    if (canGoNext) {
-        fetchEntities('next');
-    }
-  }, [canGoNext, fetchEntities]);
-
-  const prevPage = useCallback(() => {
-    if (page > 1) {
-        fetchEntities('prev');
-    }
-  }, [page, fetchEntities]);
   
   const refetch = useCallback(() => {
     fetchListTypes();
-    if (type) fetchEntities('first');
+    if (type) fetchEntities();
   }, [type, fetchListTypes, fetchEntities]);
   
   useEffect(() => {
     if(type) {
-        fetchEntities('first');
+        fetchEntities();
     } else {
         setEntities([]);
     }
@@ -162,14 +122,10 @@ export function useComplexEntities(type?: string) {
 
   return {
     entities,
-    isLoading: isLoading || isLoadingListTypes,
+    isLoading: isLoading,
     error,
     searchQuery,
     setSearchQuery,
-    nextPage,
-    prevPage,
-    canGoNext,
-    canGoPrev: page > 1,
     listTypes,
     isLoadingListTypes,
     refetch,

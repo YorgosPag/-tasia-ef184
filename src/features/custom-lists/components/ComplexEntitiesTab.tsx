@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -30,10 +30,6 @@ export function ComplexEntitiesTab() {
     error,
     searchQuery,
     setSearchQuery,
-    nextPage,
-    prevPage,
-    canGoNext,
-    canGoPrev,
     listTypes,
     isLoadingListTypes,
     refetch,
@@ -42,6 +38,14 @@ export function ComplexEntitiesTab() {
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newListName, setNewListName] = useState('');
+  
+  // Effect to auto-select the first list type once they are loaded
+  useEffect(() => {
+    if (!isLoadingListTypes && listTypes.length > 0 && !selectedListType) {
+        setSelectedListType(listTypes[0]);
+    }
+  }, [isLoadingListTypes, listTypes, selectedListType]);
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -100,8 +104,7 @@ export function ComplexEntitiesTab() {
       setSelectedFile(null);
       const fileInput = document.getElementById('import-file-input') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
-      refetch(); // Refetch both list types and entities
-      setSelectedListType(newListName); // Switch to the newly created list
+      refetch();
     } catch (error: any) {
       console.error('Import failed:', error);
       toast({
@@ -119,8 +122,6 @@ export function ComplexEntitiesTab() {
     return entities;
   }, [entities, selectedListType]);
   
-  const isLoading = isLoadingEntities || isLoadingListTypes;
-
   return (
     <div className="space-y-4">
       <Card>
@@ -159,7 +160,7 @@ export function ComplexEntitiesTab() {
           <div className="flex flex-col md:flex-row gap-4 mt-2">
             <Select onValueChange={setSelectedListType} value={selectedListType}>
                 <SelectTrigger className="w-full md:w-[250px]">
-                    <SelectValue placeholder="Επιλέξτε λίστα για προβολή..." />
+                    <SelectValue placeholder="Επιλέξτε λίστα..." />
                 </SelectTrigger>
                 <SelectContent>
                     {isLoadingListTypes ? (
@@ -185,7 +186,7 @@ export function ComplexEntitiesTab() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoadingEntities && selectedListType ? (
+          {isLoadingEntities ? (
              <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
           ) : error ? (
             <p className="text-destructive text-center">{error}</p>
@@ -197,10 +198,6 @@ export function ComplexEntitiesTab() {
             <DataTable
               columns={columns}
               data={currentEntities}
-              onNextPage={nextPage}
-              onPrevPage={prevPage}
-              canGoNext={canGoNext}
-              canGoPrev={canGoPrev}
             />
           )}
         </CardContent>
