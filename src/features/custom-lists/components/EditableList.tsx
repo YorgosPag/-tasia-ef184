@@ -6,15 +6,15 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger,
 } from '@/shared/components/ui/accordion';
 import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Input } from '@/shared/components/ui/input';
-import { Plus, Loader2, Edit, Trash2 } from 'lucide-react';
+import { Plus, Loader2, Edit, Trash2, ChevronDown } from 'lucide-react';
 import { type CustomList, useCustomLists } from '@/hooks/useCustomLists';
 import { ListItem } from './ListItem';
 import { Card } from '@/shared/components/ui/card';
+import { cn } from '@/shared/lib/utils';
 
 interface EditableListProps {
   list: CustomList;
@@ -46,46 +46,61 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
   };
 
   const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
-      deleteList(list.id, list.title);
-    }
+    e.stopPropagation(); // Prevent toggling the accordion
+    deleteList(list.id, list.title);
+  }
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent toggling the accordion
+    setIsEditingTitle(true);
   }
 
   return (
      <Card>
-      <Accordion type="single" collapsible value={isOpen ? list.id : ''} onValueChange={() => onToggle(list.id)}>
-          <AccordionItem value={list.id} className="border-none">
-            <div className="flex items-center w-full px-4 rounded-md">
-                <AccordionTrigger className="flex-1 text-left py-4">
-                  {isEditingTitle ? (
-                      <Input
-                          value={newTitle}
-                          onChange={(e) => setNewTitle(e.target.value)}
-                          onBlur={handleTitleBlur}
-                          onKeyDown={(e) => e.key === 'Enter' && handleTitleBlur()}
-                          autoFocus
-                          className="h-8 my-2"
-                          onClick={(e) => e.stopPropagation()}
-                      />
-                  ) : (
-                      <div>
-                          <p className="font-bold text-base">{list.title}</p>
-                          <p className="text-sm text-muted-foreground">{list.description}</p>
-                      </div>
-                  )}
-                </AccordionTrigger>
-                 <div className="flex items-center gap-2 ml-4">
-                    {!list.isProtected && (
-                        <Button variant="ghost" size="icon" onClick={(e) => {e.stopPropagation(); setIsEditingTitle(true)}}><Edit className="h-4 w-4" /></Button>
-                    )}
-                    {!list.isProtected && (
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={handleDelete}><Trash2 className="h-4 w-4" /></Button>
-                    )}
+      <div className="flex items-center w-full px-4 rounded-md">
+        <div 
+            className="flex-1 text-left py-4 cursor-pointer"
+            onClick={() => onToggle(list.id)}
+        >
+            {isEditingTitle ? (
+                <Input
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    onBlur={handleTitleBlur}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleTitleBlur();
+                        if (e.key === 'Escape') setIsEditingTitle(false);
+                    }}
+                    autoFocus
+                    className="h-8"
+                    onClick={(e) => e.stopPropagation()}
+                />
+            ) : (
+                <div>
+                    <p className="font-bold text-base">{list.title}</p>
+                    <p className="text-sm text-muted-foreground">{list.description}</p>
                 </div>
-            </div>
-            <AccordionContent className="px-4 pt-4 border-t">
-                <div className="space-y-4">
+            )}
+        </div>
+        <div className="flex items-center gap-2 ml-4">
+            {!list.isProtected && (
+                <Button variant="ghost" size="icon" onClick={handleEditClick} title="Επεξεργασία Λίστας">
+                    <Edit className="h-4 w-4" />
+                </Button>
+            )}
+            {!list.isProtected && (
+                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={handleDelete} title="Διαγραφή Λίστας">
+                    <Trash2 className="h-4 w-4" />
+                </Button>
+            )}
+             <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200 cursor-pointer", isOpen && "rotate-180")} onClick={() => onToggle(list.id)}/>
+        </div>
+      </div>
+      
+      <Accordion type="single" collapsible value={isOpen ? list.id : ''}>
+          <AccordionItem value={list.id} className="border-none">
+            <AccordionContent className="px-4 pt-0 border-t">
+                <div className="space-y-4 pt-4">
                     <h4 className="font-semibold text-sm">Προσθήκη Στοιχείων</h4>
                     <div className="grid gap-2">
                         <Textarea
