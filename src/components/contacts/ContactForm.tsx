@@ -30,15 +30,16 @@ const SOCIAL_TYPES = ['Website', 'LinkedIn', 'Facebook', 'Instagram', 'GitHub', 
 
 const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
     Viber: (props) => (
-      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M16.4,4.1c-1-0.8-2.3-1.3-3.8-1.3c-0.1,0-0.2,0-0.3,0c-0.1,0-0.2,0-0.3,0c-3.1,0-5.8,1.7-7.2,4.2c-0.1,0.2-0.1,0.4-0.1,0.6 c0,0.4,0.1,0.7,0.3,1c0,0,0,0,0,0c0.6,0.8,1.3,1.6,2.1,2.3c0.1,0.1,0.1,0.1,0.2,0.2c0.5,0.5,1,1,1.6,1.4c0.1,0.1,0.2,0.1,0.3,0.2 c1.4,0.9,3.1,1.4,4.8,1.4h0.1c0,0,0,0,0,0c0.5,0,1-0.1,1.5-0.2c0.7-0.2,1.4-0.5,2-0.9c0.2-0.1,0.4-0.3,0.5-0.5 c2.2-2,3.3-4.5,3.3-7.2C20.5,7.7,18.8,5.5,16.4,4.1z M17.2,12.5c-0.5,0.4-1.1,0.7-1.8,0.8c-0.5,0.1-1,0.2-1.5,0.2c0,0,0,0,0,0 c-1.5,0-2.9-0.4-4.2-1.2c-0.1,0-0.2-0.1-0.3-0.1c-0.6-0.4-1.1-0.9-1.6-1.4c-0.1,0-0.1-0.1-0.2-0.1C7,10,6.4,9.3,5.8,8.5 c0,0,0,0,0-0.1c-0.1-0.2-0.1-0.3-0.1-0.4c0-0.1,0-0.2,0-0.3c1.2-2.1,3.6-3.6,6.2-3.6c0.1,0,0.2,0,0.3,0c0.1,0,0.2,0,0.3,0 c1.3,0,2.5,0.4,3.3,1.1c1.9,1.5,3.4,3.4,3.4,5.8C19.4,9.5,18.6,11.2,17.2,12.5z" /></svg>
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M16.49,4.21c-1.35-1-3-1.6-4.88-1.6h-.06c-4.48,0-8.12,3.64-8.12,8.12,0,2.15.84,4.1,2.22,5.55l-2.1,6.3,6.58-2.18c1.37.89,2.98,1.4,4.68,1.4h.06c4.48,0,8.12-3.64,8.12-8.12-0-2.3-1-4.41-2.65-5.93l-1.85,1.85c1.07,1.04,1.72,2.44,1.72,4.08,0,3.14-2.56,5.7-5.7,5.7h-.06c-1.46,0-2.8-.56-3.83-1.49l-.23-.17-4.43,1.47,1.5-4.32-.19-.24c-1.04-1.34-1.66-2.98-1.66-4.76,0-3.14,2.56-5.7,5.7-5.7h.06c1.55,0,2.97.6,4.02,1.58Z"/></svg>
     ),
     WhatsApp: (props) => (
-      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C6.5,2,2,6.5,2,12c0,1.8,0.5,3.5,1.4,5.1L2,22l5.3-1.4c1.5,0.8,3.2,1.3,4.8,1.3h0c5.5,0,10-4.5,10-10 c0-5.5-4.5-10-10-10z M16.3,14.6c-0.2-0.1-1.1-0.5-1.3-0.6c-0.2-0.1-0.3-0.1-0.5,0.1c-0.1,0.2-0.5,0.6-0.6,0.7C14,14.9,13.9,15,13.8,14.9 c-0.1,0-0.3-0.1-0.6-0.2c-0.8-0.3-1.6-0.9-2.2-1.6c-0.5-0.6-0.8-1.2-1-1.8c-0.1-0.3,0-0.4,0.1-0.5C10.1,10.6,10.2,10.5,10.3,10.4 c0.1-0.1,0.2-0.2,0.2-0.4c0.1-0.1,0-0.3,0-0.4C10.5,9.6,10,8.5,9.8,8C9.6,7.5,9.4,7.6,9.2,7.6c-0.1,0-0.3,0-0.5,0 c-0.2,0-0.5,0.1-0.7,0.3c-0.2,0.2-0.8,0.7-0.8,1.8c0,1.1,0.8,2,0.9,2.2c0.1,0.2,1.6,2.6,4,3.6c2.4,1,2.4,0.7,2.8,0.6 c0.4-0.1,1.1-0.5,1.3-0.9c0.2-0.4,0.2-0.8,0.1-0.9C16.6,14.7,16.5,14.7,16.3,14.6z" /></svg>
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12.04,2C6.58,2,2.13,6.45,2.13,11.91c0,1.79.46,3.48,1.34,4.94L2,22l5.3-1.38c1.41.8,2.96,1.28,4.59,1.28h.11c5.46,0,9.91-4.45,9.91-9.91S17.61,2,12.04,2Zm4.2,12.09c-.2-.1-1.18-.58-1.36-.65-.18-.07-.31-.1-.45.1s-.51.65-.63.78c-.12.13-.24.15-.45.05s-.83-.31-1.58-1c-1.18-1-1.65-1.5-1.9-1.84s-.04-.15.06-.24c.09-.09.2-.24.3-.36s.13-.2.2-.33.07-.26,0-.35c-.07-.1-.45-1.08-.61-1.48-.16-.4-.33-.34-.45-.34H8.48c-.12,0-.26,0-.45.2a.93.93,0,0,0-.68.65,2.83,2.83,0,0,0,.9,2.62c.12.13,1.88,2.88,4.56,4,2.68,1.12,2.68.75,3.18.7s1.18-.48,1.34-.95c.16-.48.16-.88.11-.95-.05-.07-.18-.11-.38-.21Z"/></svg>
     ),
     Telegram: (props) => (
-      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12,2c5.5,0,10,4.5,10,10s-4.5,10-10,10S2,17.5,2,12S6.5,2,12,2z M15.1,8.4l-0.3,0c-0.1,0-0.3,0.1-0.4,0.2 l-3.9,3.7c-0.1,0.1-0.3,0.2-0.4,0.2s-0.3-0.1-0.4-0.2l-0.7-0.7c-0.2-0.2-0.5-0.2-0.7,0s-0.2,0.5,0,0.7l0.7,0.7 c0.1,0.1,0.3,0.2,0.4,0.2s0.3-0.1,0.4-0.2l3.9-3.7c0.1-0.1,0.3-0.2,0.4-0.2s0.3,0.1,0.4,0.2l-1.9,3.1c-0.1,0.1-0.1,0.3,0,0.4 c0.1,0.1,0.3,0.2,0.4,0.1l3.1-1.9c0.1-0.1,0.2-0.3,0.1-0.4C15.5,8.5,15.3,8.4,15.1,8.4z" /></svg>
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm5.13,4.92-2.35,11a.75.75,0,0,1-1.39.24L11,15.42,9.33,17.1a.75.75,0,0,1-1.06-1.06L10,14.28l-2.43-2.43a.75.75,0,0,1,.6-1.25l11-2.35a.75.75,0,0,1,.91.91Z"/></svg>
     ),
-  };
+};
+
 
 export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const entityType = form.watch('entityType');
@@ -55,9 +56,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {/* 1. Βασικά Στοιχεία */}
       <AccordionItem value="personal">
         <AccordionTrigger>
-          <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-primary" />
-            <span className="text-primary">Βασικά Στοιχεία</span>
+          <div className="flex items-center gap-2 text-primary">
+            <User className="h-5 w-5" />
+            <span>Βασικά Στοιχεία</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
@@ -182,9 +183,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {/* 2. Στοιχεία Ταυτότητας & ΑΦΜ */}
       <AccordionItem value="identity">
         <AccordionTrigger>
-          <div className="flex items-center gap-2">
-            <Info className="h-5 w-5 text-primary" />
-            <span className="text-primary">Στοιχεία Ταυτότητας &amp; ΑΦΜ</span>
+          <div className="flex items-center gap-2 text-primary">
+            <Info className="h-5 w-5" />
+            <span>Στοιχεία Ταυτότητας &amp; ΑΦΜ</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
@@ -206,9 +207,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {/* 3. Στοιχεία Επικοινωνίας */}
       <AccordionItem value="contact">
         <AccordionTrigger>
-           <div className="flex items-center gap-2">
-            <Phone className="h-5 w-5 text-primary" />
-            <span className="text-primary">Στοιχεία Επικοινωνίας</span>
+           <div className="flex items-center gap-2 text-primary">
+            <Phone className="h-5 w-5" />
+            <span>Στοιχεία Επικοινωνίας</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-6 p-1 pt-4">
@@ -298,9 +299,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {/* 4. Κοινωνικά Δίκτυα */}
       <AccordionItem value="socials">
         <AccordionTrigger>
-          <div className="flex items-center gap-2">
-            <LinkIcon className="h-5 w-5 text-primary" />
-            <span className="text-primary">Κοινωνικά Δίκτυα &amp; Websites</span>
+          <div className="flex items-center gap-2 text-primary">
+            <LinkIcon className="h-5 w-5" />
+            <span>Κοινωνικά Δίκτυα &amp; Websites</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
@@ -330,9 +331,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {/* 5. Στοιχεία Διεύθυνσης */}
        <AccordionItem value="address">
         <AccordionTrigger>
-          <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-primary" />
-            <span className="text-primary">Στοιχεία Διεύθυνσης</span>
+          <div className="flex items-center gap-2 text-primary">
+            <MapPin className="h-5 w-5" />
+            <span>Στοιχεία Διεύθυνσης</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
@@ -351,9 +352,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {entityType !== 'Δημ. Υπηρεσία' && (
         <AccordionItem value="job">
             <AccordionTrigger>
-              <div className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5 text-primary" />
-                <span className="text-primary">Επαγγελματικά Στοιχεία</span>
+              <div className="flex items-center gap-2 text-primary">
+                <Briefcase className="h-5 w-5" />
+                <span>Επαγγελματικά Στοιχεία</span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-4 p-1">
@@ -370,9 +371,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {/* 7. Λοιπά */}
       <AccordionItem value="notes">
         <AccordionTrigger>
-          <div className="flex items-center gap-2">
-            <Info className="h-5 w-5 text-primary" />
-            <span className="text-primary">Σημειώσεις</span>
+          <div className="flex items-center gap-2 text-primary">
+            <Info className="h-5 w-5" />
+            <span>Σημειώσεις</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="p-1 pt-4">
