@@ -13,6 +13,10 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
 
+// This file is no longer the primary source for columns.
+// The columns are now generated dynamically in ComplexEntitiesTab.tsx.
+// This remains as a fallback or example structure.
+
 export const columns: ColumnDef<ComplexEntity>[] = [
   {
     accessorKey: 'name',

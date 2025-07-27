@@ -5,10 +5,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { Loader2, Search, UploadCloud } from 'lucide-react';
+import { Loader2, Search, UploadCloud, ArrowUpDown } from 'lucide-react';
 import { useComplexEntities } from '@/hooks/useComplexEntities';
 import { DataTable } from './DataTable';
-import { columns } from './columns';
 import { processImportFile } from '@/lib/importer';
 import { useToast } from '@/shared/hooks/use-toast';
 import { exportToCsv } from '@/lib/exportUtils';
@@ -19,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
+import { ColumnDef } from '@tanstack/react-table';
+import { ComplexEntity } from '@/hooks/useComplexEntities';
 
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
@@ -39,13 +40,33 @@ export function ComplexEntitiesTab() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newListName, setNewListName] = useState('');
   
-  // Effect to auto-select the first list type once they are loaded
   useEffect(() => {
     if (!isLoadingListTypes && listTypes.length > 0 && !selectedListType) {
         setSelectedListType(listTypes[0]);
     }
   }, [isLoadingListTypes, listTypes, selectedListType]);
 
+  const columns = useMemo(() => {
+    if (entities.length === 0) {
+      return [];
+    }
+    const keys = Object.keys(entities[0]).filter(key => key !== 'id' && key !== 'type' && key !== 'createdAt');
+    
+    const generatedColumns: ColumnDef<ComplexEntity>[] = keys.map(key => ({
+      accessorKey: key,
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          {key}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+    }));
+
+    return generatedColumns;
+  }, [entities]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -160,7 +181,9 @@ export function ComplexEntitiesTab() {
           <div className="flex flex-col md:flex-row gap-4 mt-2">
             <Select onValueChange={setSelectedListType} value={selectedListType}>
                 <SelectTrigger className="w-full md:w-[250px]">
-                    <SelectValue placeholder={isLoadingListTypes ? "Φόρτωση λιστών..." : "Επιλέξτε λίστα..."} />
+                    <SelectValue placeholder={isLoadingListTypes ? "Φόρτωση λιστών..." : "Επιλέξτε λίστα..."}>
+                        {isLoadingListTypes ? <Loader2 className="h-4 w-4 animate-spin" /> : selectedListType || "Επιλέξτε λίστα..."}
+                    </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                     {isLoadingListTypes ? (
