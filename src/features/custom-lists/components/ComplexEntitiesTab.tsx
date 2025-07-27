@@ -130,8 +130,12 @@ export function ComplexEntitiesTab() {
   useEffect(() => {
       setColumnFilters({});
       setTempFilters({});
-      setColumnDefs([]);
-  }, [selectedListType]);
+      if(allKeysFromType.length > 0) {
+        setColumnDefs(generateColumns(allKeysFromType));
+      } else {
+        setColumnDefs([]);
+      }
+  }, [selectedListType, allKeysFromType, generateColumns]);
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
