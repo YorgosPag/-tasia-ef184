@@ -47,15 +47,17 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    deleteList(list.id, list.title);
+    if (confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
+      deleteList(list.id, list.title);
+    }
   }
 
   return (
      <Card>
       <Accordion type="single" collapsible value={isOpen ? list.id : ''} onValueChange={() => onToggle(list.id)}>
           <AccordionItem value={list.id} className="border-none">
-            <div className="flex items-center w-full hover:bg-muted/50 px-4 rounded-md">
-                <AccordionTrigger className="flex-1 text-left">
+            <div className="flex items-center w-full px-4 rounded-md">
+                <AccordionTrigger className="flex-1 text-left py-4">
                   {isEditingTitle ? (
                       <Input
                           value={newTitle}
@@ -73,7 +75,7 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
                       </div>
                   )}
                 </AccordionTrigger>
-                 <div className="flex items-center gap-2 ml-4">
+                 <div className="flex items-center gap-2 ml-4 z-10">
                     {!list.isProtected && (
                         <Button variant="ghost" size="icon" onClick={(e) => {e.stopPropagation(); setIsEditingTitle(true)}}><Edit className="h-4 w-4" /></Button>
                     )}
