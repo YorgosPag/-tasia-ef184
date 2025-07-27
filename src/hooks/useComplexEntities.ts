@@ -77,14 +77,18 @@ function reducer(state: State, action: Action): State {
     case 'FETCH_TYPES_SUCCESS':
       return { ...state, listTypes: action.payload, isLoadingListTypes: false };
     case 'FETCH_DATA_SUCCESS':
-      // Estimate total count based on whether a full page was returned
-      const newTotal = state.page * PAGE_SIZE + (action.payload.hasMore ? 1 : 0);
+      const newTotal = state.totalCount === null ? action.payload.entities.length : state.totalCount;
+      const totalPages = Math.ceil(newTotal / PAGE_SIZE);
+      const estimatedTotal = state.page >= totalPages && !action.payload.hasMore
+        ? state.page * PAGE_SIZE + action.payload.entities.length - PAGE_SIZE
+        : newTotal + (action.payload.hasMore ? PAGE_SIZE : 0);
+        
       return {
         ...state,
         isLoading: false,
         entities: action.payload.entities,
         allKeysFromType: action.payload.newKeys.length > 0 ? action.payload.newKeys : state.allKeysFromType,
-        totalCount: state.totalCount === null || newTotal > state.totalCount ? newTotal : state.totalCount,
+        totalCount: state.totalCount === null || estimatedTotal > state.totalCount ? estimatedTotal : state.totalCount,
         initialDataLoaded: true,
       };
     case 'SET_PAGINATION_DOCS':
@@ -104,10 +108,12 @@ function reducer(state: State, action: Action): State {
 
 /**
  * Fetches the distinct `type` values from the collection.
+ * This is slower for the initial load but guarantees finding all types.
  */
 async function fetchDistinctTypes(dispatch: Dispatch<Action>) {
     try {
-        const q = query(collection(db, 'tsia-complex-entities'), orderBy('type'));
+        // This query can be slow on large collections. For optimization, a separate `types` collection is recommended.
+        const q = query(collection(db, 'tsia-complex-entities'));
         const snapshot = await getDocs(q);
         const types = new Set<string>();
         snapshot.forEach(doc => {
@@ -142,9 +148,13 @@ function buildQueryConstraints(
 
     if (direction === 'next' && pageDocs[page - 1]) {
         constraints.push(startAfter(pageDocs[page - 1]));
+    } else if (direction === 'prev' && page > 1 && pageDocs[page - 2]) {
+        constraints.push(endBefore(pageDocs[page-2]));
+        constraints.push(limitToLast(PAGE_SIZE));
+    } else {
+        constraints.push(limit(PAGE_SIZE));
     }
     
-    constraints.push(limit(PAGE_SIZE));
     return constraints;
 }
 
@@ -179,6 +189,7 @@ async function fetchEntitiesPage(
         }
 
         const lastDoc = documentSnapshots.docs.length > 0 ? documentSnapshots.docs[documentSnapshots.docs.length - 1] : null;
+        const firstDoc = documentSnapshots.docs.length > 0 ? documentSnapshots.docs[0] : null;
         const hasMore = documentSnapshots.docs.length === PAGE_SIZE;
 
         dispatch({ type: 'FETCH_DATA_SUCCESS', payload: { entities: newEntities, newKeys, lastDoc, hasMore } });
@@ -223,8 +234,12 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   }, [type, debouncedFilters, state.page, state.pageDocs]);
 
   const prevPage = useCallback(() => {
-    refetch();
-  }, [refetch]);
+    if (type && state.page > 1) {
+      const newPage = state.page - 1;
+      dispatch({ type: 'SET_PAGE', payload: newPage });
+      fetchEntitiesPage(dispatch, type, debouncedFilters, state.pageDocs, newPage, 'prev');
+    }
+  }, [type, debouncedFilters, state.page, state.pageDocs]);
 
   const canGoNext = state.totalCount !== null ? (state.page * PAGE_SIZE) < state.totalCount : false;
   
