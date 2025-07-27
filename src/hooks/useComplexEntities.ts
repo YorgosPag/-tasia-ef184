@@ -86,12 +86,11 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       try {
         let constraints: QueryConstraint[] = [where('type', '==', type)];
 
-        // Add constraints for column filters
+        // Add constraints for column filters using exact match (==)
         for (const key in debouncedFilters) {
             const value = debouncedFilters[key];
             if (value) {
-                // Use a "starts-with" query, which is efficient in Firestore
-                 constraints.push(where(key, '>=', value), where(key, '<=', value + '\uf8ff'));
+                 constraints.push(where(key, '==', value));
             }
         }
         
@@ -102,12 +101,10 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         let finalQuery;
         const baseQuery = collection(db, 'tsia-complex-entities');
         
-        const sortableFields = Object.keys(debouncedFilters).filter(k => debouncedFilters[k]);
-        if (sortableFields.length > 0) {
-            constraints.push(orderBy(sortableFields[0]));
-        } else {
-             constraints.push(orderBy('__name__')); // Default sort
-        }
+        // Firestore requires that if you have an inequality filter (<, <=, >, >=), your first sorting must be on the same field.
+        // Since we only use '==' now, we can sort by any field. We'll default to name for consistency.
+        constraints.push(orderBy('__name__')); 
+        
 
         switch (direction) {
           case 'next':
