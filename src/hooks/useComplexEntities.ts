@@ -91,8 +91,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
             const value = debouncedFilters[key];
             if (value) {
                 // Use a "starts-with" query, which is efficient in Firestore
-                constraints.push(where(key, '>=', value));
-                constraints.push(where(key, '<=', value + '\uf8ff'));
+                constraints.push(where(key, '==', value));
             }
         }
         
@@ -145,7 +144,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         setIsLoading(false);
       }
     },
-    [type, debouncedFilters]
+    [type, debouncedFilters, lastVisible, firstVisible]
   );
   
   const refetch = useCallback(() => {
@@ -190,4 +189,3 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     totalCount,
   };
 }
-
