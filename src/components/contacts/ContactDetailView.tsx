@@ -56,11 +56,13 @@ const DetailRow = ({ label, value, href, type, children }: { label: string; valu
   );
 
   return (
-    <div className="grid grid-cols-3 gap-2 text-sm">
+    <div className="grid grid-cols-3 gap-2 text-sm items-center">
       <dt className="font-medium text-muted-foreground">{label}</dt>
-      <dd className="col-span-2 flex items-center gap-2">
-        {children || content}
-        {type && <Badge variant="outline" className="text-xs">{type}</Badge>}
+      <dd className="col-span-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+            {children || content}
+        </div>
+        {type && <Badge variant="outline" className="text-xs whitespace-nowrap">{type}</Badge>}
         </dd>
     </div>
   );
