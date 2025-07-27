@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { BedDouble, Bath, Square, ArrowRight } from 'lucide-react';
+import { BedDouble, Bath, Square, ArrowRight, ZoomIn } from 'lucide-react';
 import { getStatusClass } from '@/tasia/lib/unit-helpers';
 import { Dialog, DialogContent, DialogTrigger } from '@/shared/components/ui/dialog';
 import React from 'react';
@@ -37,7 +37,7 @@ export function UnitCard({ unit }: UnitCardProps) {
 
     return (
         <Card className="overflow-hidden group flex flex-col">
-             <div className="relative aspect-[4/3] w-full bg-muted/20">
+             <div className="relative aspect-square w-full bg-muted/20">
                 <Dialog>
                     <DialogTrigger asChild>
                         <div className="relative w-full h-full cursor-pointer">
@@ -49,6 +49,9 @@ export function UnitCard({ unit }: UnitCardProps) {
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 data-ai-hint="modern apartment interior"
                             />
+                             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <ZoomIn className="h-10 w-10 text-white" />
+                            </div>
                         </div>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl h-auto p-2 bg-transparent border-none">

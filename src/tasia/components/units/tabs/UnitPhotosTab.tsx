@@ -9,7 +9,7 @@ import { useToast } from '@/shared/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { Loader2, Upload, Trash2, CameraOff } from 'lucide-react';
+import { Loader2, Upload, Trash2, CameraOff, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
 import { Unit } from '@/tasia/hooks/use-unit-details';
 import { Dialog, DialogContent, DialogTrigger } from '@/shared/components/ui/dialog';
@@ -103,6 +103,9 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
                           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                           className="object-contain"
                       />
+                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <ZoomIn className="h-10 w-10 text-white" />
+                      </div>
                     </div>
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl h-auto p-2 bg-transparent border-none">
