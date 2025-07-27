@@ -9,7 +9,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
 import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, MapPin, Briefcase, Map } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, MapPin, Briefcase, Map, Home } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
@@ -34,35 +34,32 @@ const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElemen
       <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2A10.06 10.06 0 0 0 2 12.06a10.06 10.06 0 0 0 10.04 10.04h.1a10.06 10.06 0 0 0 10.04-10.04A10.06 10.06 0 0 0 12.04 2zM12 20.5a8.44 8.44 0 0 1-4.4-1.3L3.5 20.3l1.2-4a8.3 8.3 0 0 1-1.4-4.8A8.5 8.5 0 0 1 12 3.6a8.5 8.5 0 0 1 8.5 8.5 8.5 8.5 0 0 1-8.5 8.4zM16.3 14.4c-.2-.1-1.2-.6-1.4-.7s-.3-.1-.4.1-.5.7-.6.8-.2.2-.4.1-1.1-.4-2.1-1.3c-.8-.7-1.3-1.6-1.5-1.8s0-.3.1-.4.2-.2.4-.4c.1-.1.2-.2.2-.4s0-.2-.1-.4c-.1-.2-1.1-2.6-1.5-3.5s-.6-.8-.8-.8h-.4a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 3.9 3.9 0 0 0 .9 2.6c.1.1 1.8 2.8 4.4 3.9.7.3 1.3.5 1.7.6.7.2 1.3.2 1.8.1.5-.1 1.2-.5 1.4-1 .2-.5.2-1 .1-1s-.2-.2-.4-.3z"/></svg>
     ),
     Telegram: (props) => (
-      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm5.2-4.5L15 19.3a.8.8 0 0 1-1.4.2l-3-2.8-1.5 1.4a.8.8 0 0 1-1.1-1.1l1.8-1.8-3.8-2.9a.8.8 0 0 1 .5-1.4L16.3 5a.8.8 0 0 1 1 .9z"/></svg>
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.33l-1.3-4.4 7.2-4.4c.4-.2.1-.7-.3-.4l-5.8 3.5-3.8-1.2c-.5-.2-.5-.8 0-1l12.4-4.5c.5-.2 1.1.2 1 .7l-2.1 10.3c-.2.5-.7.7-1.2.5l-4.2-2.1-1.9 1.8c-.3.2-.8.2-1.1-.1z"/></svg>
     ),
 };
 
 
 const SOCIAL_TYPES = ['Website', 'LinkedIn', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
-
 const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
+const ADDRESS_TYPES = ['Κατοικίας', 'Επαγγελματική', 'Έδρα', 'Υποκατάστημα', 'Αποθήκη', 'Εξοχικό', 'Άλλο'];
+
 
 export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const entityType = form.watch('entityType');
-  const contactId = form.getValues('id'); // Assuming 'id' is part of the form values when editing
-  const addressValues = useWatch({ control: form.control, name: 'address' });
+  const contactId = form.getValues('id'); 
 
   const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({ control: form.control, name: "emails" });
   const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({ control: form.control, name: "phones" });
   const { fields: socialFields, append: appendSocial, remove: removeSocial } = useFieldArray({ control: form.control, name: "socials" });
+  const { fields: addressFields, append: appendAddress, remove: removeAddress } = useFieldArray({ control: form.control, name: "addresses" });
 
-  const fullAddress = [
-    addressValues?.street,
-    addressValues?.number,
-    addressValues?.city,
-    addressValues?.postalCode
-  ].filter(Boolean).join(' ');
-
-  const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
+  const getFullAddress = (index: number) => {
+    const address = form.watch(`addresses.${index}`);
+    return [address.street, address.number, address.city, address.postalCode].filter(Boolean).join(' ');
+  }
 
   return (
-    <Accordion type="multiple" defaultValue={['personal', 'identity', 'contact', 'address', 'job', 'socials', 'notes']} className="w-full">
+    <Accordion type="multiple" defaultValue={['personal', 'identity', 'contact', 'addresses', 'job', 'socials', 'notes']} className="w-full">
       {/* 1. Βασικά Στοιχεία */}
       <AccordionItem value="personal">
         <AccordionTrigger>
@@ -339,7 +336,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       </AccordionItem>
 
       {/* 5. Στοιχεία Διεύθυνσης */}
-       <AccordionItem value="address">
+       <AccordionItem value="addresses">
         <AccordionTrigger>
           <div className="flex items-center gap-2 text-primary">
             <Map className="h-5 w-5" />
@@ -347,24 +344,48 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="address.street" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Οδός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-              <FormField control={form.control} name="address.number" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Αριθμός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-              <FormField control={form.control} name="address.region" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Περιοχή</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-              <FormField control={form.control} name="address.postalCode" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ταχ. Κώδικας</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-              <FormField control={form.control} name="address.city" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Πόλη</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-              <FormField control={form.control} name="address.municipality" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Δήμος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+          <div className="flex justify-end">
+             <Button type="button" variant="ghost" size="sm" onClick={() => appendAddress({ type: 'Κύρια' })}>
+                <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
+            </Button>
           </div>
-          {googleMapsUrl && (
-            <div className="flex justify-end pt-2">
-              <Button asChild variant="outline" size="sm" type="button">
-                  <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                      <Map className="mr-2 h-4 w-4" />
-                      Προβολή στον Χάρτη
-                  </a>
-              </Button>
-            </div>
-          )}
+           <div className="space-y-4">
+              {addressFields.map((field, index) => {
+                 const fullAddress = getFullAddress(index);
+                 const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
+                
+                return (
+                  <div key={field.id} className="p-4 border rounded-md bg-muted/30 space-y-4 relative">
+                     <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeAddress(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                      <FormField control={form.control} name={`addresses.${index}.type`} render={({ field }) => (
+                          <FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τύπος Διεύθυνσης</FormLabel>
+                          <div className="flex-1"><Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl>
+                              <SelectContent>{ADDRESS_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                          </Select><FormMessage /></div></FormItem>
+                      )} />
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name={`addresses.${index}.street`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Οδός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.number`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Αριθμός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.region`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Περιοχή</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.postalCode`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ταχ. Κώδικας</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.city`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Πόλη</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.municipality`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Δήμος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                     </div>
+                      {googleMapsUrl && (
+                        <div className="flex justify-end pt-2">
+                          <Button asChild variant="outline" size="sm" type="button">
+                              <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                                  <Map className="mr-2 h-4 w-4" />
+                                  Προβολή στον Χάρτη
+                              </a>
+                          </Button>
+                        </div>
+                      )}
+                  </div>
+                )
+              })}
+           </div>
         </AccordionContent>
       </AccordionItem>
 

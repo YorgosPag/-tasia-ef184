@@ -49,7 +49,7 @@ export default function NewContactPage() {
             emails: [],
             phones: [],
             socials: [],
-            address: { street: '', number: '', city: '', postalCode: ''},
+            addresses: [],
             job: { role: '', specialty: ''},
             notes: ''
         },
@@ -64,6 +64,10 @@ export default function NewContactPage() {
         else dataToSave.birthDate = null;
         if (data.identity?.issueDate) dataToSave.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
         else if (dataToSave.identity) dataToSave.identity.issueDate = null;
+        
+        if (data.addresses) {
+            dataToSave.addresses = data.addresses;
+        }
 
         const cleanedData = deepClean(dataToSave);
 

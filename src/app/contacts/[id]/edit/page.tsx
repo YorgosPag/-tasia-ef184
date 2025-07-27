@@ -59,13 +59,17 @@ export default function EditContactPage() {
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    const formData = {
+                    const formData: ContactFormValues = {
                         ...data,
                         id: docSnap.id,
                         birthDate: data.birthDate instanceof Timestamp ? data.birthDate.toDate() : null,
-                        'identity.issueDate': data.identity?.issueDate instanceof Timestamp ? data.identity.issueDate.toDate() : null,
+                        identity: {
+                            ...data.identity,
+                            issueDate: data.identity?.issueDate instanceof Timestamp ? data.identity.issueDate.toDate() : null,
+                        },
+                        addresses: data.addresses || [],
                     };
-                    form.reset(formData as ContactFormValues);
+                    form.reset(formData);
                 } else {
                     toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η επαφή δεν βρέθηκε.' });
                     router.push('/contacts');
@@ -108,6 +112,10 @@ export default function EditContactPage() {
                 dataToUpdate.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
             } else if (dataToUpdate.identity) {
                 dataToUpdate.identity.issueDate = null;
+            }
+            
+            if (data.addresses) {
+                dataToUpdate.addresses = data.addresses;
             }
 
             const cleanedData = deepClean(dataToUpdate);

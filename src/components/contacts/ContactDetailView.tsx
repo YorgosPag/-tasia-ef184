@@ -96,20 +96,11 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
     }
   }
   
-  const fullAddress = [
-    contact.address?.street,
-    contact.address?.number,
-    contact.address?.city,
-    contact.address?.postalCode
-  ].filter(Boolean).join(' ');
-
-  const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
-  
   const hasPersonalInfo = contact.firstName || contact.lastName || contact.fatherName || contact.motherName || contact.birthDate || contact.birthPlace;
   const hasIdentityInfo = contact.identity?.type || contact.identity?.number || contact.identity?.issueDate || contact.identity?.issuingAuthority || contact.afm || contact.doy;
   const hasContactInfo = (contact.emails && contact.emails.length > 0) || (contact.phones && contact.phones.length > 0);
   const hasSocials = contact.socials && contact.socials.length > 0;
-  const hasAddress = !!fullAddress;
+  const hasAddresses = contact.addresses && contact.addresses.length > 0;
   const hasJobInfo = contact.job?.role || contact.job?.specialty;
   const hasNotes = !!contact.notes;
 
@@ -182,18 +173,29 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
             })}
         </DetailSection>
 
-        <DetailSection title="Διεύθυνση" icon={Map} alwaysShow>
-            <div className="flex justify-between items-center w-full">
-                <p className="text-sm text-muted-foreground">{fullAddress}</p>
-                {googleMapsUrl && (
-                    <Button asChild variant="outline" size="sm">
-                        <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                            <Map className="mr-2 h-4 w-4" />
-                            Χάρτης
-                        </a>
-                    </Button>
-                )}
-            </div>
+        <DetailSection title="Διευθύνσεις" icon={Map} alwaysShow>
+            {contact.addresses?.map((address, i) => {
+                 const fullAddress = [address.street, address.number, address.city, address.postalCode].filter(Boolean).join(' ');
+                 const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
+                 return (
+                    <div key={i} className="p-3 rounded-md bg-muted/30">
+                        <div className="flex justify-between items-center w-full">
+                           <div>
+                                <p className="font-semibold text-sm">{address.type || 'Διεύθυνση'}</p>
+                                <p className="text-sm text-muted-foreground">{fullAddress}</p>
+                           </div>
+                           {googleMapsUrl && (
+                            <Button asChild variant="outline" size="sm">
+                                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                                    <Map className="mr-2 h-4 w-4" />
+                                    Χάρτης
+                                </a>
+                            </Button>
+                           )}
+                        </div>
+                    </div>
+                 )
+            })}
         </DetailSection>
 
         {contact.entityType !== 'Δημ. Υπηρεσία' && (

@@ -59,16 +59,17 @@ export const socialsSchema = z.object({
 });
 
 export const addressSchema = z.object({
-  address: z.object({
-    street: z.string().optional(),
-    number: z.string().optional(),
-    city: z.string().optional(),
-    region: z.string().optional(), // Νομός / Περιοχή
-    postalCode: z.string().optional().refine(val => !val || /^\d{5}$/.test(val), {
-        message: 'Ο Τ.Κ. πρέπει να αποτελείται από 5 ψηφία.'
-    }),
-    municipality: z.string().optional(),
-  }).optional(),
+    addresses: z.array(z.object({
+        type: z.string().default('Κύρια'),
+        street: z.string().optional(),
+        number: z.string().optional(),
+        city: z.string().optional(),
+        region: z.string().optional(), // Νομός / Περιοχή
+        postalCode: z.string().optional().refine(val => !val || /^\d{5}$/.test(val), {
+            message: 'Ο Τ.Κ. πρέπει να αποτελείται από 5 ψηφία.'
+        }),
+        municipality: z.string().optional(),
+    })).optional(),
 });
 
 export const jobInfoSchema = z.object({
