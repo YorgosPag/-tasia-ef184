@@ -78,7 +78,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
   const getFullAddress = (index: number) => {
     const address = form.watch(`addresses.${index}`);
-    return [address.street, address.number, address.city, address.postalCode, address.country].filter(Boolean).join(' ');
+    return [address.street, address.number, address.settlements, address.postalCode, address.country].filter(Boolean).join(' ');
   }
 
   return (
@@ -445,18 +445,21 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                      <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeAddress(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                       <FormField control={form.control} name={`addresses.${index}.type`} render={({ field }) => (
                           <FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τύπος Διεύθυνσης</FormLabel>
-                          <div className="flex-1"><Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl>
-                              <SelectContent>{ADDRESS_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                          </Select><FormMessage /></div></FormItem>
+                          <div className="flex-1"><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{ADDRESS_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select><FormMessage /></div></FormItem>
                       )} />
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name={`addresses.${index}.street`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Οδός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                         <FormField control={form.control} name={`addresses.${index}.number`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Αριθμός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-                        <FormField control={form.control} name={`addresses.${index}.region`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Περιοχή</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.toponym`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τοπωνύμιο</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                         <FormField control={form.control} name={`addresses.${index}.postalCode`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ταχ. Κώδικας</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-                        <FormField control={form.control} name={`addresses.${index}.city`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Πόλη</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-                        <FormField control={form.control} name={`addresses.${index}.municipality`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Δήμος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.largeGeographicUnits`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Μεγάλες γεωγραφικές ενότητες</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.decentralizedAdministrations`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Αποκεντρωμένες Διοικήσεις</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.regions`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Περιφέρειες</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.regionalUnities`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Περιφερειακές ενότητες</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.municipality`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Δήμοι</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.municipalUnities`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Δημοτικές Ενότητες</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.municipalLocalCommunities`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Δημοτικές/Τοπικές Κοινότητες</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                        <FormField control={form.control} name={`addresses.${index}.settlements`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Οικισμοί</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                         <FormField control={form.control} name={`addresses.${index}.country`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Χώρα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                      </div>
                       {googleMapsUrl && (

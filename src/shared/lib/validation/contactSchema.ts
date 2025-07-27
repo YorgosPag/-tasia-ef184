@@ -65,12 +65,18 @@ export const addressSchema = z.object({
         type: z.string().default('Κύρια'),
         street: z.string().optional(),
         number: z.string().optional(),
-        city: z.string().optional(),
-        region: z.string().optional(), // Νομός / Περιοχή
+        toponym: z.string().optional(),
         postalCode: z.string().optional().refine(val => !val || /^\d{5}$/.test(val), {
             message: 'Ο Τ.Κ. πρέπει να αποτελείται από 5 ψηφία.'
         }),
+        largeGeographicUnits: z.string().optional(),
+        decentralizedAdministrations: z.string().optional(),
+        regions: z.string().optional(),
+        regionalUnities: z.string().optional(),
         municipality: z.string().optional(),
+        municipalUnities: z.string().optional(),
+        municipalLocalCommunities: z.string().optional(),
+        settlements: z.string().optional(),
         country: z.string().optional().default('Ελλάδα'),
     })).optional(),
 });

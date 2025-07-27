@@ -187,14 +187,21 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
 
         <DetailSection title="Διευθύνσεις" icon={Map} alwaysShow>
             {contact.addresses?.map((address, i) => {
-                 const fullAddress = [address.street, address.number, address.city, address.postalCode, address.country].filter(Boolean).join(', ');
+                 const fullAddress = [
+                    address.street, address.number, address.toponym,
+                    address.settlements, address.municipalLocalCommunities, address.municipalUnities,
+                    address.municipality, address.regionalUnities, address.regions,
+                    address.decentralizedAdministrations, address.largeGeographicUnits,
+                    address.postalCode, address.country
+                 ].filter(Boolean).join(', ');
+
                  const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
+                 
                  return (
-                    <div key={i} className="p-3 rounded-md bg-muted/30">
+                    <div key={i} className="p-3 rounded-md bg-muted/30 space-y-2">
                         <div className="flex justify-between items-center w-full">
                            <div>
                                 <p className="font-semibold text-sm">{address.type || 'Διεύθυνση'}</p>
-                                <p className="text-sm text-muted-foreground">{fullAddress}</p>
                            </div>
                            {googleMapsUrl && (
                             <Button asChild variant="outline" size="sm">
@@ -204,6 +211,20 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
                                 </a>
                             </Button>
                            )}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 text-sm gap-x-4 gap-y-1">
+                          <DetailRow label="Οδός" value={`${address.street || ''} ${address.number || ''}`.trim()} />
+                          <DetailRow label="Τοπωνύμιο" value={address.toponym} />
+                          <DetailRow label="Τ.Κ." value={address.postalCode} />
+                          <DetailRow label="Οικισμός" value={address.settlements} />
+                          <DetailRow label="Δημ./Τοπ. Κοινότητα" value={address.municipalLocalCommunities} />
+                          <DetailRow label="Δημ. Ενότητα" value={address.municipalUnities} />
+                          <DetailRow label="Δήμος" value={address.municipality} />
+                          <DetailRow label="Περιφ. Ενότητα" value={address.regionalUnities} />
+                          <DetailRow label="Περιφέρεια" value={address.regions} />
+                          <DetailRow label="Αποκ. Διοίκηση" value={address.decentralizedAdministrations} />
+                          <DetailRow label="Μεγ. Γεωγ. Ενότητα" value={address.largeGeographicUnits} />
+                          <DetailRow label="Χώρα" value={address.country} />
                         </div>
                     </div>
                  )
