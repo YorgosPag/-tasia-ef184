@@ -35,7 +35,7 @@ export function ComplexEntitiesTab() {
     canGoNext,
     canGoPrev,
     listTypes,
-    isLoading: isLoadingListTypes,
+    isLoadingListTypes,
     refetch,
   } = useComplexEntities(selectedListType);
 
@@ -83,7 +83,7 @@ export function ComplexEntitiesTab() {
               variant="outline"
               size="sm"
               onClick={() => {
-                exportToCsv(result.errors, `${newListName}-import-errors`);
+                exportToCsv(result.errors.map(e => ({ row: e.row, ...e.rowData, error: e.message })), `${newListName}-import-errors`);
               }}
             >
               Λήψη
@@ -118,6 +118,8 @@ export function ComplexEntitiesTab() {
     if (!selectedListType) return [];
     return entities;
   }, [entities, selectedListType]);
+  
+  const isLoading = isLoadingEntities || isLoadingListTypes;
 
   return (
     <div className="space-y-4">
@@ -183,9 +185,9 @@ export function ComplexEntitiesTab() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoadingEntities && <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
+          {isLoading && <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
           {error && <p className="text-destructive text-center">{error}</p>}
-          {!isLoadingEntities && !error && selectedListType && (
+          {!isLoading && !error && selectedListType && (
             <DataTable
               columns={columns}
               data={currentEntities}
@@ -195,7 +197,7 @@ export function ComplexEntitiesTab() {
               canGoPrev={canGoPrev}
             />
           )}
-           {!selectedListType && (
+           {!selectedListType && !isLoading && (
              <div className="text-center py-12 text-muted-foreground">
                 <p>Παρακαλώ επιλέξτε μια λίστα από το παραπάνω μενού για να δείτε τα περιεχόμενά της.</p>
             </div>

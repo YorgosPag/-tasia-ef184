@@ -18,7 +18,7 @@ interface ImportRow {
 interface ImportResult {
   totalRows: number;
   unitsCreated: number;
-  errors: { rowData: ImportRow, message: string }[];
+  errors: { rowData: ImportRow, message: string, row: number }[];
 }
 
 const BATCH_LIMIT = 400; // Keep it safely below the 500 limit
@@ -56,8 +56,15 @@ export async function processImportFile(formData: FormData): Promise<ImportResul
 
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
+    const rowIndex = i + 2; // Excel rows are 1-based, +1 for header
     
     try {
+      // Basic validation: ensure the row is not empty
+      if (Object.keys(row).length === 0) {
+          result.errors.push({ rowData: row, message: 'Empty row.', row: rowIndex });
+          continue;
+      }
+      
       const newDocRef = doc(collectionRef);
       
       const dataToSave = {
@@ -77,7 +84,7 @@ export async function processImportFile(formData: FormData): Promise<ImportResul
         writeCount = 0;
       }
     } catch (error: any) {
-      result.errors.push({ rowData: row, message: error.message });
+      result.errors.push({ rowData: row, message: error.message, row: rowIndex });
     }
   }
 

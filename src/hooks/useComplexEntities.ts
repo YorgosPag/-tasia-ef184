@@ -14,6 +14,7 @@ import {
   where,
   endBefore,
   limitToLast,
+  collectionGroup,
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useDebounce } from 'use-debounce';
@@ -27,6 +28,8 @@ export interface ComplexEntity {
 const PAGE_SIZE = 50;
 
 async function getDistinctTypes(): Promise<string[]> {
+    // This query can be slow if you have millions of entities.
+    // For very large datasets, a separate collection of types would be more performant.
     const q = query(collection(db, 'tsia-complex-entities'));
     const snapshot = await getDocs(q);
     const types = new Set<string>();
@@ -44,7 +47,7 @@ export function useComplexEntities(type?: string) {
   const [entities, setEntities] = useState<ComplexEntity[]>([]);
   const [listTypes, setListTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingListTypes, setIsLoadingListTypes] = useState(false);
+  const [isLoadingListTypes, setIsLoadingListTypes] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
@@ -143,17 +146,23 @@ export function useComplexEntities(type?: string) {
     }
   }, [page, fetchEntities]);
   
+  const refetch = useCallback(() => {
+    fetchListTypes();
+    if (type) fetchEntities('first');
+  }, [type, fetchListTypes, fetchEntities]);
+  
   useEffect(() => {
     if(type) {
         fetchEntities('first');
     } else {
         setEntities([]);
     }
-  }, [type, debouncedSearchQuery, fetchEntities]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, debouncedSearchQuery]);
 
   return {
     entities,
-    isLoading,
+    isLoading: isLoading || isLoadingListTypes,
     error,
     searchQuery,
     setSearchQuery,
@@ -163,9 +172,6 @@ export function useComplexEntities(type?: string) {
     canGoPrev: page > 1,
     listTypes,
     isLoadingListTypes,
-    refetch: () => {
-        fetchListTypes();
-        if (type) fetchEntities('first');
-    },
+    refetch,
   };
 }
