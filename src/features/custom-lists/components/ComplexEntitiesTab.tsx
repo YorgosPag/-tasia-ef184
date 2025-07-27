@@ -1,11 +1,11 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Loader2, UploadCloud } from 'lucide-react';
-import { useComplexEntities, type ComplexEntity } from '@/hooks/useComplexEntities';
+import { useComplexEntities, type ComplexEntity, PAGE_SIZE } from '@/hooks/useComplexEntities';
 import { processImportFile } from '@/lib/importer';
 import { useToast } from '@/shared/hooks/use-toast';
 import { exportToCsv } from '@/lib/exportUtils';
@@ -17,22 +17,88 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Input } from '@/shared/components/ui/input';
-import { AlgoliaSearchBox } from './AlgoliaSearchBox';
+import { DataTable } from './DataTable';
+import { ColumnDef } from '@tanstack/react-table';
+
+// --- Column Definitions ---
+const PREFERRED_COLUMN_ORDER = [
+    'Οικισμοί',
+    'Δημοτικές/Τοπικές Κοινότητες',
+    'Δημοτικές Ενότητες',
+    'Δήμοι',
+    'Περιφερειακές ενότητες',
+    'Περιφέρειες',
+    'Αποκεντρωμένες Διοικήσεις',
+    'Μεγάλες γεωγραφικές ενότητες'
+];
+
+const generateColumns = (
+    data: ComplexEntity[], 
+    filters: Record<string, string>, 
+    setFilters: React.Dispatch<React.SetStateAction<Record<string, string>>>
+): ColumnDef<ComplexEntity>[] => {
+    if (!data || data.length === 0) {
+       return PREFERRED_COLUMN_ORDER.map(key => ({
+            accessorKey: key,
+            header: key,
+        }));
+    }
+    const firstItem = data[0];
+    const keys = Object.keys(firstItem).filter(key => !['id', 'type', 'createdAt', 'uniqueKey'].includes(key));
+    
+    keys.sort((a, b) => {
+        const indexA = PREFERRED_COLUMN_ORDER.indexOf(a);
+        const indexB = PREFERRED_COLUMN_ORDER.indexOf(b);
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+    });
+
+    return keys.map(key => ({
+        accessorKey: key,
+        header: () => (
+             <div className="flex flex-col gap-1">
+                <span>{key}</span>
+                <Input
+                    placeholder={`Φίλτρο για ${key}...`}
+                    value={filters[key] || ''}
+                    onChange={e => setFilters(prev => ({ ...prev, [key]: e.target.value }))}
+                    className="h-8"
+                    onClick={(e) => e.stopPropagation()} // Prevent sorting when clicking input
+                />
+            </div>
+        ),
+        cell: info => info.getValue(),
+    }));
+};
+
 
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
   const [selectedListType, setSelectedListType] = useState<string>('');
-  const [algoliaHits, setAlgoliaHits] = useState<any[]>([]);
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
 
   const {
+    entities,
+    isLoading,
     listTypes,
     isLoadingListTypes,
     refetch,
-  } = useComplexEntities();
+    nextPage,
+    prevPage,
+    canGoNext,
+    canGoPrev,
+    page,
+    totalCount,
+    initialDataLoaded
+  } = useComplexEntities(selectedListType, columnFilters);
 
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newListName, setNewListName] = useState('');
+  
+  const columns = useMemo(() => generateColumns(entities, columnFilters, setColumnFilters), [entities, columnFilters]);
 
   useEffect(() => {
     if (!isLoadingListTypes && listTypes.length > 0 && !selectedListType) {
@@ -149,12 +215,15 @@ export function ComplexEntitiesTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Κατάλογος Οντοτήτων</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
-                <Select onValueChange={setSelectedListType} value={selectedListType}>
-                    <SelectTrigger className="w-full md:w-[250px]">
+            <div className="flex justify-between items-center">
+                 <CardTitle>Κατάλογος Οντοτήτων</CardTitle>
+                 {totalCount !== null && (
+                    <p className="text-sm text-muted-foreground">Σύνολο Εγγραφών: {totalCount}</p>
+                 )}
+            </div>
+            <div className="mt-4">
+                 <Select onValueChange={setSelectedListType} value={selectedListType}>
+                    <SelectTrigger className="w-full md:w-[350px]">
                          <SelectValue placeholder={isLoadingListTypes ? "Φόρτωση λιστών..." : "Επιλέξτε λίστα..."}>
                             {isLoadingListTypes ? <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> <span>Φόρτωση...</span></div> : selectedListType || "Επιλέξτε λίστα..."}
                         </SelectValue>
@@ -169,17 +238,30 @@ export function ComplexEntitiesTab() {
                         )}
                     </SelectContent>
                 </Select>
-                 {selectedListType && (
-                    <AlgoliaSearchBox
-                        key={selectedListType}
-                        indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
-                        listType={selectedListType}
-                        onHitsChange={setAlgoliaHits}
-                    />
-                 )}
             </div>
+        </CardHeader>
+        <CardContent>
+            {selectedListType ? (
+                 <DataTable
+                    columns={columns}
+                    data={entities}
+                    isLoading={isLoading}
+                    totalCount={totalCount}
+                    pageSize={PAGE_SIZE}
+                    page={page}
+                    canGoNext={canGoNext}
+                    canGoPrev={canGoPrev}
+                    nextPage={nextPage}
+                    prevPage={prevPage}
+                    activeFilters={columnFilters}
+                    initialDataLoaded={initialDataLoaded}
+                 />
+            ): (
+                <div className="text-center py-10 text-muted-foreground">Παρακαλώ επιλέξτε μια λίστα για να δείτε τα δεδομένα.</div>
+            )}
         </CardContent>
       </Card>
     </div>
   );
 }
+

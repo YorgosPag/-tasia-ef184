@@ -140,3 +140,4 @@ export function AlgoliaSearchBox({ indexName, listType, onHitsChange }: { indexN
     </div>
   );
 }
+
