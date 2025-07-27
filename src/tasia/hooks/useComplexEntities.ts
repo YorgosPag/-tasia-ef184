@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -28,17 +27,10 @@ export interface ComplexEntity {
 
 export const PAGE_SIZE = 50;
 
-async function getDistinctTypes(): Promise<string[]> {
-    const q = query(collection(db, 'tsia-complex-entities'), orderBy('type'));
+async function fetchDistinctTypes(): Promise<string[]> {
+    const q = query(collection(db, 'tsia-list-types'), orderBy('name'));
     const snapshot = await getDocs(q);
-    const types = new Set<string>();
-    snapshot.forEach(doc => {
-        const type = doc.data().type;
-        if (type) {
-            types.add(type);
-        }
-    });
-    return Array.from(types).sort();
+    return snapshot.docs.map(doc => doc.data().name);
 }
 
 
@@ -53,13 +45,15 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState<number | null>(null);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+
 
   const [debouncedFilters] = useDebounce(columnFilters, 500);
 
   const fetchListTypes = useCallback(async () => {
     setIsLoadingListTypes(true);
     try {
-        const types = await getDistinctTypes();
+        const types = await fetchDistinctTypes();
         setListTypes(types);
     } catch(err) {
         console.error("Failed to fetch list types", err);
@@ -77,10 +71,12 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     if (!type) {
       setEntities([]);
       setTotalCount(0);
+      setInitialDataLoaded(true);
       return;
     }
     setIsLoading(true);
     setError(null);
+    if(direction === 'initial') setInitialDataLoaded(false);
     
     try {
       let constraints: QueryConstraint[] = [where('type', '==', type)];
@@ -92,8 +88,8 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
           }
       }
       
-      if(direction === 'initial') {
-        const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
+      if(direction === 'initial' || !totalCount) {
+        const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints.filter(c => c.type !== 'orderBy'));
         const countSnapshot = await getCountFromServer(countQuery);
         setTotalCount(countSnapshot.data().count);
       }
@@ -128,6 +124,8 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       }
       
       setEntities(newEntities);
+      setInitialDataLoaded(true);
+
 
     } catch (err: any) {
       console.error('Error fetching complex entities:', err);
@@ -135,12 +133,13 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     } finally {
       setIsLoading(false);
     }
-  }, [type, debouncedFilters, lastVisible, firstVisible]);
+  }, [type, debouncedFilters, lastVisible, firstVisible, totalCount]);
   
   const refetch = useCallback(() => {
     setPage(1);
     setLastVisible(null);
     setFirstVisible(null);
+    setTotalCount(null);
     fetchEntities('initial');
   }, [fetchEntities]);
 
@@ -175,5 +174,6 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     canGoPrev: page > 1,
     totalCount,
     page,
+    initialDataLoaded,
   };
 }

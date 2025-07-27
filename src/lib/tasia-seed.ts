@@ -9,11 +9,20 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
-import { companiesData, projectsData, buildingsData, floorsData, unitsData, contactsData } from './tasia-seed-data';
+import { listTypesData, companiesData, projectsData, buildingsData, floorsData, unitsData, contactsData } from './tasia-seed-data';
 
 export async function seedTasiaData() {
   const batch = writeBatch(db);
   console.log('Starting TASIA database seed...');
+  
+  // 0. Seed List Types (for fast dropdown loading)
+  for (const listType of listTypesData) {
+      const docRef = doc(collection(db, 'tsia-list-types'));
+      const { _id, ...listTypeData } = listType;
+      batch.set(docRef, { ...listTypeData, createdAt: serverTimestamp() });
+  }
+  console.log(`${listTypesData.length} list types queued for creation.`);
+
 
   const contactIdMap = new Map<string, DocumentReference>();
   const companyIdMap = new Map<string, DocumentReference>();

@@ -2,6 +2,11 @@ import { Timestamp } from 'firebase/firestore';
 
 type UnitStatus = 'Διαθέσιμο' | 'Κρατημένο' | 'Πωλημένο' | 'Οικοπεδούχος' | 'Προς Ενοικίαση';
 
+export const listTypesData: any[] = [
+    { _id: 'list_type_1', name: 'Διοικητική Διαίρεση Ελλάδας' },
+    { _id: 'list_type_2', name: 'Αστυνομικοί Σταθμοί' },
+];
+
 // Authoritative list of all contacts
 export const contactsData: any[] = [
     { _id: 'contact_1', type: 'Company', name: 'DevConstruct AE', website: 'https://devconstruct.example.com', contactInfo: { email: 'info@devconstruct.example.com', phone: '2101111111', afm: '123456789' }, logoUrl: 'https://placehold.co/100x100.png' },

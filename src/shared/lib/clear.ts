@@ -1,4 +1,3 @@
-
 'use server';
 
 import {
@@ -58,7 +57,8 @@ export async function clearTasiaData() {
     const TASIA_COLLECTIONS = [
       'contacts', 'attachments', 'units', 'floors', 
       'buildings', 'projects', 'companies', 'auditLogs', 
-      'users', 'workStages', 'workSubstages', 'leads'
+      'users', 'workStages', 'workSubstages', 'leads',
+      'tsia-list-types', 'tsia-custom-lists'
     ];
     
     // First, clear nested collections which might have deeper nesting
