@@ -79,19 +79,19 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
   const getFullAddress = (index: number) => {
     const address = form.watch(`addresses.${index}`);
-    return [address.street, address.number, address.settlement, address.postalCode, address.country].filter(Boolean).join(' ');
+    return [address.street, address.number, address.settlements, address.postalCode, address.country].filter(Boolean).join(' ');
   }
   
-   const handleAddressSelect = (index: number, hit: any) => {
-    form.setValue(`addresses.${index}.settlement`, hit['Οικισμός']);
-    form.setValue(`addresses.${index}.municipalLocalCommunity`, hit['Δημοτική/Τοπική Κοινότητα']);
-    form.setValue(`addresses.${index}.municipalUnity`, hit['Δημοτική Ενότητα']);
-    form.setValue(`addresses.${index}.municipality`, hit['Δήμος']);
-    form.setValue(`addresses.${index}.regionalUnity`, hit['Περιφερειακή Ενότητα']);
-    form.setValue(`addresses.${index}.region`, hit['Περιφέρεια']);
-    form.setValue(`addresses.${index}.decentralizedAdministration`, hit['Αποκεντρωμένη Διοίκηση']);
-    form.setValue(`addresses.${index}.largeGeographicUnit`, hit['Μεγάλη Γεωγραφική Ενότητα']);
-  };
+  const handleAddressSelect = (index: number, hit: any, fieldName: string) => {
+    form.setValue(`addresses.${index}.settlements`, hit['Οικισμός'], { shouldDirty: true });
+    form.setValue(`addresses.${index}.municipalLocalCommunities`, hit['Δημοτική/Τοπική Κοινότητα'], { shouldDirty: true });
+    form.setValue(`addresses.${index}.municipalUnities`, hit['Δημοτική Ενότητα'], { shouldDirty: true });
+    form.setValue(`addresses.${index}.municipality`, hit['Δήμος'], { shouldDirty: true });
+    form.setValue(`addresses.${index}.regionalUnities`, hit['Περιφερειακή Ενότητα'], { shouldDirty: true });
+    form.setValue(`addresses.${index}.regions`, hit['Περιφέρεια'], { shouldDirty: true });
+    form.setValue(`addresses.${index}.decentralizedAdministrations`, hit['Αποκεντρωμένη Διοίκηση'], { shouldDirty: true });
+    form.setValue(`addresses.${index}.largeGeographicUnits`, hit['Μεγάλη Γεωγραφική Ενότητα'], { shouldDirty: true });
+};
 
   return (
     <Accordion type="multiple" defaultValue={['personal', 'identity', 'contact', 'addresses', 'job', 'socials', 'notes']} className="w-full">
@@ -465,14 +465,14 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                         <FormField control={form.control} name={`addresses.${index}.toponym`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τοπωνύμιο</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                         <FormField control={form.control} name={`addresses.${index}.postalCode`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ταχ. Κώδικας</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                         
-                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.settlement`} label="Οικισμός" onSelect={(hit) => handleAddressSelect(index, hit)} />
-                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.municipalLocalCommunity`} label="Δημοτική/Τοπική Κοινότητα" onSelect={(hit) => handleAddressSelect(index, hit)} />
-                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.municipalUnity`} label="Δημοτική Ενότητα" onSelect={(hit) => handleAddressSelect(index, hit)} />
-                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.municipality`} label="Δήμος" onSelect={(hit) => handleAddressSelect(index, hit)} />
-                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.regionalUnity`} label="Περιφερειακή Ενότητα" onSelect={(hit) => handleAddressSelect(index, hit)} />
-                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.region`} label="Περιφέρεια" onSelect={(hit) => handleAddressSelect(index, hit)} />
-                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.decentralizedAdministration`} label="Αποκεντρωμένη Διοίκηση" onSelect={(hit) => handleAddressSelect(index, hit)} />
-                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.largeGeographicUnit`} label="Μεγάλη Γεωγραφική Ενότητα" onSelect={(hit) => handleAddressSelect(index, hit)} />
+                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.settlements`} label="Οικισμός" onSelect={(hit: any) => handleAddressSelect(index, hit, 'Οικισμός')} />
+                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.municipalLocalCommunities`} label="Δημοτική/Τοπική Κοινότητα" onSelect={(hit: any) => handleAddressSelect(index, hit, 'Δημοτική/Τοπική Κοινότητα')} />
+                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.municipalUnities`} label="Δημοτική Ενότητα" onSelect={(hit: any) => handleAddressSelect(index, hit, 'Δημοτική Ενότητα')} />
+                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.municipality`} label="Δήμος" onSelect={(hit: any) => handleAddressSelect(index, hit, 'Δήμος')} />
+                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.regionalUnities`} label="Περιφερειακή Ενότητα" onSelect={(hit: any) => handleAddressSelect(index, hit, 'Περιφερειακή Ενότητα')} />
+                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.regions`} label="Περιφέρεια" onSelect={(hit: any) => handleAddressSelect(index, hit, 'Περιφέρεια')} />
+                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.decentralizedAdministrations`} label="Αποκεντρωμένη Διοίκηση" onSelect={(hit: any) => handleAddressSelect(index, hit, 'Αποκεντρωμένη Διοίκηση')} />
+                        <AddressAutocompleteInput control={form.control} name={`addresses.${index}.largeGeographicUnits`} label="Μεγάλη Γεωγραφική Ενότητα" onSelect={(hit: any) => handleAddressSelect(index, hit, 'Μεγάλη Γεωγραφική Ενότητα')} />
                         
                         <FormField control={form.control} name={`addresses.${index}.country`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Χώρα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                      </div>

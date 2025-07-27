@@ -20,7 +20,12 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
   const [inputValue, setInputValue] = useState(''); 
   const [debouncedQuery] = useDebounce(inputValue, 300);
   const { hits } = useHits();
+  const { refine } = useSearchBox();
 
+  useEffect(() => {
+    refine(debouncedQuery);
+  }, [debouncedQuery, refine]);
+  
   const handleSelect = (hit: any) => {
     onSelect(hit);
     const selectedLabel = hit[label] || '';
@@ -29,10 +34,10 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
     setIsOpen(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, fieldOnChange: (...event: any[]) => void) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    fieldOnChange(value);
+    control.setValue(name, value);
     if (!isOpen) {
       setIsOpen(true);
     }
@@ -44,8 +49,11 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
         control={control}
         name={name}
         render={({ field }) => {
+          // Sync internal state if form value changes externally
           useEffect(() => {
-            if(field.value) setInputValue(field.value);
+            if(field.value !== inputValue) {
+              setInputValue(field.value || '');
+            }
           }, [field.value]);
 
           return (
@@ -57,7 +65,7 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
                     <Input
                       {...field}
                       value={inputValue}
-                      onChange={(e) => handleInputChange(e, field.onChange)}
+                      onChange={handleInputChange}
                       onClick={() => setIsOpen(true)}
                     />
                   </FormControl>
@@ -70,7 +78,7 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
       />
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
         <Command>
-          <CommandList>
+           <CommandList>
             {hits.length > 0 && (
               <CommandGroup>
                 {hits.map((hit) => (
@@ -89,7 +97,7 @@ const Autocomplete = ({ control, name, label, onSelect }: any) => {
             )}
           </CommandList>
         </Command>
-        <Configure query={debouncedQuery} hitsPerPage={5} />
+        <Configure query={debouncedQuery} hitsPerPage={5} attributesToRetrieve={[label]} />
       </PopoverContent>
     </Popover>
   );
