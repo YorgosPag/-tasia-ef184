@@ -248,6 +248,7 @@ export function useCustomLists() {
 
      try {
         await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
+        toast({ title: 'Επιτυχία', description: `Το στοιχείο "${itemValue}" διαγράφηκε.` });
         return true;
      } catch (error) {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή του στοιχείου απέτυχε.' });
