@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   collection,
   query,
@@ -31,12 +31,10 @@ async function getDistinctTypes(): Promise<string[]> {
     const q = query(collection(db, 'tsia-complex-entities'), orderBy('type'));
     const snapshot = await getDocs(q);
     const types = new Set<string>();
-    let lastType: string | null = null;
     snapshot.forEach(doc => {
         const type = doc.data().type;
-        if (type && type !== lastType) {
+        if (type) {
             types.add(type);
-            lastType = type;
         }
     });
     return Array.from(types).sort();
@@ -51,8 +49,7 @@ export function useComplexEntities(type?: string) {
   const [error, setError] = useState<string | null>(null);
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
-
+  
   // Pagination state
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
@@ -85,43 +82,33 @@ export function useComplexEntities(type?: string) {
       setIsLoading(true);
       setError(null);
       try {
-        let constraints = [where('type', '==', type)];
+        let constraints = [where('type', '==', type), orderBy('__name__')];
         
-        // Server-side prefix search on the 'name' field.
-        if (debouncedSearchQuery) {
-            constraints.push(where('name', '>=', debouncedSearchQuery));
-            constraints.push(where('name', '<=', debouncedSearchQuery + '\uf8ff'));
-        }
-
-        const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
+        const countQuery = query(collection(db, 'tsia-complex-entities'), where('type', '==', type));
         const countSnapshot = await getCountFromServer(countQuery);
         setTotalCount(countSnapshot.data().count);
         
         let q;
         const finalConstraints = [...constraints, limit(PAGE_SIZE)];
-        if(!debouncedSearchQuery) {
-            finalConstraints.push(orderBy('name'));
-        }
-
 
         switch (direction) {
           case 'next':
             if(lastVisible) finalConstraints.push(startAfter(lastVisible));
             break;
           case 'prev':
-            // Note: `endBefore` with `limitToLast` is complex and can be inconsistent.
-            // A simpler pagination model (next-only or cursor-based) is often more reliable with Firestore.
-            // For now, we'll keep it simple.
              if (firstVisible) {
-                // To go previous, we need to reverse the query and use endBefore.
-                // This is more complex than needed for now. We will reset.
+                const prevConstraints = [...constraints, limitToLast(PAGE_SIZE), endBefore(firstVisible)];
+                q = query(collection(db, 'tsia-complex-entities'), ...prevConstraints);
+             } else {
+                q = query(collection(db, 'tsia-complex-entities'), ...finalConstraints);
              }
             break;
           default: // 'initial'
+            q = query(collection(db, 'tsia-complex-entities'), ...finalConstraints);
             break;
         }
-        
-        q = query(collection(db, 'tsia-complex-entities'), ...finalConstraints);
+
+        if(!q) q = query(collection(db, 'tsia-complex-entities'), ...finalConstraints);
         
         const documentSnapshots = await getDocs(q);
         
@@ -139,7 +126,7 @@ export function useComplexEntities(type?: string) {
         setIsLoading(false);
       }
     },
-    [type, debouncedSearchQuery] // <-- Removed `lastVisible` dependency to fix infinite loop
+    [type, lastVisible, firstVisible]
   );
   
   const refetch = useCallback(() => {
@@ -151,54 +138,35 @@ export function useComplexEntities(type?: string) {
 
   useEffect(() => {
     refetch();
-  }, [type, debouncedSearchQuery, refetch]);
+  }, [type]);
 
   const nextPage = useCallback(() => {
-    if (!lastVisible) return;
     setPage(p => p + 1);
-    
-    // We need a slightly different fetch logic for pagination that uses the current lastVisible.
-    const paginate = async () => {
-        if (!type) return;
-        setIsLoading(true);
-        try {
-            let constraints = [where('type', '==', type)];
-            if (debouncedSearchQuery) {
-                constraints.push(where('name', '>=', debouncedSearchQuery));
-                constraints.push(where('name', '<=', debouncedSearchQuery + '\uf8ff'));
-            }
-            constraints.push(orderBy('name'));
-            constraints.push(startAfter(lastVisible));
-            constraints.push(limit(PAGE_SIZE));
-
-            const q = query(collection(db, 'tsia-complex-entities'), ...constraints);
-            const documentSnapshots = await getDocs(q);
-            let newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
-            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
-            setFirstVisible(documentSnapshots.docs[0] || null);
-            setEntities(newEntities);
-        } catch (e) {
-            console.error(e);
-            setError("Failed to fetch next page.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    paginate();
-
-  }, [lastVisible, type, debouncedSearchQuery]);
+    fetchEntities('next');
+  }, [fetchEntities]);
 
   const prevPage = useCallback(() => {
-    if (page === 1) return;
-    setPage(p => p - 1);
-    // This requires a more complex query with `endBefore`. For now, we'll reset to the first page.
-    refetch();
-  }, [page, refetch]);
+    if (page > 1) {
+      setPage(p => p - 1);
+      fetchEntities('prev');
+    }
+  }, [page, fetchEntities]);
   
+  const filteredEntities = useMemo(() => {
+    if (!searchQuery) return entities;
+    const lowercasedQuery = searchQuery.toLowerCase();
+    return entities.filter(entity => {
+      // Search through all values of the entity
+      return Object.values(entity).some(value =>
+        String(value).toLowerCase().includes(lowercasedQuery)
+      );
+    });
+  }, [entities, searchQuery]);
+
   const canGoNext = entities.length === PAGE_SIZE && (page * PAGE_SIZE) < (totalCount || 0);
 
   return {
-    entities,
+    entities: filteredEntities,
     isLoading: isLoading,
     error,
     searchQuery,
