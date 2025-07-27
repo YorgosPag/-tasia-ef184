@@ -115,7 +115,7 @@ export function DataTable<TData, TValue>({
                         <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
                 </TableRow>
-            ) : table.getRowModel().rows?.length ? (
+            ) : table.getRowModel() && table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
