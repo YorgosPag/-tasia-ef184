@@ -90,13 +90,8 @@ export function ComplexEntitiesTab() {
   }, [columnFilters]);
   
   useEffect(() => {
-    // Generate columns only when the type changes and we have a definitive set of keys.
-    // This prevents the columns from resetting when the data is temporarily empty during filtering.
     if (allKeysFromType.length > 0) {
       setColumnDefs(generateColumns(allKeysFromType));
-    } else {
-        // Fallback for an empty list or during initial load before keys are known
-        setColumnDefs(generateColumns(['name', 'address', 'region']));
     }
   }, [allKeysFromType, generateColumns]);
   
