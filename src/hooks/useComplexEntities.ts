@@ -80,11 +80,12 @@ export function useComplexEntities(type?: string) {
       setIsLoading(true);
       setError(null);
       try {
-        let constraints = [where('type', '==', type), orderBy('name')];
+        let constraints = [where('type', '==', type)];
 
+        // This query does not support searching on fields other than 'name' currently.
+        // A more complex solution with a search index (e.g., Algolia) would be needed for that.
         if (debouncedSearchQuery) {
-            // Firestore doesn't support case-insensitive search natively.
-            // This is a common workaround for prefix search.
+            constraints.push(orderBy('name')); // Search requires an order by on the searched field
             const strFront = debouncedSearchQuery;
             const strBack = debouncedSearchQuery.slice(0, -1) + String.fromCharCode(debouncedSearchQuery.charCodeAt(debouncedSearchQuery.length - 1) + 1);
             
