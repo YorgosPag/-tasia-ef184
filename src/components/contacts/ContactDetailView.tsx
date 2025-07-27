@@ -25,24 +25,24 @@ const socialIcons: { [key: string]: React.ElementType } = {
     default: LinkIcon,
 };
 
-const DetailSection = ({ title, children, icon }: { title: string; children: React.ReactNode; icon: React.ElementType }) => {
-    // Don't render the section if there are no children, unless it's a special case like notes
-    if (!React.Children.count(children) || (Array.isArray(children) && children.filter(c => c).length === 0)) {
-        if (title === 'Σημειώσεις' && (!children || (typeof children === 'object' && 'props' in children && children.props.children === '-'))) {
-             return null;
-        }
-        if (title !== 'Σημειώσεις') return null;
+const DetailSection = ({ title, children, icon, alwaysShow = false }: { title: string; children: React.ReactNode; icon: React.ElementType; alwaysShow?: boolean }) => {
+    const hasContent = React.Children.count(children) > 0 && (Array.isArray(children) ? children.filter(c => c).length > 0 : true);
+
+    if (!hasContent && !alwaysShow) {
+        return null;
     }
-    
+
     return (
         <div className="border-t pt-4 mt-4">
             <h3 className="flex items-center text-lg font-semibold mb-3">
-            {React.createElement(icon, { className: 'mr-2 h-5 w-5 text-primary' })}
-            {title}
+                {React.createElement(icon, { className: 'mr-2 h-5 w-5 text-primary' })}
+                {title}
             </h3>
-            <div className="space-y-3 pl-7">{children}</div>
+            <div className="space-y-3 pl-7">
+                {hasContent ? children : <p className="text-sm text-muted-foreground italic">Δεν υπάρχουν καταχωρημένα στοιχεία.</p>}
+            </div>
         </div>
-    )
+    );
 };
 
 const DetailRow = ({ label, value, href, type }: { label: string; value?: string | null; href?: string, type?: string }) => {
@@ -102,6 +102,15 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
     contact.address?.city,
     contact.address?.postalCode
   ].filter(Boolean).join(' ');
+  
+  const hasPersonalInfo = contact.firstName || contact.lastName || contact.fatherName || contact.motherName || contact.birthDate || contact.birthPlace;
+  const hasIdentityInfo = contact.identity?.type || contact.identity?.number || contact.identity?.issueDate || contact.identity?.issuingAuthority || contact.afm || contact.doy;
+  const hasContactInfo = (contact.emails && contact.emails.length > 0) || (contact.phones && contact.phones.length > 0);
+  const hasSocials = contact.socials && contact.socials.length > 0;
+  const hasAddress = !!fullAddress;
+  const hasJobInfo = contact.job?.role || contact.job?.specialty;
+  const hasNotes = !!contact.notes;
+
 
   return (
     <Card className="h-full sticky top-20">
@@ -127,9 +136,9 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
         </Button>
       </CardHeader>
       <CardContent className="space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto">
-        {/* Personal Info */}
+        
         {contact.entityType === 'Φυσικό Πρόσωπο' && (
-          <DetailSection title="Προσωπικά Στοιχεία" icon={User}>
+          <DetailSection title="Προσωπικά Στοιχεία" icon={User} alwaysShow>
             <DetailRow label="Όνομα" value={contact.firstName} />
             <DetailRow label="Επώνυμο" value={contact.lastName} />
             <DetailRow label="Πατρώνυμο" value={contact.fatherName} />
@@ -139,8 +148,7 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
           </DetailSection>
         )}
 
-        {/* ID & Tax Info */}
-        <DetailSection title="Ταυτότητα &amp; ΑΦΜ" icon={Info}>
+        <DetailSection title="Ταυτότητα &amp; ΑΦΜ" icon={Info} alwaysShow>
             {contact.entityType === 'Φυσικό Πρόσωπο' ? (
                  <>
                     <DetailRow label="Τύπος" value={contact.identity?.type} />
@@ -153,14 +161,12 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
             <DetailRow label="ΔΟΥ" value={contact.doy} />
         </DetailSection>
 
-        {/* Contact Info */}
-        <DetailSection title="Στοιχεία Επικοινωνίας" icon={Phone}>
+        <DetailSection title="Στοιχεία Επικοινωνίας" icon={Phone} alwaysShow>
             {contact.emails?.map((email, i) => <DetailRow key={i} label="Email" value={email.value} href={`mailto:${email.value}`} type={email.type}/>)}
             {contact.phones?.map((phone, i) => <DetailRow key={i} label="Τηλέφωνο" value={phone.value} href={`tel:${phone.value}`} type={`${phone.type} ${phone.indicators?.join(', ')}`.trim()} />)}
         </DetailSection>
         
-        {/* Socials & Websites */}
-        <DetailSection title="Κοινωνικά Δίκτυα &amp; Websites" icon={LinkIcon}>
+        <DetailSection title="Κοινωνικά Δίκτυα &amp; Websites" icon={LinkIcon} alwaysShow>
             {contact.socials?.map((social, i) => {
                 const Icon = socialIcons[social.type] || socialIcons.default;
                 return (
@@ -174,22 +180,19 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
             })}
         </DetailSection>
 
-        {/* Address */}
-        <DetailSection title="Διεύθυνση" icon={MapPin}>
-            {fullAddress ? <p className="text-sm text-muted-foreground">{fullAddress}</p> : <p className="text-sm text-muted-foreground">-</p>}
+        <DetailSection title="Διεύθυνση" icon={MapPin} alwaysShow>
+            {fullAddress ? <p className="text-sm text-muted-foreground">{fullAddress}</p> : null}
         </DetailSection>
 
-        {/* Job Info */}
         {contact.entityType !== 'Δημ. Υπηρεσία' && (
-            <DetailSection title="Επαγγελματικά Στοιχεία" icon={Briefcase}>
+            <DetailSection title="Επαγγελματικά Στοιχεία" icon={Briefcase} alwaysShow>
                 <DetailRow label="Ρόλος" value={contact.job?.role} />
                 <DetailRow label="Ειδικότητα" value={contact.job?.specialty} />
             </DetailSection>
         )}
 
-        {/* Notes */}
-        <DetailSection title="Σημειώσεις" icon={Info}>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{contact.notes || '-'}</p>
+        <DetailSection title="Σημειώσεις" icon={Info} alwaysShow>
+            {contact.notes ? <p className="text-sm text-muted-foreground whitespace-pre-wrap">{contact.notes}</p> : null}
         </DetailSection>
       </CardContent>
     </Card>
