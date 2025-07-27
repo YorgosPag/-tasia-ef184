@@ -23,6 +23,7 @@ export function ComplexEntitiesTab() {
   const { toast } = useToast();
   const [selectedListType, setSelectedListType] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [algoliaHits, setAlgoliaHits] = useState<any[]>([]);
 
   const {
     entities,
@@ -173,13 +174,15 @@ export function ComplexEntitiesTab() {
                         )}
                     </SelectContent>
                 </Select>
-                 <AlgoliaSearchBox
-                    indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
-                    listType={selectedListType}
-                    onHitsChange={setHits}
-                 />
+                 {selectedListType && (
+                    <AlgoliaSearchBox
+                        key={selectedListType} // Add key to force re-mount on list type change
+                        indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
+                        listType={selectedListType}
+                        onHitsChange={setAlgoliaHits}
+                    />
+                 )}
             </div>
-            {/* The DataTable component will now be rendered by Algolia's Hits component */}
         </CardContent>
       </Card>
     </div>

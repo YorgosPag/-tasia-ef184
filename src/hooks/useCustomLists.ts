@@ -48,6 +48,7 @@ const listKeyToContactFieldMap: Record<string, string> = {
     'roles': 'job.role',
     'specialties': 'job.specialty',
     'doy': 'doy',
+    // Add other mappings here as needed, using the `key` of the list
 }
 
 // --- Custom Hook ---
@@ -129,19 +130,15 @@ export function useCustomLists() {
         const batch = writeBatch(db);
         const listRef = doc(db, 'tsia-custom-lists', listId);
         
-        // 1. Get all items in the subcollection
         const itemsQuery = query(collection(listRef, 'tsia-items'));
         const itemsSnapshot = await getDocs(itemsQuery);
         
-        // 2. Delete all items in the subcollection
         itemsSnapshot.docs.forEach(itemDoc => {
             batch.delete(itemDoc.ref);
         });
 
-        // 3. Delete the parent list document
         batch.delete(listRef);
 
-        // 4. Commit the batch
         await batch.commit();
         
         toast({ title: 'Επιτυχία', description: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.' });
@@ -172,7 +169,6 @@ export function useCustomLists() {
         itemsToAdd = lines.map(line => {
           const firstSpaceIndex = line.indexOf(' ');
           if (firstSpaceIndex === -1) {
-            // Handle lines without a space (e.g., only a code or value)
             return { code: line, value: line }; 
           }
           return {
@@ -180,14 +176,12 @@ export function useCustomLists() {
             value: line.substring(firstSpaceIndex + 1).trim(),
           };
         }).filter(item => {
-          // Prevent adding duplicates based on code
           return item.code && !existingItems.some(ex => ex.code?.toLowerCase() === item.code?.toLowerCase());
         });
       } else {
         const values = rawValue.split(/[;\n\r\t]+/).map(v => v.trim()).filter(Boolean);
         itemsToAdd = values
           .filter(value => {
-            // Prevent adding case-insensitive duplicates
             return !existingItems.some(ex => ex.value.toLowerCase() === value.toLowerCase());
           })
           .map(value => ({ value }));
