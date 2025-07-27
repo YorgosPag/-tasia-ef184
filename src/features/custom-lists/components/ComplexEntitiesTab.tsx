@@ -23,13 +23,12 @@ import { ColumnDef } from '@tanstack/react-table';
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
   const [selectedListType, setSelectedListType] = useState<string>('');
-  
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
+
   const {
     entities,
     isLoading,
     error,
-    searchQuery,
-    setSearchQuery,
     listTypes,
     isLoadingListTypes,
     refetch,
@@ -38,7 +37,7 @@ export function ComplexEntitiesTab() {
     canGoNext,
     canGoPrev,
     totalCount
-  } = useComplexEntities(selectedListType || undefined);
+  } = useComplexEntities(selectedListType || undefined, columnFilters);
 
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -52,28 +51,36 @@ export function ComplexEntitiesTab() {
 
   const columns = useMemo(() => {
     if (entities.length === 0) {
-      return [
-        { accessorKey: 'name', header: 'Name' },
-        { accessorKey: 'description', header: 'Description' },
-      ] as ColumnDef<ComplexEntity>[];
+      return [] as ColumnDef<ComplexEntity>[];
     }
     const keys = Object.keys(entities[0]).filter(key => key !== 'id' && key !== 'type' && key !== 'createdAt');
     
     const generatedColumns: ColumnDef<ComplexEntity>[] = keys.map(key => ({
       accessorKey: key,
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          {key}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex flex-col gap-2">
+            <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            >
+            {key}
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+            <Input
+              placeholder={`Αναζήτηση σε ${key}...`}
+              value={columnFilters[key] || ''}
+              onChange={(event) =>
+                setColumnFilters(prev => ({ ...prev, [key]: event.target.value }))
+              }
+              className="h-8"
+              onClick={(e) => e.stopPropagation()}
+            />
+        </div>
       ),
     }));
 
     return generatedColumns;
-  }, [entities]);
+  }, [entities, columnFilters]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -201,17 +208,6 @@ export function ComplexEntitiesTab() {
                 </Select>
                  <div className="flex items-center text-sm text-muted-foreground font-medium px-2">
                    Πλήθος Εγγραφών: {totalCount !== null ? totalCount : '-'}
-                </div>
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Αναζήτηση στην επιλεγμένη λίστα..."
-                    className="pl-10 w-full"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    disabled={!selectedListType}
-                  />
                 </div>
               </div>
           {isLoading ? (

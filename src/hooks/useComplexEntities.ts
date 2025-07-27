@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   collection,
   query,
@@ -14,7 +14,8 @@ import {
   where,
   endBefore,
   limitToLast,
-  getCountFromServer
+  getCountFromServer,
+  QueryConstraint
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useDebounce } from 'use-debounce';
@@ -41,20 +42,19 @@ async function getDistinctTypes(): Promise<string[]> {
 }
 
 
-export function useComplexEntities(type?: string) {
+export function useComplexEntities(type?: string, columnFilters: Record<string, string> = {}) {
   const [entities, setEntities] = useState<ComplexEntity[]>([]);
   const [listTypes, setListTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingListTypes, setIsLoadingListTypes] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Pagination state
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState<number | null>(null);
+
+  const [debouncedFilters] = useDebounce(columnFilters, 500);
 
   const fetchListTypes = useCallback(async () => {
     setIsLoadingListTypes(true);
@@ -63,7 +63,7 @@ export function useComplexEntities(type?: string) {
         setListTypes(types);
     } catch(err) {
         console.error("Failed to fetch list types", err);
-        setError("Αδυναμία φόρτωσης τύπων λίστας. Βεβαιωθείτε ότι το απαραίτητο ευρετήριο έχει δημιουργηθεί στο Firebase Console.");
+        setError("Αδυναμία φόρτωσης τύπων λίστας.");
     } finally {
         setIsLoadingListTypes(false);
     }
@@ -77,40 +77,58 @@ export function useComplexEntities(type?: string) {
   const fetchEntities = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
       if (!type) {
         setEntities([]);
+        setTotalCount(0);
         return;
       }
       setIsLoading(true);
       setError(null);
+      
       try {
-        let constraints = [where('type', '==', type), orderBy('__name__')];
+        let constraints: QueryConstraint[] = [where('type', '==', type)];
+
+        // Add constraints for column filters
+        for (const key in debouncedFilters) {
+            const value = debouncedFilters[key];
+            if (value) {
+                // Use a "starts-with" query, which is efficient in Firestore
+                constraints.push(where(key, '>=', value));
+                constraints.push(where(key, '<=', value + '\uf8ff'));
+            }
+        }
         
-        const countQuery = query(collection(db, 'tsia-complex-entities'), where('type', '==', type));
+        const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
         const countSnapshot = await getCountFromServer(countQuery);
         setTotalCount(countSnapshot.data().count);
         
-        let q;
-        const finalConstraints = [...constraints, limit(PAGE_SIZE)];
+        let finalQuery;
+        const baseQuery = collection(db, 'tsia-complex-entities');
+        
+        // Add sorting. Firestore requires the first orderBy to be on the field used in inequality filters.
+        const firstInequalityFilter = Object.keys(debouncedFilters).find(k => debouncedFilters[k]);
+        if(firstInequalityFilter) {
+            constraints.push(orderBy(firstInequalityFilter));
+        }
+        constraints.push(orderBy('__name__')); // Sort by doc ID for consistent pagination
 
         switch (direction) {
           case 'next':
-            if(lastVisible) finalConstraints.push(startAfter(lastVisible));
+            if(lastVisible) constraints.push(startAfter(lastVisible));
             break;
           case 'prev':
              if (firstVisible) {
-                const prevConstraints = [...constraints, limitToLast(PAGE_SIZE), endBefore(firstVisible)];
-                q = query(collection(db, 'tsia-complex-entities'), ...prevConstraints);
+                constraints.push(endBefore(firstVisible), limitToLast(PAGE_SIZE));
              } else {
-                q = query(collection(db, 'tsia-complex-entities'), ...finalConstraints);
+                 constraints.push(limit(PAGE_SIZE));
              }
             break;
           default: // 'initial'
-            q = query(collection(db, 'tsia-complex-entities'), ...finalConstraints);
+            constraints.push(limit(PAGE_SIZE));
             break;
         }
 
-        if(!q) q = query(collection(db, 'tsia-complex-entities'), ...finalConstraints);
+        finalQuery = query(baseQuery, ...constraints);
         
-        const documentSnapshots = await getDocs(q);
+        const documentSnapshots = await getDocs(finalQuery);
         
         let newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
         
@@ -121,29 +139,33 @@ export function useComplexEntities(type?: string) {
 
       } catch (err: any) {
         console.error('Error fetching complex entities:', err);
-        setError('Αποτυχία φόρτωσης δεδομένων. Βεβαιωθείτε ότι το απαραίτητο ευρετήριο έχει δημιουργηθεί στο Firebase Console.');
+        setError('Αποτυχία φόρτωσης δεδομένων. Βεβαιωθείτε ότι το απαραίτητο ευρετήριο έχει δημιουργηθεί στο Firebase Console. ' + err.message);
       } finally {
         setIsLoading(false);
       }
     },
-    [type, lastVisible, firstVisible]
+    [type, debouncedFilters, lastVisible, firstVisible]
   );
   
   const refetch = useCallback(() => {
     setPage(1);
     setLastVisible(null);
     setFirstVisible(null);
-    fetchEntities('initial');
-  }, [fetchEntities]);
+    // Directly call fetchEntities instead of waiting for useEffect
+    if (type) {
+      fetchEntities('initial');
+    }
+  }, [fetchEntities, type]);
 
   useEffect(() => {
     refetch();
-  }, [type]);
+  }, [type, debouncedFilters]);
 
   const nextPage = useCallback(() => {
+    if(!lastVisible) return;
     setPage(p => p + 1);
     fetchEntities('next');
-  }, [fetchEntities]);
+  }, [fetchEntities, lastVisible]);
 
   const prevPage = useCallback(() => {
     if (page > 1) {
@@ -152,25 +174,12 @@ export function useComplexEntities(type?: string) {
     }
   }, [page, fetchEntities]);
   
-  const filteredEntities = useMemo(() => {
-    if (!searchQuery) return entities;
-    const lowercasedQuery = searchQuery.toLowerCase();
-    return entities.filter(entity => {
-      // Search through all values of the entity
-      return Object.values(entity).some(value =>
-        String(value).toLowerCase().includes(lowercasedQuery)
-      );
-    });
-  }, [entities, searchQuery]);
-
   const canGoNext = entities.length === PAGE_SIZE && (page * PAGE_SIZE) < (totalCount || 0);
 
   return {
-    entities: filteredEntities,
-    isLoading: isLoading,
+    entities,
+    isLoading,
     error,
-    searchQuery,
-    setSearchQuery,
     listTypes,
     isLoadingListTypes,
     refetch,
