@@ -47,8 +47,8 @@ export function DataTable<TData, TValue>({
     state: {
       sorting,
     },
-    manualPagination: true, // Let our hook handle pagination
-    manualSorting: true, // Let our hook handle sorting
+    manualPagination: true, 
+    manualSorting: true, 
   });
 
   return (

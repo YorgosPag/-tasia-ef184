@@ -113,6 +113,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         switch (direction) {
           case 'next':
             if(lastVisible) constraints.push(startAfter(lastVisible));
+            constraints.push(limit(PAGE_SIZE));
             break;
           case 'prev':
              if (firstVisible) {
@@ -155,11 +156,11 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     if (type) {
       fetchEntities('initial');
     }
-  }, [fetchEntities, type]);
+  }, [type, fetchEntities]);
 
   useEffect(() => {
     refetch();
-  }, [type, debouncedFilters]);
+  }, [type, debouncedFilters, refetch]);
 
   const nextPage = useCallback(() => {
     if(!lastVisible) return;
