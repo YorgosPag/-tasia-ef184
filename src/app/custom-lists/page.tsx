@@ -3,6 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { SimpleListsTab } from '@/features/custom-lists/components/SimpleListsTab';
 
 export default function CustomListsPage() {
   return (
@@ -20,17 +21,7 @@ export default function CustomListsPage() {
           <TabsTrigger value="complex-entities">Σύνθετες Οντότητες</TabsTrigger>
         </TabsList>
         <TabsContent value="simple-lists" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Απλές Λίστες</CardTitle>
-              <CardDescription>
-                Αυτές οι λίστες χρησιμοποιούνται για την τροφοδοσία των αναπτυσσόμενων μενού (dropdowns) σε όλη την εφαρμογή.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Η λειτουργικότητα για τις απλές λίστες θα υλοποιηθεί σύντομα.</p>
-            </CardContent>
-          </Card>
+          <SimpleListsTab />
         </TabsContent>
         <TabsContent value="complex-entities" className="mt-4">
           <Card>

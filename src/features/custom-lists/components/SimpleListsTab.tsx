@@ -1,0 +1,92 @@
+
+'use client';
+
+import { useState } from 'react';
+import { useCustomLists } from '@/hooks/useCustomLists';
+import { CreateListForm } from './CreateListForm';
+import { EditableList } from './EditableList';
+import { Accordion } from '@/shared/components/ui/accordion';
+import { Input } from '@/shared/components/ui/input';
+import { Search, Loader2, FileUp, FileDown } from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
+import { exportToCsv, exportToTxt } from '@/lib/exportUtils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
+
+
+export function SimpleListsTab() {
+  const { lists, isLoading } = useCustomLists();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [openItems, setOpenItems] = useState<string[]>([]);
+
+  const filteredLists = lists.filter(list =>
+    list.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    list.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const toggleAll = (expand: boolean) => {
+    if (expand) {
+      setOpenItems(lists.map(l => l.id));
+    } else {
+      setOpenItems([]);
+    }
+  };
+
+  const handleExport = (format: 'csv' | 'txt') => {
+    if (format === 'csv') {
+      exportToCsv(lists.flatMap(l => l.items.map(i => ({ list_title: l.title, code: i.code, value: i.value }))), 'custom-lists');
+    } else {
+      exportToTxt(lists, 'custom-lists');
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <CreateListForm />
+      
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold tracking-tight">Υπάρχουσες Λίστες</h2>
+        <div className="flex flex-col md:flex-row gap-4 justify-between">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Αναζήτηση σε απλές λίστες..."
+                    className="pl-10 w-full md:w-80"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
+            <div className="flex items-center gap-2">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                       <Button variant="outline">Εξαγωγή</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => handleExport('csv')}>Εξαγωγή σε Excel (CSV)</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExport('txt')}>Εξαγωγή σε TXT</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="outline" size="sm" onClick={() => toggleAll(true)}><FileDown className="mr-2 h-4 w-4"/>Ανάπτυξη Όλων</Button>
+                <Button variant="outline" size="sm" onClick={() => toggleAll(false)}><FileUp className="mr-2 h-4 w-4"/>Σύμπτυξη Όλων</Button>
+            </div>
+        </div>
+         {isLoading ? (
+            <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+          ) : (
+            <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full space-y-2">
+                {filteredLists.length > 0 ? (
+                     filteredLists.map(list => <EditableList key={list.id} list={list} />)
+                ) : (
+                    <p className="text-center py-8 text-muted-foreground">Δεν βρέθηκαν λίστες.</p>
+                )}
+            </Accordion>
+         )}
+      </div>
+    </div>
+  );
+}

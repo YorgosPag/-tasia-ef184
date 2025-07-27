@@ -1,11 +1,18 @@
 
 
+
 'use strict';
 
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 export type ActionType =
+  | 'CREATE_LIST'
+  | 'UPDATE_LIST'
+  | 'DELETE_LIST'
+  | 'ADD_LIST_ITEM'
+  | 'UPDATE_LIST_ITEM'
+  | 'DELETE_LIST_ITEM'
   | 'CREATE_COMPANY'
   | 'UPDATE_COMPANY'
   | 'DELETE_COMPANY'
@@ -46,6 +53,7 @@ export type ActionType =
 export interface LogDetails {
   entityId?: string;
   entityType?:
+    | 'custom-list'
     | 'company'
     | 'project'
     | 'building'
