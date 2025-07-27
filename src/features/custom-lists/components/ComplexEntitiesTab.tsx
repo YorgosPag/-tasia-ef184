@@ -4,10 +4,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Loader2, Search, UploadCloud, ArrowUpDown } from 'lucide-react';
-import { useComplexEntities, type ComplexEntity, PAGE_SIZE } from '@/hooks/useComplexEntities';
-import { DataTable } from './DataTable';
+import { Loader2, UploadCloud } from 'lucide-react';
+import { useComplexEntities, type ComplexEntity } from '@/hooks/useComplexEntities';
 import { processImportFile } from '@/lib/importer';
 import { useToast } from '@/shared/hooks/use-toast';
 import { exportToCsv } from '@/lib/exportUtils';
@@ -18,24 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-import { ColumnDef } from '@tanstack/react-table';
-
-const PREFERRED_COLUMN_ORDER = [
-    'Οικισμοί',
-    'Δημοτικές/Τοπικές Κοινότητες',
-    'Δημοτικές Ενότητες',
-    'Δήμοι',
-    'Περιφερειακές ενότητες',
-    'Περιφέρειες',
-    'Αποκεντρωμένες Διοικήσεις',
-    'Μεγάλες γεωγραφικές ενότητες'
-];
+import { Input } from '@/shared/components/ui/input';
+import { AlgoliaSearchBox } from './AlgoliaSearchBox';
 
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
   const [selectedListType, setSelectedListType] = useState<string>('');
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
-  const [tempFilters, setTempFilters] = useState<Record<string, string>>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   const {
     entities,
@@ -44,93 +31,23 @@ export function ComplexEntitiesTab() {
     listTypes,
     isLoadingListTypes,
     refetch,
-    nextPage,
-    prevPage,
-    canGoNext,
-    canGoPrev,
-    totalCount,
-    page,
-    initialDataLoaded,
-    allKeysFromType,
-  } = useComplexEntities(selectedListType || undefined, columnFilters);
+    setHits,
+  } = useComplexEntities(selectedListType || undefined, searchQuery);
 
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newListName, setNewListName] = useState('');
-  
+
   useEffect(() => {
     if (!isLoadingListTypes && listTypes.length > 0 && !selectedListType) {
+      const preferredList = 'Διοικητική Διαίρεση Ελλάδας';
+      if (listTypes.includes(preferredList)) {
+        setSelectedListType(preferredList);
+      } else {
         setSelectedListType(listTypes[0]);
+      }
     }
   }, [isLoadingListTypes, listTypes, selectedListType]);
-
-  const generateColumns = useCallback(
-    (keys: string[]): ColumnDef<ComplexEntity>[] => {
-      if (keys.length === 0) return [];
-
-      const columnsToShow = keys.filter(key => !['id', 'type', 'createdAt', 'uniqueKey'].includes(key));
-      
-      columnsToShow.sort((a, b) => {
-          const indexA = PREFERRED_COLUMN_ORDER.indexOf(a);
-          const indexB = PREFERRED_COLUMN_ORDER.indexOf(b);
-          if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-          if (indexA === -1) return 1;
-          if (indexB === -1) return -1;
-          return indexA - indexB;
-      });
-      
-      return columnsToShow.map(key => ({
-        accessorKey: key,
-        header: ({ column }) => (
-            <div className="flex flex-col gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-                  className="justify-start p-0 hover:bg-transparent"
-                >
-                {key}
-                <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-                <Input
-                  placeholder={`Αναζήτηση...`}
-                  value={tempFilters[key] || ''}
-                  onChange={(event) => {
-                      const value = event.target.value;
-                      setTempFilters(prev => ({ ...prev, [key]: value }));
-                  }}
-                   onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        setColumnFilters(prev => ({...prev, [key]: tempFilters[key] || '' }));
-                      }
-                    }}
-                   onBlur={() => {
-                      setColumnFilters(prev => ({...prev, [key]: tempFilters[key] || '' }));
-                   }}
-                  className="h-8"
-                  onClick={(e) => e.stopPropagation()}
-                />
-            </div>
-        ),
-        cell: ({ row }) => {
-            const value = row.getValue(key);
-            if (value && typeof value === 'object' && 'toDate' in value) {
-                return (value as any).toDate().toLocaleDateString();
-            }
-            return value as React.ReactNode;
-        }
-      }));
-    },
-    [tempFilters] // Keep dependency here to read latest filter values
-  );
-
-  const columnDefs = useMemo(() => generateColumns(allKeysFromType), [allKeysFromType, generateColumns]);
-  
-  // Reset columns and filters when list type changes
-  useEffect(() => {
-      setColumnFilters({});
-      setTempFilters({});
-  }, [selectedListType]);
-
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -239,7 +156,7 @@ export function ComplexEntitiesTab() {
           <CardTitle>Κατάλογος Οντοτήτων</CardTitle>
         </CardHeader>
         <CardContent>
-             <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
                 <Select onValueChange={setSelectedListType} value={selectedListType}>
                     <SelectTrigger className="w-full md:w-[250px]">
                          <SelectValue placeholder={isLoadingListTypes ? "Φόρτωση λιστών..." : "Επιλέξτε λίστα..."}>
@@ -256,34 +173,13 @@ export function ComplexEntitiesTab() {
                         )}
                     </SelectContent>
                 </Select>
-                 <div className="flex items-center text-sm text-muted-foreground font-medium px-2">
-                   Πλήθος Εγγραφών: {totalCount !== null ? totalCount : '-'}
-                </div>
-              </div>
-          {isLoading && !initialDataLoaded ? (
-             <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-          ) : error ? (
-            <p className="text-destructive text-center">{error}</p>
-          ) : !selectedListType ? (
-            <div className="text-center py-12 text-muted-foreground">
-                <p>Παρακαλώ επιλέξτε μια λίστα από το παραπάνω μενού για να δείτε τα περιεχόμενά της.</p>
+                 <AlgoliaSearchBox
+                    indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
+                    listType={selectedListType}
+                    onHitsChange={setHits}
+                 />
             </div>
-          ) : (
-            <DataTable
-              columns={columnDefs}
-              data={entities}
-              isLoading={isLoading}
-              nextPage={nextPage}
-              prevPage={prevPage}
-              canGoNext={canGoNext}
-              canGoPrev={canGoPrev}
-              page={page}
-              totalCount={totalCount}
-              pageSize={PAGE_SIZE}
-              activeFilters={columnFilters}
-              initialDataLoaded={initialDataLoaded}
-            />
-          )}
+            {/* The DataTable component will now be rendered by Algolia's Hits component */}
         </CardContent>
       </Card>
     </div>
