@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { useCustomLists } from '@/hooks/useCustomLists';
 import { CreateListForm } from './CreateListForm';
 import { EditableList } from './EditableList';
-import { Accordion } from '@/shared/components/ui/accordion';
 import { Input } from '@/shared/components/ui/input';
 import { Search, Loader2, FileUp, FileDown } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
@@ -28,6 +27,10 @@ export function SimpleListsTab() {
     list.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const toggleAccordionItem = (id: string) => {
+    setOpenItems(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+  
   const toggleAll = (expand: boolean) => {
     if (expand) {
       setOpenItems(lists.map(l => l.id));
@@ -78,13 +81,13 @@ export function SimpleListsTab() {
          {isLoading ? (
             <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
           ) : (
-            <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full space-y-2">
+            <div className="w-full space-y-2">
                 {filteredLists.length > 0 ? (
-                     filteredLists.map(list => <EditableList key={list.id} list={list} />)
+                     filteredLists.map(list => <EditableList key={list.id} list={list} isOpen={openItems.includes(list.id)} onToggle={toggleAccordionItem} />)
                 ) : (
                     <p className="text-center py-8 text-muted-foreground">Δεν βρέθηκαν λίστες.</p>
                 )}
-            </Accordion>
+            </div>
          )}
       </div>
     </div>
