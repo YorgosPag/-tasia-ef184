@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useReducer, Dispatch } from 'react';
@@ -82,7 +83,7 @@ function reducer(state: State, action: Action): State {
         ...state,
         isLoading: false,
         entities: action.payload.entities,
-        allKeysFromType: state.allKeysFromType.length === 0 ? action.payload.newKeys : state.allKeysFromType,
+        allKeysFromType: action.payload.newKeys.length > 0 ? action.payload.newKeys : state.allKeysFromType,
         totalCount: state.totalCount === null || newTotal > state.totalCount ? newTotal : state.totalCount,
         initialDataLoaded: true,
       };
