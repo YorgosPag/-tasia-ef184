@@ -1,10 +1,9 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-import { Loader2, UploadCloud } from 'lucide-react';
+import { Loader2, UploadCloud, ChevronsUpDown, Check } from 'lucide-react';
 import { useComplexEntities, type ComplexEntity, PAGE_SIZE } from '@/hooks/useComplexEntities';
 import { processImportFile } from '@/lib/importer';
 import { useToast } from '@/shared/hooks/use-toast';
@@ -19,6 +18,9 @@ import {
 import { Input } from '@/shared/components/ui/input';
 import { DataTable } from './DataTable';
 import { ColumnDef } from '@tanstack/react-table';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
+import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from '@/shared/components/ui/command';
+import { cn } from '@/shared/lib/utils';
 
 // --- Column Definitions ---
 const PREFERRED_COLUMN_ORDER = [
@@ -32,10 +34,78 @@ const PREFERRED_COLUMN_ORDER = [
     'Μεγάλες γεωγραφικές ενότητες'
 ];
 
+const FilterCombobox = ({
+  columnName,
+  value,
+  onChange,
+  options
+}: {
+  columnName: string,
+  value: string,
+  onChange: (value: string) => void,
+  options: string[]
+}) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between h-8 text-xs font-normal"
+        >
+          {value || `Φίλτρο για ${columnName}...`}
+          <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder="Αναζήτηση..." />
+          <CommandList>
+            <CommandEmpty>Δεν βρέθηκαν τιμές.</CommandEmpty>
+            <CommandGroup>
+              <CommandItem
+                onSelect={() => {
+                  onChange("");
+                  setOpen(false);
+                }}
+              >
+                (Καθαρισμός Φίλτρου)
+              </CommandItem>
+              {options.map((option) => (
+                <CommandItem
+                  key={option}
+                  value={option}
+                  onSelect={(currentValue) => {
+                    onChange(currentValue === value ? "" : currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === option ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+
 const generateColumns = (
     data: ComplexEntity[], 
     filters: Record<string, string>, 
-    setFilters: React.Dispatch<React.SetStateAction<Record<string, string>>>
+    setFilters: React.Dispatch<React.SetStateAction<Record<string, string>>>,
+    distinctValues: Record<string, string[]>
 ): ColumnDef<ComplexEntity>[] => {
     if (!data || data.length === 0) {
        return PREFERRED_COLUMN_ORDER.map(key => ({
@@ -43,12 +113,11 @@ const generateColumns = (
             header: () => (
               <div className="flex flex-col gap-1">
                 <span>{key}</span>
-                <Input
-                    placeholder={`Φίλτρο...`}
-                    value={filters[key] || ''}
-                    onChange={e => setFilters(prev => ({ ...prev, [key]: e.target.value }))}
-                    className="h-8"
-                    onClick={(e) => e.stopPropagation()}
+                 <FilterCombobox
+                  columnName={key}
+                  value={filters[key] || ''}
+                  onChange={(value) => setFilters(prev => ({...prev, [key]: value}))}
+                  options={distinctValues[key] || []}
                 />
             </div>
           ),
@@ -71,12 +140,11 @@ const generateColumns = (
         header: () => (
              <div className="flex flex-col gap-1">
                 <span>{key}</span>
-                <Input
-                    placeholder={`Φίλτρο...`}
-                    value={filters[key] || ''}
-                    onChange={e => setFilters(prev => ({ ...prev, [key]: e.target.value }))}
-                    className="h-8"
-                    onClick={(e) => e.stopPropagation()} // Prevent sorting when clicking input
+                <FilterCombobox
+                  columnName={key}
+                  value={filters[key] || ''}
+                  onChange={(value) => setFilters(prev => ({...prev, [key]: value}))}
+                  options={distinctValues[key] || []}
                 />
             </div>
         ),
@@ -102,14 +170,15 @@ export function ComplexEntitiesTab() {
     canGoPrev,
     page,
     totalCount,
-    initialDataLoaded
+    initialDataLoaded,
+    distinctValues,
   } = useComplexEntities(selectedListType, columnFilters);
 
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newListName, setNewListName] = useState('');
   
-  const columns = useMemo(() => generateColumns(entities, columnFilters, setColumnFilters), [entities, columnFilters]);
+  const columns = useMemo(() => generateColumns(entities, columnFilters, setColumnFilters, distinctValues), [entities, columnFilters, distinctValues]);
 
   useEffect(() => {
     if (!isLoadingListTypes && listTypes.length > 0 && !selectedListType) {

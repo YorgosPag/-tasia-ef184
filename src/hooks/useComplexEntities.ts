@@ -35,6 +35,13 @@ async function fetchDistinctTypes(): Promise<string[]> {
     return Array.from(types).sort();
 }
 
+async function fetchDistinctValues(type: string, field: string): Promise<string[]> {
+    const q = query(collection(db, 'tsia-complex-entities'), where('type', '==', type));
+    const snapshot = await getDocs(q);
+    const values = new Set(snapshot.docs.map(doc => doc.data()[field]).filter(Boolean));
+    return Array.from(values).sort();
+}
+
 
 export function useComplexEntities(type?: string, columnFilters: Record<string, string> = {}) {
   const [entities, setEntities] = useState<ComplexEntity[]>([]);
@@ -48,7 +55,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
-
+  const [distinctValues, setDistinctValues] = useState<Record<string, string[]>>({});
 
   const [debouncedFilters] = useDebounce(columnFilters, 500);
 
@@ -68,6 +75,25 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   useEffect(() => {
     fetchListTypes();
   }, [fetchListTypes]);
+  
+  const fetchDistincts = useCallback(async () => {
+      if (!type) return;
+      
+      const PREFERRED_COLUMN_ORDER = [
+        'Οικισμοί', 'Δημοτικές/Τοπικές Κοινότητες', 'Δημοτικές Ενότητες', 'Δήμοι',
+        'Περιφερειακές ενότητες', 'Περιφέρειες', 'Αποκεντρωμένες Διοικήσεις', 'Μεγάλες γεωγραφικές ενότητες'
+      ];
+      
+      const values: Record<string, string[]> = {};
+      for (const field of PREFERRED_COLUMN_ORDER) {
+          values[field] = await fetchDistinctValues(type, field);
+      }
+      setDistinctValues(values);
+  }, [type]);
+
+  useEffect(() => {
+      fetchDistincts();
+  }, [fetchDistincts]);
 
   const fetchPage = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
     if (!type) {
@@ -151,7 +177,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       setEntities([]);
       setTotalCount(0);
     }
-  }, [type, debouncedFilters]);
+  }, [type, debouncedFilters, refetch]);
 
 
   const nextPage = useCallback(() => {
@@ -182,5 +208,6 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     totalCount,
     page,
     initialDataLoaded,
+    distinctValues
   };
 }
