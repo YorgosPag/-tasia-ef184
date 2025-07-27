@@ -40,7 +40,18 @@ const generateColumns = (
     if (!data || data.length === 0) {
        return PREFERRED_COLUMN_ORDER.map(key => ({
             accessorKey: key,
-            header: key,
+            header: () => (
+              <div className="flex flex-col gap-1">
+                <span>{key}</span>
+                <Input
+                    placeholder={`Φίλτρο...`}
+                    value={filters[key] || ''}
+                    onChange={e => setFilters(prev => ({ ...prev, [key]: e.target.value }))}
+                    className="h-8"
+                    onClick={(e) => e.stopPropagation()}
+                />
+            </div>
+          ),
         }));
     }
     const firstItem = data[0];
@@ -61,7 +72,7 @@ const generateColumns = (
              <div className="flex flex-col gap-1">
                 <span>{key}</span>
                 <Input
-                    placeholder={`Φίλτρο για ${key}...`}
+                    placeholder={`Φίλτρο...`}
                     value={filters[key] || ''}
                     onChange={e => setFilters(prev => ({ ...prev, [key]: e.target.value }))}
                     className="h-8"
@@ -264,4 +275,3 @@ export function ComplexEntitiesTab() {
     </div>
   );
 }
-
