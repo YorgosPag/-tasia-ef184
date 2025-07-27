@@ -2,14 +2,14 @@
 'use client';
 
 import React from 'react';
-import { UseFormReturn, useFieldArray } from 'react-hook-form';
+import { UseFormReturn, useFieldArray, useWatch } from 'react-hook-form';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
 import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, MapPin, Briefcase } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, MapPin, Briefcase, Map } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
@@ -28,13 +28,13 @@ interface ContactFormProps {
 
 const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
     Viber: (props) => (
-      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M16.49,4.21c-1.35-1-3-1.6-4.88-1.6h-.06c-4.48,0-8.12,3.64-8.12,8.12,0,2.15.84,4.1,2.22,5.55l-2.1,6.3,6.58-2.18c1.37.89,2.98,1.4,4.68,1.4h.06c4.48,0,8.12-3.64,8.12-8.12-0-2.3-1-4.41-2.65-5.93l-1.85,1.85c1.07,1.04,1.72,2.44,1.72,4.08,0,3.14-2.56,5.7-5.7,5.7h-.06c-1.46,0-2.8-.56-3.83-1.49l-.23-.17-4.43,1.47,1.5-4.32-.19-.24c-1.04-1.34-1.66-2.98-1.66-4.76,0-3.14,2.56-5.7,5.7-5.7h.06c1.55,0,2.97.6,4.02,1.58Z"/></svg>
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M18.1 4.5C16.5 3.4 14.6 2.8 12.6 2.8s-3.9.6-5.4 1.7c-1.5 1.1-2.6 2.7-3.1 4.5-.5 1.8-.5 3.7.1 5.5.6 1.8 1.7 3.4 3.1 4.5l-2.1 6.2 6.5-2.2c1.4.9 3 1.4 4.7 1.4h.1c4.5 0 8.1-3.6 8.1-8.1 0-2.3-1-4.4-2.6-5.9zM12.7 20.1c-1.5 0-3-.5-4.2-1.5l-.2-.1-4.4 1.5 1.5-4.3-.2-.2c-1-1.3-1.6-2.9-1.6-4.6 0-4 3.2-7.2 7.2-7.2h.1c1.8 0 3.5.7 4.8 1.9l-1.8 1.8c-.8-.7-1.8-1.1-2.9-1.1h-.1c-2.8 0-5.1 2.3-5.1 5.1 0 1.5.7 2.9 1.7 3.8l.2.2-1.1 3.1 3.1-1.1.2.1c1 .6 2.1.9 3.3.9h.1c2.8 0 5.1-2.3 5.1-5.1 0-1.4-.6-2.7-1.5-3.6l1.8-1.8c1.6 1.5 2.6 3.6 2.6 5.9 0 4.5-3.6 8.1-8.1 8.1z"/></svg>
     ),
     WhatsApp: (props) => (
-      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12.04,2C6.58,2,2.13,6.45,2.13,11.91c0,1.79.46,3.48,1.34,4.94L2,22l5.3-1.38c1.41.8,2.96,1.28,4.59,1.28h.11c5.46,0,9.91-4.45,9.91-9.91S17.61,2,12.04,2Zm4.2,12.09c-.2-.1-1.18-.58-1.36-.65-.18-.07-.31-.1-.45.1s-.51.65-.63.78c-.12.13-.24.15-.45.05s-.83-.31-1.58-1c-1.18-1-1.65-1.5-1.9-1.84s-.04-.15.06-.24c.09-.09.2-.24.3-.36s.13-.2.2-.33.07-.26,0-.35c-.07-.1-.45-1.08-.61-1.48-.16-.4-.33-.34-.45-.34H8.48c-.12,0-.26,0-.45.2a.93.93,0,0,0-.68.65,2.83,2.83,0,0,0,.9,2.62c.12.13,1.88,2.88,4.56,4,2.68,1.12,2.68.75,3.18.7s1.18-.48,1.34-.95c.16-.48.16-.88.11-.95-.05-.07-.18-.11-.38-.21Z"/></svg>
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2A10.06 10.06 0 0 0 2 12.06a10.06 10.06 0 0 0 10.04 10.04h.1a10.06 10.06 0 0 0 10.04-10.04A10.06 10.06 0 0 0 12.04 2zM12 20.5a8.44 8.44 0 0 1-4.4-1.3L3.5 20.3l1.2-4a8.3 8.3 0 0 1-1.4-4.8A8.5 8.5 0 0 1 12 3.6a8.5 8.5 0 0 1 8.5 8.5 8.5 8.5 0 0 1-8.5 8.4zM16.3 14.4c-.2-.1-1.2-.6-1.4-.7s-.3-.1-.4.1-.5.7-.6.8-.2.2-.4.1-1.1-.4-2.1-1.3c-.8-.7-1.3-1.6-1.5-1.8s0-.3.1-.4.2-.2.4-.4c.1-.1.2-.2.2-.4s0-.2-.1-.4c-.1-.2-1.1-2.6-1.5-3.5s-.6-.8-.8-.8h-.4a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 3.9 3.9 0 0 0 .9 2.6c.1.1 1.8 2.8 4.4 3.9.7.3 1.3.5 1.7.6.7.2 1.3.2 1.8.1.5-.1 1.2-.5 1.4-1 .2-.5.2-1 .1-1s-.2-.2-.4-.3z"/></svg>
     ),
     Telegram: (props) => (
-      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm5.13,4.92-2.35,11a.75.75,0,0,1-1.39.24L11,15.42,9.33,17.1a.75.75,0,0,1-1.06-1.06L10,14.28l-2.43-2.43a.75.75,0,0,1,.6-1.25l11-2.35a.75.75,0,0,1,.91.91Z"/></svg>
+      <svg {...props} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm5.2-4.5L15 19.3a.8.8 0 0 1-1.4.2l-3-2.8-1.5 1.4a.8.8 0 0 1-1.1-1.1l1.8-1.8-3.8-2.9a.8.8 0 0 1 .5-1.4L16.3 5a.8.8 0 0 1 1 .9z"/></svg>
     ),
 };
 
@@ -46,10 +46,20 @@ const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
 export function ContactForm({ form, onFileSelect }: ContactFormProps) {
   const entityType = form.watch('entityType');
   const contactId = form.getValues('id'); // Assuming 'id' is part of the form values when editing
+  const addressValues = useWatch({ control: form.control, name: 'address' });
 
   const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({ control: form.control, name: "emails" });
   const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({ control: form.control, name: "phones" });
   const { fields: socialFields, append: appendSocial, remove: removeSocial } = useFieldArray({ control: form.control, name: "socials" });
+
+  const fullAddress = [
+    addressValues?.street,
+    addressValues?.number,
+    addressValues?.city,
+    addressValues?.postalCode
+  ].filter(Boolean).join(' ');
+
+  const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
 
   return (
     <Accordion type="multiple" defaultValue={['personal', 'identity', 'contact', 'address', 'job', 'socials', 'notes']} className="w-full">
@@ -332,12 +342,12 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
        <AccordionItem value="address">
         <AccordionTrigger>
           <div className="flex items-center gap-2 text-primary">
-            <MapPin className="h-5 w-5" />
+            <Map className="h-5 w-5" />
             <span>Στοιχεία Διεύθυνσης</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="address.street" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Οδός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
               <FormField control={form.control} name="address.number" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Αριθμός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
               <FormField control={form.control} name="address.region" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Περιοχή</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
@@ -345,6 +355,16 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
               <FormField control={form.control} name="address.city" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Πόλη</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
               <FormField control={form.control} name="address.municipality" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Δήμος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
           </div>
+          {googleMapsUrl && (
+            <div className="flex justify-end pt-2">
+              <Button asChild variant="outline" size="sm" type="button">
+                  <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                      <Map className="mr-2 h-4 w-4" />
+                      Προβολή στον Χάρτη
+                  </a>
+              </Button>
+            </div>
+          )}
         </AccordionContent>
       </AccordionItem>
 

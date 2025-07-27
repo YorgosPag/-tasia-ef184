@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github } from 'lucide-react';
+import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github, Map } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import type { Contact } from '@/shared/hooks/use-contacts';
@@ -102,6 +102,8 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
     contact.address?.city,
     contact.address?.postalCode
   ].filter(Boolean).join(' ');
+
+  const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
   
   const hasPersonalInfo = contact.firstName || contact.lastName || contact.fatherName || contact.motherName || contact.birthDate || contact.birthPlace;
   const hasIdentityInfo = contact.identity?.type || contact.identity?.number || contact.identity?.issueDate || contact.identity?.issuingAuthority || contact.afm || contact.doy;
@@ -180,8 +182,18 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
             })}
         </DetailSection>
 
-        <DetailSection title="Διεύθυνση" icon={MapPin} alwaysShow>
-            {fullAddress ? <p className="text-sm text-muted-foreground">{fullAddress}</p> : null}
+        <DetailSection title="Διεύθυνση" icon={Map} alwaysShow>
+            <div className="flex justify-between items-center w-full">
+                <p className="text-sm text-muted-foreground">{fullAddress}</p>
+                {googleMapsUrl && (
+                    <Button asChild variant="outline" size="sm">
+                        <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                            <Map className="mr-2 h-4 w-4" />
+                            Χάρτης
+                        </a>
+                    </Button>
+                )}
+            </div>
         </DetailSection>
 
         {contact.entityType !== 'Δημ. Υπηρεσία' && (
