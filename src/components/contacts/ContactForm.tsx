@@ -239,12 +239,10 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                 </div>
                 <div className="w-full space-y-2">
                     {emailFields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 border rounded-md bg-muted/30">
+                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 p-3 border rounded-md bg-muted/30 items-center">
                         <FormField control={form.control} name={`emails.${index}.type`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                         <FormField control={form.control} name={`emails.${index}.value`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Email</FormLabel><FormControl><Input {...field} type="email" /></FormControl><FormMessage /></FormItem>)} />
-                         <div className="md:col-span-2 flex justify-end">
-                            <Button type="button" variant="ghost" size="icon" className="self-end" onClick={() => removeEmail(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
-                        </div>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeEmail(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                     </div>
                     ))}
                 </div>
@@ -260,9 +258,10 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                 <div className="w-full space-y-2">
                     {phoneFields.map((field, index) => (
                     <div key={field.id} className="flex flex-col gap-3 p-3 border rounded-md bg-muted/30">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-center">
                             <FormField control={form.control} name={`phones.${index}.type`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={form.control} name={`phones.${index}.value`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Αριθμός</FormLabel><FormControl><Input {...field} type="tel" /></FormControl><FormMessage /></FormItem>)} />
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                         </div>
                         <FormField
                         control={form.control}
@@ -305,9 +304,6 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                             </FormItem>
                         )}
                         />
-                         <div className="flex justify-end">
-                            <Button type="button" variant="ghost" size="icon" className="self-end" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
-                        </div>
                     </div>
                     ))}
                 </div>
