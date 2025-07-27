@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin } from 'lucide-react';
+import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import type { Contact } from '@/shared/hooks/use-contacts';
@@ -15,23 +15,43 @@ interface ContactDetailViewProps {
   contact: Contact | null;
 }
 
-const DetailSection = ({ title, children, icon }: { title: string; children: React.ReactNode; icon: React.ElementType }) => (
-  <div className="border-t pt-4 mt-4">
-    <h3 className="flex items-center text-lg font-semibold mb-3">
-      {React.createElement(icon, { className: 'mr-2 h-5 w-5 text-primary' })}
-      {title}
-    </h3>
-    <div className="space-y-3 pl-7">{children}</div>
-  </div>
-);
+const socialIcons: { [key: string]: React.ElementType } = {
+    'Website': Globe,
+    'LinkedIn': Linkedin,
+    'Facebook': Facebook,
+    'Instagram': Instagram,
+    'GitHub': Github,
+    'TikTok': Info, // Placeholder, no TikTok icon in lucide-react
+    'default': LinkIcon,
+};
+
+const DetailSection = ({ title, children, icon }: { title: string; children: React.ReactNode; icon: React.ElementType }) => {
+    // Don't render the section if there are no children, unless it's a special case like notes
+    if (!React.Children.count(children) || (Array.isArray(children) && children.filter(c => c).length === 0)) {
+        if (title === 'Σημειώσεις' && (!children || (typeof children === 'object' && 'props' in children && children.props.children === '-'))) {
+             return null;
+        }
+        if (title !== 'Σημειώσεις') return null;
+    }
+    
+    return (
+        <div className="border-t pt-4 mt-4">
+            <h3 className="flex items-center text-lg font-semibold mb-3">
+            {React.createElement(icon, { className: 'mr-2 h-5 w-5 text-primary' })}
+            {title}
+            </h3>
+            <div className="space-y-3 pl-7">{children}</div>
+        </div>
+    )
+};
 
 const DetailRow = ({ label, value, href, type }: { label: string; value?: string | null; href?: string, type?: string }) => {
-  const displayValue = value || '-';
+  if (!value) return null; // Don't render empty rows
 
   const content = href && value ? (
     <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{value}</a>
   ) : (
-    <span className={!value ? 'text-muted-foreground' : ''}>{displayValue}</span>
+    <span>{value}</span>
   );
 
   return (
@@ -135,29 +155,26 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
 
         {/* Contact Info */}
         <DetailSection title="Στοιχεία Επικοινωνίας" icon={Phone}>
-            {(contact.emails && contact.emails.length > 0) 
-              ? contact.emails.map((email, i) => <DetailRow key={i} label="Email" value={email.value} href={`mailto:${email.value}`} type={email.type}/>)
-              : <DetailRow label="Email" value={null} />
-            }
-            {(contact.phones && contact.phones.length > 0)
-              ? contact.phones.map((phone, i) => <DetailRow key={i} label="Τηλέφωνο" value={phone.value} href={`tel:${phone.value}`} type={`${phone.type} ${phone.indicators?.join(', ')}`.trim()} />)
-              : <DetailRow label="Τηλέφωνο" value={null} />
-            }
+            {contact.emails?.map((email, i) => <DetailRow key={i} label="Email" value={email.value} href={`mailto:${email.value}`} type={email.type}/>)}
+            {contact.phones?.map((phone, i) => <DetailRow key={i} label="Τηλέφωνο" value={phone.value} href={`tel:${phone.value}`} type={`${phone.type} ${phone.indicators?.join(', ')}`.trim()} />)}
         </DetailSection>
         
         {/* Socials & Websites */}
         <DetailSection title="Κοινωνικά Δίκτυα & Websites" icon={LinkIcon}>
-            {(contact.socials && contact.socials.length > 0)
-              ? contact.socials.map((social, i) => <DetailRow key={i} label={social.type} value={social.url} href={social.url} />)
-              : <DetailRow label="Website" value={null} />
-            }
+            {contact.socials?.map((social, i) => {
+                const Icon = socialIcons[social.type] || socialIcons.default;
+                return (
+                    <div key={i} className="flex items-center text-sm">
+                        <Icon className="h-4 w-4 mr-2 text-muted-foreground"/>
+                        <a href={social.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex-1 truncate">{social.url}</a>
+                    </div>
+                );
+            })}
         </DetailSection>
 
         {/* Address */}
         <DetailSection title="Διεύθυνση" icon={MapPin}>
-            <p className="text-sm text-muted-foreground">
-                {fullAddress || '-'}
-            </p>
+            {fullAddress ? <p className="text-sm text-muted-foreground">{fullAddress}</p> : <p className="text-sm text-muted-foreground">-</p>}
         </DetailSection>
 
         {/* Job Info */}

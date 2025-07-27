@@ -20,7 +20,7 @@ export const personalInfoSchema = z.object({
 export const identityTaxSchema = z.object({
   // ID & Tax Info
   identity: z.object({
-    type: z.enum(['Ταυτότητα', 'Διαβατήριο']).optional(),
+    type: z.string().optional(),
     number: z.string().optional(),
     issueDate: z.date().optional().nullable(),
     issuingAuthority: z.string().optional(),
@@ -31,11 +31,11 @@ export const identityTaxSchema = z.object({
 
 export const contactInfoSchema = z.object({
     emails: z.array(z.object({
-        type: z.enum(['Προσωπικό', 'Επαγγελματικό']).default('Προσωπικό'),
+        type: z.string().default('Προσωπικό'),
         value: z.string().email({ message: 'Μη έγκυρο email.' }).or(z.literal('')),
     })).optional(),
     phones: z.array(z.object({
-        type: z.enum(['Κινητό', 'Σταθερό', 'Επαγγελματικό']).default('Κινητό'),
+        type: z.string().default('Κινητό'),
         value: z.string().min(1, { message: 'Ο αριθμός είναι υποχρεωτικός.' }),
         indicators: z.array(z.enum(['Viber', 'WhatsApp', 'Telegram'])).optional(),
     })).optional(),
@@ -44,7 +44,7 @@ export const contactInfoSchema = z.object({
 
 export const socialsSchema = z.object({
     socials: z.array(z.object({
-        type: z.enum(['Website', 'LinkedIn', 'Facebook', 'Instagram', 'TikTok']).default('Website'),
+        type: z.string().default('Website'),
         url: z.string().url({ message: 'Μη έγκυρο URL.' }).or(z.literal('')),
     })).optional(),
 });
