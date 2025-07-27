@@ -252,9 +252,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                 </div>
                 <div className="w-full space-y-2">
                     {emailFields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 p-3 border rounded-md bg-muted/30 items-center">
+                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4 p-3 border rounded-md bg-muted/30 items-center">
                         <FormField control={form.control} name={`emails.${index}.type`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`emails.${index}.value`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Email</FormLabel><FormControl><Input {...field} type="email" /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name={`emails.${index}.value`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Email</FormLabel><FormControl><Input {...field} type="email" /></FormControl></FormItem>)} />
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeEmail(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                     </div>
                     ))}
@@ -271,12 +271,11 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                 <div className="w-full space-y-2">
                     {phoneFields.map((field, index) => (
                     <div key={field.id} className="flex flex-col gap-3 p-3 border rounded-md bg-muted/30">
-                        <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4 items-center">
-                            <FormField control={form.control} name={`phones.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            
-                            <FormItem>
-                                <FormLabel>Αριθμός</FormLabel>
-                                <div className="flex gap-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                            <FormField control={form.control} name={`phones.${index}.type`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <div className="flex items-center gap-4">
+                                <FormLabel className="w-20 text-right">Αριθμός</FormLabel>
+                                <div className="flex-1 flex items-center gap-2">
                                      <FormField control={form.control} name={`phones.${index}.countryCode`} render={({ field }) => (
                                          <Popover>
                                             <PopoverTrigger asChild>
@@ -303,11 +302,10 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                                         </Popover>
                                      )}/>
                                      <FormField control={form.control} name={`phones.${index}.value`} render={({ field }) => (<FormControl><Input {...field} type="tel" /></FormControl>)} />
+                                     <Button type="button" variant="ghost" size="icon" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                                 </div>
-                                 <FormMessage>{form.formState.errors.phones?.[index]?.value?.message}</FormMessage>
-                            </FormItem>
-                            
-                            <Button type="button" variant="ghost" size="icon" onClick={() => removePhone(index)} className="self-end"><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                <FormMessage>{form.formState.errors.phones?.[index]?.value?.message}</FormMessage>
+                            </div>
                         </div>
                         <FormField
                         control={form.control}
@@ -407,10 +405,14 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                                     />
                                     <FormField control={form.control} name={`socials.${index}.label`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Ετικέτα</FormLabel><div className="flex-1"><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Επαγγελματικό">Επαγγελματικό</SelectItem><SelectItem value="Προσωπικό">Προσωπικό</SelectItem></SelectContent></Select></div><FormMessage /></FormItem>)} />
                                </div>
-                                <FormField control={form.control} name={`socials.${index}.url`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <div className="flex justify-end">
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeSocial(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                               <div className="flex items-center gap-4">
+                                    <FormLabel className="w-20 text-right">URL</FormLabel>
+                                    <div className="flex-1 flex items-center gap-2">
+                                        <FormField control={form.control} name={`socials.${index}.url`} render={({ field }) => (<FormControl><Input {...field} /></FormControl>)} />
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeSocial(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                    </div>
                                 </div>
+                                <FormMessage className="pl-24">{form.formState.errors.socials?.[index]?.url?.message}</FormMessage>
                             </div>
                         )
                     })}
