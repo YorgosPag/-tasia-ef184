@@ -90,7 +90,7 @@ export function ImageUploader({
 
   const getLabel = () => {
     if (!entityType) return 'Επιλέξτε Τύπο Οντότητας';
-    return entityType === 'Φυσικό Πρόσωπο' ? 'Ανέβασε Φωτογραφία' : 'Ανέβασε Λογότυπο';
+    return entityType === 'Φυσικό Πρόσωπο' ? 'Φωτογραφία' : 'Λογότυπο';
   };
 
   if (preview) {

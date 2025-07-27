@@ -39,16 +39,6 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
   const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
   
-  const renderField = (name: any, label: string, children: React.ReactNode) => (
-    <div className="flex flex-col md:flex-row md:items-start md:gap-4 space-y-2 md:space-y-0">
-        <FormLabel className="md:w-40 md:text-right md:pt-2.5 shrink-0">{label}</FormLabel>
-        <div className="w-full">
-            {children}
-        </div>
-    </div>
-  );
-
-
   return (
     <Accordion type="multiple" defaultValue={['personal', 'identity', 'contact', 'address', 'job', 'socials', 'notes']} className="w-full">
       {/* 1. Βασικά Στοιχεία */}
@@ -122,30 +112,32 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
            {entityType && (
             <div className="space-y-4 border-t pt-4">
-               {renderField('name', 'Όνομα/Επωνυμία',
-                    <FormField control={form.control} name="name" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} placeholder="π.χ. Γιώργος Παπαδόπουλος ή DevConstruct AE" /></FormControl><FormMessage /></FormItem>)} />
-               )}
+                 <FormField control={form.control} name="name" render={({ field }) => (
+                    <FormItem className="w-full">
+                        <FormLabel>{entityType === 'Φυσικό Πρόσωπο' ? 'Ονοματεπώνυμο (πλήρες)' : 'Επωνυμία'}</FormLabel>
+                        <FormControl><Input {...field} placeholder={entityType === 'Φυσικό Πρόσωπο' ? "π.χ. Γιώργος Παπαδόπουλος" : "π.χ. DevConstruct AE"} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
                 
-                {renderField('photo', entityType === 'Φυσικό Πρόσωπο' ? 'Φωτογραφία' : 'Λογότυπο', 
-                    <ImageUploader 
-                        entityType={entityType}
-                        entityId={contactId}
-                        initialImageUrl={form.getValues('photoUrl')}
-                        onFileSelect={onFileSelect}
-                    />
-                )}
+                <ImageUploader 
+                    entityType={entityType}
+                    entityId={contactId}
+                    initialImageUrl={form.getValues('photoUrl')}
+                    onFileSelect={onFileSelect}
+                />
             </div>
           )}
 
           {/* --- Fields only for Individuals --- */}
           {entityType === 'Φυσικό Πρόσωπο' && (
             <div className="space-y-4 border-t pt-4">
-                {renderField('firstName', 'Όνομα', <FormField control={form.control} name="firstName" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-                {renderField('lastName', 'Επώνυμο', <FormField control={form.control} name="lastName" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-                {renderField('fatherName', 'Πατρώνυμο', <FormField control={form.control} name="fatherName" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-                {renderField('motherName', 'Μητρώνυμο', <FormField control={form.control} name="motherName" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-                {renderField('birthDate', 'Ημ/νία Γέννησης', <FormField control={form.control} name="birthDate" render={({ field }) => (<FormItem className="w-full"><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} captionLayout="dropdown-buttons" fromYear={1930} toYear={new Date().getFullYear()} /></PopoverContent></Popover><FormMessage /></FormItem>)} />)}
-                {renderField('birthPlace', 'Τόπος Γέννησης', <FormField control={form.control} name="birthPlace" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
+                <FormField control={form.control} name="firstName" render={({ field }) => (<FormItem className="w-full"><FormLabel>Όνομα</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="lastName" render={({ field }) => (<FormItem className="w-full"><FormLabel>Επώνυμο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="fatherName" render={({ field }) => (<FormItem className="w-full"><FormLabel>Πατρώνυμο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="motherName" render={({ field }) => (<FormItem className="w-full"><FormLabel>Μητρώνυμο</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="birthDate" render={({ field }) => (<FormItem className="w-full"><FormLabel>Ημ/νία Γέννησης</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} captionLayout="dropdown-buttons" fromYear={1930} toYear={new Date().getFullYear()} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="birthPlace" render={({ field }) => (<FormItem className="w-full"><FormLabel>Τόπος Γέννησης</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
             </div>
           )}
         </AccordionContent>
@@ -157,14 +149,14 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
         <AccordionContent className="space-y-4 p-1">
              {entityType === 'Φυσικό Πρόσωπο' && (
                 <>
-                    {renderField('identity.type', 'Τύπος', <FormField control={form.control} name="identity.type" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-                    {renderField('identity.number', 'Αριθμός', <FormField control={form.control} name="identity.number" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-                    {renderField('identity.issueDate', 'Ημ/νία Έκδοσης', <FormField control={form.control} name="identity.issueDate" render={({ field }) => (<FormItem className="w-full"><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />)}
-                    {renderField('identity.issuingAuthority', 'Εκδούσα Αρχή', <FormField control={form.control} name="identity.issuingAuthority" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
+                    <FormField control={form.control} name="identity.type" render={({ field }) => (<FormItem className="w-full"><FormLabel>Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="identity.number" render={({ field }) => (<FormItem className="w-full"><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="identity.issueDate" render={({ field }) => (<FormItem className="w-full"><FormLabel>Ημ/νία Έκδοσης</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="identity.issuingAuthority" render={({ field }) => (<FormItem className="w-full"><FormLabel>Εκδούσα Αρχή</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </>
               )}
-             {renderField('afm', 'ΑΦΜ', <FormField control={form.control} name="afm" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-             {renderField('doy', 'ΔΟΥ', <FormField control={form.control} name="doy" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
+             <FormField control={form.control} name="afm" render={({ field }) => (<FormItem className="w-full"><FormLabel>ΑΦΜ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+             <FormField control={form.control} name="doy" render={({ field }) => (<FormItem className="w-full"><FormLabel>ΔΟΥ</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
         </AccordionContent>
       </AccordionItem>
       
@@ -276,7 +268,7 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
       {/* 7. Λοιπά */}
       <AccordionItem value="notes">
-        <AccordionTrigger>Λοιπά</AccordionTrigger>
+        <AccordionTrigger>Σημειώσεις</AccordionTrigger>
         <AccordionContent className="p-1 pt-4">
             <FormField
               control={form.control}
