@@ -45,8 +45,8 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       <AccordionItem value="personal">
         <AccordionTrigger>
           <div className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Βασικά Στοιχεία
+            <User className="h-5 w-5 text-primary" />
+            <span className="text-primary">Βασικά Στοιχεία</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
@@ -58,7 +58,16 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                   <FormLabel className="sm:w-40 sm:text-right sm:pt-2 shrink-0">Τύπος Οντότητας</FormLabel>
                    <FormControl>
                     <RadioGroup
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                         if (value === 'Φυσικό Πρόσωπο') {
+                            const firstName = form.getValues('firstName') || '';
+                            const lastName = form.getValues('lastName') || '';
+                            form.setValue('name', `${firstName} ${lastName}`.trim());
+                        } else {
+                            form.setValue('name', '');
+                        }
+                      }}
                       defaultValue={field.value}
                       value={field.value}
                       className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1"
@@ -163,8 +172,8 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       <AccordionItem value="identity">
         <AccordionTrigger>
           <div className="flex items-center gap-2">
-            <Info className="h-5 w-5" />
-            Στοιχεία Ταυτότητας &amp; ΑΦΜ
+            <Info className="h-5 w-5 text-primary" />
+            <span className="text-primary">Στοιχεία Ταυτότητας &amp; ΑΦΜ</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
@@ -187,8 +196,8 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       <AccordionItem value="contact">
         <AccordionTrigger>
            <div className="flex items-center gap-2">
-            <Phone className="h-5 w-5" />
-            Στοιχεία Επικοινωνίας
+            <Phone className="h-5 w-5 text-primary" />
+            <span className="text-primary">Στοιχεία Επικοινωνίας</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-6 p-1 pt-4">
@@ -239,8 +248,8 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       <AccordionItem value="socials">
         <AccordionTrigger>
           <div className="flex items-center gap-2">
-            <LinkIcon className="h-5 w-5" />
-            Κοινωνικά Δίκτυα &amp; Websites
+            <LinkIcon className="h-5 w-5 text-primary" />
+            <span className="text-primary">Κοινωνικά Δίκτυα &amp; Websites</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
@@ -271,8 +280,8 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
        <AccordionItem value="address">
         <AccordionTrigger>
           <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Στοιχεία Διεύθυνσης
+            <MapPin className="h-5 w-5 text-primary" />
+            <span className="text-primary">Στοιχεία Διεύθυνσης</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
@@ -292,8 +301,8 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
         <AccordionItem value="job">
             <AccordionTrigger>
               <div className="flex items-center gap-2">
-                <Briefcase className="h-5 w-5" />
-                Επαγγελματικά Στοιχεία
+                <Briefcase className="h-5 w-5 text-primary" />
+                <span className="text-primary">Επαγγελματικά Στοιχεία</span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-4 p-1">
@@ -311,8 +320,8 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       <AccordionItem value="notes">
         <AccordionTrigger>
           <div className="flex items-center gap-2">
-            <Info className="h-5 w-5" />
-            Σημειώσεις
+            <Info className="h-5 w-5 text-primary" />
+            <span className="text-primary">Σημειώσεις</span>
           </div>
         </AccordionTrigger>
         <AccordionContent className="p-1 pt-4">
