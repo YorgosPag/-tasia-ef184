@@ -27,6 +27,10 @@ interface DataTableProps<TData, TValue> {
   prevPage: () => void;
   canGoNext: boolean;
   canGoPrev: boolean;
+  page: number;
+  totalCount: number | null;
+  pageSize: number;
+  activeFilters: Record<string, string>;
 }
 
 export function DataTable<TData, TValue>({
@@ -36,6 +40,10 @@ export function DataTable<TData, TValue>({
   prevPage,
   canGoNext,
   canGoPrev,
+  page,
+  totalCount,
+  pageSize,
+  activeFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const table = useReactTable({
@@ -47,9 +55,29 @@ export function DataTable<TData, TValue>({
     state: {
       sorting,
     },
-    manualPagination: true, 
-    manualSorting: true, 
+    manualPagination: true,
+    manualSorting: true,
   });
+
+  const NoResultsMessage = () => {
+    const totalPages = totalCount !== null ? Math.ceil(totalCount / pageSize) : 0;
+    const activeFilterEntries = Object.entries(activeFilters).filter(([, value]) => value);
+
+    if (activeFilterEntries.length > 0) {
+      const [firstFilterKey, firstFilterValue] = activeFilterEntries[0];
+       const message = `Δεν βρέθηκαν αποτελέσματα στο φίλτρο "${firstFilterKey}" για την τιμή "${firstFilterValue}" σε αυτή τη σελίδα (${page}/${totalPages}).`;
+       if (canGoNext) {
+           return `${message} Παρακαλώ, πατήστε "Επόμενη" για να ελέγξετε τις υπόλοιπες σελίδες.`
+       }
+       return message;
+    }
+
+    if (totalCount === 0) {
+        return "Δεν υπάρχουν εγγραφές σε αυτή τη λίστα."
+    }
+
+    return 'Δεν βρέθηκαν αποτελέσματα.';
+  };
 
   return (
     <div className="space-y-4">
@@ -96,30 +124,35 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Δεν βρέθηκαν αποτελέσματα.
+                  <NoResultsMessage />
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-       <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={prevPage}
-          disabled={!canGoPrev}
-        >
-          Προηγούμενη
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={nextPage}
-          disabled={!canGoNext}
-        >
-          Επόμενη
-        </Button>
+      <div className="flex items-center justify-between py-4">
+         <div className="text-sm text-muted-foreground">
+            Σελίδα {page} από {totalCount !== null ? Math.ceil(totalCount / pageSize) : '-'}
+        </div>
+        <div className="flex items-center space-x-2">
+            <Button
+            variant="outline"
+            size="sm"
+            onClick={prevPage}
+            disabled={!canGoPrev}
+            >
+            Προηγούμενη
+            </Button>
+            <Button
+            variant="outline"
+            size="sm"
+            onClick={nextPage}
+            disabled={!canGoNext}
+            >
+            Επόμενη
+            </Button>
+        </div>
       </div>
     </div>
   );

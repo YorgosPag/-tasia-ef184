@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Loader2, Search, UploadCloud, ArrowUpDown } from 'lucide-react';
-import { useComplexEntities, type ComplexEntity } from '@/hooks/useComplexEntities';
+import { useComplexEntities, type ComplexEntity, PAGE_SIZE } from '@/hooks/useComplexEntities';
 import { DataTable } from './DataTable';
 import { processImportFile } from '@/lib/importer';
 import { useToast } from '@/shared/hooks/use-toast';
@@ -37,7 +37,8 @@ export function ComplexEntitiesTab() {
     prevPage,
     canGoNext,
     canGoPrev,
-    totalCount
+    totalCount,
+    page,
   } = useComplexEntities(selectedListType || undefined, columnFilters);
 
   const [isImporting, setIsImporting] = useState(false);
@@ -50,26 +51,22 @@ export function ComplexEntitiesTab() {
     }
   }, [isLoadingListTypes, listTypes, selectedListType]);
 
-  useEffect(() => {
-    // This effect runs only when entities *first* load for a list type,
-    // or when the list type changes and brings new data.
-    // It avoids resetting columns when a filter returns an empty array.
-    if (entities.length > 0) {
-        const firstItemKeys = Object.keys(entities[0]);
-        const columnsToShow = firstItemKeys.filter(key => !['id', 'type', 'createdAt'].includes(key));
-        
-        const generatedColumns: ColumnDef<ComplexEntity>[] = columnsToShow.map(key => ({
-        accessorKey: key,
-        header: ({ column }) => (
-            <div className="flex flex-col gap-2">
-                <Button
+  const generateColumns = useCallback((keys: string[]) => {
+    const columnsToShow = keys.filter(key => !['id', 'type', 'createdAt', 'uniqueKey'].includes(key));
+    
+    return columnsToShow.map(key => ({
+      accessorKey: key,
+      header: ({ column }) => (
+          <div className="flex flex-col gap-2">
+              <Button
                 variant="ghost"
                 onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-                >
-                {key}
-                <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-                <Input
+                className="justify-start p-0 hover:bg-transparent"
+              >
+              {key}
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+              </Button>
+              <Input
                 placeholder={`Αναζήτηση...`}
                 value={columnFilters[key] || ''}
                 onChange={(event) =>
@@ -77,29 +74,32 @@ export function ComplexEntitiesTab() {
                 }
                 className="h-8"
                 onClick={(e) => e.stopPropagation()}
-                />
-            </div>
-        ),
-        cell: ({ row }) => {
-            const value = row.getValue(key);
-            if (value && typeof value === 'object' && 'toDate' in value) {
-                return (value as any).toDate().toLocaleDateString();
-            }
-            return value as React.ReactNode;
-        }
-        }));
-
-        setColumnDefs(generatedColumns);
-    } else if (!isLoading && entities.length === 0 && columnDefs.length === 0) {
-        // Handle case where a list is selected but is completely empty initially
-        setColumnDefs([
-            { accessorKey: 'name', header: 'Όνομα' },
-            { accessorKey: 'address', header: 'Διεύθυνση' },
-            { accessorKey: 'region', header: 'Περιοχή' },
-        ]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entities, isLoading]);
+              />
+          </div>
+      ),
+      cell: ({ row }) => {
+          const value = row.getValue(key);
+          if (value && typeof value === 'object' && 'toDate' in value) {
+              return (value as any).toDate().toLocaleDateString();
+          }
+          return value as React.ReactNode;
+      }
+    }));
+  }, [columnFilters]);
+  
+  // Effect to generate columns.
+  // It runs only when the list type changes and brings new data for the first time
+  // or when data is loaded for the first time.
+  useEffect(() => {
+      if (entities.length > 0 && columnDefs.length === 0) {
+          const firstItemKeys = Object.keys(entities[0]);
+          setColumnDefs(generateColumns(firstItemKeys));
+      } else if (columnDefs.length === 0 && !isLoading) {
+          // Fallback if the initial list is empty
+          setColumnDefs(generateColumns(['name', 'address', 'region']));
+      }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entities, isLoading, generateColumns]);
   
   // Reset columns and filters when list type changes
   useEffect(() => {
@@ -252,6 +252,10 @@ export function ComplexEntitiesTab() {
               prevPage={prevPage}
               canGoNext={canGoNext}
               canGoPrev={canGoPrev}
+              page={page}
+              totalCount={totalCount}
+              pageSize={PAGE_SIZE}
+              activeFilters={columnFilters}
             />
           )}
         </CardContent>

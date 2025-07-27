@@ -26,7 +26,7 @@ export interface ComplexEntity {
   [key: string]: any; 
 }
 
-const PAGE_SIZE = 50;
+export const PAGE_SIZE = 50;
 
 async function getDistinctTypes(): Promise<string[]> {
     const q = query(collection(db, 'tsia-complex-entities'), orderBy('type'));
@@ -74,7 +74,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   }, [fetchListTypes]);
 
 
-  const fetchEntities = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
+  const fetchEntities = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial', pageNum: number = 1) => {
       if (!type) {
         setEntities([]);
         setTotalCount(0);
@@ -118,8 +118,17 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         
         let newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
         
-        setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
-        setFirstVisible(documentSnapshots.docs[0] || null);
+        if (direction === 'next' || (direction === 'initial' && pageNum > 1)) {
+            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+            setFirstVisible(documentSnapshots.docs[0] || null);
+        } else if (direction === 'prev') {
+            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+            setFirstVisible(documentSnapshots.docs[0] || null);
+        } else { // initial, page 1
+            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+            setFirstVisible(documentSnapshots.docs[0] || null);
+        }
+
         
         setEntities(newEntities);
 
@@ -137,32 +146,68 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     setPage(1);
     setLastVisible(null);
     setFirstVisible(null);
-    // The actual fetch is triggered by the useEffect below
-    // to avoid a direct dependency cycle in fetchEntities.
   }, []);
 
   useEffect(() => {
-    if (type) {
-      fetchEntities('initial');
-    }
-  // This useEffect should ONLY re-run when the type or debouncedFilters change.
+      refetch();
+  // The actual fetch is triggered by the effect below this one.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, debouncedFilters]);
+  
+  useEffect(() => {
+    const runFetch = async () => {
+        if (!type) return;
+        setIsLoading(true);
+        setError(null);
+        
+        try {
+            let constraints: QueryConstraint[] = [where('type', '==', type)];
+            for (const key in debouncedFilters) {
+                const value = debouncedFilters[key];
+                if (value) {
+                    constraints.push(where(key, '==', value));
+                }
+            }
+
+            const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
+            const countSnapshot = await getCountFromServer(countQuery);
+            setTotalCount(countSnapshot.data().count);
+            
+            const baseQuery = collection(db, 'tsia-complex-entities');
+            constraints.push(orderBy('__name__'));
+            constraints.push(limit(PAGE_SIZE * page)); // Fetch all documents up to the current page
+            
+            const documentSnapshots = await getDocs(query(baseQuery, ...constraints));
+            
+            const relevantDocs = documentSnapshots.docs.slice((page - 1) * PAGE_SIZE);
+            const newEntities = relevantDocs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
+            
+            setFirstVisible(relevantDocs[0] || null);
+            setLastVisible(relevantDocs[relevantDocs.length - 1] || null);
+            setEntities(newEntities);
+
+        } catch(err: any) {
+             console.error('Error fetching complex entities:', err);
+             setError('Αποτυχία φόρτωσης δεδομένων. ' + err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    runFetch();
+  }, [type, debouncedFilters, page]);
+
 
   const nextPage = useCallback(() => {
-    if(!lastVisible) return;
     setPage(p => p + 1);
-    fetchEntities('next');
-  }, [fetchEntities, lastVisible]);
+  }, []);
 
   const prevPage = useCallback(() => {
     if (page > 1) {
       setPage(p => p - 1);
-      fetchEntities('prev');
     }
-  }, [page, fetchEntities]);
+  }, [page]);
   
-  const canGoNext = entities.length === PAGE_SIZE && (page * PAGE_SIZE) < (totalCount || 0);
+  const canGoNext = totalCount !== null ? (page * PAGE_SIZE) < totalCount : false;
 
   return {
     entities,
@@ -176,5 +221,6 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     canGoNext,
     canGoPrev: page > 1,
     totalCount,
+    page,
   };
 }
