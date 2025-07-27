@@ -53,12 +53,18 @@ export async function processImportFile(file: File, listName: string): Promise<I
     const rowIndex = i + 2; // Excel rows are 1-based, +1 for header
 
     try {
-      const { ...rowData } = row;
+      // The importer will now accept any columns and create fields dynamically.
+      // The `name` field is expected for duplicate checking, but other columns are flexible.
+      if (!row.name) {
+          // For simplicity, we'll use 'name' as a loose unique identifier to avoid obvious duplicates.
+          // A more robust solution might involve a compound key or user-defined unique column.
+          // For now, we are skipping duplicate checks to allow flexible data structure.
+      }
       
       const newDocRef = doc(collectionRef);
       
       const dataToSave = {
-        ...rowData,
+        ...row,
         type: listName, // Use the user-provided list name as the entity type
         createdAt: serverTimestamp(),
       };
