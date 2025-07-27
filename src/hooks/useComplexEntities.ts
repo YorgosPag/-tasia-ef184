@@ -49,8 +49,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   const [isLoadingListTypes, setIsLoadingListTypes] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [pageDocs, setPageDocs] = useState<(QueryDocumentSnapshot<DocumentData> | null)[]>([]);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState<number | null>(null);
 
@@ -73,139 +72,84 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     fetchListTypes();
   }, [fetchListTypes]);
 
+  const fetchPage = useCallback(async (pageNumber: number, direction: 'next' | 'prev' | 'initial') => {
+    if (!type) {
+      setEntities([]);
+      setTotalCount(0);
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
 
-  const fetchEntities = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial', pageNum: number = 1) => {
-      if (!type) {
-        setEntities([]);
-        setTotalCount(0);
-        return;
-      }
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        let constraints: QueryConstraint[] = [where('type', '==', type)];
-
-        for (const key in debouncedFilters) {
-            const value = debouncedFilters[key];
-            if (value) {
-                 constraints.push(where(key, '==', value));
-            }
+    try {
+      let constraints: QueryConstraint[] = [where('type', '==', type)];
+      for (const key in debouncedFilters) {
+        const value = debouncedFilters[key];
+        if (value) {
+            constraints.push(where(key, '==', value));
         }
-        
-        const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints.filter(c => c.type !== 'orderBy'));
+      }
+
+      if (direction === 'initial') {
+        const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
         const countSnapshot = await getCountFromServer(countQuery);
         setTotalCount(countSnapshot.data().count);
-        
-        let finalQuery;
-        const baseQuery = collection(db, 'tsia-complex-entities');
-        
-        constraints.push(orderBy('__name__')); 
-        
-        if (direction === 'next' && lastVisible) {
-            constraints.push(startAfter(lastVisible));
-        } else if (direction === 'prev' && firstVisible) {
-            constraints.push(endBefore(firstVisible));
-            constraints.push(limitToLast(PAGE_SIZE));
-        } else {
-             constraints.push(limit(PAGE_SIZE));
-        }
-        
-
-        finalQuery = query(baseQuery, ...constraints);
-        
-        const documentSnapshots = await getDocs(finalQuery);
-        
-        let newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
-        
-        if (direction === 'next' || (direction === 'initial' && pageNum > 1)) {
-            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
-            setFirstVisible(documentSnapshots.docs[0] || null);
-        } else if (direction === 'prev') {
-            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
-            setFirstVisible(documentSnapshots.docs[0] || null);
-        } else { // initial, page 1
-            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
-            setFirstVisible(documentSnapshots.docs[0] || null);
-        }
-
-        
-        setEntities(newEntities);
-
-      } catch (err: any) {
-        console.error('Error fetching complex entities:', err);
-        setError('Αποτυχία φόρτωσης δεδομένων. Βεβαιωθείτε ότι το απαραίτητο ευρετήριο έχει δημιουργηθεί στο Firebase Console. ' + err.message);
-      } finally {
-        setIsLoading(false);
       }
-    },
-    [type, debouncedFilters, lastVisible, firstVisible]
-  );
-  
-  const refetch = useCallback(() => {
+
+      const baseQuery = collection(db, 'tsia-complex-entities');
+      constraints.push(orderBy('__name__'));
+
+      if (direction === 'next' && pageDocs[pageNumber - 1]) {
+        constraints.push(startAfter(pageDocs[pageNumber - 1]));
+      }
+      
+      constraints.push(limit(PAGE_SIZE));
+
+      const finalQuery = query(baseQuery, ...constraints);
+      const documentSnapshots = await getDocs(finalQuery);
+      
+      if (!documentSnapshots.empty) {
+        setEntities(documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity)));
+        setPageDocs(prev => {
+          const newDocs = [...prev];
+          newDocs[pageNumber] = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+          return newDocs;
+        });
+      } else {
+        setEntities([]);
+      }
+    } catch (err: any) {
+      console.error('Error fetching complex entities:', err);
+      setError('Αποτυχία φόρτωσης δεδομένων. ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [type, debouncedFilters, pageDocs]);
+
+
+  useEffect(() => {
     setPage(1);
-    setLastVisible(null);
-    setFirstVisible(null);
-  }, []);
-
-  useEffect(() => {
-      refetch();
-  // The actual fetch is triggered by the effect below this one.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setPageDocs([null]);
+    fetchPage(1, 'initial');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, debouncedFilters]);
-  
-  useEffect(() => {
-    const runFetch = async () => {
-        if (!type) return;
-        setIsLoading(true);
-        setError(null);
-        
-        try {
-            let constraints: QueryConstraint[] = [where('type', '==', type)];
-            for (const key in debouncedFilters) {
-                const value = debouncedFilters[key];
-                if (value) {
-                    constraints.push(where(key, '==', value));
-                }
-            }
-
-            const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
-            const countSnapshot = await getCountFromServer(countQuery);
-            setTotalCount(countSnapshot.data().count);
-            
-            const baseQuery = collection(db, 'tsia-complex-entities');
-            constraints.push(orderBy('__name__'));
-            constraints.push(limit(PAGE_SIZE * page)); // Fetch all documents up to the current page
-            
-            const documentSnapshots = await getDocs(query(baseQuery, ...constraints));
-            
-            const relevantDocs = documentSnapshots.docs.slice((page - 1) * PAGE_SIZE);
-            const newEntities = relevantDocs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
-            
-            setFirstVisible(relevantDocs[0] || null);
-            setLastVisible(relevantDocs[relevantDocs.length - 1] || null);
-            setEntities(newEntities);
-
-        } catch(err: any) {
-             console.error('Error fetching complex entities:', err);
-             setError('Αποτυχία φόρτωσης δεδομένων. ' + err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    runFetch();
-  }, [type, debouncedFilters, page]);
 
 
   const nextPage = useCallback(() => {
-    setPage(p => p + 1);
-  }, []);
+    const newPage = page + 1;
+    setPage(newPage);
+    fetchPage(newPage, 'next');
+  }, [page, fetchPage]);
 
+  // Previous page logic needs to be re-thought as Firestore doesn't have a direct 'prev' cursor.
+  // The simplest way is to re-fetch up to the previous page.
   const prevPage = useCallback(() => {
     if (page > 1) {
-      setPage(p => p - 1);
+      const newPage = page - 1;
+      setPage(newPage);
+      fetchPage(newPage, 'initial'); // Refetching up to the new page number
     }
-  }, [page]);
+  }, [page, fetchPage]);
   
   const canGoNext = totalCount !== null ? (page * PAGE_SIZE) < totalCount : false;
 
@@ -215,7 +159,11 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     error,
     listTypes,
     isLoadingListTypes,
-    refetch,
+    refetch: () => {
+        setPage(1);
+        setPageDocs([null]);
+        fetchPage(1, 'initial');
+    },
     nextPage,
     prevPage,
     canGoNext,
