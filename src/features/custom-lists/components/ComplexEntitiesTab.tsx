@@ -34,6 +34,10 @@ export function ComplexEntitiesTab() {
     listTypes,
     isLoadingListTypes,
     refetch,
+    nextPage,
+    prevPage,
+    canGoNext,
+    canGoPrev,
   } = useComplexEntities(selectedListType || undefined);
 
   const [isImporting, setIsImporting] = useState(false);
@@ -48,7 +52,11 @@ export function ComplexEntitiesTab() {
 
   const columns = useMemo(() => {
     if (entities.length === 0) {
-      return [];
+      // Provide default columns when there's no data to prevent errors
+      return [
+        { accessorKey: 'name', header: 'Name' },
+        { accessorKey: 'description', header: 'Description' },
+      ] as ColumnDef<ComplexEntity>[];
     }
     const keys = Object.keys(entities[0]).filter(key => key !== 'id' && key !== 'type' && key !== 'createdAt');
     
@@ -138,11 +146,6 @@ export function ComplexEntitiesTab() {
     }
   };
   
-  const currentEntities = useMemo(() => {
-    if (!selectedListType) return [];
-    return entities;
-  }, [entities, selectedListType]);
-  
   return (
     <div className="space-y-4">
       <Card>
@@ -220,7 +223,11 @@ export function ComplexEntitiesTab() {
           ) : (
             <DataTable
               columns={columns}
-              data={currentEntities}
+              data={entities}
+              onNextPage={nextPage}
+              onPrevPage={prevPage}
+              canGoNext={canGoNext}
+              canGoPrev={canGoPrev}
             />
           )}
         </CardContent>

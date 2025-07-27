@@ -14,7 +14,6 @@ import {
   where,
   endBefore,
   limitToLast,
-  collectionGroup,
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useDebounce } from 'use-debounce';
@@ -28,9 +27,7 @@ export interface ComplexEntity {
 const PAGE_SIZE = 50;
 
 async function getDistinctTypes(): Promise<string[]> {
-    // This query can be slow if you have millions of entities.
-    // For very large datasets, a separate collection of types would be more performant.
-    const q = query(collection(db, 'tsia-complex-entities'));
+    const q = query(collection(db, 'tsia-complex-entities'), orderBy('type'));
     const snapshot = await getDocs(q);
     const types = new Set<string>();
     snapshot.forEach(doc => {
@@ -53,6 +50,11 @@ export function useComplexEntities(type?: string) {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
+  const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+
   const fetchListTypes = useCallback(async () => {
     setIsLoadingListTypes(true);
     try {
@@ -60,7 +62,7 @@ export function useComplexEntities(type?: string) {
         setListTypes(types);
     } catch(err) {
         console.error("Failed to fetch list types", err);
-        setError("Αδυναμία φόρτωσης τύπων λίστας.");
+        setError("Αδυναμία φόρτωσης τύπων λίστας. Βεβαιωθείτε ότι το απαραίτητο ευρετήριο έχει δημιουργηθεί στο Firebase Console.");
     } finally {
         setIsLoadingListTypes(false);
     }
@@ -71,8 +73,7 @@ export function useComplexEntities(type?: string) {
   }, [fetchListTypes]);
 
 
-  const fetchEntities = useCallback(
-    async () => {
+  const fetchEntities = useCallback(async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
       if (!type) {
         setEntities([]);
         return;
@@ -80,25 +81,38 @@ export function useComplexEntities(type?: string) {
       setIsLoading(true);
       setError(null);
       try {
-        let constraints = [where('type', '==', type)];
+        let constraints = [where('type', '==', type), limit(PAGE_SIZE + 1)]; // Fetch one extra to check for next page
 
-        // This query does not support searching on fields other than 'name' currently.
-        // A more complex solution with a search index (e.g., Algolia) would be needed for that.
-        if (debouncedSearchQuery) {
-            constraints.push(orderBy('name')); // Search requires an order by on the searched field
-            const strFront = debouncedSearchQuery;
-            const strBack = debouncedSearchQuery.slice(0, -1) + String.fromCharCode(debouncedSearchQuery.charCodeAt(debouncedSearchQuery.length - 1) + 1);
-            
-            constraints.push(where('name', '>=', strFront));
-            constraints.push(where('name', '<', strBack));
+        if (direction === 'next' && lastVisible) {
+            constraints.push(startAfter(lastVisible));
+        } else if (direction === 'prev' && firstVisible) {
+            // Firestore doesn't have a simple previous page query, so we reverse the query
+            constraints = [where('type', '==', type), limitToLast(PAGE_SIZE), endBefore(firstVisible)];
+        } else {
+             // Initial fetch
         }
-        
-        const q = query(collection(db, 'tsia-complex-entities'), ...constraints, limit(PAGE_SIZE));
+
+        const q = query(collection(db, 'tsia-complex-entities'), ...constraints);
         
         const documentSnapshots = await getDocs(q);
+        
         const newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
-        setEntities(newEntities);
+        
+        const hasMore = newEntities.length > PAGE_SIZE;
+        if (hasMore) {
+            newEntities.pop(); // Remove the extra document
+        }
 
+        if (direction === 'prev' && documentSnapshots.docs.length < PAGE_SIZE) {
+            // We are at the first page
+        }
+
+        setEntities(newEntities);
+        setHasNextPage(hasMore);
+
+        setFirstVisible(documentSnapshots.docs[0] || null);
+        setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - (hasMore ? 2 : 1)] || null);
+        
       } catch (err: any) {
         console.error('Error fetching complex entities:', err);
         setError('Αποτυχία φόρτωσης δεδομένων. Βεβαιωθείτε ότι το απαραίτητο ευρετήριο έχει δημιουργηθεί στο Firebase Console.');
@@ -106,21 +120,40 @@ export function useComplexEntities(type?: string) {
         setIsLoading(false);
       }
     },
-    [type, debouncedSearchQuery]
+    [type, debouncedSearchQuery, lastVisible, firstVisible]
   );
   
   const refetch = useCallback(() => {
-    fetchListTypes();
-    if (type) fetchEntities();
-  }, [type, fetchListTypes, fetchEntities]);
-  
+    setPage(1);
+    setFirstVisible(null);
+    setLastVisible(null);
+    fetchEntities('initial');
+  }, [fetchEntities]);
+
   useEffect(() => {
+    setPage(1);
+    setFirstVisible(null);
+    setLastVisible(null);
     if(type) {
-        fetchEntities();
+        fetchEntities('initial');
     } else {
         setEntities([]);
     }
-  }, [type, debouncedSearchQuery, fetchEntities]);
+  }, [type, debouncedSearchQuery]); // Removed fetchEntities from dependency array
+  
+  const nextPage = () => {
+      if (hasNextPage) {
+          setPage(p => p + 1);
+          fetchEntities('next');
+      }
+  };
+
+  const prevPage = () => {
+      if (page > 1) {
+          setPage(p => p - 1);
+          fetchEntities('prev');
+      }
+  };
 
   return {
     entities,
@@ -131,5 +164,9 @@ export function useComplexEntities(type?: string) {
     listTypes,
     isLoadingListTypes,
     refetch,
+    nextPage,
+    prevPage,
+    canGoNext: hasNextPage,
+    canGoPrev: page > 1,
   };
 }
