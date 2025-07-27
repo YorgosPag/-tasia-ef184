@@ -80,17 +80,19 @@ export function useComplexEntities(type?: string) {
       setIsLoading(true);
       setError(null);
       try {
-        let q;
-        const baseQuery = collection(db, 'tsia-complex-entities');
-        
         let constraints = [where('type', '==', type), orderBy('name')];
 
         if (debouncedSearchQuery) {
-            constraints.push(where('name', '>=', debouncedSearchQuery));
-            constraints.push(where('name', '<=', debouncedSearchQuery + 'uf8ff'))
+            // Firestore doesn't support case-insensitive search natively.
+            // This is a common workaround for prefix search.
+            const strFront = debouncedSearchQuery;
+            const strBack = debouncedSearchQuery.slice(0, -1) + String.fromCharCode(debouncedSearchQuery.charCodeAt(debouncedSearchQuery.length - 1) + 1);
+            
+            constraints.push(where('name', '>=', strFront));
+            constraints.push(where('name', '<', strBack));
         }
         
-        q = query(baseQuery, ...constraints, limit(PAGE_SIZE));
+        const q = query(collection(db, 'tsia-complex-entities'), ...constraints, limit(PAGE_SIZE));
         
         const documentSnapshots = await getDocs(q);
         const newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
@@ -117,8 +119,7 @@ export function useComplexEntities(type?: string) {
     } else {
         setEntities([]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, debouncedSearchQuery]);
+  }, [type, debouncedSearchQuery, fetchEntities]);
 
   return {
     entities,

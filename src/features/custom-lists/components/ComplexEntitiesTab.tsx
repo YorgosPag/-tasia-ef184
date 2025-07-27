@@ -160,7 +160,7 @@ export function ComplexEntitiesTab() {
           <div className="flex flex-col md:flex-row gap-4 mt-2">
             <Select onValueChange={setSelectedListType} value={selectedListType}>
                 <SelectTrigger className="w-full md:w-[250px]">
-                    <SelectValue placeholder="Επιλέξτε λίστα..." />
+                    <SelectValue placeholder={isLoadingListTypes ? "Φόρτωση λιστών..." : "Επιλέξτε λίστα..."} />
                 </SelectTrigger>
                 <SelectContent>
                     {isLoadingListTypes ? (
