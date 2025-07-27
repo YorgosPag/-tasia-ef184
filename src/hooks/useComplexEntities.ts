@@ -90,7 +90,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         }
       }
 
-      if (direction === 'initial') {
+      if (direction === 'initial' || totalCount === null) {
         const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
         const countSnapshot = await getCountFromServer(countQuery);
         setTotalCount(countSnapshot.data().count);
@@ -124,15 +124,23 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     } finally {
       setIsLoading(false);
     }
-  }, [type, debouncedFilters, pageDocs]);
+  }, [type, debouncedFilters, pageDocs, totalCount]);
 
 
   useEffect(() => {
     setPage(1);
     setPageDocs([null]);
-    fetchPage(1, 'initial');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setTotalCount(null); // Reset count to force refetch on type/filter change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, debouncedFilters]);
+  
+  useEffect(() => {
+    // This effect runs only when type/filters change and after state has been reset
+    if(type) {
+      fetchPage(1, 'initial');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, debouncedFilters, pageDocs.length === 1 && pageDocs[0] === null]);
 
 
   const nextPage = useCallback(() => {
@@ -162,6 +170,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     refetch: () => {
         setPage(1);
         setPageDocs([null]);
+        setTotalCount(null);
         fetchPage(1, 'initial');
     },
     nextPage,
