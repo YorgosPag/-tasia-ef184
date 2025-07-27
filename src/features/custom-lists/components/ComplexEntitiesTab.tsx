@@ -50,21 +50,30 @@ export function ComplexEntitiesTab() {
   }, [isLoadingListTypes, listTypes, selectedListType]);
 
   const columns = useMemo(() => {
-    if (entities.length === 0) {
-      return [] as ColumnDef<ComplexEntity>[];
+    if (!entities || entities.length === 0) {
+      // Define a default structure or return an empty array if no data is present
+      // This prevents the table from breaking on the first render.
+      return [
+        { accessorKey: 'name', header: 'Όνομα' },
+        { accessorKey: 'address', header: 'Διεύθυνση' },
+        { accessorKey: 'region', header: 'Περιοχή' },
+      ] as ColumnDef<ComplexEntity>[];
     }
-    const keys = Object.keys(entities[0]).filter(key => key !== 'id' && key !== 'type' && key !== 'createdAt');
     
-    const generatedColumns: ColumnDef<ComplexEntity>[] = keys.map(key => ({
+    // Dynamically generate columns from the keys of the first data object
+    const firstItemKeys = Object.keys(entities[0]);
+    const columnsToShow = firstItemKeys.filter(key => !['id', 'type', 'createdAt'].includes(key));
+    
+    const generatedColumns: ColumnDef<ComplexEntity>[] = columnsToShow.map(key => ({
       accessorKey: key,
       header: ({ column }) => (
         <div className="flex flex-col gap-2">
             <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
             >
-            {key}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+              {key}
+              <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
             <Input
               placeholder={`Αναζήτηση σε ${key}...`}
@@ -77,6 +86,14 @@ export function ComplexEntitiesTab() {
             />
         </div>
       ),
+      cell: ({ row }) => {
+        const value = row.getValue(key);
+        // Handle potential Timestamps or other object types for display
+        if (value && typeof value === 'object' && 'toDate' in value) {
+            return (value as any).toDate().toLocaleDateString();
+        }
+        return value as React.ReactNode;
+      }
     }));
 
     return generatedColumns;
