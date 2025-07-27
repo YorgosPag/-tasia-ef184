@@ -9,7 +9,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
 import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, Briefcase, Map, Linkedin, Facebook, Instagram, Github, Youtube, Globe } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, Briefcase, Map, Linkedin, Facebook, Instagram, Github, Youtube, Globe, ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
@@ -19,6 +19,7 @@ import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
 import { Label } from '@/shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/shared/components/ui/command';
 
 
 interface ContactFormProps {
@@ -28,10 +29,10 @@ interface ContactFormProps {
 
 const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
     Viber: (props) => (
-      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#8a53a5" d="M14.49 11.33c-.34-.51-1.09-.6-1.5-.27l-1.34 1.17c-.12.1-.25.16-.4.16s-.28-.06-.39-.16c-1.2-1.2-2.33-2.5-2.88-3.79-.1-.26-.05-.56.13-.75l1.34-1.18c.33-.31.4-.86.18-1.28-.22-.42-1.63-2.58-1.83-2.92-.19-.34-.6-.52-1-.49l-1.6.12c-.41.03-.78.27-1,.6-.22.33-1.14 1.5-1.14 3.22 0 2.22 1.21 4.4 3.48 6.62 2.28 2.22 4.42 3.44 6.67 3.44 1.72 0 2.89-.92 3.22-1.14.33-.22.57-.59.6-1l.12-1.6c.03-.41-.15-.81-.49-1-.34-.2-2.5-1.61-2.92-1.83z"/></svg>
+      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#8a53a5" d="m14.49 11.33-1.34 1.17a.4.4 0 0 1-.55 0c-1.2-1.2-2.33-2.5-2.88-3.79a.4.4 0 0 1 .13-.56l1.34-1.18c.2-.18.23-.49.07-.72C10.96 5.83 9.55 3.67 9.35 3.33c-.19-.34-.59-.52-1-.49l-1.6.12c-.41.03-.78.27-1 .6-.22.33-1.14 1.5-1.14 3.22 0 2.22 1.21 4.4 3.48 6.62C8.36 15.68 10.5 16.9 12.75 16.9c1.72 0 2.89-.92 3.22-1.14.33-.22.57-.59.6-1l.12-1.6c.03-.41-.15-.81-.49-1-.34-.2-2.5-1.61-2.92-1.83Z"/></svg>
     ),
     WhatsApp: (props) => (
-       <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#25D366" d="M12.04 2C6.58 2 2.13 6.45 2.13 12c0 1.77.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.77 3.06 1.18 4.79 1.18h.01c5.46 0 9.91-4.45 9.91-9.91c0-5.46-4.45-9.9-9.91-9.9m4.84 12.11c-.28.48-.93.73-1.25.73c-.26 0-.52-.06-.79-.12c-.52-.12-1.28-.48-2.3-1.4c-1.29-1.14-2.14-2.53-2.36-2.9c-.22-.39-.02-1.01.24-1.28c.13-.13.29-.2.43-.2h.16c.13 0 .26 0 .38.01c.16.01.38.43.56.82c.18.39.29.69.29.76c0 .13-.04.26-.09.39c-.05.13-.09.16-.18.26c-.09.1-.18.21-.27.3c-.09.09-.18.18-.08.38c.45.89 1.08 1.51 2.26 2.3c.3.2.48.33.56.39c.08.06.13.03.19-.02c.06-.05.27-.31.36-.42c.09-.11.18-.13.28-.13c.1 0 .22 0 .34.04c.12.04.59.28.69.34c.1.06.16.1.19.16c.03.06.03.41-.02.53"/></svg>
+       <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#25D366" d="M16.75 13.96c.2.4.29.82.01 1.21-.28.39-.77.62-1.22.62-.24 0-.49-.06-.73-.18-1.43-.65-2.65-1.53-3.6-2.6-1.02-1.14-1.78-2.43-2.22-3.8-.13-.42-.06-.88.19-1.27.25-.39.66-.64 1.1-.64h.16c.21 0 .41.05.59.16.48.27.97.55 1.45.82.48.27.76.77.76 1.31 0 .18-.04.36-.12.52-.08.16-.18.3-.3.44-.12.14-.25.26-.25.43 0 .18.08.35.23.51.52.56 1.14 1.05 1.81 1.47.33.2.68.31 1.03.31.22 0 .43-.05.62-.16.3-.16.58-.4.78-.71.2-.31.32-.67.24-1.04-.08-.37-.28-.71-.56-1.01-.28-.3-.66-.54-1.07-.71-.41-.17-.85-.14-1.25.08-.4.22-.73.57-.96.99-.23.42-.3.89-.19 1.35.11.46.38.87.75 1.18.37.31.82.5 1.3.51h.01c.48 0 .95-.15 1.34-.44.39-.29.69-.67.87-1.11.18-.44.22-.92.1-1.38-.12-.46-.38-.87-.75-1.18-.37-.31-.82-.5-1.3-.51h.01Z"/></svg>
     ),
     Telegram: (props) => (
        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#2AABEE" d="m9.78 18.65l.28-4.23l7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3L3.64 12c-.88-.25-.89-1.02.2-1.31L21.11 4.4c.79-.28 1.49.36 1.25 1.5l-2.4 11.5c-.21.98-1.04 1.2-1.8.75l-4.1-3.2l-1.89 1.8c-.16.16-.3.24-.5.24"/></svg>
@@ -41,6 +42,18 @@ const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElemen
 const SOCIAL_TYPES = ['Website', 'LinkedIn', 'YouTube', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
 const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
 const ADDRESS_TYPES = ['Κατοικίας', 'Επαγγελματική', 'Έδρα', 'Υποκατάστημα', 'Αποθήκη', 'Εξοχικό', 'Άλλο'];
+
+const countryCodes = [
+  { name: 'Greece', code: '+30', flag: '🇬🇷' },
+  { name: 'Cyprus', code: '+357', flag: '🇨🇾' },
+  { name: 'Albania', code: '+355', flag: '🇦🇱' },
+  { name: 'Bulgaria', code: '+359', flag: '🇧🇬' },
+  { name: 'Germany', code: '+49', flag: '🇩🇪' },
+  { name: 'Italy', code: '+39', flag: '🇮🇹' },
+  { name: 'Romania', code: '+40', flag: '🇷🇴' },
+  { name: 'Turkey', code: '+90', flag: '🇹🇷' },
+  { name: 'North Macedonia', code: '+389', flag: '🇲🇰' },
+];
 
 const socialIcons: { [key: string]: React.ElementType } = {
     Website: Globe,
@@ -251,17 +264,50 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
             <div className="space-y-2">
                  <div className="flex justify-between items-center">
                     <h3 className="text-sm font-medium">Τηλέφωνα</h3>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => appendPhone({ type: 'Κινητό', value: '', indicators: [] })}>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => appendPhone({ type: 'Κινητό', countryCode: '+30', value: '', indicators: [] })}>
                         <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Τηλεφώνου
                     </Button>
                 </div>
                 <div className="w-full space-y-2">
                     {phoneFields.map((field, index) => (
                     <div key={field.id} className="flex flex-col gap-3 p-3 border rounded-md bg-muted/30">
-                        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-center">
-                            <FormField control={form.control} name={`phones.${index}.type`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name={`phones.${index}.value`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Αριθμός</FormLabel><FormControl><Input {...field} type="tel" /></FormControl><FormMessage /></FormItem>)} />
-                            <Button type="button" variant="ghost" size="icon" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-4 items-center">
+                            <FormField control={form.control} name={`phones.${index}.type`} render={({ field }) => (<FormItem><FormLabel>Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            
+                            <FormItem>
+                                <FormLabel>Αριθμός</FormLabel>
+                                <div className="flex gap-2">
+                                     <FormField control={form.control} name={`phones.${index}.countryCode`} render={({ field }) => (
+                                         <Popover>
+                                            <PopoverTrigger asChild>
+                                                <FormControl>
+                                                    <Button variant="outline" role="combobox" className="w-[120px] justify-between">
+                                                        {field.value ? countryCodes.find(c => c.code === field.value)?.flag : "Select"}
+                                                        {field.value}
+                                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                    </Button>
+                                                </FormControl>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[200px] p-0">
+                                                <Command><CommandInput placeholder="Search country..." /><CommandEmpty>No country found.</CommandEmpty>
+                                                    <CommandList><CommandGroup>
+                                                        {countryCodes.map((country) => (
+                                                            <CommandItem key={country.code} value={country.name} onSelect={() => field.onChange(country.code)}>
+                                                                <Check className={cn("mr-2 h-4 w-4", country.code === field.value ? "opacity-100" : "opacity-0")}/>
+                                                                {country.flag} <span className="ml-2">{country.name} ({country.code})</span>
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandGroup></CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
+                                     )}/>
+                                     <FormField control={form.control} name={`phones.${index}.value`} render={({ field }) => (<FormControl><Input {...field} type="tel" /></FormControl>)} />
+                                </div>
+                                 <FormMessage>{form.formState.errors.phones?.[index]?.value?.message}</FormMessage>
+                            </FormItem>
+                            
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removePhone(index)} className="self-end"><Trash2 className="h-4 w-4 text-destructive"/></Button>
                         </div>
                         <FormField
                         control={form.control}

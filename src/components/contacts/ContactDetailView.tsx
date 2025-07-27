@@ -159,7 +159,7 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
 
         <DetailSection title="Στοιχεία Επικοινωνίας" icon={Phone} alwaysShow>
             {contact.emails?.map((email, i) => (
-                <DetailRow key={i} label="Email" value={email.value} type={email.type}>
+                <DetailRow key={i} label="Email" type={email.type}>
                      <div className="flex items-center gap-2">
                         <a href={`mailto:${email.value}`} className="text-primary hover:underline">{email.value}</a>
                         <a href={`mailto:${email.value}`} title={`Αποστολή σε ${email.value}`}>
@@ -168,7 +168,7 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
                     </div>
                 </DetailRow>
             ))}
-            {contact.phones?.map((phone, i) => <DetailRow key={i} label="Τηλέφωνο" value={phone.value} href={`tel:${phone.value}`} type={`${phone.type} ${phone.indicators?.join(', ')}`.trim()} />)}
+            {contact.phones?.map((phone, i) => <DetailRow key={i} label="Τηλέφωνο" value={`${phone.countryCode || ''} ${phone.value}`} href={`tel:${phone.countryCode}${phone.value}`} type={`${phone.type} ${phone.indicators?.join(', ')}`.trim()} />)}
         </DetailSection>
         
         <DetailSection title="Κοινωνικά Δίκτυα &amp; Websites" icon={LinkIcon} alwaysShow>

@@ -40,10 +40,11 @@ export const contactInfoSchema = z.object({
     })).optional(),
     phones: z.array(z.object({
         type: z.string().default('Κινητό'),
+        countryCode: z.string().optional().default('+30'),
         value: z.string()
           .min(1, { message: 'Ο αριθμός είναι υποχρεωτικός.' })
-          .refine(val => /^\d{10}$/.test(val), {
-            message: 'Ο αριθμός τηλεφώνου πρέπει να έχει 10 ψηφία.'
+          .refine(val => /^\d+$/.test(val), {
+            message: 'Ο αριθμός τηλεφώνου πρέπει να περιέχει μόνο ψηφία.'
           }),
         indicators: z.array(z.enum(['Viber', 'WhatsApp', 'Telegram'])).optional(),
     })).optional(),
@@ -69,7 +70,7 @@ export const addressSchema = z.object({
             message: 'Ο Τ.Κ. πρέπει να αποτελείται από 5 ψηφία.'
         }),
         municipality: z.string().optional(),
-        country: z.string().optional(),
+        country: z.string().optional().default('Ελλάδα'),
     })).optional(),
 });
 
@@ -95,4 +96,4 @@ export const contactSchema = personalInfoSchema
   .merge(jobInfoSchema)
   .merge(notesSchema);
 
-export type ContactFormValues = z.infer<typeof contactSchema>;
+export type ContactFormValues = z.infer<typeof contactSchema];
