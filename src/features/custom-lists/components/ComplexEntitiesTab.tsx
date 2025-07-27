@@ -20,11 +20,23 @@ import {
 } from '@/shared/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 
+const PREFERRED_COLUMN_ORDER = [
+    'Οικισμοί',
+    'Δημοτικές/Τοπικές Κοινότητες',
+    'Δημοτικές Ενότητες',
+    'Δήμοι',
+    'Περιφερειακές ενότητες',
+    'Περιφέρειες',
+    'Αποκεντρωμένες Διοικήσεις',
+    'Μεγάλες γεωγραφικές ενότητες'
+];
+
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
   const [selectedListType, setSelectedListType] = useState<string>('');
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [columnDefs, setColumnDefs] = useState<ColumnDef<ComplexEntity>[]>([]);
+  const [tempFilters, setTempFilters] = useState<Record<string, string>>({});
 
   const {
     entities,
@@ -56,6 +68,16 @@ export function ComplexEntitiesTab() {
   const generateColumns = useCallback((keys: string[]) => {
     const columnsToShow = keys.filter(key => !['id', 'type', 'createdAt', 'uniqueKey'].includes(key));
     
+    // Sort columns based on preferred order, putting others at the end
+    columnsToShow.sort((a, b) => {
+        const indexA = PREFERRED_COLUMN_ORDER.indexOf(a);
+        const indexB = PREFERRED_COLUMN_ORDER.indexOf(b);
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+    });
+    
     return columnsToShow.map(key => ({
       accessorKey: key,
       header: ({ column }) => (
@@ -70,10 +92,19 @@ export function ComplexEntitiesTab() {
               </Button>
               <Input
                 placeholder={`Αναζήτηση...`}
-                value={columnFilters[key] || ''}
-                onChange={(event) =>
-                    setColumnFilters(prev => ({ ...prev, [key]: event.target.value }))
-                }
+                value={tempFilters[key] || ''}
+                onChange={(event) => {
+                    const value = event.target.value;
+                    setTempFilters(prev => ({ ...prev, [key]: value }));
+                }}
+                 onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setColumnFilters(prev => ({...prev, [key]: tempFilters[key] || '' }));
+                    }
+                  }}
+                 onBlur={() => {
+                    setColumnFilters(prev => ({...prev, [key]: tempFilters[key] || '' }));
+                 }}
                 className="h-8"
                 onClick={(e) => e.stopPropagation()}
               />
@@ -87,7 +118,7 @@ export function ComplexEntitiesTab() {
           return value as React.ReactNode;
       }
     }));
-  }, [columnFilters]);
+  }, [tempFilters]);
   
   useEffect(() => {
     if (allKeysFromType.length > 0) {
@@ -98,6 +129,7 @@ export function ComplexEntitiesTab() {
   // Reset columns and filters when list type changes
   useEffect(() => {
       setColumnFilters({});
+      setTempFilters({});
   }, [selectedListType]);
 
 
@@ -229,7 +261,7 @@ export function ComplexEntitiesTab() {
                    Πλήθος Εγγραφών: {totalCount !== null ? totalCount : '-'}
                 </div>
               </div>
-          {isLoading ? (
+          {isLoading && !initialDataLoaded ? (
              <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
           ) : error ? (
             <p className="text-destructive text-center">{error}</p>
@@ -241,6 +273,7 @@ export function ComplexEntitiesTab() {
             <DataTable
               columns={columnDefs}
               data={entities}
+              isLoading={isLoading}
               nextPage={nextPage}
               prevPage={prevPage}
               canGoNext={canGoNext}

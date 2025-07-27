@@ -19,10 +19,12 @@ import {
 } from '@/shared/components/ui/table';
 import { Button } from '@/shared/components/ui/button';
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isLoading: boolean;
   nextPage: () => void;
   prevPage: () => void;
   canGoNext: boolean;
@@ -37,6 +39,7 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
+  isLoading,
   nextPage,
   prevPage,
   canGoNext,
@@ -62,7 +65,7 @@ export function DataTable<TData, TValue>({
   });
 
   const NoResultsMessage = () => {
-    if (!initialDataLoaded) return "Φόρτωση...";
+    if (!initialDataLoaded && isLoading) return "Φόρτωση...";
 
     const totalPages = totalCount !== null ? Math.ceil(totalCount / pageSize) : 0;
     const activeFilterEntries = Object.entries(activeFilters).filter(([, value]) => value);
@@ -106,7 +109,13 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+                 <TableRow>
+                    <TableCell colSpan={columns.length} className="h-24 text-center">
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                    </TableCell>
+                </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

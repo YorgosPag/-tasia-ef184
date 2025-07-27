@@ -85,10 +85,8 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     if(direction === 'initial') setInitialDataLoaded(false);
 
     try {
-      // Base constraints
       const constraints: QueryConstraint[] = [where('type', '==', type)];
       
-      // Filter constraints
       for (const key in debouncedFilters) {
         const value = debouncedFilters[key];
         if (value) {
@@ -96,7 +94,6 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
         }
       }
 
-      // Get total count only on initial load for a type/filter change
       if (direction === 'initial') {
         const countQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
         const countSnapshot = await getCountFromServer(countQuery);
@@ -104,7 +101,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       }
       
       const baseQuery = collection(db, 'tsia-complex-entities');
-      constraints.push(orderBy('__name__')); // Consistent ordering for pagination
+      constraints.push(orderBy('__name__'));
 
       const lastDoc = pageDocs[pageNumber - 1];
 
@@ -118,7 +115,7 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       const documentSnapshots = await getDocs(finalQuery);
       
       if (!documentSnapshots.empty) {
-        if(direction === 'initial') {
+        if(direction === 'initial' || allKeysFromType.length === 0) {
             const firstItemKeys = Object.keys(documentSnapshots.docs[0].data());
             setAllKeysFromType(firstItemKeys);
         }
@@ -132,9 +129,6 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       } else {
         setEntities([]);
         if(direction === 'initial' && allKeysFromType.length === 0){
-             // If the list is completely empty, we need to know what the keys *would* have been.
-             // This is a complex problem. A simple solution might be to fetch one document
-             // of that type without filters to get its keys.
              const keysQuery = query(collection(db, 'tsia-complex-entities'), where('type', '==', type), limit(1));
              const keysSnapshot = await getDocs(keysQuery);
              if(!keysSnapshot.empty) {
@@ -156,13 +150,13 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
       setPageDocs([null]);
       setTotalCount(null);
       setEntities([]);
-      setAllKeysFromType([]); // Reset keys on type change
       if(type) {
         fetchPage(1, 'initial');
       }
   }, [type, fetchPage]);
 
   useEffect(() => {
+    setAllKeysFromType([]);
     resetAndFetch();
   }, [type, debouncedFilters]);
   
@@ -173,14 +167,20 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   }, [page, fetchPage]);
 
   const prevPage = useCallback(() => {
-    if (page > 1) {
-        const newPage = page - 1;
-        setPage(newPage);
-        // Re-fetching from the start to the new page is tricky with firestore cursors.
-        // A full reset is a simpler, reliable approach for now.
-        resetAndFetch();
+    // Re-fetching previous pages is complex with startAfter.
+    // A full reset to the desired page is simpler for now.
+    const newPage = Math.max(1, page - 1);
+    setPage(1); // Reset to page 1
+    setPageDocs([null]); // Clear cursors
+    setTotalCount(null); // Recalculate total
+    setEntities([]); // Clear current data
+    if(type) {
+        // This will now fetch from the beginning. To go to a specific page `n`,
+        // one would typically fetch n*PAGE_SIZE docs and take the last one as cursor,
+        // which is inefficient. Resetting is a pragmatic choice here.
+        fetchPage(1, 'initial'); 
     }
-  }, [page, resetAndFetch]);
+  }, [page, type, fetchPage]);
 
   const canGoNext = totalCount !== null ? (page * PAGE_SIZE) < totalCount : false;
 
