@@ -64,17 +64,23 @@ export function useCustomLists() {
     const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(listsQuery, async (snapshot) => {
-      const listsData = await Promise.all(
-        snapshot.docs.map(async (listDoc) => {
-          const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
-          const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('createdAt', 'asc'));
-          const itemsSnapshot = await getDocs(itemsQuery);
-          list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
-          return list;
-        })
-      );
-      setLists(listsData);
-      setIsLoading(false);
+      try {
+        const listsData = await Promise.all(
+          snapshot.docs.map(async (listDoc) => {
+            const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
+            const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('createdAt', 'asc'));
+            const itemsSnapshot = await getDocs(itemsQuery);
+            list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
+            return list;
+          })
+        );
+        setLists(listsData);
+      } catch (error) {
+         console.error("Error processing custom lists snapshot:", error);
+         toast({ variant: 'destructive', title: 'Σφάλμα Επεξεργασίας', description: 'Failed to process list data.' });
+      } finally {
+        setIsLoading(false);
+      }
     }, (error) => {
       console.error("Error fetching custom lists:", error);
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Failed to load lists.' });
