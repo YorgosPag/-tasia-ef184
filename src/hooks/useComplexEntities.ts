@@ -28,13 +28,15 @@ export interface ComplexEntity {
 const PAGE_SIZE = 50;
 
 async function getDistinctTypes(): Promise<string[]> {
-    const q = query(collection(db, 'tsia-complex-entities'));
+    const q = query(collection(db, 'tsia-complex-entities'), orderBy('type'));
     const snapshot = await getDocs(q);
     const types = new Set<string>();
+    let lastType: string | null = null;
     snapshot.forEach(doc => {
         const type = doc.data().type;
-        if (type) {
+        if (type && type !== lastType) {
             types.add(type);
+            lastType = type;
         }
     });
     return Array.from(types).sort();
@@ -98,7 +100,7 @@ export function useComplexEntities(type?: string) {
         let q;
         const finalConstraints = [...constraints, limit(PAGE_SIZE)];
         if(!debouncedSearchQuery) {
-            finalConstraints.unshift(orderBy('name'));
+            finalConstraints.push(orderBy('name'));
         }
 
 
@@ -110,6 +112,10 @@ export function useComplexEntities(type?: string) {
             // Note: `endBefore` with `limitToLast` is complex and can be inconsistent.
             // A simpler pagination model (next-only or cursor-based) is often more reliable with Firestore.
             // For now, we'll keep it simple.
+             if (firstVisible) {
+                // To go previous, we need to reverse the query and use endBefore.
+                // This is more complex than needed for now. We will reset.
+             }
             break;
           default: // 'initial'
             break;
@@ -133,7 +139,7 @@ export function useComplexEntities(type?: string) {
         setIsLoading(false);
       }
     },
-    [type, debouncedSearchQuery, lastVisible]
+    [type, debouncedSearchQuery] // <-- Removed `lastVisible` dependency to fix infinite loop
   );
   
   const refetch = useCallback(() => {
@@ -150,8 +156,37 @@ export function useComplexEntities(type?: string) {
   const nextPage = useCallback(() => {
     if (!lastVisible) return;
     setPage(p => p + 1);
-    fetchEntities('next');
-  }, [lastVisible, fetchEntities]);
+    
+    // We need a slightly different fetch logic for pagination that uses the current lastVisible.
+    const paginate = async () => {
+        if (!type) return;
+        setIsLoading(true);
+        try {
+            let constraints = [where('type', '==', type)];
+            if (debouncedSearchQuery) {
+                constraints.push(where('name', '>=', debouncedSearchQuery));
+                constraints.push(where('name', '<=', debouncedSearchQuery + '\uf8ff'));
+            }
+            constraints.push(orderBy('name'));
+            constraints.push(startAfter(lastVisible));
+            constraints.push(limit(PAGE_SIZE));
+
+            const q = query(collection(db, 'tsia-complex-entities'), ...constraints);
+            const documentSnapshots = await getDocs(q);
+            let newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
+            setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1] || null);
+            setFirstVisible(documentSnapshots.docs[0] || null);
+            setEntities(newEntities);
+        } catch (e) {
+            console.error(e);
+            setError("Failed to fetch next page.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    paginate();
+
+  }, [lastVisible, type, debouncedSearchQuery]);
 
   const prevPage = useCallback(() => {
     if (page === 1) return;
