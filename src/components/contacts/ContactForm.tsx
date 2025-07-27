@@ -9,7 +9,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
 import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, MapPin, Briefcase } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
@@ -43,7 +43,12 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
     <Accordion type="multiple" defaultValue={['personal', 'identity', 'contact', 'address', 'job', 'socials', 'notes']} className="w-full">
       {/* 1. Βασικά Στοιχεία */}
       <AccordionItem value="personal">
-        <AccordionTrigger>Βασικά Στοιχεία</AccordionTrigger>
+        <AccordionTrigger>
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Βασικά Στοιχεία
+          </div>
+        </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
            <FormField
               control={form.control}
@@ -156,7 +161,12 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
       {/* 2. Στοιχεία Ταυτότητας & ΑΦΜ */}
       <AccordionItem value="identity">
-        <AccordionTrigger>Στοιχεία Ταυτότητας &amp; ΑΦΜ</AccordionTrigger>
+        <AccordionTrigger>
+          <div className="flex items-center gap-2">
+            <Info className="h-5 w-5" />
+            Στοιχεία Ταυτότητας &amp; ΑΦΜ
+          </div>
+        </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  {entityType === 'Φυσικό Πρόσωπο' && (
@@ -175,7 +185,12 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       
       {/* 3. Στοιχεία Επικοινωνίας */}
       <AccordionItem value="contact">
-        <AccordionTrigger>Στοιχεία Επικοινωνίας</AccordionTrigger>
+        <AccordionTrigger>
+           <div className="flex items-center gap-2">
+            <Phone className="h-5 w-5" />
+            Στοιχεία Επικοινωνίας
+          </div>
+        </AccordionTrigger>
         <AccordionContent className="space-y-6 p-1 pt-4">
              {/* Emails Section */}
             <div className="space-y-2">
@@ -222,7 +237,12 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       
       {/* 4. Κοινωνικά Δίκτυα */}
       <AccordionItem value="socials">
-        <AccordionTrigger>Κοινωνικά Δίκτυα &amp; Websites</AccordionTrigger>
+        <AccordionTrigger>
+          <div className="flex items-center gap-2">
+            <LinkIcon className="h-5 w-5" />
+            Κοινωνικά Δίκτυα &amp; Websites
+          </div>
+        </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
@@ -249,7 +269,12 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
       {/* 5. Στοιχεία Διεύθυνσης */}
        <AccordionItem value="address">
-        <AccordionTrigger>Στοιχεία Διεύθυνσης</AccordionTrigger>
+        <AccordionTrigger>
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Στοιχεία Διεύθυνσης
+          </div>
+        </AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="address.street" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Οδός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
@@ -265,7 +290,12 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {/* 6. Επαγγελματικά Στοιχεία */}
       {entityType !== 'Δημ. Υπηρεσία' && (
         <AccordionItem value="job">
-            <AccordionTrigger>Επαγγελματικά Στοιχεία</AccordionTrigger>
+            <AccordionTrigger>
+              <div className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5" />
+                Επαγγελματικά Στοιχεία
+              </div>
+            </AccordionTrigger>
             <AccordionContent className="space-y-4 p-1">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ρόλος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
@@ -279,7 +309,12 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
       {/* 7. Λοιπά */}
       <AccordionItem value="notes">
-        <AccordionTrigger>Σημειώσεις</AccordionTrigger>
+        <AccordionTrigger>
+          <div className="flex items-center gap-2">
+            <Info className="h-5 w-5" />
+            Σημειώσεις
+          </div>
+        </AccordionTrigger>
         <AccordionContent className="p-1 pt-4">
             <FormField
               control={form.control}
