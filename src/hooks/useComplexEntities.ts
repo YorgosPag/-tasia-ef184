@@ -1,15 +1,14 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useReducer } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   collection,
   query,
   getDocs,
-  orderBy,
+  where,
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
-import { useDebounce } from 'use-debounce';
 
 export interface ComplexEntity {
   id: string;
@@ -18,16 +17,15 @@ export interface ComplexEntity {
 }
 
 const fetchDistinctTypes = async (): Promise<string[]> => {
-    // Correctly fetch the 'title' from the 'tsia-custom-lists' which acts as the 'type' for complex entities.
-    const q = query(collection(db, "tsia-custom-lists"), orderBy("title", "asc"));
+    // This now fetches only the types from complex entities, which is the intended source.
+    const q = query(collection(db, "tsia-complex-entities"));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data().title);
+    const types = new Set(snapshot.docs.map(doc => doc.data().type));
+    return Array.from(types).sort();
 };
 
-export function useComplexEntities(type?: string, searchQuery?: string) {
-  const [entities, setEntities] = useState<ComplexEntity[]>([]);
+export function useComplexEntities() {
   const [listTypes, setListTypes] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isLoadingListTypes, setIsLoadingListTypes] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,34 +46,14 @@ export function useComplexEntities(type?: string, searchQuery?: string) {
     fetchListTypesCallback();
   }, [fetchListTypesCallback]);
   
-  // This hook is now simplified. It doesn't fetch entities directly.
-  // It provides the list types and a way for the Algolia component to set the displayed hits.
-  // The actual fetching is delegated to Algolia's `useInfiniteHits` inside the `AlgoliaSearchBox`.
-
-  const setHits = useCallback((hits: any[]) => {
-      // The hits from Algolia are what we display.
-      // We map them to our ComplexEntity format.
-      const formattedEntities = hits.map(hit => ({
-          ...hit,
-          id: hit.objectID,
-      }));
-      setEntities(formattedEntities);
-  }, []);
-
   const refetch = () => {
-      // In an Algolia setup, refetching is handled by the search components.
-      // We can keep this as a no-op or trigger a refresh in the Algolia component if needed.
-      console.log("Refetch called, but data is now driven by Algolia.");
-      fetchListTypesCallback(); // Allow refetching list types
+      fetchListTypesCallback();
   };
 
   return {
-    entities,
-    isLoading: isLoading || isLoadingListTypes, // Combine loading states
-    error,
     listTypes,
     isLoadingListTypes,
+    error,
     refetch,
-    setHits, // Expose the setter for Algolia to use
   };
 }

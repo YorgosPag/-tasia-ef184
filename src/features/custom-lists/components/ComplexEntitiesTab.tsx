@@ -22,18 +22,13 @@ import { AlgoliaSearchBox } from './AlgoliaSearchBox';
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
   const [selectedListType, setSelectedListType] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState('');
   const [algoliaHits, setAlgoliaHits] = useState<any[]>([]);
 
   const {
-    entities,
-    isLoading,
-    error,
     listTypes,
     isLoadingListTypes,
     refetch,
-    setHits,
-  } = useComplexEntities(selectedListType || undefined, searchQuery);
+  } = useComplexEntities();
 
   const [isImporting, setIsImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -44,7 +39,7 @@ export function ComplexEntitiesTab() {
       const preferredList = 'Διοικητική Διαίρεση Ελλάδας';
       if (listTypes.includes(preferredList)) {
         setSelectedListType(preferredList);
-      } else {
+      } else if (listTypes[0]) {
         setSelectedListType(listTypes[0]);
       }
     }
@@ -176,7 +171,7 @@ export function ComplexEntitiesTab() {
                 </Select>
                  {selectedListType && (
                     <AlgoliaSearchBox
-                        key={selectedListType} // Add key to force re-mount on list type change
+                        key={selectedListType}
                         indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
                         listType={selectedListType}
                         onHitsChange={setAlgoliaHits}
