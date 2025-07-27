@@ -88,7 +88,7 @@ export function useComplexEntities(type?: string) {
 
         if (debouncedSearchQuery) {
             constraints.push(where('name', '>=', debouncedSearchQuery));
-            constraints.push(where('name', '<=', debouncedSearchQuery + '\uf8ff'))
+            constraints.push(where('name', '<=', debouncedSearchQuery + 'uf8ff'))
         }
 
         if (direction === 'next' && lastDoc) {
@@ -149,7 +149,7 @@ export function useComplexEntities(type?: string) {
     } else {
         setEntities([]);
     }
-  }, [type, debouncedSearchQuery]);
+  }, [type, debouncedSearchQuery, fetchEntities]);
 
   return {
     entities,
