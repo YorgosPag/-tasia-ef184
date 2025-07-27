@@ -9,7 +9,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
 import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, Briefcase, Map } from 'lucide-react';
+import { CalendarIcon, PlusCircle, Trash2, User, Building2, Landmark, Info, Phone, Link as LinkIcon, Briefcase, Map, Linkedin, Facebook, Instagram, Github, Youtube, Globe } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
@@ -31,16 +31,27 @@ const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElemen
       <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#8a53a5" d="M14.49 11.33c-.34-.51-1.09-.6-1.5-.27l-1.34 1.17c-.12.1-.25.16-.4.16s-.28-.06-.39-.16c-1.2-1.2-2.33-2.5-2.88-3.79-.1-.26-.05-.56.13-.75l1.34-1.18c.33-.31.4-.86.18-1.28-.22-.42-1.63-2.58-1.83-2.92-.19-.34-.6-.52-1-.49l-1.6.12c-.41.03-.78.27-1,.6-.22.33-1.14 1.5-1.14 3.22 0 2.22 1.21 4.4 3.48 6.62 2.28 2.22 4.42 3.44 6.67 3.44 1.72 0 2.89-.92 3.22-1.14.33-.22.57-.59.6-1l.12-1.6c.03-.41-.15-.81-.49-1-.34-.2-2.5-1.61-2.92-1.83z"/></svg>
     ),
     WhatsApp: (props) => (
-      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#25D366" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22C17.52,22 22,17.52 22,12A10,10 0 0,0 12,2M17.04,15.58C16.73,15.75 15.46,16.38 15.21,16.47C14.96,16.56 14.76,16.6 14.56,16.5C14.36,16.41 13.61,16.14 12.72,15.26C11.66,14.2 11.06,13.06 10.92,12.79C10.78,12.53 10.92,12.37 11.06,12.24C11.18,12.12 11.33,11.93 11.47,11.78C11.6,11.64 11.65,11.53 11.74,11.39C11.83,11.25 11.79,11.14 11.72,11.03C11.65,10.92 11.13,9.65 10.92,9.13C10.71,8.61 10.5,8.69 10.36,8.69C10.22,8.69 10.02,8.69 9.82,8.69C9.62,8.69 9.32,8.78 9.07,9.02C8.82,9.27 8.2,9.82 8.2,11.08C8.2,12.35 9.1,13.54 9.24,13.7C9.38,13.86 11.12,16.54 13.8,17.65C16.48,18.75 16.48,18.33 16.89,18.28C17.3,18.24 18.23,17.68 18.45,17.08C18.67,16.48 18.67,16.02 18.6,15.91C18.54,15.81 18.34,15.75 18.1,15.64C17.85,15.53 17.35,15.73 17.04,15.58Z"/></svg>
+       <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#25D366" d="M12.04 2C6.58 2 2.13 6.45 2.13 12c0 1.77.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.77 3.06 1.18 4.79 1.18h.01c5.46 0 9.91-4.45 9.91-9.91c0-5.46-4.45-9.9-9.91-9.9m4.84 12.11c-.28.48-.93.73-1.25.73c-.26 0-.52-.06-.79-.12c-.52-.12-1.28-.48-2.3-1.4c-1.29-1.14-2.14-2.53-2.36-2.9c-.22-.39-.02-1.01.24-1.28c.13-.13.29-.2.43-.2h.16c.13 0 .26 0 .38.01c.16.01.38.43.56.82c.18.39.29.69.29.76c0 .13-.04.26-.09.39c-.05.13-.09.16-.18.26c-.09.1-.18.21-.27.3c-.09.09-.18.18-.08.38c.45.89 1.08 1.51 2.26 2.3c.3.2.48.33.56.39c.08.06.13.03.19-.02c.06-.05.27-.31.36-.42c.09-.11.18-.13.28-.13c.1 0 .22 0 .34.04c.12.04.59.28.69.34c.1.06.16.1.19.16c.03.06.03.41-.02.53"/></svg>
     ),
     Telegram: (props) => (
-      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#2AABEE" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.69 7.6l-1.11 7.4a.41.41 0 0 1-.41.2.43.43 0 0 1-.18 0L12.5 14.8l-2.09 2.1a.42.42 0 0 1-.3.1.41.41 0 0 1-.41-.4V14.1L5.14 12.3a.41.41 0 0 1 0-.76l11.46-4.9a.41.41 0 0 1 .8.8z"/></svg>
+       <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#2AABEE" d="m9.78 18.65l.28-4.23l7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3L3.64 12c-.88-.25-.89-1.02.2-1.31L21.11 4.4c.79-.28 1.49.36 1.25 1.5l-2.4 11.5c-.21.98-1.04 1.2-1.8.75l-4.1-3.2l-1.89 1.8c-.16.16-.3.24-.5.24"/></svg>
     ),
 };
 
 const SOCIAL_TYPES = ['Website', 'LinkedIn', 'YouTube', 'Facebook', 'Instagram', 'GitHub', 'TikTok', 'Άλλο'];
 const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
 const ADDRESS_TYPES = ['Κατοικίας', 'Επαγγελματική', 'Έδρα', 'Υποκατάστημα', 'Αποθήκη', 'Εξοχικό', 'Άλλο'];
+
+const socialIcons: { [key: string]: React.ElementType } = {
+    Website: Globe,
+    LinkedIn: Linkedin,
+    Facebook: Facebook,
+    Instagram: Instagram,
+    GitHub: Github,
+    YouTube: Youtube,
+    TikTok: Info, // Placeholder
+    default: LinkIcon,
+};
 
 
 export function ContactForm({ form, onFileSelect }: ContactFormProps) {
@@ -228,10 +239,10 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                 </div>
                 <div className="w-full space-y-2">
                     {emailFields.map((field, index) => (
-                    <div key={field.id} className="flex flex-col gap-2 p-3 border rounded-md bg-muted/30">
-                        <div className="flex items-center gap-4">
-                            <FormField control={form.control} name={`emails.${index}.type`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name={`emails.${index}.value`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Email</FormLabel><FormControl><Input {...field} type="email" /></FormControl><FormMessage /></FormItem>)} />
+                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 border rounded-md bg-muted/30">
+                        <FormField control={form.control} name={`emails.${index}.type`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                        <FormField control={form.control} name={`emails.${index}.value`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Email</FormLabel><FormControl><Input {...field} type="email" /></FormControl><FormMessage /></FormItem>)} />
+                         <div className="md:col-span-2 flex justify-end">
                             <Button type="button" variant="ghost" size="icon" className="self-end" onClick={() => removeEmail(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
                         </div>
                     </div>
@@ -249,10 +260,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                 <div className="w-full space-y-2">
                     {phoneFields.map((field, index) => (
                     <div key={field.id} className="flex flex-col gap-3 p-3 border rounded-md bg-muted/30">
-                        <div className="flex items-center gap-4">
-                            <FormField control={form.control} name={`phones.${index}.type`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name={`phones.${index}.value`} render={({ field }) => (<FormItem className="flex-1"><FormLabel className="text-xs">Αριθμός</FormLabel><FormControl><Input {...field} type="tel" /></FormControl><FormMessage /></FormItem>)} />
-                            <Button type="button" variant="ghost" size="icon" className="self-end" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField control={form.control} name={`phones.${index}.type`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Τύπος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name={`phones.${index}.value`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Αριθμός</FormLabel><FormControl><Input {...field} type="tel" /></FormControl><FormMessage /></FormItem>)} />
                         </div>
                         <FormField
                         control={form.control}
@@ -295,6 +305,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                             </FormItem>
                         )}
                         />
+                         <div className="flex justify-end">
+                            <Button type="button" variant="ghost" size="icon" className="self-end" onClick={() => removePhone(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                        </div>
                     </div>
                     ))}
                 </div>
@@ -319,16 +332,46 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                     </Button>
                 </div>
                 <div className="w-full space-y-2">
-                    {socialFields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-end gap-2 p-3 border rounded-md bg-muted/30">
-                        <FormField control={form.control} name={`socials.${index}.type`} render={({ field }) => (<FormItem><FormLabel className="text-xs">Τύπος</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{SOCIAL_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`socials.${index}.label`} render={({ field }) => (<FormItem><FormLabel className="text-xs">Χαρακτηρισμός</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Επαγγελματικό">Επαγγελματικό</SelectItem><SelectItem value="Προσωπικό">Προσωπικό</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name={`socials.${index}.url`} render={({ field }) => (<FormItem className="lg:col-span-3"><FormLabel className="text-xs">URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <div className="lg:col-span-3 flex justify-end">
-                            <Button type="button" variant="ghost" size="icon" onClick={() => removeSocial(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
-                        </div>
-                    </div>
-                    ))}
+                    {socialFields.map((field, index) => {
+                        const selectedType = form.watch(`socials.${index}.type`);
+                        const Icon = socialIcons[selectedType] || socialIcons.default;
+                        return (
+                            <div key={field.id} className="p-3 border rounded-md bg-muted/30 space-y-4">
+                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <FormField
+                                        control={form.control}
+                                        name={`socials.${index}.type`}
+                                        render={({ field }) => (
+                                            <FormItem className="flex items-center gap-4">
+                                                <FormLabel className="w-20 text-right">Τύπος</FormLabel>
+                                                <div className="flex-1">
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Icon className="h-4 w-4" />
+                                                                    <SelectValue/>
+                                                                </div>
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {SOCIAL_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField control={form.control} name={`socials.${index}.label`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">Ετικέτα</FormLabel><div className="flex-1"><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent><SelectItem value="Επαγγελματικό">Επαγγελματικό</SelectItem><SelectItem value="Προσωπικό">Προσωπικό</SelectItem></SelectContent></Select></div><FormMessage /></FormItem>)} />
+                               </div>
+                                <FormField control={form.control} name={`socials.${index}.url`} render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-20 text-right">URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <div className="flex justify-end">
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeSocial(index)}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                </div>
+                            </div>
+                        )
+                    })}
                 </div>
             </div>
         </AccordionContent>
