@@ -1,12 +1,12 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Loader2, Search, UploadCloud, ArrowUpDown } from 'lucide-react';
-import { useComplexEntities } from '@/hooks/useComplexEntities';
+import { useComplexEntities, type ComplexEntity } from '@/hooks/useComplexEntities';
 import { DataTable } from './DataTable';
 import { processImportFile } from '@/lib/importer';
 import { useToast } from '@/shared/hooks/use-toast';
@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { ComplexEntity } from '@/hooks/useComplexEntities';
 
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
@@ -27,13 +26,18 @@ export function ComplexEntitiesTab() {
   
   const {
     entities,
-    isLoading: isLoadingEntities,
+    isLoading,
     error,
     searchQuery,
     setSearchQuery,
     listTypes,
     isLoadingListTypes,
     refetch,
+    nextPage,
+    prevPage,
+    canGoNext,
+    canGoPrev,
+    totalCount
   } = useComplexEntities(selectedListType || undefined);
 
   const [isImporting, setIsImporting] = useState(false);
@@ -48,7 +52,6 @@ export function ComplexEntitiesTab() {
 
   const columns = useMemo(() => {
     if (entities.length === 0) {
-      // Provide default columns when there's no data to prevent errors
       return [
         { accessorKey: 'name', header: 'Name' },
         { accessorKey: 'description', header: 'Description' },
@@ -177,38 +180,41 @@ export function ComplexEntitiesTab() {
       <Card>
         <CardHeader>
           <CardTitle>Κατάλογος Οντοτήτων</CardTitle>
-          <div className="flex flex-col md:flex-row gap-4 mt-2">
-            <Select onValueChange={setSelectedListType} value={selectedListType}>
-                <SelectTrigger className="w-full md:w-[250px]">
-                     <SelectValue placeholder={isLoadingListTypes ? "Φόρτωση λιστών..." : "Επιλέξτε λίστα..."}>
-                        {isLoadingListTypes ? <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> <span>Φόρτωση...</span></div> : selectedListType || "Επιλέξτε λίστα..."}
-                    </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                    {isLoadingListTypes ? (
-                        <div className="flex items-center justify-center p-2"><Loader2 className="h-4 w-4 animate-spin" /></div>
-                    ) : listTypes.length > 0 ? (
-                        listTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)
-                    ) : (
-                        <p className="p-2 text-xs text-muted-foreground">Δεν βρέθηκαν λίστες.</p>
-                    )}
-                </SelectContent>
-            </Select>
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Αναζήτηση στην επιλεγμένη λίστα..."
-                className="pl-10 w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                disabled={!selectedListType}
-              />
-            </div>
-          </div>
         </CardHeader>
         <CardContent>
-          {isLoadingEntities ? (
+             <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <Select onValueChange={setSelectedListType} value={selectedListType}>
+                    <SelectTrigger className="w-full md:w-[250px]">
+                         <SelectValue placeholder={isLoadingListTypes ? "Φόρτωση λιστών..." : "Επιλέξτε λίστα..."}>
+                            {isLoadingListTypes ? <div className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> <span>Φόρτωση...</span></div> : selectedListType || "Επιλέξτε λίστα..."}
+                        </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        {isLoadingListTypes ? (
+                            <div className="flex items-center justify-center p-2"><Loader2 className="h-4 w-4 animate-spin" /></div>
+                        ) : listTypes.length > 0 ? (
+                            listTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)
+                        ) : (
+                            <p className="p-2 text-xs text-muted-foreground">Δεν βρέθηκαν λίστες.</p>
+                        )}
+                    </SelectContent>
+                </Select>
+                 <div className="flex items-center text-sm text-muted-foreground font-medium px-2">
+                   Πλήθος Εγγραφών: {totalCount !== null ? totalCount : '-'}
+                </div>
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Αναζήτηση στην επιλεγμένη λίστα..."
+                    className="pl-10 w-full"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    disabled={!selectedListType}
+                  />
+                </div>
+              </div>
+          {isLoading ? (
              <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
           ) : error ? (
             <p className="text-destructive text-center">{error}</p>
@@ -220,6 +226,10 @@ export function ComplexEntitiesTab() {
             <DataTable
               columns={columns}
               data={entities}
+              nextPage={nextPage}
+              prevPage={prevPage}
+              canGoNext={canGoNext}
+              canGoPrev={canGoPrev}
             />
           )}
         </CardContent>

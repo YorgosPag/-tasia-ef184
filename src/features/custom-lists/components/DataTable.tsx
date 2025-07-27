@@ -23,11 +23,19 @@ import { useState } from 'react';
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  nextPage: () => void;
+  prevPage: () => void;
+  canGoNext: boolean;
+  canGoPrev: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  nextPage,
+  prevPage,
+  canGoNext,
+  canGoPrev,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const table = useReactTable({
@@ -92,6 +100,24 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
+      </div>
+       <div className="flex items-center justify-end space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={prevPage}
+          disabled={!canGoPrev}
+        >
+          Προηγούμενη
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={nextPage}
+          disabled={!canGoNext}
+        >
+          Επόμενη
+        </Button>
       </div>
     </div>
   );
