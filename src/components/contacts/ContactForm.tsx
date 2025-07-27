@@ -18,6 +18,7 @@ import { ImageUploader } from './ImageUploader';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
 import { Label } from '@/shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Textarea } from '@/shared/components/ui/textarea';
 
 
 interface ContactFormProps {
@@ -248,10 +249,10 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="address.street" render={({ field }) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="address.number" render={({ field }) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="address.city" render={({ field }) => (<FormItem><FormLabel>Πόλη</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="address.region" render={({ field }) => (<FormItem><FormLabel>Περιοχή</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="address.postalCode" render={({ field }) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="address.city" render={({ field }) => (<FormItem><FormLabel>Πόλη</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
               <FormField control={form.control} name="address.municipality" render={({ field }) => (<FormItem><FormLabel>Δήμος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="address.region" render={({ field }) => (<FormItem><FormLabel>Περιοχή/Νομός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
           </div>
         </AccordionContent>
       </AccordionItem>
@@ -276,8 +277,24 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
       {/* 7. Λοιπά */}
       <AccordionItem value="notes">
         <AccordionTrigger>Λοιπά</AccordionTrigger>
-        <AccordionContent className="p-1">
-             {renderField('notes', 'Σημειώσεις', <FormField control={form.control} name="notes" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
+        <AccordionContent className="p-1 pt-4">
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Σημειώσεις</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder=""
+                      className="resize-y"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
         </AccordionContent>
       </AccordionItem>
     </Accordion>
