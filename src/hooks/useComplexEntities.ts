@@ -12,7 +12,6 @@ import {
   DocumentData,
   QueryDocumentSnapshot,
   where,
-  getCountFromServer,
   QueryConstraint,
   endBefore,
   limitToLast,
@@ -36,7 +35,6 @@ interface State {
   isLoadingListTypes: boolean;
   error: string | null;
   page: number;
-  // pageDocs stores the *first* document of each page to enable forward/backward navigation
   pageDocs: (QueryDocumentSnapshot<DocumentData> | null)[];
   totalCount: number | null;
   initialDataLoaded: boolean;
@@ -46,7 +44,7 @@ interface State {
 type Action =
   | { type: 'FETCH_INIT' }
   | { type: 'FETCH_TYPES_SUCCESS'; payload: string[] }
-  | { type: 'FETCH_DATA_SUCCESS'; payload: { entities: ComplexEntity[]; newKeys: string[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null; total: number } }
+  | { type: 'FETCH_DATA_SUCCESS'; payload: { entities: ComplexEntity[]; newKeys: string[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null; hasMore: boolean } }
   | { type: 'FETCH_FAILURE'; payload: string }
   | { type: 'RESET_STATE'; payload: { type?: string } }
   | { type: 'SET_PAGE'; payload: number }
@@ -71,7 +69,7 @@ function reducer(state: State, action: Action): State {
     case 'RESET_STATE':
       return {
         ...initialState,
-        listTypes: state.listTypes, // Keep the list types
+        listTypes: state.listTypes,
         isLoading: !!action.payload.type,
       };
     case 'FETCH_INIT':
@@ -79,13 +77,14 @@ function reducer(state: State, action: Action): State {
     case 'FETCH_TYPES_SUCCESS':
       return { ...state, listTypes: action.payload, isLoadingListTypes: false };
     case 'FETCH_DATA_SUCCESS':
+      // Estimate total count based on whether a full page was returned
+      const newTotal = state.page * PAGE_SIZE + (action.payload.hasMore ? 1 : 0);
       return {
         ...state,
         isLoading: false,
         entities: action.payload.entities,
-        // Only update keys if they are not already set, to prevent flickering
         allKeysFromType: state.allKeysFromType.length === 0 ? action.payload.newKeys : state.allKeysFromType,
-        totalCount: action.payload.total,
+        totalCount: state.totalCount === null || newTotal > state.totalCount ? newTotal : state.totalCount,
         initialDataLoaded: true,
       };
     case 'SET_PAGINATION_DOCS':
@@ -136,7 +135,7 @@ function buildQueryConstraints(
 
     for (const key in filters) {
         if (filters[key]) {
-            constraints.push(where(key, '==', filters[key]));
+            constraints.push(where(key, '>=', filters[key]), where(key, '<=', filters[key] + '\uf8ff'));
         }
     }
     constraints.push(orderBy('__name__'));
@@ -144,8 +143,6 @@ function buildQueryConstraints(
     if (direction === 'next' && pageDocs[page - 1]) {
         constraints.push(startAfter(pageDocs[page - 1]));
     }
-    // Note: 'prev' direction is not supported with __name__ ordering in a scalable way.
-    // The current reset approach for 'prev' is a safe fallback.
     
     constraints.push(limit(PAGE_SIZE));
     return constraints;
@@ -161,21 +158,11 @@ async function fetchEntitiesPage(
     filters: Record<string, string>,
     pageDocs: (QueryDocumentSnapshot<DocumentData> | null)[],
     page: number,
-    direction: 'next' | 'prev' | 'initial',
-    currentTotal: number | null,
+    direction: 'next' | 'prev' | 'initial'
 ) {
     dispatch({ type: 'FETCH_INIT' });
     
     try {
-        let total = currentTotal;
-        if (direction === 'initial' || total === null) {
-            const countQueryConstraints = [where('type', '==', type)];
-            for (const key in filters) { if (filters[key]) countQueryConstraints.push(where(key, '==', filters[key])); }
-            const countQuery = query(collection(db, 'tsia-complex-entities'), ...countQueryConstraints);
-            const countSnapshot = await getCountFromServer(countQuery);
-            total = countSnapshot.data().count;
-        }
-
         const constraints = buildQueryConstraints(type, filters, pageDocs, page, direction);
         const finalQuery = query(collection(db, 'tsia-complex-entities'), ...constraints);
         const documentSnapshots = await getDocs(finalQuery);
@@ -183,7 +170,6 @@ async function fetchEntitiesPage(
         const newEntities = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() } as ComplexEntity));
         
         let newKeys: string[] = [];
-        // Extract keys from the first document if available, this defines the table columns
         if (newEntities.length > 0) {
             newKeys = Object.keys(newEntities[0]);
         } else {
@@ -193,8 +179,9 @@ async function fetchEntitiesPage(
         }
 
         const lastDoc = documentSnapshots.docs.length > 0 ? documentSnapshots.docs[documentSnapshots.docs.length - 1] : null;
+        const hasMore = documentSnapshots.docs.length === PAGE_SIZE;
 
-        dispatch({ type: 'FETCH_DATA_SUCCESS', payload: { entities: newEntities, newKeys, lastDoc, total: total! } });
+        dispatch({ type: 'FETCH_DATA_SUCCESS', payload: { entities: newEntities, newKeys, lastDoc, hasMore } });
         dispatch({ type: 'SET_PAGINATION_DOCS', payload: { page: page, doc: lastDoc } });
 
     } catch (err: any) {
@@ -209,23 +196,21 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
   const [state, dispatch] = useReducer(reducer, initialState);
   const [debouncedFilters] = useDebounce(columnFilters, 500);
   
-  // Fetch list types on mount
   useEffect(() => {
     fetchDistinctTypes(dispatch);
   }, []);
 
-  // Fetch entities when type or filters change
   useEffect(() => {
     dispatch({ type: 'RESET_STATE', payload: { type } });
     if (type) {
-      fetchEntitiesPage(dispatch, type, debouncedFilters, initialState.pageDocs, 1, 'initial', null);
+      fetchEntitiesPage(dispatch, type, debouncedFilters, initialState.pageDocs, 1, 'initial');
     }
   }, [type, debouncedFilters]);
   
   const refetch = useCallback(() => {
     if (type) {
       dispatch({ type: 'RESET_STATE', payload: { type } });
-      fetchEntitiesPage(dispatch, type, debouncedFilters, initialState.pageDocs, 1, 'initial', null);
+      fetchEntitiesPage(dispatch, type, debouncedFilters, initialState.pageDocs, 1, 'initial');
     }
   }, [type, debouncedFilters]);
 
@@ -233,12 +218,11 @@ export function useComplexEntities(type?: string, columnFilters: Record<string, 
     if (type) {
       const newPage = state.page + 1;
       dispatch({ type: 'SET_PAGE', payload: newPage });
-      fetchEntitiesPage(dispatch, type, debouncedFilters, state.pageDocs, newPage, 'next', state.totalCount);
+      fetchEntitiesPage(dispatch, type, debouncedFilters, state.pageDocs, newPage, 'next');
     }
-  }, [type, debouncedFilters, state.page, state.pageDocs, state.totalCount]);
+  }, [type, debouncedFilters, state.page, state.pageDocs]);
 
   const prevPage = useCallback(() => {
-    // A true 'prev' with Firestore cursors is complex. Resetting is a stable approach.
     refetch();
   }, [refetch]);
 
