@@ -55,7 +55,7 @@ export const addressSchema = z.object({
     street: z.string().optional(),
     number: z.string().optional(),
     city: z.string().optional(),
-    region: z.string().optional(),
+    region: z.string().optional(), // Νομός / Περιοχή
     postalCode: z.string().optional(),
     municipality: z.string().optional(),
   }).optional(),

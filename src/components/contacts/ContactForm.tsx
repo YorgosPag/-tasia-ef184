@@ -245,10 +245,14 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
        <AccordionItem value="address">
         <AccordionTrigger>Στοιχεία Διεύθυνσης</AccordionTrigger>
         <AccordionContent className="space-y-4 p-1">
-          {renderField('address.street', 'Οδός', <FormField control={form.control} name="address.street" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-          {renderField('address.number', 'Αριθμός', <FormField control={form.control} name="address.number" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-          {renderField('address.city', 'Πόλη', <FormField control={form.control} name="address.city" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
-          {renderField('address.postalCode', 'Ταχ. Κώδικας', <FormField control={form.control} name="address.postalCode" render={({ field }) => (<FormItem className="w-full"><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="address.street" render={({ field }) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="address.number" render={({ field }) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="address.city" render={({ field }) => (<FormItem><FormLabel>Πόλη</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="address.postalCode" render={({ field }) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="address.municipality" render={({ field }) => (<FormItem><FormLabel>Δήμος</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="address.region" render={({ field }) => (<FormItem><FormLabel>Περιοχή/Νομός</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+          </div>
         </AccordionContent>
       </AccordionItem>
 
