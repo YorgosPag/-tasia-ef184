@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -77,18 +78,27 @@ export function AddressSection({ form }: ContactFormProps) {
                         </div>
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name={`addresses.${index}.toponym`} render={({ field }) => (
+                    <FormField control={form.control} name={`addresses.${index}.postalCode`} render={({ field }) => (
                       <FormItem className="flex items-center gap-4">
-                        <FormLabel className="w-40 text-right">Τοπωνύμιο</FormLabel>
+                        <FormLabel className="w-40 text-right">Ταχ. Κώδικας</FormLabel>
                         <div className="flex-1">
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                         </div>
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name={`addresses.${index}.postalCode`} render={({ field }) => (
+                    <FormField control={form.control} name={`addresses.${index}.country`} render={({ field }) => (
                       <FormItem className="flex items-center gap-4">
-                        <FormLabel className="w-40 text-right">Ταχ. Κώδικας</FormLabel>
+                        <FormLabel className="w-40 text-right">Χώρα</FormLabel>
+                        <div className="flex-1">
+                          <FormControl><Input {...field} /></FormControl>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name={`addresses.${index}.toponym`} render={({ field }) => (
+                      <FormItem className="flex items-center gap-4">
+                        <FormLabel className="w-40 text-right">Τοπωνύμιο</FormLabel>
                         <div className="flex-1">
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
@@ -106,15 +116,6 @@ export function AddressSection({ form }: ContactFormProps) {
                         indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
                       />
                     ))}
-                    <FormField control={form.control} name={`addresses.${index}.country`} render={({ field }) => (
-                      <FormItem className="flex items-center gap-4">
-                        <FormLabel className="w-40 text-right">Χώρα</FormLabel>
-                        <div className="flex-1">
-                          <FormControl><Input {...field} /></FormControl>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )} />
                   </div>
                   {googleMapsUrl && (
                     <div className="flex justify-end pt-2">

@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { useWatch, useFieldArray } from 'react-hook-form';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/shared/components/ui/accordion';
+import { Accordion } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { BasicInfoSection } from './ContactForm/sections/BasicInfoSection';
@@ -35,8 +35,10 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
   const handleTitleClick = (index: number) => {
     setEditingTitleIndex(index);
-    const currentTitle = form.getValues(`addresses.${index}.customTitle`) || `Διεύθυνση ${index + 1} - ${form.getValues(`addresses.${index}.type`)}`;
-    setTempTitle(currentTitle);
+    const addressType = form.watch(`addresses.${index}.type`);
+    const customTitle = form.watch(`addresses.${index}.customTitle`);
+    const defaultTitle = `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
+    setTempTitle(customTitle || defaultTitle);
   };
   
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +93,10 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                          <h3 className="text-lg font-semibold text-primary">Έδρα (αυτόματη από το ΓΕΜΗ)</h3>
                          <p className="text-sm text-muted-foreground">Η διεύθυνση αυτή αντλείται αυτόματα από τα στοιχεία του ΓΕΜΗ.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                            <FormItem><FormLabel>Οδός</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input /></FormControl></FormItem>
                             <FormItem><FormLabel>Οικισμός</FormLabel><FormControl><Input /></FormControl></FormItem>
                             <FormItem><FormLabel>Δημοτική/Τοπική Κοινότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
                             <FormItem><FormLabel>Δημοτική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
@@ -151,7 +157,14 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                   render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Τύπος Διεύθυνσης</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <Select onValueChange={(value) => {
+                                            field.onChange(value);
+                                            // Auto-update title only if it hasn't been manually set
+                                            if (!form.getValues(`addresses.${index}.customTitle`)) {
+                                                const currentTitle = `Διεύθυνση ${index + 1} – ${value}`;
+                                                // This doesn't set it in the form state, just for display logic
+                                            }
+                                        }} defaultValue={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Επιλέξτε τύπο..."/>
@@ -172,6 +185,10 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 <Separator />
                                 <div className="text-sm text-muted-foreground mb-1">Διεύθυνση (χειροκίνητη εισαγωγή)</div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <FormField name={`addresses.${index}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field}/></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${index}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field}/></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${index}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field}/></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${index}.country`} control={form.control} render={({field}) => (<FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input {...field}/></FormControl></FormItem>)}/>
                                     <FormItem><FormLabel>Οικισμός</FormLabel><FormControl><Input /></FormControl></FormItem>
                                     <FormItem><FormLabel>Δημοτική/Τοπική Κοινότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
                                     <FormItem><FormLabel>Δημοτική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
