@@ -24,20 +24,27 @@ import { Separator } from '@/shared/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useCustomLists } from '@/hooks/useCustomLists';
+import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
-  const { lists } = useCustomLists();
-  
+  const { lists, addNewItemToList } = useCustomLists();
+
+  const addressListKey = 'Yz439YFkR4U4eRAwDNy5';
   const addressTypeOptions = React.useMemo(() => {
-    const addressListId = 'Yz439YFkR4U4eRAwDNy5';
-    const addressList = lists.find(l => l.id === addressListId);
+    const addressList = lists.find(l => l.id === addressListKey);
     return addressList?.items.map(item => ({ label: item.value, value: item.value })) || [];
   }, [lists]);
+  
+  const handleCreateAddressType = async (value: string) => {
+    const result = await addNewItemToList(addressListKey, value, false);
+    return !!result;
+  }
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "addresses",
+    keyName: 'fieldId',
   });
   
   const [editingTitleIndex, setEditingTitleIndex] = useState<number | null>(null);
@@ -167,23 +174,15 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                   render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Τύπος Διεύθυνσης</FormLabel>
-                                        <Select onValueChange={(value) => {
-                                            field.onChange(value);
-                                            const customTitle = form.getValues(`addresses.${index}.customTitle`);
-                                            if (!customTitle) {
-                                              // This logic doesn't set a field, it's for display only.
-                                              // The title is constructed dynamically above.
-                                            }
-                                        }} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Επιλέξτε τύπο..."/>
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {addressTypeOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
+                                         <CreatableCombobox 
+                                            options={addressTypeOptions}
+                                            value={field.value}
+                                            onChange={(value) => {
+                                                field.onChange(value);
+                                            }}
+                                            onCreate={handleCreateAddressType}
+                                            placeholder="Επιλέξτε ή δημιουργήστε τύπο..."
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                   )}

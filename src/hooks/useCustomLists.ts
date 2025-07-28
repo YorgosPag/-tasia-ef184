@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -15,6 +16,7 @@ import {
   where,
   limit,
   setDoc,
+  addDoc,
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { useToast } from '@/shared/hooks/use-toast';
@@ -69,15 +71,14 @@ export function useCustomLists() {
 
     const unsubscribe = onSnapshot(listsQuery, async (snapshot) => {
       try {
-        const listsData = await Promise.all(
-          snapshot.docs.map(async (listDoc) => {
+        const listsDataPromises = snapshot.docs.map(async (listDoc) => {
             const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
             const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
             const itemsSnapshot = await getDocs(itemsQuery);
             list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
             return list;
-          })
-        );
+        });
+        const listsData = await Promise.all(listsDataPromises);
         setLists(listsData);
       } catch (error) {
          console.error("Error processing custom lists snapshot:", error);
@@ -98,8 +99,14 @@ export function useCustomLists() {
       // if(!user) return { success: false, error: 'User not authenticated' };
       setIsSubmitting(true);
       try {
+          // Check for key uniqueness before creating
+          const q = query(collection(db, 'tsia-custom-lists'), where('id', '==', listData.id));
+          const snapshot = await getDocs(q);
+          if (!snapshot.empty) {
+              return { success: false, error: 'Το κλειδί υπάρχει ήδη.' };
+          }
+
           const listRef = doc(collection(db, 'tsia-custom-lists'));
-          // The key is now the auto-generated document ID from Firestore. No need to check for uniqueness.
           await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
           toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.' });
           await logActivity('CREATE_LIST', { entityId: listRef.id, entityType: 'custom-list', name: listData.title });
@@ -215,6 +222,39 @@ export function useCustomLists() {
     }
   }, [lists, toast, user]);
 
+  const addNewItemToList = useCallback(async (listId: string, value: string, hasCode?: boolean, code?: string): Promise<string | null> => {
+      // if (!user) return null;
+       try {
+        const list = lists.find(l => l.id === listId);
+        if (!list) throw new Error("List not found.");
+
+        const itemsCollectionRef = collection(db, 'tsia-custom-lists', listId, 'tsia-items');
+        
+        // Check for uniqueness before adding
+        const q = query(itemsCollectionRef, where('value', '==', value));
+        const existing = await getDocs(q);
+        if (!existing.empty) {
+            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Αυτό το στοιχείο υπάρχει ήδη.' });
+            return null;
+        }
+
+        const newItemData = {
+            value,
+            code: hasCode ? (code || value) : undefined,
+            createdAt: serverTimestamp(),
+        };
+
+        const docRef = await addDoc(itemsCollectionRef, newItemData);
+        toast({ title: 'Επιτυχία', description: 'Το νέο στοιχείο προστέθηκε.' });
+        return docRef.id;
+
+    } catch (error) {
+        console.error('Error adding new item:', error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η προσθήκη του νέου στοιχείου απέτυχε.' });
+        return null;
+    }
+  }, [lists, toast, user]);
+
   const updateItem = useCallback(async (listId: string, itemId: string, data: { value: string; code?: string }): Promise<boolean> => {
      // if(!user) return false;
      try {
@@ -233,11 +273,7 @@ export function useCustomLists() {
 
     // The mapping from a user-friendly title to a db field is fragile.
     // A better approach would be to have a 'key' field on the list document.
-    // For now, we will find the key based on the title.
-    const listKey = Object.keys(listKeyToContactFieldMap).find(key => 
-      list.title.toLowerCase().includes(key)
-    );
-    const contactField = listKey ? listKeyToContactFieldMap[listKey as keyof typeof listKeyToContactFieldMap] : undefined;
+    const contactField = listKeyToContactFieldMap[listId];
 
     if (contactField) {
        const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
@@ -264,5 +300,5 @@ export function useCustomLists() {
   }, [toast, user, lists]);
   
 
-  return { lists, isLoading, isSubmitting, createList, updateList, deleteList, addItem, updateItem, deleteItem };
+  return { lists, isLoading, isSubmitting, createList, updateList, deleteList, addItem, addNewItemToList, updateItem, deleteItem };
 }
