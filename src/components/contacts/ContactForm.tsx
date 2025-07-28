@@ -22,8 +22,13 @@ import { Phone, Link as LinkIcon, Map as MapIcon, Info, UserCircle } from 'lucid
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
-  const addresses = useWatch({ control: form.control, name: 'addresses' }) || [];
-  const gemhAddressIndex = addresses.findIndex(addr => addr.fromGEMI);
+  
+  const { fields: addressFields } = useFieldArray({
+    control: form.control,
+    name: "addresses",
+    keyName: 'fieldId', // to avoid conflicts with 'id' from data
+  });
+  const gemhAddressIndex = addressFields.findIndex(addr => addr.fromGEMI);
   
   const renderLegalPersonForm = () => (
      <div className="w-full space-y-4">
@@ -52,11 +57,11 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     </TabsContent>
                     
                      <TabsContent value="headquarters" className="mt-4">
-                        {gemhAddressIndex !== -1 ? (
-                             <Card key={JSON.stringify(addresses[gemhAddressIndex])} className="relative border-destructive/50">
+                        {gemhAddressIndex !== -1 && addressFields[gemhAddressIndex] ? (
+                             <Card key={JSON.stringify(addressFields[gemhAddressIndex])} className="relative border-destructive/50">
                                 <CardContent className="p-6 space-y-4">
                                     <p className="text-sm text-destructive font-semibold text-center mb-4">
-                                       ❗ Τα παρακάτω στοιχεία αντλήθηκαν αυτόματα από το Γ.Ε.ΜΗ.
+                                       ❗ Τα παρακάτω στοιχεία αντλήθηκαν αυτόματα από το Γ.Ε.ΜΗ. και δεν μπορούν να τροποποιηθούν από εδώ.
                                     </p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <FormField name={`addresses.${gemhAddressIndex}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)}/>
