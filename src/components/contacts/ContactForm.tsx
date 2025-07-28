@@ -5,7 +5,7 @@ import React from 'react';
 import { useWatch, useFieldArray } from 'react-hook-form';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Card, CardContent } from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { BasicInfoSection } from './ContactForm/sections/BasicInfoSection';
 import { IdentitySection } from './ContactForm/sections/IdentitySection';
 import { ContactSection } from './ContactForm/sections/ContactSection';
@@ -18,6 +18,8 @@ import { LegalRepresentativeSection } from './ContactForm/sections/LegalRepresen
 import { FormItem, FormLabel, FormControl, FormField, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Phone, Link as LinkIcon, Map as MapIcon, Info, UserCircle } from 'lucide-react';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/shared/components/ui/table';
+import { Button } from '@/shared/components/ui/button';
 
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
@@ -39,19 +41,20 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
         </Accordion>
         
         <Tabs defaultValue="gemh-data" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="h-auto flex-wrap justify-start">
                 <TabsTrigger value="gemh-data">Στοιχεία από ΓΕΜΗ</TabsTrigger>
                 <TabsTrigger value="user-data">Στοιχεία από Χρήστη</TabsTrigger>
             </TabsList>
             
             <TabsContent value="gemh-data" className="mt-4">
                 <Tabs defaultValue="general" className="w-full">
-                    <TabsList className="h-auto flex-wrap justify-start">
+                    <TabsList className="h-auto flex-wrap justify-start gap-1">
                         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
                         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
                         <TabsTrigger value="capital">Κεφάλαιο Εταιρείας</TabsTrigger>
                         <TabsTrigger value="stocks">Μετοχική Σύνθεση</TabsTrigger>
+                        <TabsTrigger value="documents">Έγγραφα ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
                     </TabsList>
 
@@ -141,6 +144,65 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                     <FormItem><FormLabel>Τύπος Μετοχής</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Ποσότητα</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Ονομαστική Τιμή</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    
+                    <TabsContent value="documents" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Έγγραφα ΓΕΜΗ</CardTitle>
+                                <CardDescription>
+                                    Τα παρακάτω έγγραφα θα αντλούνται αυτόματα από το Γ.Ε.ΜΗ. μόλις ολοκληρωθεί η σύνδεση.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                {/* Section for Announcements */}
+                                <div>
+                                    <h4 className="font-semibold mb-2">Έγγραφα Ανακοινώσεων (Αποφάσεις Οργάνων)</h4>
+                                    <div className="overflow-x-auto border rounded-md">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Ημ/νία</TableHead>
+                                                    <TableHead>Όργανο</TableHead>
+                                                    <TableHead>Θέμα</TableHead>
+                                                    <TableHead>KAK</TableHead>
+                                                    <TableHead>Ενέργεια</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                <TableRow className="opacity-50">
+                                                    <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                    <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                    <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                    <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                    <TableCell><Button variant="outline" size="sm" disabled>Λήψη</Button></TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
+                                 {/* Section for Incorporation Documents */}
+                                <div>
+                                    <h4 className="font-semibold mb-2">Έγγραφα Σύστασης (ΥΜΣ)</h4>
+                                     <div className="overflow-x-auto border rounded-md">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Κωδικός (ΚΑΔ)</TableHead>
+                                                    <TableHead>Ενέργεια</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                <TableRow className="opacity-50">
+                                                    <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                    <TableCell><Button variant="outline" size="sm" disabled>Λήψη</Button></TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
