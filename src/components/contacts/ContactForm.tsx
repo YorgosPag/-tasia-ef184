@@ -46,7 +46,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             
             <TabsContent value="gemh-data" className="mt-4">
                 <Tabs defaultValue="general" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="h-auto flex-wrap justify-start">
                         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
                         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
@@ -123,7 +123,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
             <TabsContent value="user-data" className="mt-4">
                  <Tabs defaultValue="contact" className="w-full">
-                     <TabsList className="grid w-full grid-cols-3">
+                     <TabsList className="h-auto flex-wrap justify-start">
                          <TabsTrigger value="contact">Επικοινωνία & Socials</TabsTrigger>
                          <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
                          <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
