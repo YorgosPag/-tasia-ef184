@@ -1,4 +1,4 @@
-// src/shared/lib/firebase.ts
+
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
@@ -7,18 +7,17 @@ import { getFunctions } from 'firebase/functions';
 
 // "Source of Truth" for Firebase Config
 const firebaseConfig = {
-  apiKey: "***REMOVED***",
-  authDomain: "tasia-6f77i.firebaseapp.com",
-  projectId: "tasia-6f77i",
-  storageBucket: "tasia-6f77i.appspot.com",
-  messagingSenderId: "204877276202",
-  appId: "1:204877276202:web:31db4eb5b1c1b7c4078f53"
+  apiKey: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process***REMOVED***.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase safely for both server and client
+// Initialize Firebase for client-side rendering, ensuring it's done only once.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Export services for use in other parts of the application
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
