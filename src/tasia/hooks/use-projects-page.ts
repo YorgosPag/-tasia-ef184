@@ -12,7 +12,7 @@ import { useDataStore, Project, Company } from '@/shared/hooks/use-data-store';
 import { logActivity } from '@/shared/lib/logger';
 import { exportToJson } from '@/shared/lib/exporter';
 import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
-import { formatDate } from '@/tasia/lib/project-helpers';
+import { formatDate } from '@/shared/lib/project-helpers';
 import { useAuth } from '@/shared/hooks/use-auth';
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/shared/types/project-types';
 
@@ -56,7 +56,7 @@ export function useProjectsPage() {
     form.reset({
       ...project,
       tags: project.tags?.join(', ') || '',
-      deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : new Date(project.deadline),
+      deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : project.deadline,
     });
     setIsDialogOpen(true);
   }, [form]);
@@ -78,7 +78,7 @@ export function useProjectsPage() {
       const newId = await addProject({
         ...clonedData,
         tags: clonedData.tags?.join(','),
-        deadline: clonedData.deadline instanceof Timestamp ? clonedData.deadline.toDate() : new Date(clonedData.deadline),
+        deadline: clonedData.deadline instanceof Timestamp ? clonedData.deadline.toDate() : clonedData.deadline,
       });
       toast({ title: 'Επιτυχία', description: `Το έργο '${projectToClone.title}' αντιγράφηκε.` });
       if(newId) {

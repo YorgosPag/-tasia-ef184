@@ -3,6 +3,7 @@
 
 import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
+import { FloorPlanViewer } from '@/tasia/components/floor-plan/FloorPlanViewer';
 
 export const FloorPlanLoader = dynamic(
   () => import('@/tasia/components/floor-plan/FloorPlanViewer').then(mod => mod.FloorPlanViewer),

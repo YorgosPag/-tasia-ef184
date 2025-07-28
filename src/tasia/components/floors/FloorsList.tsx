@@ -45,12 +45,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useToast } from '@/tasia/hooks/use-toast';
+import { useToast } from '@/shared/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { format } from 'date-fns';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
-import type { Building } from '@/tasia/app/buildings/[id]/page';
+import type { Building } from '@/app/buildings/[id]/page';
 
 const floorSchema = z.object({
   level: z.string().min(1, { message: 'Το επίπεδο είναι υποχρεωτικό.' }),
