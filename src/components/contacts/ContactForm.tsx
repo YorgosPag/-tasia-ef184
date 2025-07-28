@@ -63,8 +63,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             </TabsList>
             
             <TabsContent value="basic" className="mt-4">
-                <Accordion type="multiple" defaultValue={['identity', 'job']} className="w-full space-y-2">
-                    <IdentitySection form={form} />
+                <Accordion type="multiple" defaultValue={['job']} className="w-full space-y-2">
                     <JobSection form={form} />
                 </Accordion>
             </TabsContent>
@@ -89,37 +88,13 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                       <CardContent className="p-6 space-y-4">
                          <h3 className="text-lg font-semibold text-primary">Έδρα (αυτόματη από το ΓΕΜΗ)</h3>
                          <p className="text-sm text-muted-foreground">Η διεύθυνση αυτή αντλείται αυτόματα από τα στοιχεία του ΓΕΜΗ.</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                            <FormItem><FormLabel>Οδός</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Οικισμός</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Δημοτική/Τοπική Κοινότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Δημοτική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Δήμος</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Περιφερειακή Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Περιφέρεια</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Αποκεντρωμένη Διοίκηση</FormLabel><FormControl><Input /></FormControl></FormItem>
-                            <FormItem><FormLabel>Μεγάλη Γεωγραφική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
-                        </div>
-                        <div className="pt-4">
-                             <FormField
-                                name="addresses[0].fromGEMI"
-                                control={form.control}
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>Η έδρα αυτή προέρχεται από το ΓΕΜΗ</FormLabel>
-                                            <FormDescription>Ενεργοποιήστε αν η διεύθυνση έχει αντληθεί αυτόματα από το ΓΕΜΗ.</FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
+                        <FormField control={form.control} name="job.gemhAddress" render={({ field }) => (
+                            <FormItem className="pt-2">
+                                <FormLabel>Διεύθυνση από ΓΕΜΗ</FormLabel>
+                                <FormControl><Input {...field} disabled /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                         )} />
                       </CardContent>
                     </Card>
 

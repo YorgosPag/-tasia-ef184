@@ -55,7 +55,7 @@ export function JobSection({ form }: ContactFormProps) {
                     const dataArray = await response.json();
                     if(dataArray && dataArray.length > 0) {
                         const companyData = dataArray[0];
-                         // GEMH response keys might be different. Let's assume a mapping.
+                         // Map GEMH data to form fields
                          form.setValue('job.companyName', companyData.brandName || '', { shouldDirty: true });
                          form.setValue('job.companyTitle', companyData.title || '', { shouldDirty: true });
                          form.setValue('job.commercialTitle', companyData.distinctiveTitle || '', { shouldDirty: true });
@@ -123,14 +123,23 @@ export function JobSection({ form }: ContactFormProps) {
                             </div>
                         </FormItem>
                     )} />
+                     <FormField control={form.control} name="afm" render={({ field }) => (
+                        <FormItem className="flex items-center gap-4">
+                            <FormLabel className="w-40 text-right">ΑΦΜ</FormLabel>
+                            <div className="flex-1 relative">
+                                <FormControl><Input {...field} /></FormControl>
+                                {isLoadingGemi && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-muted-foreground" />}
+                                <FormMessage />
+                            </div>
+                        </FormItem>
+                    )} />
+                     <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">ΔΟΥ (από ΓΕΜΗ)</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
                     <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Επωνυμία</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.companyTitle" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τίτλος</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
                     <FormField control={form.control} name="job.commercialTitle" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Διακριτικός Τίτλος</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.companyTitle" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τίτλος</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.gemhActivity" render={({ field }) => (<FormItem className="flex items-center gap-4 md:col-span-2"><FormLabel className="w-40 text-right">Δραστηριότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
                     <FormField control={form.control} name="job.gemhStatus" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Κατάσταση ΓΕΜΗ</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
                     <FormField control={form.control} name="job.gemhDate" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ημ/νία Κατάστασης</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">ΔΟΥ (από ΓΕΜΗ)</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.gemhActivity" render={({ field }) => (<FormItem className="flex items-center gap-4 md:col-span-2"><FormLabel className="w-40 text-right">Δραστηριότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.gemhAddress" render={({ field }) => (<FormItem className="flex items-center gap-4 md:col-span-2"><FormLabel className="w-40 text-right">Διεύθυνση ΓΕΜΗ</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
                  </div>
             </AccordionContent>
         </AccordionItem>
