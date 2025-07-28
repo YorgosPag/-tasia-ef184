@@ -1,7 +1,13 @@
 
 import { z } from 'zod';
 
-export const ALL_ACCORDION_SECTIONS = ['personal', 'identity', 'contact', 'socials', 'addresses', 'job', 'notes'];
+export const ALL_ACCORDION_SECTIONS = ['personal', 'identity', 'contact', 'socials', 'addresses', 'job', 'notes', 'representative'];
+
+const personSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().optional(),
+  role: z.string().optional(),
+});
 
 export const personalInfoSchema = z.object({
   id: z.string().optional(), // Keep ID for editing context
@@ -18,6 +24,9 @@ export const personalInfoSchema = z.object({
   gender: z.enum(['Άνδρας', 'Γυναίκα', 'Άλλο']).optional(),
   nationality: z.string().optional(),
   photoUrl: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
+  
+  // For legal entities
+  representatives: z.array(personSchema).optional(),
 });
 
 export const identityTaxSchema = z.object({
