@@ -40,10 +40,13 @@ const createListSchema = z.object({
   title: z.string().min(2, {
     message: 'Ο τίτλος πρέπει να έχει τουλάχιστον 2 χαρακτήρες.',
   }),
-  key: z.string().min(2, 'Το κλειδί είναι υποχρεωτικό.'),
+  key: z.string(), // Key is generated automatically, so it doesn't need min validation here.
   description: z.string().optional(),
   hasCode: z.boolean().default(false),
   isProtected: z.boolean().default(false),
+}).refine(data => data.key.length >= 2, {
+    message: "Το κλειδί που παράγεται αυτόματα πρέπει να έχει τουλάχιστον 2 χαρακτήρες. Δοκιμάστε διαφορετικό τίτλο.",
+    path: ["key"],
 });
 
 type CreateListFormValues = z.infer<typeof createListSchema>;
