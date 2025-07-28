@@ -50,6 +50,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
                         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
+                        <TabsTrigger value="capital">Κεφάλαιο Εταιρείας</TabsTrigger>
                         <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
                     </TabsList>
 
@@ -82,7 +83,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     </TabsContent>
                     
                      <TabsContent value="headquarters" className="mt-4">
-                        {gemhAddressIndex !== -1 && addressFields[gemhAddressIndex] ? (
+                        {gemhAddressIndex !== -1 && addresses[gemhAddressIndex] ? (
                              <Card key={JSON.stringify(addresses[gemhAddressIndex])} className="relative border-destructive/50">
                                 <CardContent className="p-6 space-y-4">
                                     <p className="text-sm text-destructive font-semibold text-center mb-4">
@@ -111,6 +112,22 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 </CardContent>
                             </Card>
                         )}
+                    </TabsContent>
+
+                    <TabsContent value="capital" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardContent className="p-6 space-y-4">
+                                <p className="text-sm text-muted-foreground text-center mb-4">
+                                🛈 Τα παρακάτω στοιχεία θα συμπληρωθούν αυτόματα από το Γ.Ε.ΜΗ. μόλις ολοκληρωθεί η σύνδεση.
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-50">
+                                    <FormItem><FormLabel>Κεφάλαιο</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Νόμισμα</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Εξωλογιστικά Κεφάλαια</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Εγγυητικά Κεφάλαια</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     <TabsContent value="representatives" className="mt-4">
