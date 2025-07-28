@@ -57,7 +57,9 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
   
   const renderLegalPersonForm = () => (
     <div className="w-full space-y-4">
-      <BasicInfoSection form={form} onFileSelect={onFileSelect} />
+      <Accordion type="multiple" defaultValue={['personal']} className="w-full">
+         <BasicInfoSection form={form} onFileSelect={onFileSelect} />
+      </Accordion>
       
       {(entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') && (
         <div className="pt-4">
@@ -100,8 +102,10 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                           {gemhAddress && (
                               <Card key={gemhAddress.fieldId} className="relative border-primary/50">
                                   <CardContent className="p-6 space-y-4">
-                                      <h3 className="text-lg font-semibold text-primary">Έδρα (αυτόματη από το ΓΕΜΗ)</h3>
-                                      <p className="text-sm text-destructive font-semibold">❗Αυτόματα από Γ.Ε.ΜΗ.</p>
+                                      <div className="flex justify-between items-center mb-4">
+                                         <h3 className="text-lg font-semibold text-primary">Έδρα</h3>
+                                         <p className="text-sm text-destructive font-semibold">❗Αυτόματα από Γ.Ε.ΜΗ.</p>
+                                      </div>
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                           <FormField name={`addresses.${gemhAddressIndex}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)}/>
                                           <FormField name={`addresses.${gemhAddressIndex}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
@@ -207,5 +211,3 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
   return (entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') ? renderLegalPersonForm() : renderDefaultForm();
 }
-
-    
