@@ -2,7 +2,9 @@
 'use client';
 
 import React from 'react';
+import { useWatch } from 'react-hook-form';
 import { Accordion } from '@/shared/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { BasicInfoSection } from './ContactForm/sections/BasicInfoSection';
 import { IdentitySection } from './ContactForm/sections/IdentitySection';
 import { ContactSection } from './ContactForm/sections/ContactSection';
@@ -12,11 +14,41 @@ import { NotesSection } from './ContactForm/sections/NotesSection';
 import { type ContactFormProps } from './ContactForm/types';
 import { SocialsSection } from './ContactForm/sections/SocialsSection';
 
-
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
+  const entityType = useWatch({ control: form.control, name: 'entityType' });
 
-  return (
-    <Accordion type="multiple" value={openSections} onValueChange={onOpenChange} className="w-full">
+  const renderLegalPersonForm = () => (
+    <div className="space-y-4">
+      <BasicInfoSection form={form} onFileSelect={onFileSelect} />
+       <Tabs defaultValue="basic" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="basic">Βασικά Στοιχεία</TabsTrigger>
+          <TabsTrigger value="contact">Επικοινωνία</TabsTrigger>
+          <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
+          <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
+        </TabsList>
+        <Accordion type="multiple" defaultValue={['identity', 'job', 'contact', 'socials', 'addresses', 'notes']} className="w-full">
+            <TabsContent value="basic" className="mt-4">
+                <IdentitySection form={form} />
+                <JobSection form={form} />
+            </TabsContent>
+            <TabsContent value="contact" className="mt-4">
+                <ContactSection form={form} />
+                <SocialsSection form={form} />
+            </TabsContent>
+            <TabsContent value="addresses" className="mt-4">
+                <AddressSection form={form} />
+            </TabsContent>
+            <TabsContent value="notes" className="mt-4">
+                <NotesSection form={form} />
+            </TabsContent>
+        </Accordion>
+      </Tabs>
+    </div>
+  );
+
+  const renderDefaultForm = () => (
+     <Accordion type="multiple" value={openSections} onValueChange={onOpenChange} className="w-full">
       <BasicInfoSection form={form} onFileSelect={onFileSelect} />
       <IdentitySection form={form} />
       <ContactSection form={form} />
@@ -26,4 +58,6 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
       <NotesSection form={form} />
     </Accordion>
   );
+
+  return entityType === 'Νομικό Πρόσωπο' ? renderLegalPersonForm() : renderDefaultForm();
 }
