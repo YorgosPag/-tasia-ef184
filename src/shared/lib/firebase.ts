@@ -1,8 +1,7 @@
 // src/shared/lib/firebase.ts
-
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth'; 
+import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 
@@ -17,7 +16,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase safely for both server and client
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // Export services for use in other parts of the application
 export const db = getFirestore(app);
