@@ -16,6 +16,7 @@ export const addressFieldsMap: {formKey: keyof ContactFormValues['addresses'][0]
 
 export const getFullAddress = (form: UseFormReturn<ContactFormValues>, index: number) => {
     const address = form.watch(`addresses.${index}`);
+    if (!address) return '';
     return [address.street, address.number, address.settlements, address.postalCode, address.country].filter(Boolean).join(' ');
 }
 
@@ -29,8 +30,9 @@ export const handleAddressSelect = (form: UseFormReturn<ContactFormValues>, idx:
       finalValue = val;
     }
     const currentValue = form.getValues(`addresses.${idx}.${fieldMap.formKey}` as const);
-    if (!currentValue || fieldMap.formKey === 'settlements') {
-      form.setValue(`addresses.${idx}.${fieldMap.formKey}` as const, finalValue, { shouldDirty: true });
-    }
+    
+    // Always set the value if a selection is made from autocomplete.
+    // The user can manually override it later if needed.
+    form.setValue(`addresses.${idx}.${fieldMap.formKey}` as const, finalValue, { shouldDirty: true });
   });
 };
