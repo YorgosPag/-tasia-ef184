@@ -28,11 +28,10 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
   const { fields: addressFields } = useFieldArray({
     control: form.control,
     name: "addresses",
-    keyName: 'fieldId', // to avoid conflicts with 'id' from data
+    keyName: 'fieldId', 
   });
   
-  const addresses = useWatch({ control: form.control, name: 'addresses' }) || [];
-  const gemhAddressIndex = addresses.findIndex(addr => addr.fromGEMI);
+  const gemhAddressIndex = addressFields.findIndex(addr => addr.fromGEMI);
   
   const renderLegalPersonForm = () => (
      <div className="w-full space-y-4">
@@ -48,7 +47,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             
             <TabsContent value="gemh-data" className="mt-4">
                 <Tabs defaultValue="general" className="w-full">
-                    <TabsList className="h-auto flex-wrap justify-start gap-1">
+                    <TabsList className="h-auto flex flex-wrap justify-start gap-1">
                         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
                         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
@@ -56,6 +55,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <TabsTrigger value="stocks">Μετοχική Σύνθεση</TabsTrigger>
                         <TabsTrigger value="documents">Έγγραφα ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
+                        <TabsTrigger value="activities">Δραστηριότητες (ΚΑΔ)</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="general" className="mt-4">
@@ -87,8 +87,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     </TabsContent>
                     
                      <TabsContent value="headquarters" className="mt-4">
-                        {gemhAddressIndex !== -1 && addresses[gemhAddressIndex] ? (
-                             <Card key={JSON.stringify(addresses[gemhAddressIndex])} className="relative border-destructive/50">
+                        {gemhAddressIndex !== -1 && addressFields[gemhAddressIndex] ? (
+                             <Card key={`gemi-address-${gemhAddressIndex}`} className="relative border-destructive/50">
                                 <CardContent className="p-6 space-y-4">
                                     <p className="text-sm text-destructive font-semibold text-center mb-4">
                                        ❗ Τα παρακάτω στοιχεία αντλήθηκαν αυτόματα από το Γ.Ε.ΜΗ. και δεν μπορούν να τροποποιηθούν από εδώ.
@@ -158,7 +158,6 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
-                                {/* Section for Announcements */}
                                 <div>
                                     <h4 className="font-semibold mb-2">Έγγραφα Ανακοινώσεων (Αποφάσεις Οργάνων)</h4>
                                     <div className="overflow-x-auto border rounded-md">
@@ -184,7 +183,6 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                         </Table>
                                     </div>
                                 </div>
-                                 {/* Section for Incorporation Documents */}
                                 <div>
                                     <h4 className="font-semibold mb-2">Έγγραφα Σύστασης (ΥΜΣ)</h4>
                                      <div className="overflow-x-auto border rounded-md">
@@ -203,6 +201,41 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                             </TableBody>
                                         </Table>
                                     </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                     <TabsContent value="activities" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Δραστηριότητες (ΚΑΔ)</CardTitle>
+                                <CardDescription>
+                                    🛈 Τα παρακάτω στοιχεία αντλούνται από το Γ.Ε.ΜΗ. και θα συμπληρωθούν αυτόματα μόλις ολοκληρωθεί η σύνδεση.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="overflow-x-auto border rounded-md opacity-50">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Κωδικός ΚΑΔ</TableHead>
+                                                <TableHead>Περιγραφή</TableHead>
+                                                <TableHead>Τύπος</TableHead>
+                                                <TableHead>Από</TableHead>
+                                                <TableHead>Έως</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <TableRow>
+                                                <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
                                 </div>
                             </CardContent>
                         </Card>
@@ -319,3 +352,5 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
   return (entityType === 'Νομικό Πρόσωπο') ? renderLegalPersonForm() : renderDefaultForm();
 }
+
+    
