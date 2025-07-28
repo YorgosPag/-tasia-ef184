@@ -1,84 +1,109 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 210 40% 98%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 210 40% 98%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --chart-1: 217.2 91.2% 59.8%;
-    --chart-2: 12.2 83.9% 57.8%;
-    --chart-3: 160 84% 39%;
-    --chart-4: 280 84% 57%;
-    --chart-5: 48 96% 57%;
+    /* Base Colors */
+    --background: 60 48% 96%; /* Light Gray - #F2F2F0 */
+    --foreground: 215 35% 21%; /* Dark Slate Blue - #2D3E4F */
+    
+    /* Primary / Accent Colors */
+    --primary: 0 84% 60%; /* Muted Orange - #F05454 */
+    --primary-foreground: 210 40% 98%; /* Almost White for text on primary */
+
+    /* Card & Popover */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 215 35% 21%; /* Dark Slate Blue */
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 35% 21%;
+
+    /* Secondary Colors */
+    --secondary: 215 28% 90%; /* Lighter Slate Blue for subtle backgrounds */
+    --secondary-foreground: 215 35% 21%;
+    
+    /* Muted Colors */
+    --muted: 215 28% 90%; 
+    --muted-foreground: 215 16% 47%; /* Softer Slate Blue for text */
+
+    /* Accent (used for hover states, etc.) */
+    --accent: 215 28% 93%; /* Very light slate for hover */
+    --accent-foreground: 215 35% 21%;
+    
+    /* Destructive Color */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Other UI Elements */
+    --border: 215 20% 87%; /* Light gray border */
+    --input: 215 20% 91%;  /* Input background */
+    --ring: 0 84% 60%;     /* Focus ring - Orange */
+
+    /* Chart Colors */
+    --chart-1: 215 50% 50%; /* Slate Blue */
+    --chart-2: 0 70% 65%;   /* Lighter Orange */
+    --chart-3: 215 30% 65%; /* Medium Slate Blue */
+    --chart-4: 350 70% 70%; /* Soft Red */
+    --chart-5: 50 60% 60%;  /* Muted Yellow */
+    
+    /* Radius */
     --radius: 0.5rem;
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 210 40% 98%;
-    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 217.2 91.2% 59.8%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 214.3 31.8% 91.4%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
+ 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
+    /* Base Colors */
+    --background: 215 28% 17%; /* Dark Slate Blue */
+    --foreground: 60 30% 96%;   /* Light Gray */
+
+    /* Primary / Accent Colors */
+    --primary: 0 84% 60%;       /* Muted Orange - Stays the same */
     --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 217.2 91.2% 59.8%;
-    --chart-1: 217.2 91.2% 59.8%;
-    --chart-2: 12.2 83.9% 57.8%;
-    --chart-3: 160 84% 39%;
-    --chart-4: 280 84% 57%;
-    --chart-5: 48 96% 57%;
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 210 40% 98%;
-    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 217.2 91.2% 59.8%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Card & Popover */
+    --card: 215 28% 21%;        /* Slightly lighter than background */
+    --card-foreground: 60 30% 96%;
+    --popover: 215 28% 17%;
+    --popover-foreground: 60 30% 96%;
+
+    /* Secondary Colors */
+    --secondary: 215 28% 25%;   /* Darker accent */
+    --secondary-foreground: 60 30% 96%;
+
+    /* Muted Colors */
+    --muted: 215 28% 25%;
+    --muted-foreground: 215 15% 65%; /* Lighter gray for muted text */
+
+    /* Accent (Hover) */
+    --accent: 215 28% 28%;
+    --accent-foreground: 60 30% 96%;
+
+    /* Destructive Color */
+    --destructive: 0 72% 51%; /* Slightly adjusted for dark bg */
+    --destructive-foreground: 0 0% 100%;
+
+    /* Other UI Elements */
+    --border: 215 28% 25%;
+    --input: 215 28% 25%;
+    --ring: 0 84% 60%;
+
+    /* Chart Colors (can be the same or adjusted for dark mode) */
+    --chart-1: 215 50% 50%;
+    --chart-2: 0 70% 65%;
+    --chart-3: 215 30% 65%;
+    --chart-4: 350 70% 70%;
+    --chart-5: 50 60% 60%;
   }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
   }
 }
