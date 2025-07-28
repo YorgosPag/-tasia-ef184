@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useWatch, useFieldArray } from 'react-hook-form';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
@@ -30,6 +30,23 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
     control: form.control,
     name: "addresses",
   });
+  const [editingTitleIndex, setEditingTitleIndex] = useState<number | null>(null);
+  const [tempTitle, setTempTitle] = useState('');
+
+  const handleTitleClick = (index: number) => {
+    setEditingTitleIndex(index);
+    const currentTitle = form.getValues(`addresses.${index}.customTitle`) || `Διεύθυνση ${index + 1} - ${form.getValues(`addresses.${index}.type`)}`;
+    setTempTitle(currentTitle);
+  };
+  
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTempTitle(e.target.value);
+  };
+  
+  const saveTitle = (index: number) => {
+    form.setValue(`addresses.${index}.customTitle`, tempTitle, { shouldDirty: true });
+    setEditingTitleIndex(null);
+  };
 
   const renderLegalPersonForm = () => (
     <Accordion type="multiple" defaultValue={['personal']} className="w-full">
@@ -100,14 +117,29 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     {/* Additional Addresses */}
                     {fields.map((field, index) => {
                          const addressType = form.watch(`addresses.${index}.type`);
-                         const title = `Διεύθυνση ${index + 1}` + (addressType ? ` - ${addressType}` : '');
+                         const customTitle = form.watch(`addresses.${index}.customTitle`);
+                         const defaultTitle = `Διεύθυνση ${index + 1}` + (addressType ? ` - ${addressType}` : '');
+                         const title = customTitle || defaultTitle;
                          const fromGEMI = form.watch(`addresses.${index}.fromGEMI`);
 
                          return (
                             <Card key={field.id} className="relative">
                               <CardContent className="p-6 space-y-4">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-lg font-semibold">{title}</h3>
+                                    {editingTitleIndex === index ? (
+                                      <Input
+                                        value={tempTitle}
+                                        onChange={handleTitleChange}
+                                        onBlur={() => saveTitle(index)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveTitle(index); } }}
+                                        autoFocus
+                                        className="h-9 text-lg font-semibold"
+                                      />
+                                    ) : (
+                                      <h3 className="text-lg font-semibold cursor-pointer" onClick={() => handleTitleClick(index)}>
+                                        {title}
+                                      </h3>
+                                    )}
                                     <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                                         <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
