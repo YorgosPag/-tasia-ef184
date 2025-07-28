@@ -49,6 +49,11 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
     name: "addresses",
     keyName: 'fieldId',
   });
+
+  const gemhAddress = fields.find((field, index) => form.getValues(`addresses.${index}.fromGEMI`));
+  const gemhAddressIndex = fields.findIndex((field, index) => form.getValues(`addresses.${index}.fromGEMI`));
+  const manualAddresses = fields.filter((field, index) => !form.getValues(`addresses.${index}.fromGEMI`));
+
   
   const renderLegalPersonForm = () => (
     <Accordion type="multiple" defaultValue={['personal']} className="w-full">
@@ -86,33 +91,44 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             
             <TabsContent value="addresses" className="mt-4">
                  <div className="space-y-4">
-                    {fields.map((field, index) => {
-                         const addressType = form.watch(`addresses.${index}.type`);
-                         const fromGEMI = form.watch(`addresses.${index}.fromGEMI`);
-                         const title = fromGEMI ? 'Έδρα (αυτόματη από το ΓΕΜΗ)' : `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
+                    {gemhAddress && (
+                         <Card key={gemhAddress.fieldId} className="relative border-primary/50">
+                            <CardContent className="p-6 space-y-4">
+                                <h3 className="text-lg font-semibold text-primary">Έδρα (αυτόματη από το ΓΕΜΗ)</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <FormField name={`addresses.${gemhAddressIndex}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${gemhAddressIndex}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${gemhAddressIndex}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${gemhAddressIndex}.municipality`} control={form.control} render={({field}) => (<FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
+                                </div>
+                            </CardContent>
+                         </Card>
+                    )}
 
+                    {manualAddresses.map((field, index) => {
+                         const originalIndex = fields.findIndex(f => f.id === field.id);
+                         const addressType = form.watch(`addresses.${originalIndex}.type`);
+                         const title = `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
 
                          return (
                             <Card key={field.fieldId} className="relative">
                               <CardContent className="p-6 space-y-4">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-lg font-semibold">{title}</h3>
-                                    {!fromGEMI && (
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    )}
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(originalIndex)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
                                 </div>
                                 
                                 <FormField
-                                  name={`addresses.${index}.type`}
+                                  name={`addresses.${originalIndex}.type`}
                                   control={form.control}
                                   render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Τύπος Διεύθυνσης</FormLabel>
                                          <CreatableCombobox 
                                             options={addressTypeOptions}
-                                            value={field.value}
+                                            value={field.value || ''}
                                             onChange={(value) => {
                                                 field.onChange(value);
                                             }}
@@ -127,22 +143,21 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 <Separator />
                                 <div className="text-sm text-muted-foreground mb-1">Διεύθυνση</div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <FormField name={`addresses.${index}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} disabled={fromGEMI} /></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${index}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${index}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${index}.municipality`} control={form.control} render={({field}) => (<FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
-                                     {addressFieldsMap.map(f => (
+                                    <FormField name={`addresses.${originalIndex}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${originalIndex}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${originalIndex}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
+                                    {addressFieldsMap.map(f => (
                                         <AddressAutocompleteInput
                                             key={f.formKey}
                                             form={form}
-                                            name={`addresses.${index}.${f.formKey}` as any}
+                                            name={`addresses.${originalIndex}.${f.formKey}` as any}
                                             label={f.label}
                                             algoliaKey={f.algoliaKey}
-                                            onSelect={(hit: any) => handleAddressSelect(form, index, hit)}
+                                            onSelect={(hit: any) => handleAddressSelect(form, originalIndex, hit)}
                                             indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
                                         />
                                     ))}
-                                    <FormField name={`addresses.${index}.country`} control={form.control} render={({field}) => (<FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${originalIndex}.country`} control={form.control} render={({field}) => (<FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
                                 </div>
                               </CardContent>
                             </Card>
