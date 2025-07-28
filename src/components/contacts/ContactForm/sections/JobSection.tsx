@@ -24,11 +24,23 @@ export function JobSection({ form }: ContactFormProps) {
     const [debouncedAfm] = useDebounce(afmValue, 1000);
     
     const [isLoadingGemi, setIsLoadingGemi] = useState(false);
+    
+    const clearGemiFields = () => {
+        form.setValue('job.companyName', '');
+        form.setValue('job.companyTitle', '');
+        form.setValue('job.commercialTitle', '');
+        form.setValue('job.gemhStatus', '');
+        form.setValue('job.gemhDate', '');
+        form.setValue('job.gemhAddress', '');
+        form.setValue('job.gemhActivity', '');
+        form.setValue('job.gemhDOY', '');
+    }
 
     useEffect(() => {
         const fetchGemiData = async () => {
             const searchKey = debouncedArGemi?.trim() || debouncedAfm?.trim();
             if (!searchKey) {
+                clearGemiFields();
                 return;
             }
             setIsLoadingGemi(true);
@@ -40,30 +52,34 @@ export function JobSection({ form }: ContactFormProps) {
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    if(data && data.length > 0) {
-                        const companyData = data[0];
-                         form.setValue('job.companyName', companyData.brandName, { shouldDirty: true });
-                         form.setValue('job.companyTitle', companyData.title, { shouldDirty: true });
-                         form.setValue('job.commercialTitle', companyData.distinctiveTitle, { shouldDirty: true });
-                         form.setValue('job.gemhStatus', companyData.status, { shouldDirty: true });
-                         form.setValue('job.gemhDate', companyData.statusDate, { shouldDirty: true });
-                         form.setValue('job.gemhAddress', companyData.address, { shouldDirty: true });
-                         form.setValue('job.gemhActivity', companyData.activity, { shouldDirty: true });
-                         form.setValue('job.gemhDOY', companyData.doy, { shouldDirty: true });
-                         form.setValue('afm', companyData.afm, { shouldDirty: true });
-                         form.setValue('doy', companyData.doy, { shouldDirty: true });
-                         form.setValue('job.arGemi', companyData.gemiNo, { shouldDirty: true });
+                    const dataArray = await response.json();
+                    if(dataArray && dataArray.length > 0) {
+                        const companyData = dataArray[0];
+                         // GEMH response keys might be different. Let's assume a mapping.
+                         form.setValue('job.companyName', companyData.brandName || '', { shouldDirty: true });
+                         form.setValue('job.companyTitle', companyData.title || '', { shouldDirty: true });
+                         form.setValue('job.commercialTitle', companyData.distinctiveTitle || '', { shouldDirty: true });
+                         form.setValue('job.gemhStatus', companyData.status || '', { shouldDirty: true });
+                         form.setValue('job.gemhDate', companyData.statusDate || '', { shouldDirty: true });
+                         form.setValue('job.gemhAddress', companyData.address || '', { shouldDirty: true });
+                         form.setValue('job.gemhActivity', companyData.activity || '', { shouldDirty: true });
+                         form.setValue('job.gemhDOY', companyData.doy || '', { shouldDirty: true });
+                         form.setValue('afm', companyData.afm || afmValue, { shouldDirty: true });
+                         form.setValue('job.arGemi', companyData.gemiNo || arGemiValue, { shouldDirty: true });
                     } else {
                          console.warn('Δεν βρέθηκε επιχείρηση στο ΓΕΜΗ');
+                         clearGemiFields();
                     }
                 } else if (response.status === 404) {
                     console.warn('Δεν βρέθηκε επιχείρηση στο ΓΕΜΗ');
+                    clearGemiFields();
                 } else {
                     console.error('Error fetching from GEMI API:', response.statusText);
+                    clearGemiFields();
                 }
             } catch (error) {
                 console.error('Network error while fetching from GEMI API:', error);
+                clearGemiFields();
             } finally {
                 setIsLoadingGemi(false);
             }
@@ -71,7 +87,7 @@ export function JobSection({ form }: ContactFormProps) {
 
         fetchGemiData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [debouncedArGemi, debouncedAfm, form.setValue]);
+    }, [debouncedArGemi, debouncedAfm]);
 
 
     if (entityType === 'Δημ. Υπηρεσία') {
@@ -120,3 +136,4 @@ export function JobSection({ form }: ContactFormProps) {
         </AccordionItem>
     );
 }
+
