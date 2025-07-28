@@ -31,7 +31,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
     keyName: 'fieldId', 
   });
   
-  const gemhAddressIndex = addressFields.findIndex(addr => addr.fromGEMI);
+  const addresses = useWatch({ control: form.control, name: 'addresses' }) || [];
+  const gemhAddressIndex = addresses.findIndex(addr => addr.fromGEMI);
   
   const renderLegalPersonForm = () => (
      <div className="w-full space-y-4">
@@ -56,6 +57,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <TabsTrigger value="documents">Έγγραφα ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="activities">Δραστηριότητες (ΚΑΔ)</TabsTrigger>
+                        <TabsTrigger value="decisions">Αποφάσεις Οργάνων</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="general" className="mt-4">
@@ -88,7 +90,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     
                      <TabsContent value="headquarters" className="mt-4">
                         {gemhAddressIndex !== -1 && addressFields[gemhAddressIndex] ? (
-                             <Card key={`gemi-address-${gemhAddressIndex}`} className="relative border-destructive/50">
+                             <Card key={JSON.stringify(addresses[gemhAddressIndex])} className="relative border-destructive/50">
                                 <CardContent className="p-6 space-y-4">
                                     <p className="text-sm text-destructive font-semibold text-center mb-4">
                                        ❗ Τα παρακάτω στοιχεία αντλήθηκαν αυτόματα από το Γ.Ε.ΜΗ. και δεν μπορούν να τροποποιηθούν από εδώ.
@@ -136,10 +138,13 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     
                     <TabsContent value="stocks" className="mt-4">
                         <Card className="relative border-muted">
-                            <CardContent className="p-6 space-y-4">
-                                <p className="text-sm text-muted-foreground text-center mb-4">
-                                🛈 Τα στοιχεία της μετοχικής σύνθεσης θα συμπληρωθούν αυτόματα από το Γ.Ε.ΜΗ. μόλις ολοκληρωθεί η σύνδεση.
-                                </p>
+                             <CardHeader>
+                                <CardTitle className="text-lg">Μετοχική Σύνθεση</CardTitle>
+                                <CardDescription>
+                                    🛈 Τα στοιχεία της μετοχικής σύνθεσης θα συμπληρωθούν αυτόματα από το Γ.Ε.ΜΗ. μόλις ολοκληρωθεί η σύνδεση.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 opacity-50">
                                     <FormItem><FormLabel>Τύπος Μετοχής</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Ποσότητα</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
@@ -206,7 +211,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         </Card>
                     </TabsContent>
 
-                     <TabsContent value="activities" className="mt-4">
+                    <TabsContent value="activities" className="mt-4">
                         <Card className="relative border-muted">
                             <CardHeader>
                                 <CardTitle className="text-lg">Δραστηριότητες (ΚΑΔ)</CardTitle>
@@ -233,6 +238,41 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                                 <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
                                                 <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
                                                 <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="decisions" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Αποφάσεις Οργάνων</CardTitle>
+                                <CardDescription>
+                                     🛈 Οι αποφάσεις οργάνων θα εμφανίζονται αυτόματα από το Γ.Ε.ΜΗ. μόλις ολοκληρωθεί η σύνδεση.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="overflow-x-auto border rounded-md opacity-50">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Ημ/νία Απόφασης</TableHead>
+                                                <TableHead>Όργανο</TableHead>
+                                                <TableHead>Θέμα</TableHead>
+                                                <TableHead>ΚΑΚ</TableHead>
+                                                <TableHead>Αρχείο</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <TableRow>
+                                                <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                                <TableCell><Button variant="outline" size="sm" disabled>Λήψη</Button></TableCell>
                                             </TableRow>
                                         </TableBody>
                                     </Table>
