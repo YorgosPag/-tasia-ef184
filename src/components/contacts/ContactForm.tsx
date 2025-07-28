@@ -25,6 +25,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useCustomLists } from '@/hooks/useCustomLists';
 import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
+import { addressFieldsMap, handleAddressSelect } from './ContactForm/utils/addressHelpers';
+import { AddressAutocompleteInput } from '../common/autocomplete/AddressAutocompleteInput';
+
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
@@ -83,7 +86,6 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             
             <TabsContent value="addresses" className="mt-4">
                  <div className="space-y-4">
-                    {/* Additional Addresses */}
                     {fields.map((field, index) => {
                          const addressType = form.watch(`addresses.${index}.type`);
                          const fromGEMI = form.watch(`addresses.${index}.fromGEMI`);
@@ -123,12 +125,23 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 />
 
                                 <Separator />
-                                <div className="text-sm text-muted-foreground mb-1">Διεύθυνση (χειροκίνητη εισαγωγή)</div>
+                                <div className="text-sm text-muted-foreground mb-1">Διεύθυνση</div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormField name={`addresses.${index}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} disabled={fromGEMI} /></FormControl></FormItem>)}/>
                                     <FormField name={`addresses.${index}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
                                     <FormField name={`addresses.${index}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
                                     <FormField name={`addresses.${index}.municipality`} control={form.control} render={({field}) => (<FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
+                                     {addressFieldsMap.map(f => (
+                                        <AddressAutocompleteInput
+                                            key={f.formKey}
+                                            form={form}
+                                            name={`addresses.${index}.${f.formKey}` as any}
+                                            label={f.label}
+                                            algoliaKey={f.algoliaKey}
+                                            onSelect={(hit: any) => handleAddressSelect(form, index, hit)}
+                                            indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
+                                        />
+                                    ))}
                                     <FormField name={`addresses.${index}.country`} control={form.control} render={({field}) => (<FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
                                 </div>
                               </CardContent>
@@ -170,4 +183,3 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
   return (entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') ? renderLegalPersonForm() : renderDefaultForm();
 }
-

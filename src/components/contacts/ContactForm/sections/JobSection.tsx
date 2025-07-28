@@ -34,6 +34,10 @@ export function JobSection({ form }: ContactFormProps) {
         form.setValue('job.gemhAddress', '');
         form.setValue('job.gemhActivity', '');
         form.setValue('job.gemhDOY', '');
+        // Also remove the GEMI address if it exists
+        const currentAddresses = form.getValues('addresses') || [];
+        const nonGemiAddresses = currentAddresses.filter(addr => !addr.fromGEMI);
+        form.setValue('addresses', nonGemiAddresses, { shouldDirty: true });
     }
 
     useEffect(() => {
@@ -67,21 +71,17 @@ export function JobSection({ form }: ContactFormProps) {
                          form.setValue('afm', companyData.afm || afmValue, { shouldDirty: true });
                          form.setValue('job.arGemi', companyData.gemiNo || arGemiValue, { shouldDirty: true });
 
-                        // Parse and set address fields
                         const rawAddress = companyData.address || '';
                         if(rawAddress) {
                             const addressParts = rawAddress.split(',').map((p:string) => p.trim());
                             let streetPart = addressParts[0] || '';
                             let cityPart = addressParts[1] || '';
                             let zipPart = addressParts[2] || '';
-
                             const streetMatch = streetPart.match(/^(.*)\s([\d\w-]+)$/);
                             let street = streetMatch ? streetMatch[1] : streetPart;
                             let number = streetMatch ? streetMatch[2] : '';
-                            
                             const postalCodeRegex = /\b\d{5}\b/;
                             let postalCode = '';
-
                             if(zipPart && postalCodeRegex.test(zipPart)) {
                                 postalCode = zipPart;
                             } else if (cityPart && postalCodeRegex.test(cityPart)) {
@@ -89,18 +89,15 @@ export function JobSection({ form }: ContactFormProps) {
                                 cityPart = cityPart.replace(postalCode, '').trim();
                             }
 
-
                             const currentAddresses = form.getValues('addresses') || [];
                             const gemiAddressIndex = currentAddresses.findIndex(addr => addr.fromGEMI);
-
                             const newAddress = {
-                                ...currentAddresses[gemiAddressIndex],
                                 type: 'Έδρα',
                                 fromGEMI: true,
                                 isActive: true,
                                 street: street,
                                 number: number,
-                                municipality: cityPart, // Closest field
+                                municipality: cityPart,
                                 postalCode: postalCode,
                                 country: 'Ελλάδα',
                             };
@@ -155,32 +152,32 @@ export function JobSection({ form }: ContactFormProps) {
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <FormField control={form.control} name="job.arGemi" render={({ field }) => (
-                        <FormItem className="flex items-center gap-4">
-                            <FormLabel className="w-40 text-right">Αριθμός ΓΕΜΗ</FormLabel>
-                            <div className="flex-1 relative">
+                        <FormItem>
+                            <FormLabel>Αριθμός ΓΕΜΗ</FormLabel>
+                            <div className="relative">
                                 <FormControl><Input {...field} /></FormControl>
                                 {isLoadingGemi && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-muted-foreground" />}
-                                <FormMessage />
                             </div>
+                            <FormMessage />
                         </FormItem>
                     )} />
                      <FormField control={form.control} name="afm" render={({ field }) => (
-                        <FormItem className="flex items-center gap-4">
-                            <FormLabel className="w-40 text-right">ΑΦΜ</FormLabel>
-                            <div className="flex-1 relative">
+                        <FormItem>
+                            <FormLabel>ΑΦΜ</FormLabel>
+                             <div className="relative">
                                 <FormControl><Input {...field} /></FormControl>
                                 {isLoadingGemi && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-muted-foreground" />}
-                                <FormMessage />
                             </div>
+                            <FormMessage />
                         </FormItem>
                     )} />
-                     <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">ΔΟΥ (από ΓΕΜΗ)</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Επωνυμία</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.commercialTitle" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Διακριτικός Τίτλος</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.companyTitle" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τίτλος</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.gemhActivity" render={({ field }) => (<FormItem className="flex items-center gap-4 md:col-span-2"><FormLabel className="w-40 text-right">Δραστηριότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.gemhStatus" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Κατάσταση ΓΕΜΗ</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.gemhDate" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ημ/νία Κατάστασης</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
+                     <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem><FormLabel>ΔΟΥ (από ΓΕΜΗ)</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem><FormLabel>Επωνυμία</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="job.commercialTitle" render={({ field }) => (<FormItem><FormLabel>Διακριτικός Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="job.companyTitle" render={({ field }) => (<FormItem><FormLabel>Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="job.gemhActivity" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>Δραστηριότητα</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="job.gemhStatus" render={({ field }) => (<FormItem><FormLabel>Κατάσταση ΓΕΜΗ</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="job.gemhDate" render={({ field }) => (<FormItem><FormLabel>Ημ/νία Κατάστασης</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
                  </div>
 
                  <Separator/>
@@ -193,4 +190,3 @@ export function JobSection({ form }: ContactFormProps) {
         </AccordionItem>
     );
 }
-
