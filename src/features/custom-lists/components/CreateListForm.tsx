@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -18,13 +17,30 @@ import { Input } from '@/shared/components/ui/input';
 import { Switch } from '@/shared/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useCustomLists, type CreateListData } from '@/hooks/useCustomLists';
+import { useCustomLists } from '@/hooks/useCustomLists';
+import { useEffect } from 'react';
+
+// Slugify function to convert title to key
+const slugify = (text: string) => {
+    const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
+    const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
+    const p = new RegExp(a.split('').join('|'), 'g')
+  
+    return text.toString().toLowerCase()
+      .replace(/\s+/g, '-') // Replace spaces with -
+      .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
+      .replace(/&/g, '-and-') // Replace & with 'and'
+      .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+      .replace(/\-\-+/g, '-') // Replace multiple - with single -
+      .replace(/^-+/, '') // Trim - from start of text
+      .replace(/-+$/, '') // Trim - from end of text
+}
 
 const createListSchema = z.object({
   title: z.string().min(2, {
     message: 'Ο τίτλος πρέπει να έχει τουλάχιστον 2 χαρακτήρες.',
   }),
-  key: z.string().min(2, 'Το κλειδί είναι υποχρεωτικό.').regex(/^[a-z0-9-]+$/, 'Το κλειδί μπορεί να περιέχει μόνο μικρά γράμματα, αριθμούς και παύλες.'),
+  key: z.string().min(2, 'Το κλειδί είναι υποχρεωτικό.'),
   description: z.string().optional(),
   hasCode: z.boolean().default(false),
   isProtected: z.boolean().default(false),
@@ -45,6 +61,13 @@ export function CreateListForm() {
             isProtected: false,
         },
     });
+
+    const watchedTitle = form.watch('title');
+    
+    useEffect(() => {
+        const slug = slugify(watchedTitle);
+        form.setValue('key', slug, { shouldValidate: true });
+    }, [watchedTitle, form]);
 
     const onSubmit = async (values: CreateListFormValues) => {
         const success = await createList(values);
@@ -81,9 +104,9 @@ export function CreateListForm() {
                             name="key"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Μοναδικό Κλειδί Λίστας</FormLabel>
+                                <FormLabel>Μοναδικό Κλειδί Λίστας (Αυτόματο)</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="π.χ. intervention-categories" {...field} />
+                                    <Input readOnly className="bg-muted" {...field} />
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
