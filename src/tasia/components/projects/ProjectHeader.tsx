@@ -7,7 +7,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
-import type { Project } from '@/tasia/types/project-types';
+import type { ProjectWithWorkStageSummary as Project } from '@/shared/types/project-types';
 
 interface ProjectHeaderProps {
     project: Project;

@@ -20,10 +20,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/shared/hooks/use-toast';
 import { logActivity } from '@/shared/lib/logger';
-import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/tasia/lib/unit-helpers';
-import type { NewUnitFormValues as UnitFormValues } from '@/tasia/lib/unit-helpers';
-import { AttachmentFormValues, attachmentSchema } from '@/tasia/components/units/AttachmentDialog';
-import type { UnitContract } from '@/tasia/components/units/tabs/UnitContractsTab';
+import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/lib/unit-helpers';
+import type { NewUnitFormValues as UnitFormValues } from '@/lib/unit-helpers';
+import { AttachmentFormValues, attachmentSchema } from '@/components/units/AttachmentDialog';
+import type { UnitContract } from '@/components/units/tabs/UnitContractsTab';
 
 export interface Unit {
   id: string;

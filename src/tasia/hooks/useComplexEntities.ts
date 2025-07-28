@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -28,9 +29,9 @@ export interface ComplexEntity {
 export const PAGE_SIZE = 50;
 
 async function fetchDistinctTypes(): Promise<string[]> {
-    const q = query(collection(db, 'tsia-list-types'), orderBy('name'));
+    const q = query(collection(db, 'tsia-custom-lists'), orderBy('title'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data().name);
+    return snapshot.docs.map(doc => doc.data().title);
 }
 
 

@@ -6,7 +6,7 @@ import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import type { Company, Project, Building } from '@/shared/hooks/use-data-store';
 import type { UseFormReturn } from 'react-hook-form';
-import type { NewUnitFormValues } from '@/tasia/lib/unit-helpers';
+import type { NewUnitFormValues } from '@/lib/unit-helpers';
 
 interface UseUnitLocationStateProps {
     companies: Company[];
