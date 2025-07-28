@@ -9,6 +9,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Briefcase, Loader2 } from 'lucide-react';
 import { type ContactFormProps } from '../types';
 import { useDebounce } from 'use-debounce';
+import { Separator } from '@/shared/components/ui/separator';
 
 const GEMI_API_URL = 'https://opendata-api.businessportal.gr/api/opendata/v1/companies/';
 const GEMI_API_KEY = 'b98MlVJ7vDF8gQIWN6d79cgStU8QJp9o';
@@ -35,7 +36,19 @@ export function JobSection({ form }: ContactFormProps) {
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('GEMI Data Found:', data);
+                    if(data && data.length > 0) {
+                        const companyData = data[0];
+                         form.setValue('job.companyName', companyData.brandName, { shouldDirty: true });
+                         form.setValue('job.companyTitle', companyData.title, { shouldDirty: true });
+                         form.setValue('job.commercialTitle', companyData.distinctiveTitle, { shouldDirty: true });
+                         form.setValue('job.gemhStatus', companyData.status, { shouldDirty: true });
+                         form.setValue('job.gemhDate', companyData.statusDate, { shouldDirty: true });
+                         form.setValue('job.gemhAddress', companyData.address, { shouldDirty: true });
+                         form.setValue('job.gemhActivity', companyData.activity, { shouldDirty: true });
+                         form.setValue('job.gemhDOY', companyData.doy, { shouldDirty: true });
+                         form.setValue('afm', companyData.afm, { shouldDirty: true });
+                         form.setValue('doy', companyData.doy, { shouldDirty: true });
+                    }
                 } else if (response.status === 404) {
                     console.warn('Δεν βρέθηκε επιχείρηση στο ΓΕΜΗ');
                 } else {
@@ -49,7 +62,8 @@ export function JobSection({ form }: ContactFormProps) {
         };
 
         fetchGemiData();
-    }, [debouncedArGemi]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedArGemi, form.setValue]);
 
 
     if (entityType === 'Δημ. Υπηρεσία') {
@@ -68,9 +82,8 @@ export function JobSection({ form }: ContactFormProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ρόλος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                     <FormField control={form.control} name="job.specialty" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ειδικότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Επιχείρηση/Οργανισμός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.arGemi" render={({ field }) => (
-                        <FormItem className="flex items-center gap-4">
+                     <FormField control={form.control} name="job.arGemi" render={({ field }) => (
+                        <FormItem className="flex items-center gap-4 md:col-span-2">
                             <FormLabel className="w-40 text-right">Αριθμός ΓΕΜΗ</FormLabel>
                             <div className="flex-1 relative">
                                 <FormControl><Input {...field} placeholder="Εισάγετε αρ. ΓΕΜΗ για αυτόματη λήψη..." /></FormControl>
@@ -80,6 +93,19 @@ export function JobSection({ form }: ContactFormProps) {
                         </FormItem>
                     )} />
                 </div>
+                 
+                 <Separator/>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Επωνυμία</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.companyTitle" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Τίτλος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.commercialTitle" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Διακριτικός Τίτλος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.gemhStatus" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Κατάσταση ΓΕΜΗ</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.gemhDate" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ημ/νία Κατάστασης</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">ΔΟΥ ΓΕΜΗ</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.gemhActivity" render={({ field }) => (<FormItem className="flex items-center gap-4 md:col-span-2"><FormLabel className="w-40 text-right">Δραστηριότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.gemhAddress" render={({ field }) => (<FormItem className="flex items-center gap-4 md:col-span-2"><FormLabel className="w-40 text-right">Διεύθυνση ΓΕΜΗ</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                 </div>
             </AccordionContent>
         </AccordionItem>
     );

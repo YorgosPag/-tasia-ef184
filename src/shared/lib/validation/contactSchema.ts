@@ -73,7 +73,8 @@ export const socialsSchema = z.object({
 
 export const addressSchema = z.object({
     addresses: z.array(z.object({
-        type: z.string().default('Κύρια'),
+        type: z.string().optional(),
+        customTitle: z.string().optional(),
         street: z.string().optional(),
         number: z.string().optional(),
         toponym: z.string().optional(),
@@ -100,8 +101,16 @@ export const jobInfoSchema = z.object({
     role: z.string().optional(),
     specialty: z.string().optional(),
     title: z.string().optional(),
-    companyName: z.string().optional(),
     arGemi: z.string().optional(),
+    // GEMH Fields
+    companyName: z.string().optional(),
+    companyTitle: z.string().optional(),
+    commercialTitle: z.string().optional(),
+    gemhStatus: z.string().optional(),
+    gemhDate: z.string().optional(),
+    gemhAddress: z.string().optional(),
+    gemhActivity: z.string().optional(),
+    gemhDOY: z.string().optional(),
   }).optional(),
 });
 
