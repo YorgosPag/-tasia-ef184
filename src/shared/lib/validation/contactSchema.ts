@@ -101,6 +101,7 @@ export const jobInfoSchema = z.object({
     specialty: z.string().optional(),
     title: z.string().optional(),
     companyName: z.string().optional(),
+    arGemi: z.string().optional(),
   }).optional(),
 });
 
