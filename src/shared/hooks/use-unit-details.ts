@@ -20,9 +20,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/shared/hooks/use-toast';
 import { logActivity } from '@/shared/lib/logger';
-import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/tasia/lib/unit-helpers';
-import type { NewUnitFormValues as UnitFormValues } from '@/tasia/lib/unit-helpers';
-import { AttachmentFormValues, attachmentSchema } from '@/tasia/components/units/AttachmentDialog';
+import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/shared/lib/unit-helpers';
+import type { NewUnitFormValues as UnitFormValues } from '@/shared/lib/unit-helpers';
+import { AttachmentFormValues, attachmentSchema } from '@/components/units/AttachmentDialog';
 import type { UnitContract } from '@/tasia/components/units/tabs/UnitContractsTab';
 
 export interface Unit {
