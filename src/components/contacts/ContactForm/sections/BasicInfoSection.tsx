@@ -1,14 +1,15 @@
+
 'use client';
 
 import React from 'react';
 import { useWatch } from 'react-hook-form';
-import { AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
 import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, User, Building2, Landmark } from 'lucide-react';
+import { CalendarIcon, User, Building2, Landmark, Info } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
@@ -102,38 +103,85 @@ export function BasicInfoSection({ form, onFileSelect }: ContactFormProps) {
                 )}
                 />
 
-            {entityType && (
-                <div className="space-y-4 border-t pt-4">
-                {entityType !== 'Φυσικό Πρόσωπο' && (
+            {entityType === 'Νομικό Πρόσωπο' && (
+                <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
+                    <AccordionItem value="item-1" className="border rounded-md px-4">
+                        <AccordionTrigger>
+                             <div className="flex items-center gap-2">
+                                <Info className="h-5 w-5" />
+                                <span>Βασικά Στοιχεία Νομικού Προσώπου</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-4 space-y-4">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
+                                <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Επωνυμία</FormLabel>
+                                <div className="flex-1 space-y-2">
+                                <FormField control={form.control} name="name" render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl><Input {...field} placeholder="π.χ. DevConstruct AE" /></FormControl>
+                                        <FormDescription>Το πλήρες όνομα ή η εμπορική επωνυμία.</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                                </div>
+                            </div>
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
+                                <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Λογότυπο</FormLabel>
+                                <div className="flex-1">
+                                    <ImageUploader 
+                                        entityType={entityType}
+                                        entityId={contactId}
+                                        initialImageUrl={form.getValues('photoUrl')}
+                                        onFileSelect={onFileSelect}
+                                    />
+                                </div>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            )}
+
+            {entityType === 'Δημ. Υπηρεσία' && (
+                 <div className="space-y-4 border-t pt-4">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
                         <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Επωνυμία</FormLabel>
                         <div className="flex-1 space-y-2">
                         <FormField control={form.control} name="name" render={({ field }) => (
                             <FormItem>
-                                <FormControl><Input {...field} placeholder="π.χ. DevConstruct AE" /></FormControl>
-                                <FormDescription>Το πλήρες όνομα ή η εμπορική επωνυμία.</FormDescription>
+                                <FormControl><Input {...field} placeholder="π.χ. Πολεοδομία Αθηνών" /></FormControl>
+                                <FormDescription>Το πλήρες όνομα της Δημόσιας Υπηρεσίας.</FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )} />
                         </div>
                     </div>
-                )}
-                <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
-                    <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">{entityType === 'Φυσικό Πρόσωπο' ? 'Φωτογραφία' : 'Λογότυπο'}</FormLabel>
-                    <div className="flex-1">
-                        <ImageUploader 
-                            entityType={entityType}
-                            entityId={contactId}
-                            initialImageUrl={form.getValues('photoUrl')}
-                            onFileSelect={onFileSelect}
-                        />
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
+                        <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Λογότυπο</FormLabel>
+                        <div className="flex-1">
+                            <ImageUploader 
+                                entityType={entityType}
+                                entityId={contactId}
+                                initialImageUrl={form.getValues('photoUrl')}
+                                onFileSelect={onFileSelect}
+                            />
+                        </div>
                     </div>
                 </div>
-                </div>
             )}
-
+            
             {entityType === 'Φυσικό Πρόσωπο' && (
                 <div className="space-y-4 border-t pt-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
+                        <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Φωτογραφία</FormLabel>
+                        <div className="flex-1">
+                            <ImageUploader 
+                                entityType={entityType}
+                                entityId={contactId}
+                                initialImageUrl={form.getValues('photoUrl')}
+                                onFileSelect={onFileSelect}
+                            />
+                        </div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="firstName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Όνομα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                         <FormField control={form.control} name="lastName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Επώνυμο</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
@@ -148,3 +196,4 @@ export function BasicInfoSection({ form, onFileSelect }: ContactFormProps) {
       </AccordionItem>
     );
 }
+
