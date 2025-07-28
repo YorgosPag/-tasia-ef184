@@ -32,12 +32,10 @@ const Autocomplete = ({
   const { refine } = useSearchBox();
   const { hits } = useHits();
 
-  // Παρακολουθεί την τιμή του πεδίου στο form
   const fieldValue = form.watch(name);
   const [inputValue, setInputValue] = useState(fieldValue || '');
   const [debouncedQuery] = useDebounce(inputValue, 300);
 
-  // Sync local input state αν αλλάξει εξωτερικά το form value
   useEffect(() => {
     if (fieldValue !== inputValue) {
       setInputValue(fieldValue || '');
@@ -45,13 +43,12 @@ const Autocomplete = ({
     // eslint-disable-next-line
   }, [fieldValue]);
 
-  // Refine Algolia όταν ο χρήστης σταματήσει να γράφει
   useEffect(() => {
     refine(debouncedQuery);
   }, [debouncedQuery, refine]);
 
   const handleSelect = (hit: any) => {
-    onSelect(hit); // Ενημερώνει τα υπόλοιπα πεδία
+    onSelect(hit);
     const rawValue = hit[algoliaKey];
     const selectedLabel = Array.isArray(rawValue) ? (rawValue[0] || '') : (rawValue || '');
     setInputValue(selectedLabel);
@@ -157,7 +154,7 @@ export function AddressAutocompleteInput({
 
   return (
     <InstantSearch searchClient={searchClient} indexName={indexName}>
-      <Configure hitsPerPage={5} />
+      <Configure hitsPerPage={10} />
       <Autocomplete
         form={form}
         name={name}

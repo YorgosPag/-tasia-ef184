@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -68,14 +67,14 @@ const socialIcons: { [key: string]: React.ElementType } = {
 };
 
 const addressFieldsMap: {formKey: keyof ContactFormValues['addresses'][0], label: string, algoliaKey: string}[] = [
-    { formKey: 'settlements', label: 'Οικισμός', algoliaKey: 'Οικισμοί' },
-    { formKey: 'municipalLocalCommunities', label: 'Δημοτική/Τοπική Κοινότητα', algoliaKey: 'Δημοτικές/Τοπικές Κοινότητες' },
-    { formKey: 'municipalUnities', label: 'Δημοτική Ενότητα', algoliaKey: 'Δημοτικές Ενότητες' },
-    { formKey: 'municipality', label: 'Δήμος', algoliaKey: 'Δήμοι' },
-    { formKey: 'regionalUnities', label: 'Περιφερειακή Ενότητα', algoliaKey: 'Περιφερειακές ενότητες' },
-    { formKey: 'regions', label: 'Περιφέρεια', algoliaKey: 'Περιφέρειες' },
-    { formKey: 'decentralizedAdministrations', label: 'Αποκεντρωμένη Διοίκηση', algoliaKey: 'Αποκεντρωμένες Διοικήσεις' },
-    { formKey: 'largeGeographicUnits', label: 'Μεγάλη Γεωγραφική Ενότητα', algoliaKey: 'Μεγάλες γεωγραφικές ενότητες' },
+  { formKey: 'settlements', label: 'Οικισμός', algoliaKey: 'Οικισμοί' },
+  { formKey: 'municipalLocalCommunities', label: 'Δημοτική/Τοπική Κοινότητα', algoliaKey: 'Δημοτικές/Τοπικές Κοινότητες' },
+  { formKey: 'municipalUnities', label: 'Δημοτική Ενότητα', algoliaKey: 'Δημοτικές Ενότητες' },
+  { formKey: 'municipality', label: 'Δήμος', algoliaKey: 'Δήμοι' },
+  { formKey: 'regionalUnities', label: 'Περιφερειακή Ενότητα', algoliaKey: 'Περιφερειακές ενότητες' },
+  { formKey: 'regions', label: 'Περιφέρεια', algoliaKey: 'Περιφέρειες' },
+  { formKey: 'decentralizedAdministrations', label: 'Αποκεντρωμένη Διοίκηση', algoliaKey: 'Αποκεντρωμένες Διοικήσεις' },
+  { formKey: 'largeGeographicUnits', label: 'Μεγάλη Γεωγραφική Ενότητα', algoliaKey: 'Μεγάλες γεωγραφικές ενότητες' },
 ];
 
 
@@ -452,8 +451,8 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
               const fullAddress = getFullAddress(index);
               const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
 
-              // Η ΜΟΝΑΔΙΚΗ ΣΩΣΤΗ εκδοχή για handleAddressSelect:
               const handleAddressSelect = (idx: number, hit: any) => {
+                // Όταν επιλέγεται ένας οικισμός, γεμίζουν όλα τα πεδία ιεραρχικά
                 addressFieldsMap.forEach(fieldMap => {
                   const val = hit[fieldMap.algoliaKey];
                   let finalValue = '';
@@ -462,7 +461,11 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
                   } else if (typeof val === 'string') {
                     finalValue = val;
                   }
-                  form.setValue(`addresses.${idx}.${fieldMap.formKey}`, finalValue, { shouldDirty: true });
+                  // Γέμιζε μόνο αν το πεδίο δεν είναι ήδη γεμάτο ή αν είναι ο οικισμός που επιλέχθηκε
+                  const currentValue = form.getValues(`addresses.${idx}.${fieldMap.formKey}`);
+                  if (!currentValue || fieldMap.formKey === 'settlements') {
+                    form.setValue(`addresses.${idx}.${fieldMap.formKey}`, finalValue, { shouldDirty: true });
+                  }
                 });
               };
 
