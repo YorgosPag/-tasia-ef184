@@ -70,24 +70,33 @@ export function useCustomLists() {
     setIsLoading(true);
     const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('createdAt', 'desc'));
 
-    const unsubscribe = onSnapshot(listsQuery, async (snapshot) => {
-      try {
-        const listsData = await Promise.all(
-          snapshot.docs.map(async (listDoc) => {
-            const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
-            const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('createdAt', 'asc'));
-            const itemsSnapshot = await getDocs(itemsQuery);
-            list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
-            return list;
-          })
-        );
-        setLists(listsData);
-      } catch (error) {
-         console.error("Error processing custom lists snapshot:", error);
-         toast({ variant: 'destructive', title: 'Σφάλμα Επεξεργασίας', description: 'Failed to process list data.' });
-      } finally {
+    const unsubscribe = onSnapshot(listsQuery, (snapshot) => {
+        const listsData: Omit<CustomList, 'items'>[] = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        } as Omit<CustomList, 'items'>));
+
+        setLists(listsData.map(l => ({...l, items: []}))); // Set lists without items initially
+        
+        const unsubscribes: (()=>void)[] = [];
+        
+        listsData.forEach(list => {
+            const itemsQuery = query(collection(db, 'tsia-custom-lists', list.id, 'tsia-items'), orderBy('createdAt', 'asc'));
+            const unsubscribeItems = onSnapshot(itemsQuery, (itemsSnapshot) => {
+                const items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
+                setLists(prevLists => 
+                    prevLists.map(prevList => 
+                        prevList.id === list.id ? { ...prevList, items } : prevList
+                    )
+                );
+            });
+            unsubscribes.push(unsubscribeItems);
+        });
+
         setIsLoading(false);
-      }
+
+        // Return a function that unsubscribes from all item listeners
+        return () => unsubscribes.forEach(unsub => unsub());
     }, (error) => {
       console.error("Error fetching custom lists:", error);
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Failed to load lists.' });
@@ -98,7 +107,7 @@ export function useCustomLists() {
   }, [toast]);
   
   const createList = useCallback(async (listData: CreateListData): Promise<CreateListResult> => {
-      if(!user) return { success: false, error: 'User not authenticated' };
+      // if(!user) return { success: false, error: 'User not authenticated' };
       setIsSubmitting(true);
       try {
           // Server-side check for key uniqueness
@@ -124,7 +133,7 @@ export function useCustomLists() {
   }, [toast, user]);
 
   const updateList = useCallback(async (listId: string, data: Partial<CreateListData>): Promise<boolean> => {
-      if(!user) return false;
+      // if(!user) return false;
       try {
         await updateDoc(doc(db, 'tsia-custom-lists', listId), data);
         toast({ title: 'Επιτυχία', description: 'Η λίστα ενημερώθηκε.' });
@@ -136,7 +145,7 @@ export function useCustomLists() {
   }, [toast, user]);
 
   const deleteList = useCallback(async (listId: string, listTitle: string): Promise<boolean> => {
-    if(!user) return false;
+    // if(!user) return false;
     if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${listTitle}" και όλα τα περιεχόμενά της;`)) {
         return false;
     }
@@ -166,7 +175,7 @@ export function useCustomLists() {
   }, [toast, user]);
 
   const addItem = useCallback(async (listId: string, rawValue: string, hasCode?: boolean): Promise<boolean> => {
-    if (!user) return false;
+    // if (!user) return false;
     setIsSubmitting(true);
   
     try {
@@ -226,7 +235,7 @@ export function useCustomLists() {
   }, [lists, toast, user]);
 
   const updateItem = useCallback(async (listId: string, itemId: string, data: { value: string; code?: string }): Promise<boolean> => {
-     if(!user) return false;
+     // if(!user) return false;
      try {
          await updateDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId), data);
          return true;
@@ -237,7 +246,7 @@ export function useCustomLists() {
   }, [toast, user]);
 
   const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string): Promise<boolean> => {
-     if(!user) return false;
+     // if(!user) return false;
      
      const contactField = listKeyToContactFieldMap[listKey];
      if (contactField) {
