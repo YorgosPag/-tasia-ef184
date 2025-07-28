@@ -30,8 +30,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
   const { lists } = useCustomLists();
   
   const addressTypeOptions = React.useMemo(() => {
-    const addressListKey = 'address_types';
-    const addressList = lists.find(l => l.key === addressListKey);
+    const addressListId = 'Yz439YFkR4U4eRAwDNy5';
+    const addressList = lists.find(l => l.id === addressListId);
     return addressList?.items.map(item => ({ label: item.value, value: item.value })) || [];
   }, [lists]);
 
