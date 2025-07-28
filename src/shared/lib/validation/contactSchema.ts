@@ -144,6 +144,10 @@ export const jobInfoSchema = z.object({
         subject: z.string().optional(),
         url: z.string().optional(),
     })).optional(),
+    externalLinks: z.array(z.object({
+        label: z.string().optional(),
+        url: z.string().optional(),
+    })).optional(),
   }).optional(),
 });
 

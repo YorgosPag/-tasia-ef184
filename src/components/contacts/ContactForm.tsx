@@ -31,6 +31,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
   const branches = useWatch({ control: form.control, name: 'job.branches' }) || [];
   const companyVersions = useWatch({ control: form.control, name: 'job.companyVersions' }) || [];
   const docSummary = useWatch({ control: form.control, name: 'job.docSummary' }) || [];
+  const externalLinks = useWatch({ control: form.control, name: 'job.externalLinks' }) || [];
   const registrationType = useWatch({ control: form.control, name: 'job.registrationType' });
   const branchType = useWatch({ control: form.control, name: 'job.branchType' });
   
@@ -74,6 +75,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <TabsTrigger value="establishment">Στοιχεία Σύστασης (ΥΜΣ)</TabsTrigger>
                         <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="versions">Ιστορικό Εκδόσεων Εταιρείας</TabsTrigger>
+                        <TabsTrigger value="externalLinks">Σύνδεσμοι Τρίτων Φορέων</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="general" className="mt-4">
@@ -492,6 +494,32 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                          <Accordion type="single" collapsible defaultValue="representative" className="w-full">
                             <LegalRepresentativeSection form={form} />
                         </Accordion>
+                    </TabsContent>
+
+                    <TabsContent value="externalLinks" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Σύνδεσμοι Τρίτων Φορέων</CardTitle>
+                                <CardDescription>🛈 Σύνδεσμοι προς εξωτερικές υπηρεσίες που αφορούν την επιχείρηση.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {externalLinks?.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {externalLinks.map((link: any, idx: number) => (
+                                            <div key={idx} className="flex items-center">
+                                                <Button asChild variant="link" className="p-0 h-auto">
+                                                    <a href={link.url} target="_blank" rel="noopener noreferrer">
+                                                        {link.label}
+                                                    </a>
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-muted-foreground text-sm text-center py-4">Δεν υπάρχουν διαθέσιμοι σύνδεσμοι.</p>
+                                )}
+                            </CardContent>
+                        </Card>
                     </TabsContent>
                 </Tabs>
             </TabsContent>
