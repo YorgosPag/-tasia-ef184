@@ -79,6 +79,7 @@ export const addressSchema = z.object({
         street: z.string().optional(),
         number: z.string().optional(),
         toponym: z.string().optional(),
+        poBox: z.string().optional(),
         postalCode: z.string().optional().refine(val => !val || /^\d{5}$/.test(val), {
             message: 'Ο Τ.Κ. πρέπει να αποτελείται από 5 ψηφία.'
         }),

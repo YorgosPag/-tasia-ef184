@@ -48,17 +48,17 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             
             <TabsContent value="gemh-data" className="mt-4">
                 <Tabs defaultValue="general" className="w-full">
-                    <TabsList className="h-auto flex flex-wrap justify-start gap-1">
+                    <TabsList className="flex h-auto flex-wrap justify-start gap-1">
                         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
                         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
                         <TabsTrigger value="capital">Κεφάλαιο Εταιρείας</TabsTrigger>
                         <TabsTrigger value="stocks">Μετοχική Σύνθεση</TabsTrigger>
                         <TabsTrigger value="documents">Έγγραφα ΓΕΜΗ</TabsTrigger>
-                        <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="activities">Δραστηριότητες (ΚΑΔ)</TabsTrigger>
                         <TabsTrigger value="decisions">Αποφάσεις Οργάνων</TabsTrigger>
                         <TabsTrigger value="establishment">Στοιχεία Σύστασης (ΥΜΣ)</TabsTrigger>
+                        <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="general" className="mt-4">
@@ -79,11 +79,6 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                     <FormItem><FormLabel>Ιστοσελίδα</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Email Επιχείρησης</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Ημερομηνία Σύστασης</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Νομική Μορφή</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Νομός</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Τοπική Υπηρεσία ΓΕΜΗ</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Υποκατάστημα;</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Αυτοεγγεγραμμένη;</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                 </div>
                             </CardContent>
                         </Card>
@@ -101,6 +96,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                         <FormField name={`addresses.${gemhAddressIndex}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
                                         <FormField name={`addresses.${gemhAddressIndex}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
                                         <FormField name={`addresses.${gemhAddressIndex}.municipality`} control={form.control} render={({field}) => (<FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
+                                        <FormField name={`addresses.${gemhAddressIndex}.poBox`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχυδρομική Θυρίδα</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -115,6 +111,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                     <FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Ταχυδρομική Θυρίδα</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -321,7 +318,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
             <TabsContent value="user-data" className="mt-4">
                  <Tabs defaultValue="contact" className="w-full">
-                     <TabsList className="h-auto flex-wrap justify-start">
+                     <TabsList className="flex h-auto flex-wrap justify-start gap-1">
                          <TabsTrigger value="contact">Επικοινωνία & Socials</TabsTrigger>
                          <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
                          <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>

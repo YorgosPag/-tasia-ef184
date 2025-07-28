@@ -17,7 +17,7 @@ export const addressFieldsMap: { formKey: keyof ContactFormValues['addresses'][0
 export const getFullAddress = (form: UseFormReturn<ContactFormValues>, index: number) => {
   const address = form.watch(`addresses.${index}`);
   if (!address) return '';
-  return [address.street, address.number, address.settlements, address.postalCode, address.country]
+  return [address.street, address.number, address.settlements, address.postalCode, address.country, address.poBox]
     .filter(Boolean)
     .join(' ');
 };

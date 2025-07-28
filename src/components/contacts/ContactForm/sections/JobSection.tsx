@@ -111,6 +111,7 @@ export function JobSection({ form }: ContactFormProps) {
                                 municipality: cityPart,
                                 postalCode: postalCode,
                                 country: 'Ελλάδα',
+                                poBox: companyData.poBox || '',
                                 toponym: '', settlements: '', municipalLocalCommunities: '',
                                 municipalUnities: '', regionalUnities: '', regions: '',
                                 decentralizedAdministrations: '', largeGeographicUnits: '',
@@ -240,4 +241,5 @@ export function JobSection({ form }: ContactFormProps) {
     
 
     
+
 
