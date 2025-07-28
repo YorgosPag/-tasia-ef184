@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -78,8 +77,7 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
           ) : (
             <div>
               <p className="font-bold text-base">{list.title}</p>
-              <p className="text-sm text-muted-foreground">{list.description}</p>
-              <p className="text-xs font-mono text-sky-500 mt-1 selectable" onClick={(e) => e.stopPropagation()}>{list.key}</p>
+              {list.description && <p className="text-sm text-muted-foreground">{list.description}</p>}
             </div>
           )}
         </div>
@@ -121,7 +119,7 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
                 {
                   list.items.length > 0 ? (
                     list.items.map(item => (
-                      <ListItem key={item.id} item={item} listId={list.id} listKey={list.key} hasCode={list.hasCode} />
+                      <ListItem key={item.id} item={item} listId={list.id} hasCode={list.hasCode} />
                     ))
                   ) : (
                     <p className="text-sm text-muted-foreground text-center py-4">Δεν υπάρχουν στοιχεία σε αυτή τη λίστα.</p>

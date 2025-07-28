@@ -31,9 +31,8 @@ export interface ListItem {
 }
 
 export interface CustomList {
-  id: string;
+  id: string; // The Firestore document ID is now the key
   title: string;
-  key: string; // The new immutable key
   description?: string;
   hasCode?: boolean;
   isProtected?: boolean;
@@ -99,15 +98,8 @@ export function useCustomLists() {
       // if(!user) return { success: false, error: 'User not authenticated' };
       setIsSubmitting(true);
       try {
-          // Server-side check for key uniqueness
-          const q = query(collection(db, 'tsia-custom-lists'), where('key', '==', listData.key), limit(1));
-          const existing = await getDocs(q);
-          if (!existing.empty) {
-              console.error(`Attempted to create a list with a duplicate key: ${listData.key}`);
-              return { success: false, error: 'duplicate key' };
-          }
-
           const listRef = doc(collection(db, 'tsia-custom-lists'));
+          // The key is now the auto-generated document ID from Firestore. No need to check for uniqueness.
           await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
           toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.' });
           await logActivity('CREATE_LIST', { entityId: listRef.id, entityType: 'custom-list', name: listData.title });
@@ -234,33 +226,42 @@ export function useCustomLists() {
      }
   }, [toast, user]);
 
-  const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string): Promise<boolean> => {
-     // if(!user) return false;
-     
-     const contactField = listKeyToContactFieldMap[listKey as keyof typeof listKeyToContactFieldMap];
-     if (contactField) {
-        const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-            const contactInUse = snapshot.docs[0].data();
-            toast({
-                variant: 'destructive',
-                title: "Αδυναμία Διαγραφής",
-                description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${contactInUse.name}.`
-            });
-            return false;
-        }
-     }
+  const deleteItem = useCallback(async (listId: string, itemId: string, itemValue: string): Promise<boolean> => {
+    // if(!user) return false;
+    const list = lists.find(l => l.id === listId);
+    if (!list) return false;
 
-     try {
-        await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
-        toast({ title: 'Επιτυχία', description: `Το στοιχείο "${itemValue}" διαγράφηκε.` });
-        return true;
-     } catch (error) {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή του στοιχείου απέτυχε.' });
-        return false;
-     }
-  }, [toast, user]);
+    // The mapping from a user-friendly title to a db field is fragile.
+    // A better approach would be to have a 'key' field on the list document.
+    // For now, we will find the key based on the title.
+    const listKey = Object.keys(listKeyToContactFieldMap).find(key => 
+      list.title.toLowerCase().includes(key)
+    );
+    const contactField = listKey ? listKeyToContactFieldMap[listKey as keyof typeof listKeyToContactFieldMap] : undefined;
+
+    if (contactField) {
+       const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
+       const snapshot = await getDocs(q);
+       if (!snapshot.empty) {
+           const contactInUse = snapshot.docs[0].data();
+           toast({
+               variant: 'destructive',
+               title: "Αδυναμία Διαγραφής",
+               description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${contactInUse.name}.`
+           });
+           return false;
+       }
+    }
+
+    try {
+       await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
+       toast({ title: 'Επιτυχία', description: `Το στοιχείο "${itemValue}" διαγράφηκε.` });
+       return true;
+    } catch (error) {
+       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή του στοιχείου απέτυχε.' });
+       return false;
+    }
+  }, [toast, user, lists]);
   
 
   return { lists, isLoading, isSubmitting, createList, updateList, deleteList, addItem, updateItem, deleteItem };

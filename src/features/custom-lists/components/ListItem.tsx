@@ -9,11 +9,10 @@ import { useCustomLists, type ListItem as ListItemType } from '@/hooks/useCustom
 interface ListItemViewProps {
   item: ListItemType;
   listId: string;
-  listKey: string;
   hasCode?: boolean;
 }
 
-export function ListItem({ item, listId, listKey, hasCode }: ListItemViewProps) {
+export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
   const { updateItem, deleteItem } = useCustomLists();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.value);
@@ -46,11 +45,11 @@ export function ListItem({ item, listId, listKey, hasCode }: ListItemViewProps) 
   };
   
   const handleDelete = async () => {
-    await deleteItem(listId, listKey, item.id, item.value);
+    await deleteItem(listId, item.id, item.value);
   }
 
   return (
-    <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 group min-h-[56px]">
+    <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 group min-h-[40px]">
       {isEditing ? (
         <div className="flex items-center gap-2 flex-1">
           {hasCode && (
@@ -76,7 +75,6 @@ export function ListItem({ item, listId, listKey, hasCode }: ListItemViewProps) 
             {hasCode && <span className="font-mono text-xs bg-muted px-2 py-1 rounded-md">{item.code}</span>}
              <div className="flex flex-col flex-1 min-w-0">
                 <span className="text-sm truncate">{item.value}</span>
-                <span className="text-xs font-mono text-sky-500 mt-1 selectable truncate" onClick={(e) => e.stopPropagation()}>{item.id}</span>
              </div>
         </div>
       )}
