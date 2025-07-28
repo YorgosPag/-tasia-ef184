@@ -28,6 +28,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
   const entityType = useWatch({ control: form.control, name: 'entityType' });
   const statuses = useWatch({ control: form.control, name: 'job.statuses' }) || [];
   const branches = useWatch({ control: form.control, name: 'job.branches' }) || [];
+  const registrationType = useWatch({ control: form.control, name: 'job.registrationType' });
+  const branchType = useWatch({ control: form.control, name: 'job.branchType' });
   
   const { fields: addressFields } = useFieldArray({
     control: form.control,
@@ -54,6 +56,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                 <Tabs defaultValue="general" className="w-full">
                     <TabsList className="flex flex-wrap gap-2 w-full justify-start h-auto">
                         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
+                        <TabsTrigger value="registration">Καταχώριση στο ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
                         <TabsTrigger value="branches">Καταστήματα / Υποκαταστήματα</TabsTrigger>
@@ -72,6 +75,35 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <Accordion type="single" collapsible defaultValue="job" className="w-full space-y-2">
                              <JobSection form={form} />
                         </Accordion>
+                    </TabsContent>
+                    
+                    <TabsContent value="registration" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Στοιχεία Καταχώρισης</CardTitle>
+                                <CardDescription>🛈 Οι παρακάτω πληροφορίες αφορούν την αρχική εγγραφή της εταιρείας στο Γ.Ε.ΜΗ.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                               <FormField name="job.initialRegistrationDate" control={form.control} render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Ημερομηνία Πρώτης Καταχώρισης</FormLabel>
+                                        <FormControl>
+                                            <Input value={field.value || "—"} disabled />
+                                        </FormControl>
+                                    </FormItem>
+                                )}/>
+                                <div className="flex gap-4">
+                                  <div>
+                                    <FormLabel>Τρόπος Εγγραφής</FormLabel>
+                                    <Badge variant="outline" className="block w-fit mt-2">{registrationType || "—"}</Badge>
+                                  </div>
+                                  <div>
+                                    <FormLabel>Υποκατάστημα / Μητρική</FormLabel>
+                                    <Badge variant="outline" className="block w-fit mt-2">{branchType || "—"}</Badge>
+                                  </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     <TabsContent value="enriched" className="mt-4">
