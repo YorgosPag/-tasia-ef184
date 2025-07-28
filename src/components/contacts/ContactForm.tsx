@@ -19,7 +19,9 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
   const renderLegalPersonForm = () => (
     <div className="space-y-4">
-      <BasicInfoSection form={form} onFileSelect={onFileSelect} />
+      <Accordion type="multiple" defaultValue={['personal']} className="w-full">
+        <BasicInfoSection form={form} onFileSelect={onFileSelect} />
+      </Accordion>
        <Tabs defaultValue="basic" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="basic">Βασικά Στοιχεία</TabsTrigger>
@@ -27,22 +29,28 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
           <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
           <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
         </TabsList>
-        <Accordion type="multiple" defaultValue={['identity', 'job', 'contact', 'socials', 'addresses', 'notes']} className="w-full">
-            <TabsContent value="basic" className="mt-4">
+        <TabsContent value="basic" className="mt-4">
+            <Accordion type="multiple" defaultValue={['identity', 'job']} className="w-full space-y-2">
                 <IdentitySection form={form} />
                 <JobSection form={form} />
-            </TabsContent>
-            <TabsContent value="contact" className="mt-4">
+            </Accordion>
+        </TabsContent>
+        <TabsContent value="contact" className="mt-4">
+            <Accordion type="multiple" defaultValue={['contact', 'socials']} className="w-full space-y-2">
                 <ContactSection form={form} />
                 <SocialsSection form={form} />
-            </TabsContent>
-            <TabsContent value="addresses" className="mt-4">
+            </Accordion>
+        </TabsContent>
+        <TabsContent value="addresses" className="mt-4">
+             <Accordion type="multiple" defaultValue={['addresses']} className="w-full">
                 <AddressSection form={form} />
-            </TabsContent>
-            <TabsContent value="notes" className="mt-4">
+            </Accordion>
+        </TabsContent>
+        <TabsContent value="notes" className="mt-4">
+            <Accordion type="multiple" defaultValue={['notes']} className="w-full">
                 <NotesSection form={form} />
-            </TabsContent>
-        </Accordion>
+            </Accordion>
+        </TabsContent>
       </Tabs>
     </div>
   );
