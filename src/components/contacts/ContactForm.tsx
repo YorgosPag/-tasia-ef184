@@ -15,7 +15,7 @@ import { NotesSection } from './ContactForm/sections/NotesSection';
 import { type ContactFormProps } from './ContactForm/types';
 import { SocialsSection } from './ContactForm/sections/SocialsSection';
 import { LegalRepresentativeSection } from './ContactForm/sections/LegalRepresentativeSection';
-import { FormItem, FormLabel, FormControl, FormDescription, FormField, FormMessage } from '@/shared/components/ui/form';
+import { FormItem, FormLabel, FormControl, FormField, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Switch } from '@/shared/components/ui/switch';
 import { Button } from '@/shared/components/ui/button';
@@ -50,8 +50,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
     keyName: 'fieldId',
   });
 
-  const gemhAddress = fields.find((field, index) => form.getValues(`addresses.${index}.fromGEMI`));
   const gemhAddressIndex = fields.findIndex((field, index) => form.getValues(`addresses.${index}.fromGEMI`));
+  const gemhAddress = gemhAddressIndex !== -1 ? fields[gemhAddressIndex] : null;
   const manualAddresses = fields.filter((field, index) => !form.getValues(`addresses.${index}.fromGEMI`));
 
   
