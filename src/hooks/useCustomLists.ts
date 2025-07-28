@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -95,6 +96,15 @@ export function useCustomLists() {
       if(!user) return false;
       setIsSubmitting(true);
       try {
+          // Server-side check for key uniqueness
+          const q = query(collection(db, 'tsia-custom-lists'), where('key', '==', listData.key), limit(1));
+          const existing = await getDocs(q);
+          if (!existing.empty) {
+              console.error(`Attempted to create a list with a duplicate key: ${listData.key}`);
+              toast({ variant: 'destructive', title: 'Αποτυχία', description: 'Το κλειδί υπάρχει ήδη. Παρακαλώ ανανεώστε τη σελίδα και προσπαθήστε ξανά.' });
+              return false;
+          }
+
           const listRef = doc(collection(db, 'tsia-custom-lists'));
           await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
           toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.' });
