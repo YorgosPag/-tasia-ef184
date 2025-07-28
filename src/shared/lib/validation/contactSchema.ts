@@ -119,6 +119,10 @@ export const jobInfoSchema = z.object({
     autoRegistered: z.boolean().optional(),
     legalType: z.string().optional(),
     prefecture: z.string().optional(),
+    statuses: z.array(z.object({
+        status: z.string().optional(),
+        statusDate: z.string().optional(),
+    })).optional(),
   }).optional(),
 });
 

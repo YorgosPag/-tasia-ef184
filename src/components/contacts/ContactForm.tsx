@@ -25,6 +25,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
+  const statuses = useWatch({ control: form.control, name: 'job.statuses' }) || [];
   
   const { fields: addressFields } = useFieldArray({
     control: form.control,
@@ -54,6 +55,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
                         <TabsTrigger value="objective">Σκοπός & Αντικείμενο</TabsTrigger>
+                        <TabsTrigger value="statuses">Καταστάσεις ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="capital">Κεφάλαιο Εταιρείας</TabsTrigger>
                         <TabsTrigger value="stocks">Μετοχική Σύνθεση</TabsTrigger>
                         <TabsTrigger value="documents">Έγγραφα ΓΕΜΗ</TabsTrigger>
@@ -138,6 +140,31 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                     </FormItem>
                                   )}
                                 />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                     <TabsContent value="statuses" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Ιστορικό Καταστάσεων ΓΕΜΗ</CardTitle>
+                                <CardDescription>
+                                    🛈 Οι καταστάσεις της εταιρείας όπως καταγράφονται στο Γ.Ε.ΜΗ.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {statuses?.length > 0 ? (
+                                    <Table>
+                                        <TableHeader><TableRow><TableHead>Κατάσταση</TableHead><TableHead>Ημερομηνία</TableHead></TableRow></TableHeader>
+                                        <TableBody>
+                                            {statuses.map((item: any, idx: number) => (
+                                                <TableRow key={idx}><TableCell>{item.status || "—"}</TableCell><TableCell>{item.statusDate || "—"}</TableCell></TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-6">Δεν βρέθηκαν διαθέσιμες καταστάσεις.</p>
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>
