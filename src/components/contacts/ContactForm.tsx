@@ -118,7 +118,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     {fields.map((field, index) => {
                          const addressType = form.watch(`addresses.${index}.type`);
                          const customTitle = form.watch(`addresses.${index}.customTitle`);
-                         const defaultTitle = `Διεύθυνση ${index + 1}` + (addressType ? ` - ${addressType}` : '');
+                         const defaultTitle = `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
                          const title = customTitle || defaultTitle;
                          const fromGEMI = form.watch(`addresses.${index}.fromGEMI`);
 
