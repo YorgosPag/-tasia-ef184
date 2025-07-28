@@ -92,12 +92,23 @@ export function JobSection({ form }: ContactFormProps) {
                             const newAddress = {
                                 type: 'Έδρα (ΓΕΜΗ)',
                                 fromGEMI: true,
-                                isActive: true,
                                 street: street,
                                 number: number,
                                 municipality: cityPart,
                                 postalCode: postalCode,
                                 country: 'Ελλάδα',
+                                // Initialize other optional fields to avoid undefined issues
+                                toponym: '',
+                                settlements: '',
+                                municipalLocalCommunities: '',
+                                municipalUnities: '',
+                                regionalUnities: '',
+                                regions: '',
+                                decentralizedAdministrations: '',
+                                largeGeographicUnits: '',
+                                isActive: true,
+                                customTitle: '',
+                                originNote: 'Fetched from GEMH'
                             };
                             
                             if (gemiAddressIndex > -1) {
