@@ -10,6 +10,7 @@ import { Briefcase, Loader2 } from 'lucide-react';
 import { type ContactFormProps } from '../types';
 import { useDebounce } from 'use-debounce';
 import { Separator } from '@/shared/components/ui/separator';
+import { Badge } from '@/shared/components/ui/badge';
 
 const GEMI_API_URL = 'https://opendata-api.businessportal.gr/api/opendata/v1/companies/';
 const GEMI_API_KEY = 'b98MlVJ7vDF8gQIWN6d79cgStU8QJp9o';
@@ -19,6 +20,8 @@ export function JobSection({ form }: ContactFormProps) {
     const entityType = useWatch({ control: form.control, name: 'entityType' });
     const arGemiValue = useWatch({ control: form.control, name: 'job.arGemi' });
     const afmValue = useWatch({ control: form.control, name: 'afm' });
+    const isBranch = useWatch({ control: form.control, name: 'job.isBranch' });
+
 
     const [debouncedArGemi] = useDebounce(arGemiValue, 1000);
     const [debouncedAfm] = useDebounce(afmValue, 1000);
@@ -33,6 +36,7 @@ export function JobSection({ form }: ContactFormProps) {
         form.setValue('job.gemhDate', '');
         form.setValue('job.gemhActivity', '');
         form.setValue('job.gemhDOY', '');
+        form.setValue('job.isBranch', undefined);
         // Also remove the GEMI address if it exists
         const currentAddresses = form.getValues('addresses') || [];
         const nonGemiAddresses = currentAddresses.filter(addr => !addr.fromGEMI);
@@ -66,6 +70,7 @@ export function JobSection({ form }: ContactFormProps) {
                          form.setValue('job.gemhDate', companyData.statusDate || '', { shouldDirty: true });
                          form.setValue('job.gemhActivity', companyData.activity || '', { shouldDirty: true });
                          form.setValue('job.gemhDOY', companyData.doy || '', { shouldDirty: true });
+                         form.setValue('job.isBranch', companyData.isBranch || false, { shouldDirty: true });
                          form.setValue('afm', companyData.afm || afmValue, { shouldDirty: true });
                          form.setValue('job.arGemi', companyData.gemiNo || arGemiValue, { shouldDirty: true });
 
@@ -97,18 +102,10 @@ export function JobSection({ form }: ContactFormProps) {
                                 municipality: cityPart,
                                 postalCode: postalCode,
                                 country: 'Ελλάδα',
-                                // Initialize other optional fields to avoid undefined issues
-                                toponym: '',
-                                settlements: '',
-                                municipalLocalCommunities: '',
-                                municipalUnities: '',
-                                regionalUnities: '',
-                                regions: '',
-                                decentralizedAdministrations: '',
-                                largeGeographicUnits: '',
-                                isActive: true,
-                                customTitle: '',
-                                originNote: 'Fetched from GEMH'
+                                toponym: '', settlements: '', municipalLocalCommunities: '',
+                                municipalUnities: '', regionalUnities: '', regions: '',
+                                decentralizedAdministrations: '', largeGeographicUnits: '',
+                                isActive: true, customTitle: '', originNote: 'Fetched from GEMH'
                             };
                             
                             if (gemiAddressIndex > -1) {
@@ -180,6 +177,15 @@ export function JobSection({ form }: ContactFormProps) {
                         </FormItem>
                     )} />
                      <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem><FormLabel>ΔΟΥ (από ΓΕΜΗ)</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                     <FormItem>
+                        <FormLabel>Υποκατάστημα / Μητρική</FormLabel>
+                        <FormControl>
+                            <Badge variant="outline" className="text-muted-foreground block w-fit mt-2">
+                               {typeof isBranch === 'boolean' ? (isBranch ? 'Υποκατάστημα' : 'Μητρική Εταιρεία') : '-'}
+                            </Badge>
+                        </FormControl>
+                        <FormDescription>Η πληροφορία αντλείται αυτόματα από το ΓΕΜΗ.</FormDescription>
+                     </FormItem>
                     <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem><FormLabel>Επωνυμία</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="job.commercialTitle" render={({ field }) => (<FormItem><FormLabel>Διακριτικός Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="job.companyTitle" render={({ field }) => (<FormItem><FormLabel>Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
@@ -200,4 +206,6 @@ export function JobSection({ form }: ContactFormProps) {
 }
 
     
+    
+
     
