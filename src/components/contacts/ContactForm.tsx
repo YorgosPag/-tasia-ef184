@@ -15,8 +15,10 @@ import { NotesSection } from './ContactForm/sections/NotesSection';
 import { type ContactFormProps } from './ContactForm/types';
 import { SocialsSection } from './ContactForm/sections/SocialsSection';
 import { LegalRepresentativeSection } from './ContactForm/sections/LegalRepresentativeSection';
-import { FormItem, FormLabel, FormControl } from '@/shared/components/ui/form';
+import { FormItem, FormLabel, FormControl, FormDescription } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
+import { Switch } from '@/shared/components/ui/switch';
+
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
@@ -76,6 +78,17 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                     <FormItem><FormLabel>Περιφέρεια</FormLabel><FormControl><Input /></FormControl></FormItem>
                                     <FormItem><FormLabel>Αποκεντρωμένη Διοίκηση</FormLabel><FormControl><Input /></FormControl></FormItem>
                                     <FormItem><FormLabel>Μεγάλη Γεωγραφική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                </div>
+                                <div className="pt-4">
+                                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                                        <div className="space-y-0.5">
+                                            <FormLabel>Η έδρα αυτή προέρχεται από το ΓΕΜΗ</FormLabel>
+                                            <FormDescription>Ενεργοποιήστε αν η διεύθυνση έχει αντληθεί αυτόματα από το ΓΕΜΗ.</FormDescription>
+                                        </div>
+                                        <FormControl>
+                                            <Switch defaultChecked={false} />
+                                        </FormControl>
+                                    </FormItem>
                                 </div>
                              </CardContent>
                            </Card>
