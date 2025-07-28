@@ -16,14 +16,11 @@ const firebaseConfig = {
   appId: "1:204877276202:web:31db4eb5b1c1b7c4078f53"
 };
 
-// Initialize Firebase
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+// Initialize Firebase safely for both server and client
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
 // Export services for use in other parts of the application
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 export const functions = getFunctions(app);
-
-console.log('Firebase App Initialized from SINGLE SOURCE:', app.name);
-console.log('Firestore DB instance:', db.app.name);
