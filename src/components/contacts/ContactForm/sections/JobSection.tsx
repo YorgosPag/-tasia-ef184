@@ -90,7 +90,7 @@ export function JobSection({ form }: ContactFormProps) {
                             const currentAddresses = form.getValues('addresses') || [];
                             const gemiAddressIndex = currentAddresses.findIndex(addr => addr.fromGEMI);
                             const newAddress = {
-                                type: 'Έδρα',
+                                type: 'Έδρα (ΓΕΜΗ)',
                                 fromGEMI: true,
                                 isActive: true,
                                 street: street,
@@ -188,4 +188,5 @@ export function JobSection({ form }: ContactFormProps) {
     );
 }
 
+    
     
