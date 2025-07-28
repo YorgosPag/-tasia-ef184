@@ -28,7 +28,9 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
     name: "addresses",
     keyName: 'fieldId', // to avoid conflicts with 'id' from data
   });
-  const gemhAddressIndex = addressFields.findIndex(addr => addr.fromGEMI);
+  
+  const addresses = useWatch({ control: form.control, name: 'addresses' }) || [];
+  const gemhAddressIndex = addresses.findIndex(addr => addr.fromGEMI);
   
   const renderLegalPersonForm = () => (
      <div className="w-full space-y-4">
@@ -58,7 +60,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     
                      <TabsContent value="headquarters" className="mt-4">
                         {gemhAddressIndex !== -1 && addressFields[gemhAddressIndex] ? (
-                             <Card key={JSON.stringify(addressFields[gemhAddressIndex])} className="relative border-destructive/50">
+                             <Card key={JSON.stringify(addresses[gemhAddressIndex])} className="relative border-destructive/50">
                                 <CardContent className="p-6 space-y-4">
                                     <p className="text-sm text-destructive font-semibold text-center mb-4">
                                        ❗ Τα παρακάτω στοιχεία αντλήθηκαν αυτόματα από το Γ.Ε.ΜΗ. και δεν μπορούν να τροποποιηθούν από εδώ.
@@ -72,7 +74,19 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 </CardContent>
                             </Card>
                         ) : (
-                            <div className="text-center py-10 text-muted-foreground">Δεν βρέθηκε διεύθυνση από το ΓΕΜΗ.</div>
+                            <Card className="relative border-muted">
+                                <CardContent className="p-6 space-y-4">
+                                    <p className="text-sm text-muted-foreground text-center mb-4">
+                                    🔄 Αναμένουμε στοιχεία από το Γ.Ε.ΜΗ. Τα πεδία θα συμπληρωθούν αυτόματα μόλις συνδεθεί η υπηρεσία.
+                                    </p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-50">
+                                    <FormItem><FormLabel>Οδός</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         )}
                     </TabsContent>
 
