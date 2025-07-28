@@ -72,6 +72,9 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     <Card>
                       <CardContent className="p-6 space-y-4">
                          <h3 className="text-lg font-semibold text-primary">Έδρα (αυτόματη από το ΓΕΜΗ)</h3>
+                         <FormDescription>
+                           Η διεύθυνση αυτή αντλείται αυτόματα από τα στοιχεία του ΓΕΜΗ.
+                         </FormDescription>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormItem><FormLabel>Οικισμός</FormLabel><FormControl><Input /></FormControl></FormItem>
                             <FormItem><FormLabel>Δημοτική/Τοπική Κοινότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
