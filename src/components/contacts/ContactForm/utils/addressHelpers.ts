@@ -3,7 +3,7 @@ import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
 
 export const ADDRESS_TYPES = ['Κατοικίας', 'Επαγγελματική', 'Έδρα', 'Υποκατάστημα', 'Αποθήκη', 'Εξοχικό', 'Άλλο'];
 
-export const addressFieldsMap: {formKey: keyof ContactFormValues['addresses'][0], label: string, algoliaKey: string}[] = [
+export const addressFieldsMap: { formKey: keyof ContactFormValues['addresses'][0], label: string, algoliaKey: string }[] = [
   { formKey: 'settlements', label: 'Οικισμός', algoliaKey: 'Οικισμοί' },
   { formKey: 'municipalLocalCommunities', label: 'Δημοτική/Τοπική Κοινότητα', algoliaKey: 'Δημοτικές/Τοπικές Κοινότητες' },
   { formKey: 'municipalUnities', label: 'Δημοτική Ενότητα', algoliaKey: 'Δημοτικές Ενότητες' },
@@ -15,24 +15,31 @@ export const addressFieldsMap: {formKey: keyof ContactFormValues['addresses'][0]
 ];
 
 export const getFullAddress = (form: UseFormReturn<ContactFormValues>, index: number) => {
-    const address = form.watch(`addresses.${index}`);
-    if (!address) return '';
-    return [address.street, address.number, address.settlements, address.postalCode, address.country].filter(Boolean).join(' ');
-}
+  const address = form.watch(`addresses.${index}`);
+  if (!address) return '';
+  return [address.street, address.number, address.settlements, address.postalCode, address.country]
+    .filter(Boolean)
+    .join(' ');
+};
 
-export const handleAddressSelect = (form: UseFormReturn<ContactFormValues>, idx: number, hit: any) => {
-  addressFieldsMap.forEach(fieldMap => {
-    const val = hit[fieldMap.algoliaKey];
-    let finalValue = '';
-    
-    if (Array.isArray(val)) {
-      // Find the first string value in the array, if any
-      finalValue = val.find(v => typeof v === 'string') || '';
-    } else if (typeof val === 'string') {
-      finalValue = val;
+export const handleAddressSelect = (
+  form: UseFormReturn<ContactFormValues>,
+  idx: number,
+  hit: any
+) => {
+  addressFieldsMap.forEach(({ formKey, algoliaKey }) => {
+    const raw = hit[algoliaKey];
+
+    let value: string = '';
+
+    if (Array.isArray(raw)) {
+      value = raw.find((v) => typeof v === 'string') || '';
+    } else if (typeof raw === 'string') {
+      value = raw;
     }
-    
-    // Set the value in the form
-    form.setValue(`addresses.${idx}.${fieldMap.formKey}` as const, finalValue, { shouldDirty: true });
+
+    if (value) {
+      form.setValue(`addresses.${idx}.${formKey}` as const, value, { shouldDirty: true });
+    }
   });
 };

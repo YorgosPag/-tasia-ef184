@@ -26,21 +26,21 @@ export function Autocomplete({ form, name, label, onSelect, algoliaKey }: Autoco
   const [debouncedQuery] = useDebounce(inputValue, 300);
 
   useEffect(() => {
-    if (fieldValue !== inputValue) {
-      setInputValue(fieldValue || '');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setInputValue(fieldValue || '');
   }, [fieldValue]);
-  
-  useEffect(() => {
-      refine(debouncedQuery);
-  }, [debouncedQuery, refine]);
 
+  useEffect(() => {
+    if (debouncedQuery && debouncedQuery.trim().length > 0) {
+      refine(debouncedQuery);
+    }
+  }, [debouncedQuery, refine]);
 
   const handleSelect = (hit: any) => {
     onSelect(hit);
-    const rawValue = hit[algoliaKey];
-    const selectedLabel = Array.isArray(rawValue) ? (rawValue[0] || '') : (rawValue || '');
+
+    const raw = hit[algoliaKey];
+    const selectedLabel = Array.isArray(raw) ? raw.find((v) => typeof v === 'string') || '' : raw || '';
+
     setInputValue(selectedLabel);
     form.setValue(name, selectedLabel, { shouldDirty: true });
     setIsOpen(false);
@@ -50,7 +50,7 @@ export function Autocomplete({ form, name, label, onSelect, algoliaKey }: Autoco
     const value = e.target.value;
     setInputValue(value);
     form.setValue(name, value, { shouldDirty: true });
-    if (!isOpen && value) {
+    if (!isOpen && value.trim() !== '') {
       setIsOpen(true);
     }
   };
@@ -91,7 +91,7 @@ export function Autocomplete({ form, name, label, onSelect, algoliaKey }: Autoco
                   const raw = hit[algoliaKey];
                   const hitValue =
                     (hit._highlightResult?.[algoliaKey]?.value) ||
-                    (Array.isArray(raw) ? raw[0] : raw) ||
+                    (Array.isArray(raw) ? raw.find((v) => typeof v === 'string') : raw) ||
                     '';
                   return (
                     <CommandItem
@@ -113,4 +113,4 @@ export function Autocomplete({ form, name, label, onSelect, algoliaKey }: Autoco
       </PopoverContent>
     </Popover>
   );
-};
+}

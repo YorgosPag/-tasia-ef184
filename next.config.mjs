@@ -1,5 +1,17 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Cache-busting comment
+  // Redirect / to /dashboard
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/dashboard',
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
