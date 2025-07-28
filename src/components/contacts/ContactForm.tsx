@@ -71,9 +71,30 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             </TabsList>
             
             <TabsContent value="basic" className="mt-4">
+               {entityType === 'Νομικό Πρόσωπο' ? (
+                 <Tabs defaultValue="gemh-data" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="gemh-data">Στοιχεία από ΓΕΜΗ</TabsTrigger>
+                        <TabsTrigger value="user-data">Στοιχεία από Χρήστη</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="gemh-data" className="mt-4">
+                        <Accordion type="multiple" defaultValue={['job']} className="w-full space-y-2">
+                            <JobSection form={form} />
+                        </Accordion>
+                    </TabsContent>
+                    <TabsContent value="user-data" className="mt-4">
+                        <Card>
+                            <CardContent className="p-6 text-center text-muted-foreground">
+                                <p>Τα πεδία για χειροκίνητη εισαγωγή στοιχείων θα προστεθούν εδώ.</p>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                 </Tabs>
+               ) : (
                 <Accordion type="multiple" defaultValue={['job']} className="w-full space-y-2">
                     <JobSection form={form} />
                 </Accordion>
+               )}
             </TabsContent>
 
              <TabsContent value="representative" className="mt-4">
@@ -198,3 +219,5 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
   return (entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') ? renderLegalPersonForm() : renderDefaultForm();
 }
+
+    
