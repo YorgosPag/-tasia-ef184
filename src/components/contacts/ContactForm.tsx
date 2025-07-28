@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useWatch, useFieldArray } from 'react-hook-form';
-import { Accordion } from '@/shared/components/ui/accordion';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { BasicInfoSection } from './ContactForm/sections/BasicInfoSection';
@@ -17,43 +17,13 @@ import { SocialsSection } from './ContactForm/sections/SocialsSection';
 import { LegalRepresentativeSection } from './ContactForm/sections/LegalRepresentativeSection';
 import { FormItem, FormLabel, FormControl, FormField, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
-import { Switch } from '@/shared/components/ui/switch';
-import { Button } from '@/shared/components/ui/button';
-import { PlusCircle, Trash2 } from 'lucide-react';
-import { Separator } from '@/shared/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { useCustomLists } from '@/hooks/useCustomLists';
-import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
-import { addressFieldsMap, handleAddressSelect } from './ContactForm/utils/addressHelpers';
-import { AddressAutocompleteInput } from '../common/autocomplete/AddressAutocompleteInput';
+import { Phone, Link as LinkIcon, Map, Info } from 'lucide-react';
 
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
-  const { lists, addNewItemToList } = useCustomLists();
 
-  const addressListKey = 'Yz439YFkR4U4eRAwDNy5';
-  const addressTypeOptions = React.useMemo(() => {
-    const addressList = lists.find(l => l.id === addressListKey);
-    return addressList?.items.map(item => ({ label: item.value, value: item.value })) || [];
-  }, [lists]);
-  
-  const handleCreateAddressType = async (value: string) => {
-    const result = await addNewItemToList(addressListKey, value, false);
-    return !!result;
-  }
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "addresses",
-    keyName: 'fieldId',
-  });
-
-  const gemhAddressIndex = fields.findIndex((field, index) => form.getValues(`addresses.${index}.fromGEMI`));
-  const gemhAddress = gemhAddressIndex !== -1 ? fields[gemhAddressIndex] : null;
-  const manualAddresses = fields.filter((field, index) => !form.getValues(`addresses.${index}.fromGEMI`));
-
+  const gemhAddressIndex = (form.getValues('addresses') || []).findIndex(addr => addr.fromGEMI);
   
   const renderLegalPersonForm = () => (
      <div className="w-full space-y-4">
@@ -82,8 +52,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     </TabsContent>
                     
                      <TabsContent value="headquarters" className="mt-4">
-                        {gemhAddress ? (
-                            <Card key={gemhAddress.fieldId} className="relative border-primary/50">
+                        {gemhAddressIndex !== -1 ? (
+                            <Card key={(form.getValues('addresses')?.[gemhAddressIndex] as any)?.fieldId} className="relative border-primary/50">
                                 <CardContent className="p-6 space-y-4">
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="text-lg font-semibold text-primary">Έδρα</h3>
@@ -111,12 +81,42 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             </TabsContent>
 
             <TabsContent value="user-data" className="mt-4">
-                 <Accordion type="multiple" defaultValue={['contact', 'socials']} className="w-full space-y-2">
-                    <ContactSection form={form} />
-                    <SocialsSection form={form} />
-                    <AddressSection form={form} />
-                    <NotesSection form={form} />
-                 </Accordion>
+                <Accordion type="multiple" defaultValue={['contact-socials', 'addresses', 'notes']} className="w-full space-y-2">
+                    <AccordionItem value="contact-socials">
+                       <AccordionTrigger>
+                            <div className="flex items-center gap-2 text-primary">
+                                <Phone className="h-5 w-5" />
+                                <span>Επικοινωνία & Socials</span>
+                            </div>
+                        </AccordionTrigger>
+                       <AccordionContent className="p-1">
+                           <ContactSection form={form} />
+                           <SocialsSection form={form} />
+                       </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="addresses">
+                        <AccordionTrigger>
+                            <div className="flex items-center gap-2 text-primary">
+                                <Map className="h-5 w-5" />
+                                <span>Διευθύνσεις</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="p-1">
+                            <AddressSection form={form} />
+                        </AccordionContent>
+                    </AccordionItem>
+                     <AccordionItem value="notes">
+                        <AccordionTrigger>
+                            <div className="flex items-center gap-2 text-primary">
+                                <Info className="h-5 w-5" />
+                                <span>Σημειώσεις</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="p-1">
+                            <NotesSection form={form} />
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
             </TabsContent>
         </Tabs>
     </div>
@@ -134,5 +134,5 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
     </Accordion>
   );
 
-  return (entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') ? renderLegalPersonForm() : renderDefaultForm();
+  return (entityType === 'Νομικό Πρόσωπο') ? renderLegalPersonForm() : renderDefaultForm();
 }

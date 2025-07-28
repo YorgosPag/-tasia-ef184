@@ -15,33 +15,35 @@ import { type ContactFormProps } from '../types';
 
 
 export function AddressSection({ form }: ContactFormProps) {
-    const { fields: addressFields, append: appendAddress, remove: removeAddress } = useFieldArray({ control: form.control, name: "addresses" });
+    const { fields, append, remove } = useFieldArray({
+      control: form.control,
+      name: 'addresses',
+      keyName: 'fieldId',
+    });
+
+    const manualAddresses = fields.filter((_, index) => !form.getValues(`addresses.${index}.fromGEMI`));
+    const originalIndices = new Map(fields.map((field, index) => [field.fieldId, index]));
+
 
     return (
-        <AccordionItem value="addresses">
-        <AccordionTrigger>
-          <div className="flex items-center gap-2 text-primary">
-            <Map className="h-5 w-5" />
-            <span>Στοιχεία Διεύθυνσης</span>
-          </div>
-        </AccordionTrigger>
-        <AccordionContent className="space-y-4 p-1">
+        <div className="space-y-4 p-1">
           <div className="flex justify-end">
-            <Button type="button" variant="ghost" size="sm" onClick={() => appendAddress({ type: 'Κύρια', country: 'Ελλάδα' })}>
+            <Button type="button" variant="ghost" size="sm" onClick={() => append({ type: 'Κύρια', country: 'Ελλάδα', fromGEMI: false })}>
               <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
             </Button>
           </div>
           <div className="space-y-4">
-            {addressFields.map((field, index) => {
-              const fullAddress = getFullAddress(form, index);
+            {manualAddresses.map((field, relativeIndex) => {
+              const originalIndex = originalIndices.get(field.fieldId)!;
+              const fullAddress = getFullAddress(form, originalIndex);
               const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
 
               return (
-                <div key={field.id} className="p-4 border rounded-md bg-muted/30 space-y-4 relative">
-                  <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => removeAddress(index)}>
+                <div key={field.fieldId} className="p-4 border rounded-md bg-muted/30 space-y-4 relative">
+                  <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1" onClick={() => remove(originalIndex)}>
                     <Trash2 className="h-4 w-4 text-destructive"/>
                   </Button>
-                  <FormField control={form.control} name={`addresses.${index}.type`} render={({ field }) => (
+                  <FormField control={form.control} name={`addresses.${originalIndex}.type`} render={({ field }) => (
                     <FormItem className="flex items-center gap-4">
                       <FormLabel className="w-40 text-right">Τύπος Διεύθυνσης</FormLabel>
                       <div className="flex-1">
@@ -60,7 +62,7 @@ export function AddressSection({ form }: ContactFormProps) {
                     </FormItem>
                   )} />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name={`addresses.${index}.street`} render={({ field }) => (
+                    <FormField control={form.control} name={`addresses.${originalIndex}.street`} render={({ field }) => (
                       <FormItem className="flex items-center gap-4">
                         <FormLabel className="w-40 text-right">Οδός</FormLabel>
                         <div className="flex-1">
@@ -69,7 +71,7 @@ export function AddressSection({ form }: ContactFormProps) {
                         </div>
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name={`addresses.${index}.number`} render={({ field }) => (
+                    <FormField control={form.control} name={`addresses.${originalIndex}.number`} render={({ field }) => (
                       <FormItem className="flex items-center gap-4">
                         <FormLabel className="w-40 text-right">Αριθμός</FormLabel>
                         <div className="flex-1">
@@ -78,7 +80,7 @@ export function AddressSection({ form }: ContactFormProps) {
                         </div>
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name={`addresses.${index}.postalCode`} render={({ field }) => (
+                    <FormField control={form.control} name={`addresses.${originalIndex}.postalCode`} render={({ field }) => (
                       <FormItem className="flex items-center gap-4">
                         <FormLabel className="w-40 text-right">Ταχ. Κώδικας</FormLabel>
                         <div className="flex-1">
@@ -87,7 +89,7 @@ export function AddressSection({ form }: ContactFormProps) {
                         </div>
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name={`addresses.${index}.country`} render={({ field }) => (
+                    <FormField control={form.control} name={`addresses.${originalIndex}.country`} render={({ field }) => (
                       <FormItem className="flex items-center gap-4">
                         <FormLabel className="w-40 text-right">Χώρα</FormLabel>
                         <div className="flex-1">
@@ -96,7 +98,7 @@ export function AddressSection({ form }: ContactFormProps) {
                         </div>
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name={`addresses.${index}.toponym`} render={({ field }) => (
+                    <FormField control={form.control} name={`addresses.${originalIndex}.toponym`} render={({ field }) => (
                       <FormItem className="flex items-center gap-4">
                         <FormLabel className="w-40 text-right">Τοπωνύμιο</FormLabel>
                         <div className="flex-1">
@@ -109,10 +111,10 @@ export function AddressSection({ form }: ContactFormProps) {
                       <AddressAutocompleteInput
                         key={f.formKey}
                         form={form}
-                        name={`addresses.${index}.${f.formKey}`}
+                        name={`addresses.${originalIndex}.${f.formKey}`}
                         label={f.label}
                         algoliaKey={f.algoliaKey}
-                        onSelect={(hit: any) => handleAddressSelect(form, index, hit)}
+                        onSelect={(hit: any) => handleAddressSelect(form, originalIndex, hit)}
                         indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
                       />
                     ))}
@@ -131,7 +133,6 @@ export function AddressSection({ form }: ContactFormProps) {
               );
             })}
           </div>
-        </AccordionContent>
-      </AccordionItem>
+        </div>
     )
 }
