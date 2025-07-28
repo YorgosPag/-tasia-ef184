@@ -41,7 +41,7 @@ const createListSchema = z.object({
   title: z.string().min(2, {
     message: 'Ο τίτλος πρέπει να έχει τουλάχιστον 2 χαρακτήρες.',
   }),
-  key: z.string(), // Key is generated automatically, validation is not needed from the user.
+  key: z.string(),
   description: z.string().optional(),
   hasCode: z.boolean().default(false),
   isProtected: z.boolean().default(false),
