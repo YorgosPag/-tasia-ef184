@@ -53,7 +53,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     
                      <TabsContent value="headquarters" className="mt-4">
                         {gemhAddressIndex !== -1 ? (
-                            <Card key={`gemi-address-${gemhAddressIndex}`} className="relative border-destructive/50">
+                             <Card key={JSON.stringify(addresses[gemhAddressIndex])} className="relative border-destructive/50">
                                 <CardContent className="p-6 space-y-4">
                                     <p className="text-sm text-destructive font-semibold text-center mb-4">
                                        ❗ Τα παρακάτω στοιχεία αντλήθηκαν αυτόματα από το Γ.Ε.ΜΗ.
@@ -92,7 +92,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                  <AccordionTrigger>
                                      <div className="flex items-center gap-2 text-primary">
                                          <Phone className="h-5 w-5" />
-                                         <span>Στοιχεία Επικοινωνίας &amp; Socials</span>
+                                         <span>Επικοινωνία & Socials</span>
                                      </div>
                                  </AccordionTrigger>
                                  <AccordionContent className="p-1">
