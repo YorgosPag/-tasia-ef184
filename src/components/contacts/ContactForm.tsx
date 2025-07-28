@@ -22,6 +22,7 @@ import { Phone, Link as LinkIcon, Map as MapIcon, Info, UserCircle } from 'lucid
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/shared/components/ui/table';
 import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { Badge } from '@/shared/components/ui/badge';
 
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
