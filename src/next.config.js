@@ -1,16 +1,6 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Redirect / to /dashboard
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/dashboard',
-        permanent: true,
-      },
-    ];
-  },
   images: {
     remotePatterns: [
       {
