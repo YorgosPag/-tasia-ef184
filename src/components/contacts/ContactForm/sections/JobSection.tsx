@@ -37,6 +37,7 @@ export function JobSection({ form }: ContactFormProps) {
         form.setValue('job.gemhDate', '');
         form.setValue('job.gemhActivity', '');
         form.setValue('job.gemhDOY', '');
+        form.setValue('job.gemhGemiOffice', '');
         form.setValue('job.isBranch', undefined);
         form.setValue('job.autoRegistered', undefined);
         // Also remove the GEMI address if it exists
@@ -72,6 +73,7 @@ export function JobSection({ form }: ContactFormProps) {
                          form.setValue('job.gemhDate', companyData.statusDate || '', { shouldDirty: true });
                          form.setValue('job.gemhActivity', companyData.activity || '', { shouldDirty: true });
                          form.setValue('job.gemhDOY', companyData.doy || '', { shouldDirty: true });
+                         form.setValue('job.gemhGemiOffice', companyData.gemiOffice?.descr || '', { shouldDirty: true });
                          form.setValue('job.isBranch', companyData.isBranch || false, { shouldDirty: true });
                          form.setValue('job.autoRegistered', companyData.autoRegistered || false, { shouldDirty: true });
                          form.setValue('afm', companyData.afm || afmValue, { shouldDirty: true });
@@ -188,6 +190,7 @@ export function JobSection({ form }: ContactFormProps) {
                         </FormItem>
                     )} />
                      <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem><FormLabel>ΔΟΥ (από ΓΕΜΗ)</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                     <FormField control={form.control} name="job.gemhGemiOffice" render={({ field }) => (<FormItem><FormLabel>Τοπική Υπηρεσία Γ.Ε.ΜΗ.</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
                     <div className="grid grid-cols-2 gap-4">
                         <FormItem>
                             <FormLabel>Υποκατάστημα / Μητρική</FormLabel>

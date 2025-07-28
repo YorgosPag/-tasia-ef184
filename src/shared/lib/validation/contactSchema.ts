@@ -111,6 +111,7 @@ export const jobInfoSchema = z.object({
     gemhAddress: z.string().optional(),
     gemhActivity: z.string().optional(),
     gemhDOY: z.string().optional(),
+    gemhGemiOffice: z.string().optional(),
     isBranch: z.boolean().optional(),
     autoRegistered: z.boolean().optional(),
   }).optional(),
