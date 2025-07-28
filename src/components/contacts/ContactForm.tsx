@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { useWatch } from 'react-hook-form';
-import { Accordion } from '@/shared/components/ui/accordion';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { BasicInfoSection } from './ContactForm/sections/BasicInfoSection';
