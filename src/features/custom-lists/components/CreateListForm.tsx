@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -40,13 +41,10 @@ const createListSchema = z.object({
   title: z.string().min(2, {
     message: 'Ο τίτλος πρέπει να έχει τουλάχιστον 2 χαρακτήρες.',
   }),
-  key: z.string(), // Key is generated automatically, so it doesn't need min validation here.
+  key: z.string(), // Key is generated automatically, so it doesn't need direct user validation here.
   description: z.string().optional(),
   hasCode: z.boolean().default(false),
   isProtected: z.boolean().default(false),
-}).refine(data => data.key.length >= 2, {
-    message: "Το κλειδί που παράγεται αυτόματα πρέπει να έχει τουλάχιστον 2 χαρακτήρες. Δοκιμάστε διαφορετικό τίτλο.",
-    path: ["key"],
 });
 
 type CreateListFormValues = z.infer<typeof createListSchema>;
@@ -73,6 +71,11 @@ export function CreateListForm() {
     }, [watchedTitle, form]);
 
     const onSubmit = async (values: CreateListFormValues) => {
+        // Final validation before submission
+        if (values.key.length < 2) {
+            form.setError('key', { type: 'manual', message: 'Δεν ήταν δυνατή η δημιουργία έγκυρου κλειδιού από αυτόν τον τίτλο.' });
+            return;
+        }
         const success = await createList(values);
         if (success) {
             form.reset();
@@ -111,6 +114,9 @@ export function CreateListForm() {
                                 <FormControl>
                                     <Input readOnly className="bg-muted" {...field} />
                                 </FormControl>
+                                <FormDescription>
+                                    Αυτό το κλειδί παράγεται αυτόματα και δεν μπορεί να αλλάξει.
+                                </FormDescription>
                                 <FormMessage />
                                 </FormItem>
                             )}
