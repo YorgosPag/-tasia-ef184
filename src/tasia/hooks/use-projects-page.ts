@@ -11,7 +11,7 @@ import { useToast } from '@/shared/hooks/use-toast';
 import { useDataStore, Project, Company } from '@/shared/hooks/use-data-store';
 import { logActivity } from '@/shared/lib/logger';
 import { exportToJson } from '@/shared/lib/exporter';
-import { projectSchema } from '@/tasia/components/projects/ProjectDialogForm';
+import { projectSchema } from '@/components/projects/ProjectDialogForm';
 import { formatDate } from '@/shared/lib/project-helpers';
 import { useAuth } from '@/shared/hooks/use-auth';
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/shared/types/project-types';
