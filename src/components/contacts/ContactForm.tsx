@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWatch, useFieldArray } from 'react-hook-form';
 import { Accordion } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
@@ -23,13 +23,23 @@ import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/shared/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { useCustomLists } from '@/hooks/useCustomLists';
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
+  const { lists } = useCustomLists();
+  const addressTypeOptions = React.useMemo(() => {
+    // ID for the "Address Types" list as requested.
+    const addressListId = '1g3KUTrrAlYs2HKXr'; 
+    const addressList = lists.find(l => l.id === addressListId);
+    return addressList?.items.map(item => ({ label: item.value, value: item.value })) || [];
+  }, [lists]);
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "addresses",
   });
+  
   const [editingTitleIndex, setEditingTitleIndex] = useState<number | null>(null);
   const [tempTitle, setTempTitle] = useState('');
 
@@ -159,10 +169,9 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                         <FormLabel>Τύπος Διεύθυνσης</FormLabel>
                                         <Select onValueChange={(value) => {
                                             field.onChange(value);
-                                            // Auto-update title only if it hasn't been manually set
                                             if (!form.getValues(`addresses.${index}.customTitle`)) {
-                                                const currentTitle = `Διεύθυνση ${index + 1} – ${value}`;
-                                                // This doesn't set it in the form state, just for display logic
+                                                const newTitle = `Διεύθυνση ${index + 1} – ${value}`;
+                                                // This does not set customTitle, just updates dynamic display logic
                                             }
                                         }} defaultValue={field.value}>
                                             <FormControl>
@@ -171,10 +180,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="Υποκατάστημα">Υποκατάστημα</SelectItem>
-                                                <SelectItem value="Αποθήκη">Αποθήκη</SelectItem>
-                                                <SelectItem value="Βιοτεχνία">Βιοτεχνία</SelectItem>
-                                                <SelectItem value="Λοιπό">Λοιπό</SelectItem>
+                                                {addressTypeOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -256,7 +262,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     })}
 
                     <div className="flex justify-end">
-                        <Button type="button" variant="outline" size="sm" onClick={() => append({ type: 'Υποκατάστημα', isActive: true })}>
+                        <Button type="button" variant="outline" size="sm" onClick={() => append({ type: '', isActive: true, street: '', number: '', postalCode: '', country: 'Ελλάδα' })}>
                             <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
                         </Button>
                     </div>
