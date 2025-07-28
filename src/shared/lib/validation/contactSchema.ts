@@ -89,7 +89,6 @@ export const addressSchema = z.object({
         decentralizedAdministrations: z.string().optional(),
         largeGeographicUnits: z.string().optional(),
         country: z.string().optional().default('Ελλάδα'),
-        customTitle: z.string().optional(),
         fromGEMI: z.boolean().optional(),
         originNote: z.string().optional(),
         isActive: z.boolean().optional().default(true),

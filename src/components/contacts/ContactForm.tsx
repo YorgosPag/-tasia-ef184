@@ -47,26 +47,6 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
     keyName: 'fieldId',
   });
   
-  const [editingTitleIndex, setEditingTitleIndex] = useState<number | null>(null);
-  const [tempTitle, setTempTitle] = useState('');
-
-  const handleTitleClick = (index: number) => {
-    setEditingTitleIndex(index);
-    const addressType = form.watch(`addresses.${index}.type`);
-    const customTitle = form.watch(`addresses.${index}.customTitle`);
-    const defaultTitle = `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
-    setTempTitle(customTitle || defaultTitle);
-  };
-  
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTempTitle(e.target.value);
-  };
-  
-  const saveTitle = (index: number) => {
-    form.setValue(`addresses.${index}.customTitle`, tempTitle, { shouldDirty: true });
-    setEditingTitleIndex(null);
-  };
-
   const renderLegalPersonForm = () => (
     <Accordion type="multiple" defaultValue={['personal']} className="w-full">
       <BasicInfoSection form={form} onFileSelect={onFileSelect} />
@@ -124,15 +104,21 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                             <FormItem><FormLabel>Μεγάλη Γεωγραφική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
                         </div>
                         <div className="pt-4">
-                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                                <div className="space-y-0.5">
-                                    <FormLabel>Η έδρα αυτή προέρχεται από το ΓΕΜΗ</FormLabel>
-                                    <FormDescription>Ενεργοποιήστε αν η διεύθυνση έχει αντληθεί αυτόματα από το ΓΕΜΗ.</FormDescription>
-                                </div>
-                                <FormControl>
-                                    <Switch defaultChecked={false} />
-                                </FormControl>
-                            </FormItem>
+                             <FormField
+                                name="addresses[0].fromGEMI"
+                                control={form.control}
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                                        <div className="space-y-0.5">
+                                            <FormLabel>Η έδρα αυτή προέρχεται από το ΓΕΜΗ</FormLabel>
+                                            <FormDescription>Ενεργοποιήστε αν η διεύθυνση έχει αντληθεί αυτόματα από το ΓΕΜΗ.</FormDescription>
+                                        </div>
+                                        <FormControl>
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
                         </div>
                       </CardContent>
                     </Card>
@@ -140,29 +126,14 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     {/* Additional Addresses */}
                     {fields.map((field, index) => {
                          const addressType = form.watch(`addresses.${index}.type`);
-                         const customTitle = form.watch(`addresses.${index}.customTitle`);
-                         const defaultTitle = `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
-                         const title = customTitle || defaultTitle;
+                         const title = `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
                          const fromGEMI = form.watch(`addresses.${index}.fromGEMI`);
 
                          return (
                             <Card key={field.fieldId} className="relative">
                               <CardContent className="p-6 space-y-4">
                                 <div className="flex justify-between items-center mb-4">
-                                    {editingTitleIndex === index ? (
-                                      <Input
-                                        value={tempTitle}
-                                        onChange={handleTitleChange}
-                                        onBlur={() => saveTitle(index)}
-                                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveTitle(index); } }}
-                                        autoFocus
-                                        className="h-9 text-lg font-semibold"
-                                      />
-                                    ) : (
-                                      <h3 className="text-lg font-semibold cursor-pointer" onClick={() => handleTitleClick(index)}>
-                                        {title}
-                                      </h3>
-                                    )}
+                                    <h3 className="text-lg font-semibold">{title}</h3>
                                     <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                                         <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
