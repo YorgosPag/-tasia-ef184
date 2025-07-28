@@ -1,6 +1,8 @@
 
 import { z } from 'zod';
 
+export const ALL_ACCORDION_SECTIONS = ['personal', 'identity', 'contact', 'socials', 'addresses', 'job', 'notes'];
+
 export const personalInfoSchema = z.object({
   id: z.string().optional(), // Keep ID for editing context
   name: z.string().min(1, 'Το όνομα/επωνυμία είναι υποχρεωτικό.'),

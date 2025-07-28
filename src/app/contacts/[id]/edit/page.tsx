@@ -12,9 +12,9 @@ import { useToast } from '@/shared/hooks/use-toast';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
 import { Form } from '@/shared/components/ui/form';
-import { Loader2, ArrowLeft, Save } from 'lucide-react';
+import { Loader2, ArrowLeft, Save, ChevronsUpDown } from 'lucide-react';
 import { ContactForm } from '@/components/contacts/ContactForm';
-import { contactSchema, ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import { contactSchema, ContactFormValues, ALL_ACCORDION_SECTIONS } from '@/shared/lib/validation/contactSchema';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
 
@@ -42,6 +42,7 @@ export default function EditContactPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+    const [openSections, setOpenSections] = useState<string[]>(ALL_ACCORDION_SECTIONS);
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactSchema),
@@ -150,6 +151,14 @@ export default function EditContactPage() {
             setIsSubmitting(false);
         }
     };
+    
+    const toggleAllSections = () => {
+        if (openSections.length === ALL_ACCORDION_SECTIONS.length) {
+            setOpenSections([]);
+        } else {
+            setOpenSections(ALL_ACCORDION_SECTIONS);
+        }
+    };
 
     if (isLoading) {
         return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>;
@@ -170,11 +179,18 @@ export default function EditContactPage() {
                 </div>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Επεξεργασία Επαφής</CardTitle>
-                        <CardDescription>Ενημερώστε τα παρακάτω πεδία για να επεξεργαστείτε την επαφή.</CardDescription>
+                       <div className="flex justify-between items-center">
+                            <div>
+                                <CardTitle>Επεξεργασία Επαφής</CardTitle>
+                                <CardDescription>Ενημερώστε τα παρακάτω πεδία για να επεξεργαστείτε την επαφή.</CardDescription>
+                            </div>
+                             <Button variant="ghost" size="icon" onClick={toggleAllSections} type="button" title="Ανάπτυξη/Σύμπτυξη όλων">
+                                <ChevronsUpDown className="h-5 w-5"/>
+                            </Button>
+                       </div>
                     </CardHeader>
                     <CardContent>
-                         <ContactForm form={form} onFileSelect={setFileToUpload} />
+                         <ContactForm form={form} onFileSelect={setFileToUpload} openSections={openSections} onOpenChange={setOpenSections} />
                     </CardContent>
                 </Card>
             </form>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -12,10 +13,10 @@ import { type ContactFormProps } from './ContactForm/types';
 import { SocialsSection } from './ContactForm/sections/SocialsSection';
 
 
-export function ContactForm({ form, onFileSelect }: ContactFormProps) {
+export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
 
   return (
-    <Accordion type="multiple" defaultValue={['personal', 'identity', 'contact', 'addresses', 'job', 'socials', 'notes']} className="w-full">
+    <Accordion type="multiple" value={openSections} onValueChange={onOpenChange} className="w-full">
       <BasicInfoSection form={form} onFileSelect={onFileSelect} />
       <IdentitySection form={form} />
       <ContactSection form={form} />
