@@ -45,6 +45,11 @@ export interface CustomList {
 
 export type CreateListData = Omit<CustomList, 'id' | 'createdAt' | 'items'>;
 
+interface CreateListResult {
+    success: boolean;
+    error?: string;
+}
+
 const listKeyToContactFieldMap: Record<string, string> = {
     'roles': 'job.role',
     'specialties': 'job.specialty',
@@ -92,8 +97,8 @@ export function useCustomLists() {
     return () => unsubscribe();
   }, [toast]);
   
-  const createList = useCallback(async (listData: CreateListData): Promise<boolean> => {
-      if(!user) return false;
+  const createList = useCallback(async (listData: CreateListData): Promise<CreateListResult> => {
+      if(!user) return { success: false, error: 'User not authenticated' };
       setIsSubmitting(true);
       try {
           // Server-side check for key uniqueness
@@ -101,19 +106,18 @@ export function useCustomLists() {
           const existing = await getDocs(q);
           if (!existing.empty) {
               console.error(`Attempted to create a list with a duplicate key: ${listData.key}`);
-              toast({ variant: 'destructive', title: 'Αποτυχία', description: 'Το κλειδί υπάρχει ήδη. Παρακαλώ ανανεώστε τη σελίδα και προσπαθήστε ξανά.' });
-              return false;
+              return { success: false, error: 'duplicate key' };
           }
 
           const listRef = doc(collection(db, 'tsia-custom-lists'));
           await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
           toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.' });
           await logActivity('CREATE_LIST', { entityId: listRef.id, entityType: 'custom-list', name: listData.title });
-          return true;
+          return { success: true };
       } catch (error) {
           console.error('Error creating list:', error);
           toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η δημιουργία της λίστας απέτυχε.' });
-          return false;
+          return { success: false, error: (error as Error).message };
       } finally {
           setIsSubmitting(false);
       }

@@ -21,7 +21,7 @@ import { useCustomLists } from '@/hooks/useCustomLists';
 import { useEffect, useRef, useState } from 'react';
 
 // === Βοηθητικό για random αλφαριθμητικό key ===
-function generateKey(length = 12) {
+function generateKey(length = 16) {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
   for (let i = 0; i < length; ++i) {
@@ -43,7 +43,7 @@ const createListSchema = z.object({
 type CreateListFormValues = z.infer<typeof createListSchema>;
 
 export function CreateListForm() {
-    const { createList, isSubmitting, lists } = useCustomLists(); 
+    const { createList, isSubmitting, lists } = useCustomLists();
     const [errorMsg, setErrorMsg] = useState('');
     const initialKeyRef = useRef<string>(generateKey());
 
@@ -65,25 +65,52 @@ export function CreateListForm() {
 
     const onSubmit = async (values: CreateListFormValues) => {
         setErrorMsg('');
-        // Έλεγχος για μοναδικότητα στο frontend (προαιρετικό αλλά βοηθάει UX)
-        if (lists && lists.some(l => l.key === values.key)) {
-            setErrorMsg('Το κλειδί αυτό χρησιμοποιείται ήδη. Παρακαλώ ανανεώστε τη σελίδα και προσπαθήστε ξανά.');
-            return;
+        let tries = 0;
+        let success = false;
+        let currentValues = { ...values };
+      
+        while (!success && tries < 3) {
+          // Frontend check (optional, for instant feedback)
+          if (lists && lists.some(l => l.key === currentValues.key)) {
+            const newKey = generateKey();
+            currentValues.key = newKey;
+            form.setValue('key', newKey, { shouldValidate: true });
+            tries++;
+            continue;
+          }
+      
+          const result = await createList(currentValues);
+          success = result.success;
+      
+          if (!success) {
+            // Backend said "no, key already exists" → generate a new key and retry!
+            if (result.error?.includes('duplicate key')) {
+                const newKey = generateKey();
+                currentValues.key = newKey;
+                form.setValue('key', newKey, { shouldValidate: true });
+                tries++;
+            } else {
+                // Another error occurred, break the loop
+                setErrorMsg(result.error || 'Άγνωστο σφάλμα.');
+                break;
+            }
+          }
         }
-        const success = await createList(values);
+      
         if (success) {
-            initialKeyRef.current = generateKey();
-            form.reset({
-                title: '',
-                key: initialKeyRef.current,
-                description: '',
-                hasCode: false,
-                isProtected: false
-            });
-        } else {
-            setErrorMsg('Απέτυχε η δημιουργία λίστας. Ίσως το κλειδί δεν είναι μοναδικό.');
+          initialKeyRef.current = generateKey();
+          form.reset({
+            title: '',
+            key: initialKeyRef.current,
+            description: '',
+            hasCode: false,
+            isProtected: false,
+          });
+        } else if (!errorMsg) {
+          setErrorMsg('Απέτυχε η δημιουργία λίστας μετά από πολλαπλές προσπάθειες. Δοκιμάστε ξανά.');
         }
-    };
+      };
+      
 
     return (
         <Card>
