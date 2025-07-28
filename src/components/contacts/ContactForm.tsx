@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React from 'react';
@@ -26,6 +27,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
   const statuses = useWatch({ control: form.control, name: 'job.statuses' }) || [];
+  const branches = useWatch({ control: form.control, name: 'job.branches' }) || [];
   
   const { fields: addressFields } = useFieldArray({
     control: form.control,
@@ -54,6 +56,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
                         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
+                        <TabsTrigger value="branches">Καταστήματα / Υποκαταστήματα</TabsTrigger>
                         <TabsTrigger value="objective">Σκοπός & Αντικείμενο</TabsTrigger>
                         <TabsTrigger value="statuses">Καταστάσεις ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="capital">Κεφάλαιο Εταιρείας</TabsTrigger>
@@ -120,6 +123,36 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 </CardContent>
                             </Card>
                         )}
+                    </TabsContent>
+
+                     <TabsContent value="branches" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Καταστήματα / Υποκαταστήματα</CardTitle>
+                                <CardDescription>🛈 Τα παρακάτω στοιχεία αντλούνται από το Γ.Ε.ΜΗ. και θα συμπληρωθούν αυτόματα μόλις ολοκληρωθεί η σύνδεση.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {branches?.length > 0 ? (
+                                    <Table>
+                                        <TableHeader><TableRow><TableHead>Οδός</TableHead><TableHead>Αρ.</TableHead><TableHead>Τ.Κ.</TableHead><TableHead>Δήμος</TableHead><TableHead>Κατάσταση</TableHead><TableHead>Ημ/νία Σύστασης</TableHead></TableRow></TableHeader>
+                                        <TableBody>
+                                            {branches.map((b: any, idx: number) => (
+                                                <TableRow key={idx}>
+                                                    <TableCell>{b.address || "—"}</TableCell>
+                                                    <TableCell>{b.number || "—"}</TableCell>
+                                                    <TableCell>{b.postalCode || "—"}</TableCell>
+                                                    <TableCell>{b.municipality || "—"}</TableCell>
+                                                    <TableCell>{b.status || "—"}</TableCell>
+                                                    <TableCell>{b.established || "—"}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-6">Δεν βρέθηκαν υποκαταστήματα.</p>
+                                )}
+                            </CardContent>
+                        </Card>
                     </TabsContent>
                     
                     <TabsContent value="objective" className="mt-4">

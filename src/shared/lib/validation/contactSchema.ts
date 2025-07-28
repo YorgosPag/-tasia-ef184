@@ -123,6 +123,14 @@ export const jobInfoSchema = z.object({
         status: z.string().optional(),
         statusDate: z.string().optional(),
     })).optional(),
+    branches: z.array(z.object({
+        address: z.string().optional(),
+        number: z.string().optional(),
+        postalCode: z.string().optional(),
+        municipality: z.string().optional(),
+        status: z.string().optional(),
+        established: z.string().optional(),
+    })).optional(),
   }).optional(),
 });
 
