@@ -30,6 +30,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
   const statuses = useWatch({ control: form.control, name: 'job.statuses' }) || [];
   const branches = useWatch({ control: form.control, name: 'job.branches' }) || [];
   const companyVersions = useWatch({ control: form.control, name: 'job.companyVersions' }) || [];
+  const docSummary = useWatch({ control: form.control, name: 'job.docSummary' }) || [];
   const registrationType = useWatch({ control: form.control, name: 'job.registrationType' });
   const branchType = useWatch({ control: form.control, name: 'job.branchType' });
   
@@ -67,6 +68,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <TabsTrigger value="capital">Κεφάλαιο Εταιρείας</TabsTrigger>
                         <TabsTrigger value="stocks">Μετοχική Σύνθεση</TabsTrigger>
                         <TabsTrigger value="documents">Έγγραφα ΓΕΜΗ</TabsTrigger>
+                        <TabsTrigger value="docSummary">Σύνοψη Εγγράφων ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="activities">Δραστηριότητες (ΚΑΔ)</TabsTrigger>
                         <TabsTrigger value="decisions">Αποφάσεις Οργάνων</TabsTrigger>
                         <TabsTrigger value="establishment">Στοιχεία Σύστασης (ΥΜΣ)</TabsTrigger>
@@ -328,6 +330,40 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         </Card>
                     </TabsContent>
                     
+                    <TabsContent value="docSummary" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Σύνοψη Εγγράφων ΓΕΜΗ</CardTitle>
+                                <CardDescription>
+                                    🛈 Τα παρακάτω έγγραφα αντλούνται από το Γ.Ε.ΜΗ. και δεν είναι επεξεργάσιμα.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {docSummary?.length > 0 ? (
+                                <Table>
+                                    <TableHeader><TableRow><TableHead>Τύπος</TableHead><TableHead>Ημ/νία</TableHead><TableHead>Θέμα</TableHead><TableHead>Λήψη</TableHead></TableRow></TableHeader>
+                                    <TableBody>
+                                        {docSummary.map((doc: any, idx: number) => (
+                                            <TableRow key={idx}>
+                                            <TableCell>{doc.type || "—"}</TableCell>
+                                            <TableCell>{doc.date || "—"}</TableCell>
+                                            <TableCell>{doc.subject || "—"}</TableCell>
+                                            <TableCell>
+                                                {doc.url ? (<Button asChild variant="link" size="sm"><a href={doc.url} target="_blank" rel="noopener noreferrer">Λήψη</a></Button>) : ("—")}
+                                            </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                                ) : (
+                                <p className="text-sm text-muted-foreground text-center py-6">
+                                    Δεν βρέθηκαν σχετικά έγγραφα.
+                                </p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
                      <TabsContent value="activities" className="mt-4">
                         <Card className="relative border-muted">
                             <CardHeader>

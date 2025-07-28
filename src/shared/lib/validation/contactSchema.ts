@@ -138,6 +138,12 @@ export const jobInfoSchema = z.object({
         versionDate: z.string().optional(),
         description: z.string().optional(),
     })).optional(),
+    docSummary: z.array(z.object({
+        type: z.string().optional(),
+        date: z.string().optional(),
+        subject: z.string().optional(),
+        url: z.string().optional(),
+    })).optional(),
   }).optional(),
 });
 
