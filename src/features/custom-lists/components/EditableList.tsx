@@ -79,6 +79,7 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
             <div>
               <p className="font-bold text-base">{list.title}</p>
               <p className="text-sm text-muted-foreground">{list.description}</p>
+              <p className="text-xs font-mono text-sky-500 mt-1 selectable" onClick={(e) => e.stopPropagation()}>{list.key}</p>
             </div>
           )}
         </div>
