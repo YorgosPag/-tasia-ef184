@@ -47,6 +47,8 @@ export function JobSection({ form }: ContactFormProps) {
                          form.setValue('job.gemhDOY', companyData.doy, { shouldDirty: true });
                          form.setValue('afm', companyData.afm, { shouldDirty: true });
                          form.setValue('doy', companyData.doy, { shouldDirty: true });
+                    } else {
+                         console.warn('Δεν βρέθηκε επιχείρηση στο ΓΕΜΗ');
                     }
                 } else if (response.status === 404) {
                     console.warn('Δεν βρέθηκε επιχείρηση στο ΓΕΜΗ');
