@@ -15,6 +15,8 @@ import { NotesSection } from './ContactForm/sections/NotesSection';
 import { type ContactFormProps } from './ContactForm/types';
 import { SocialsSection } from './ContactForm/sections/SocialsSection';
 import { LegalRepresentativeSection } from './ContactForm/sections/LegalRepresentativeSection';
+import { FormItem, FormLabel, FormControl } from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
@@ -23,7 +25,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
     <Accordion type="multiple" defaultValue={['personal']} className="w-full">
       <BasicInfoSection form={form} onFileSelect={onFileSelect} />
       
-      {entityType === 'Νομικό Πρόσωπο' && (
+      {(entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') && (
         <div className="pt-4">
            <Tabs defaultValue="basic" className="w-full">
             <TabsList className="grid w-full grid-cols-5">
@@ -56,7 +58,29 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             
             <TabsContent value="addresses" className="mt-4">
                 <Accordion type="multiple" defaultValue={['addresses']} className="w-full">
-                    <AddressSection form={form} />
+                    <AccordionItem value="addresses">
+                        <AccordionTrigger>
+                            <div className="flex items-center gap-2 text-primary">
+                                <span>Έδρα Νομικού Προσώπου</span>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="p-1 pt-4">
+                           <Card>
+                             <CardContent className="p-6 space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <FormItem><FormLabel>Οικισμός</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Δημοτική/Τοπική Κοινότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Δημοτική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Δήμος</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Περιφερειακή Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Περιφέρεια</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Αποκεντρωμένη Διοίκηση</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Μεγάλη Γεωγραφική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                </div>
+                             </CardContent>
+                           </Card>
+                        </AccordionContent>
+                    </AccordionItem>
                 </Accordion>
             </TabsContent>
             
