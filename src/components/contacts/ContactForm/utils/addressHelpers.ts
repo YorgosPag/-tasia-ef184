@@ -24,15 +24,15 @@ export const handleAddressSelect = (form: UseFormReturn<ContactFormValues>, idx:
   addressFieldsMap.forEach(fieldMap => {
     const val = hit[fieldMap.algoliaKey];
     let finalValue = '';
+    
     if (Array.isArray(val)) {
-      finalValue = val[0] || '';
+      // Find the first string value in the array, if any
+      finalValue = val.find(v => typeof v === 'string') || '';
     } else if (typeof val === 'string') {
       finalValue = val;
     }
-    const currentValue = form.getValues(`addresses.${idx}.${fieldMap.formKey}` as const);
     
-    // Always set the value if a selection is made from autocomplete.
-    // The user can manually override it later if needed.
+    // Set the value in the form
     form.setValue(`addresses.${idx}.${fieldMap.formKey}` as const, finalValue, { shouldDirty: true });
   });
 };

@@ -21,7 +21,6 @@ export function Autocomplete({ form, name, label, onSelect, algoliaKey }: Autoco
   const [isOpen, setIsOpen] = useState(false);
   const { refine } = useSearchBox();
   const { hits } = useHits();
-
   const fieldValue = form.watch(name);
   const [inputValue, setInputValue] = useState(fieldValue || '');
   const [debouncedQuery] = useDebounce(inputValue, 300);
@@ -30,12 +29,13 @@ export function Autocomplete({ form, name, label, onSelect, algoliaKey }: Autoco
     if (fieldValue !== inputValue) {
       setInputValue(fieldValue || '');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fieldValue]);
-
+  
   useEffect(() => {
-    refine(debouncedQuery);
+      refine(debouncedQuery);
   }, [debouncedQuery, refine]);
+
 
   const handleSelect = (hit: any) => {
     onSelect(hit);
@@ -56,7 +56,7 @@ export function Autocomplete({ form, name, label, onSelect, algoliaKey }: Autoco
   };
 
   return (
-     <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <FormField
         control={form.control}
         name={name}
@@ -113,4 +113,4 @@ export function Autocomplete({ form, name, label, onSelect, algoliaKey }: Autoco
       </PopoverContent>
     </Popover>
   );
-}
+};
