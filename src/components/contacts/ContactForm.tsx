@@ -58,6 +58,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
                         <TabsTrigger value="activities">Δραστηριότητες (ΚΑΔ)</TabsTrigger>
                         <TabsTrigger value="decisions">Αποφάσεις Οργάνων</TabsTrigger>
+                        <TabsTrigger value="establishment">Στοιχεία Σύστασης (ΥΜΣ)</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="general" className="mt-4">
@@ -156,7 +157,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     
                     <TabsContent value="documents" className="mt-4">
                         <Card className="relative border-muted">
-                            <CardHeader>
+                             <CardHeader>
                                 <CardTitle className="text-lg">Έγγραφα ΓΕΜΗ</CardTitle>
                                 <CardDescription>
                                     Τα παρακάτω έγγραφα θα αντλούνται αυτόματα από το Γ.Ε.ΜΗ. μόλις ολοκληρωθεί η σύνδεση.
@@ -279,6 +280,35 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 </div>
                             </CardContent>
                         </Card>
+                    </TabsContent>
+                    
+                    <TabsContent value="establishment" className="mt-4">
+                      <Card className="relative border-muted">
+                        <CardHeader>
+                          <CardTitle className="text-lg">Στοιχεία Σύστασης (ΥΜΣ)</CardTitle>
+                          <CardDescription>
+                            🛈 Τα στοιχεία της σύστασης θα εμφανιστούν αυτόματα από το Γ.Ε.ΜΗ. μόλις ολοκληρωθεί η σύνδεση με την ΥΜΣ.
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="overflow-x-auto border rounded-md opacity-50">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Κωδικός Δημοσίευσης (ΚΑΔ)</TableHead>
+                                  <TableHead>Σύνδεσμος Εγγράφου</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                <TableRow>
+                                  <TableCell><Input disabled placeholder="-" className="h-8" /></TableCell>
+                                  <TableCell><Button variant="outline" size="sm" disabled>Λήψη</Button></TableCell>
+                                </TableRow>
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </TabsContent>
 
                     <TabsContent value="representatives" className="mt-4">
