@@ -6,7 +6,7 @@ import { PlusCircle, Loader2, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Company } from '@/shared/hooks/use-data-store';
-import { useWorkStages } from '@/tasia/hooks/use-work-stages';
+import { useWorkStages } from '@/hooks/use-work-stages';
 import { WorkStageFormDialog } from '@/tasia/components/projects/work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from '@/tasia/components/projects/work-stages/WorkStageAccordion';
 import type { Project, WorkStage } from '@/shared/types/project-types';

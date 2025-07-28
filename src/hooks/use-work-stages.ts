@@ -347,7 +347,7 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         const topLevelId = (stage as any).topLevelId;
         if (topLevelId) {
             const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
-            batch.update(topLevelRef, { comments: arrayUnion(...newComment) });
+            batch.update(topLevelRef, { comments: arrayUnion(newComment) });
         }
         await batch.commit();
     };
@@ -431,5 +431,3 @@ export function useWorkStages(projectId: string, projectTitle: string) {
         handleExport,
     };
 }
-
-    
