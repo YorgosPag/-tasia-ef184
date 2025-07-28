@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -26,13 +27,13 @@ export function JobSection({ form }: ContactFormProps) {
 
     useEffect(() => {
         const fetchGemiData = async () => {
-            const queryValue = debouncedArGemi || debouncedAfm;
-            if (!queryValue || queryValue.trim().length === 0) {
+            const searchKey = debouncedArGemi?.trim() || debouncedAfm?.trim();
+            if (!searchKey) {
                 return;
             }
             setIsLoadingGemi(true);
             try {
-                const response = await fetch(`${GEMI_API_URL}${queryValue}`, {
+                const response = await fetch(`${GEMI_API_URL}${searchKey}`, {
                     headers: {
                         'x-api-key': GEMI_API_KEY,
                     },
