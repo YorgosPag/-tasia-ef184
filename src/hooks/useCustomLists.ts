@@ -53,7 +53,7 @@ const listKeyToContactFieldMap: Record<string, string> = {
     'roles': 'job.role',
     'specialties': 'job.specialty',
     'doy': 'doy',
-    'address_types': 'addresses.type',
+    'Yz439YFkR4U4eRAwDNy5': 'addresses.type', // address_types
 }
 
 // --- Custom Hook ---
@@ -99,18 +99,11 @@ export function useCustomLists() {
       // if(!user) return { success: false, error: 'User not authenticated' };
       setIsSubmitting(true);
       try {
-          // Check for key uniqueness before creating
-          const q = query(collection(db, 'tsia-custom-lists'), where('id', '==', listData.id));
-          const snapshot = await getDocs(q);
-          if (!snapshot.empty) {
-              return { success: false, error: 'Το κλειδί υπάρχει ήδη.' };
-          }
-
-          const listRef = doc(collection(db, 'tsia-custom-lists'));
-          await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
-          toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.' });
-          await logActivity('CREATE_LIST', { entityId: listRef.id, entityType: 'custom-list', name: listData.title });
-          return { success: true };
+        const listRef = doc(collection(db, 'tsia-custom-lists'));
+        await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
+        toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.' });
+        await logActivity('CREATE_LIST', { entityId: listRef.id, entityType: 'custom-list', name: listData.title });
+        return { success: true };
       } catch (error) {
           console.error('Error creating list:', error);
           toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η δημιουργία της λίστας απέτυχε.' });
@@ -238,11 +231,14 @@ export function useCustomLists() {
             return null;
         }
 
-        const newItemData = {
+        const newItemData: { value: string, code?: string, createdAt: any } = {
             value,
-            code: hasCode ? (code || value) : undefined,
             createdAt: serverTimestamp(),
         };
+
+        if (hasCode) {
+            newItemData.code = code || value;
+        }
 
         const docRef = await addDoc(itemsCollectionRef, newItemData);
         toast({ title: 'Επιτυχία', description: 'Το νέο στοιχείο προστέθηκε.' });
