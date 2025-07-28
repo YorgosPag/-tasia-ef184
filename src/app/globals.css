@@ -4,94 +4,65 @@
 
 @layer base {
   :root {
-    /* Base Colors */
-    --background: 60 48% 96%; /* Light Gray - #F2F2F0 */
-    --foreground: 215 35% 21%; /* Dark Slate Blue - #2D3E4F */
+    --background: 48 95% 98%; /* off-white */
+    --foreground: 30 5% 15%; /* dark brown/black */
     
-    /* Primary / Accent Colors */
-    --primary: 0 84% 60%; /* Muted Orange - #F05454 */
-    --primary-foreground: 210 40% 98%; /* Almost White for text on primary */
+    --card: 48 95% 98%; /* same as background */
+    --card-foreground: 30 5% 15%;
 
-    /* Card & Popover */
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 215 35% 21%; /* Dark Slate Blue */
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 35% 21%;
+    --popover: 48 95% 98%;
+    --popover-foreground: 30 5% 15%;
 
-    /* Secondary Colors */
-    --secondary: 215 28% 90%; /* Lighter Slate Blue for subtle backgrounds */
-    --secondary-foreground: 215 35% 21%;
-    
-    /* Muted Colors */
-    --muted: 215 28% 90%; 
-    --muted-foreground: 215 16% 47%; /* Softer Slate Blue for text */
+    --primary: 43 36% 80%; /* soft beige */
+    --primary-foreground: 30 5% 15%;
 
-    /* Accent (used for hover states, etc.) */
-    --accent: 215 28% 93%; /* Very light slate for hover */
-    --accent-foreground: 215 35% 21%;
-    
-    /* Destructive Color */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --secondary: 35 33% 65%; /* light brown for accents */
+    --secondary-foreground: 48 95% 98%;
 
-    /* Other UI Elements */
-    --border: 215 20% 87%; /* Light gray border */
-    --input: 215 20% 91%;  /* Input background */
-    --ring: 0 84% 60%;     /* Focus ring - Orange */
+    --muted: 35 33% 85%; /* lighter brown */
+    --muted-foreground: 30 5% 45%;
 
-    /* Chart Colors */
-    --chart-1: 215 50% 50%; /* Slate Blue */
-    --chart-2: 0 70% 65%;   /* Lighter Orange */
-    --chart-3: 215 30% 65%; /* Medium Slate Blue */
-    --chart-4: 350 70% 70%; /* Soft Red */
-    --chart-5: 50 60% 60%;  /* Muted Yellow */
-    
-    /* Radius */
+    --accent: 35 33% 90%; /* very light brown for hover */
+    --accent-foreground: 30 5% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+
+    --border: 35 33% 85%;
+    --input: 35 33% 90%;
+    --ring: 35 33% 65%;
+
     --radius: 0.5rem;
   }
  
   .dark {
-    /* Base Colors */
-    --background: 215 28% 17%; /* Dark Slate Blue */
-    --foreground: 60 30% 96%;   /* Light Gray */
+    --background: 30 5% 15%; /* dark brown/black */
+    --foreground: 48 95% 98%; /* off-white */
+    
+    --card: 30 5% 18%; 
+    --card-foreground: 48 95% 98%;
 
-    /* Primary / Accent Colors */
-    --primary: 0 84% 60%;       /* Muted Orange - Stays the same */
-    --primary-foreground: 210 40% 98%;
+    --popover: 30 5% 15%;
+    --popover-foreground: 48 95% 98%;
 
-    /* Card & Popover */
-    --card: 215 28% 21%;        /* Slightly lighter than background */
-    --card-foreground: 60 30% 96%;
-    --popover: 215 28% 17%;
-    --popover-foreground: 60 30% 96%;
+    --primary: 35 33% 65%; /* light brown */
+    --primary-foreground: 30 5% 10%;
 
-    /* Secondary Colors */
-    --secondary: 215 28% 25%;   /* Darker accent */
-    --secondary-foreground: 60 30% 96%;
+    --secondary: 43 36% 80%; /* soft beige */
+    --secondary-foreground: 30 5% 10%;
 
-    /* Muted Colors */
-    --muted: 215 28% 25%;
-    --muted-foreground: 215 15% 65%; /* Lighter gray for muted text */
+    --muted: 30 5% 25%;
+    --muted-foreground: 48 95% 90%;
 
-    /* Accent (Hover) */
-    --accent: 215 28% 28%;
-    --accent-foreground: 60 30% 96%;
+    --accent: 30 5% 28%;
+    --accent-foreground: 48 95% 98%;
 
-    /* Destructive Color */
-    --destructive: 0 72% 51%; /* Slightly adjusted for dark bg */
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Other UI Elements */
-    --border: 215 28% 25%;
-    --input: 215 28% 25%;
-    --ring: 0 84% 60%;
-
-    /* Chart Colors (can be the same or adjusted for dark mode) */
-    --chart-1: 215 50% 50%;
-    --chart-2: 0 70% 65%;
-    --chart-3: 215 30% 65%;
-    --chart-4: 350 70% 70%;
-    --chart-5: 50 60% 60%;
+    --border: 30 5% 25%;
+    --input: 30 5% 28%;
+    --ring: 35 33% 65%;
   }
 }
  
@@ -100,6 +71,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }

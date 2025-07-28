@@ -39,7 +39,7 @@ export default function RootLayout({
                       <SidebarProvider>
                         <AppShell>{children}</AppShell>
                       </SidebarProvider>
-                        <Toaster />
+                      <Toaster />
                     </DataProvider>
                 </AuthProvider>
             </QueryProvider>

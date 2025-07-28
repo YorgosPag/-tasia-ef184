@@ -101,15 +101,9 @@ export function SidebarNav() {
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton href="/dashboard" isActive={pathname === '/dashboard'} icon={Home} tooltip="Αρχική">
-          Αρχική
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-      
       <SidebarGroup>
-        <SidebarGroupLabel>TASIA Real Estate</SidebarGroupLabel>
-        {tasiaProjectToolsNav.map((item) => (
+        <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
+        {entitiesNav.map((item) => (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
               {item.label}
@@ -120,30 +114,9 @@ export function SidebarNav() {
       
        <SidebarSeparator />
 
-        <Accordion type="multiple" className="w-full px-2" defaultValue={['entities']}>
-            <AccordionItem value="entities" className="border-none">
-                <AccordionTriggerNoChevron>
-                    <SidebarGroupLabel className="p-0 transition-none">Οντότητες</SidebarGroupLabel>
-                </AccordionTriggerNoChevron>
-                <AccordionContent className="p-0 pt-1">
-                    <SidebarGroup className="p-0">
-                         {entitiesNav.map((item) => (
-                          <SidebarMenuItem key={item.href}>
-                            <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
-                              {item.label}
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        ))}
-                    </SidebarGroup>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-      
-      <SidebarSeparator />
-
       <SidebarGroup>
-        <SidebarGroupLabel>NESTOR Εξοικονομώ</SidebarGroupLabel>
-        {nestorNav.map((item) => (
+        <SidebarGroupLabel>Εργαλεία</SidebarGroupLabel>
+        {tasiaProjectToolsNav.map((item) => (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
               {item.label}
@@ -151,7 +124,7 @@ export function SidebarNav() {
           </SidebarMenuItem>
         ))}
       </SidebarGroup>
-
+      
       <SidebarSeparator />
       
        <SidebarGroup>
