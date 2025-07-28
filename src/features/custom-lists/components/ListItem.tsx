@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -36,7 +35,7 @@ export function ListItem({ item, listId, listKey, hasCode }: ListItemViewProps) 
   }
 
   return (
-    <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 group">
+    <div className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 group min-h-[56px]">
       {isEditing ? (
         <div className="flex items-center gap-2 flex-1">
           {hasCode && (
@@ -57,9 +56,12 @@ export function ListItem({ item, listId, listKey, hasCode }: ListItemViewProps) 
           />
         </div>
       ) : (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
             {hasCode && <span className="font-mono text-xs bg-muted px-2 py-1 rounded-md">{item.code}</span>}
-            <span className="text-sm">{item.value}</span>
+             <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-sm truncate">{item.value}</span>
+                <span className="text-xs font-mono text-sky-500 mt-1 selectable truncate" onClick={(e) => e.stopPropagation()}>{item.id}</span>
+             </div>
         </div>
       )}
       <div className="opacity-0 group-hover:opacity-100 transition-opacity">
