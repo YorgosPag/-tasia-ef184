@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -54,7 +53,7 @@ const listKeyToContactFieldMap: Record<string, string> = {
     'roles': 'job.role',
     'specialties': 'job.specialty',
     'doy': 'doy',
-    // Add other mappings here as needed, using the `key` of the list
+    'address_types': 'addresses.type',
 }
 
 // --- Custom Hook ---
@@ -70,33 +69,24 @@ export function useCustomLists() {
     setIsLoading(true);
     const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('createdAt', 'desc'));
 
-    const unsubscribe = onSnapshot(listsQuery, (snapshot) => {
-        const listsData: Omit<CustomList, 'items'>[] = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        } as Omit<CustomList, 'items'>));
-
-        setLists(listsData.map(l => ({...l, items: []}))); // Set lists without items initially
-        
-        const unsubscribes: (()=>void)[] = [];
-        
-        listsData.forEach(list => {
-            const itemsQuery = query(collection(db, 'tsia-custom-lists', list.id, 'tsia-items'), orderBy('createdAt', 'asc'));
-            const unsubscribeItems = onSnapshot(itemsQuery, (itemsSnapshot) => {
-                const items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
-                setLists(prevLists => 
-                    prevLists.map(prevList => 
-                        prevList.id === list.id ? { ...prevList, items } : prevList
-                    )
-                );
-            });
-            unsubscribes.push(unsubscribeItems);
-        });
-
+    const unsubscribe = onSnapshot(listsQuery, async (snapshot) => {
+      try {
+        const listsData = await Promise.all(
+          snapshot.docs.map(async (listDoc) => {
+            const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
+            const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
+            const itemsSnapshot = await getDocs(itemsQuery);
+            list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
+            return list;
+          })
+        );
+        setLists(listsData);
+      } catch (error) {
+         console.error("Error processing custom lists snapshot:", error);
+         toast({ variant: 'destructive', title: 'Σφάλμα Επεξεργασίας', description: 'Failed to process list data.' });
+      } finally {
         setIsLoading(false);
-
-        // Return a function that unsubscribes from all item listeners
-        return () => unsubscribes.forEach(unsub => unsub());
+      }
     }, (error) => {
       console.error("Error fetching custom lists:", error);
       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Failed to load lists.' });
@@ -248,7 +238,7 @@ export function useCustomLists() {
   const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string): Promise<boolean> => {
      // if(!user) return false;
      
-     const contactField = listKeyToContactFieldMap[listKey];
+     const contactField = listKeyToContactFieldMap[listKey as keyof typeof listKeyToContactFieldMap];
      if (contactField) {
         const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
         const snapshot = await getDocs(q);

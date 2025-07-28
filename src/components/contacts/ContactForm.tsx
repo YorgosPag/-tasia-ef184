@@ -28,6 +28,7 @@ import { useCustomLists } from '@/hooks/useCustomLists';
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
   const { lists } = useCustomLists();
+  
   const addressTypeOptions = React.useMemo(() => {
     const addressListKey = 'address_types';
     const addressList = lists.find(l => l.key === addressListKey);
@@ -138,7 +139,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                          const fromGEMI = form.watch(`addresses.${index}.fromGEMI`);
 
                          return (
-                            <Card key={field.id} className="relative">
+                            <Card key={field.fieldId} className="relative">
                               <CardContent className="p-6 space-y-4">
                                 <div className="flex justify-between items-center mb-4">
                                     {editingTitleIndex === index ? (
