@@ -17,12 +17,11 @@ import { SocialsSection } from './ContactForm/sections/SocialsSection';
 import { LegalRepresentativeSection } from './ContactForm/sections/LegalRepresentativeSection';
 import { FormItem, FormLabel, FormControl, FormField, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
-import { Phone, Link as LinkIcon, Map as MapIcon, Info } from 'lucide-react';
+import { Phone, Link as LinkIcon, Map as MapIcon, Info, UserCircle } from 'lucide-react';
 
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
-
   const addresses = useWatch({ control: form.control, name: 'addresses' }) || [];
   const gemhAddressIndex = addresses.findIndex(addr => addr.fromGEMI);
   
@@ -54,7 +53,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     
                      <TabsContent value="headquarters" className="mt-4">
                         {gemhAddressIndex !== -1 ? (
-                            <Card key={(form.getValues('addresses')?.[gemhAddressIndex] as any)?.fieldId} className="relative border-destructive/50">
+                            <Card key={`gemi-address-${gemhAddressIndex}`} className="relative border-destructive/50">
                                 <CardContent className="p-6 space-y-4">
                                     <p className="text-sm text-destructive font-semibold text-center mb-4">
                                        ❗ Τα παρακάτω στοιχεία αντλήθηκαν αυτόματα από το Γ.Ε.ΜΗ.
@@ -81,59 +80,59 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             </TabsContent>
 
             <TabsContent value="user-data" className="mt-4">
-                <Tabs defaultValue="contact" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="contact">Επικοινωνία &amp; Socials</TabsTrigger>
-                        <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
-                        <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
-                    </TabsList>
-                     <TabsContent value="contact" className="mt-4">
-                        <Accordion type="single" collapsible defaultValue="contact" className="w-full">
-                             <AccordionItem value="contact">
-                                <AccordionTrigger>
-                                    <div className="flex items-center gap-2 text-primary">
-                                        <Phone className="h-5 w-5" />
-                                        <span>Στοιχεία Επικοινωνίας &amp; Socials</span>
-                                    </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="p-1">
-                                    <ContactSection form={form} />
-                                    <SocialsSection form={form} />
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
-                    </TabsContent>
-                     <TabsContent value="addresses" className="mt-4">
-                        <Accordion type="single" collapsible defaultValue="addresses" className="w-full">
-                             <AccordionItem value="addresses">
-                                <AccordionTrigger>
-                                    <div className="flex items-center gap-2 text-primary">
-                                        <MapIcon className="h-5 w-5" />
-                                        <span>Διευθύνσεις</span>
-                                    </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="p-1">
-                                    <AddressSection form={form} />
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
-                    </TabsContent>
-                     <TabsContent value="notes" className="mt-4">
-                        <Accordion type="single" collapsible defaultValue="notes" className="w-full">
-                            <AccordionItem value="notes">
-                                <AccordionTrigger>
-                                    <div className="flex items-center gap-2 text-primary">
-                                        <Info className="h-5 w-5" />
-                                        <span>Σημειώσεις</span>
-                                    </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="p-1">
-                                    <NotesSection form={form} />
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
-                    </TabsContent>
-                </Tabs>
+                 <Tabs defaultValue="contact" className="w-full">
+                     <TabsList className="grid w-full grid-cols-3">
+                         <TabsTrigger value="contact">Επικοινωνία & Socials</TabsTrigger>
+                         <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
+                         <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
+                     </TabsList>
+                      <TabsContent value="contact" className="mt-4">
+                         <Accordion type="single" collapsible defaultValue="contact" className="w-full">
+                              <AccordionItem value="contact">
+                                 <AccordionTrigger>
+                                     <div className="flex items-center gap-2 text-primary">
+                                         <Phone className="h-5 w-5" />
+                                         <span>Στοιχεία Επικοινωνίας &amp; Socials</span>
+                                     </div>
+                                 </AccordionTrigger>
+                                 <AccordionContent className="p-1">
+                                     <ContactSection form={form} />
+                                     <SocialsSection form={form} />
+                                 </AccordionContent>
+                             </AccordionItem>
+                         </Accordion>
+                     </TabsContent>
+                      <TabsContent value="addresses" className="mt-4">
+                         <Accordion type="single" collapsible defaultValue="addresses" className="w-full">
+                              <AccordionItem value="addresses">
+                                 <AccordionTrigger>
+                                     <div className="flex items-center gap-2 text-primary">
+                                         <MapIcon className="h-5 w-5" />
+                                         <span>Διευθύνσεις</span>
+                                     </div>
+                                 </AccordionTrigger>
+                                 <AccordionContent className="p-1">
+                                     <AddressSection form={form} />
+                                 </AccordionContent>
+                             </AccordionItem>
+                         </Accordion>
+                     </TabsContent>
+                      <TabsContent value="notes" className="mt-4">
+                         <Accordion type="single" collapsible defaultValue="notes" className="w-full">
+                             <AccordionItem value="notes">
+                                 <AccordionTrigger>
+                                     <div className="flex items-center gap-2 text-primary">
+                                         <Info className="h-5 w-5" />
+                                         <span>Σημειώσεις</span>
+                                     </div>
+                                 </AccordionTrigger>
+                                 <AccordionContent className="p-1">
+                                     <NotesSection form={form} />
+                                 </AccordionContent>
+                             </AccordionItem>
+                         </Accordion>
+                     </TabsContent>
+                 </Tabs>
             </TabsContent>
         </Tabs>
     </div>
