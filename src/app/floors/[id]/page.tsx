@@ -1,6 +1,6 @@
 
 'use client';
-import { FloorDetailsContainer } from '@/tasia/components/floors/FloorDetailsContainer';
+import { FloorDetailsContainer } from '@/components/floors/FloorDetailsContainer';
 
 export default function FloorDetailsPage() {
   return <FloorDetailsContainer />;

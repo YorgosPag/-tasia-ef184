@@ -3,10 +3,10 @@
 
 import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
-import { FloorPlanViewer } from '@/tasia/components/floor-plan/FloorPlanViewer';
+import { FloorPlanViewer } from '@/components/floor-plan/FloorPlanViewer';
 
 export const FloorPlanLoader = dynamic(
-  () => import('@/tasia/components/floor-plan/FloorPlanViewer').then(mod => mod.FloorPlanViewer),
+  () => import('@/components/floor-plan/FloorPlanViewer').then(mod => mod.FloorPlanViewer),
   {
     loading: () => (
       <div className="flex h-40 w-full items-center justify-center">
