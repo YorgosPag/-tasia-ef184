@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useWatch, useFieldArray } from 'react-hook-form';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
@@ -46,8 +46,9 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             
             <TabsContent value="gemh-data" className="mt-4">
                 <Tabs defaultValue="general" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
+                        <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
                         <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
                     </TabsList>
@@ -56,6 +57,28 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <Accordion type="single" collapsible defaultValue="job" className="w-full space-y-2">
                              <JobSection form={form} />
                         </Accordion>
+                    </TabsContent>
+
+                    <TabsContent value="enriched" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardContent className="p-6 space-y-4">
+                                <p className="text-sm text-muted-foreground text-center mb-4">
+                                🛈 Τα παρακάτω στοιχεία θα συμπληρωθούν αυτόματα από το Γ.Ε.ΜΗ. μόλις ολοκληρωθεί η σύνδεση.
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-50">
+                                    <FormItem><FormLabel>Επωνυμία (Αγγλικά)</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Διακριτικός Τίτλος (Αγγλικά)</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Ιστοσελίδα</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Email Επιχείρησης</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Ημερομηνία Σύστασης</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Νομική Μορφή</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Νομός</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Τοπική Υπηρεσία ΓΕΜΗ</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Υποκατάστημα;</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Αυτοεγγεγραμμένη;</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
                     
                      <TabsContent value="headquarters" className="mt-4">
@@ -74,7 +97,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 </CardContent>
                             </Card>
                         ) : (
-                            <Card className="relative border-muted">
+                           <Card className="relative border-muted">
                                 <CardContent className="p-6 space-y-4">
                                     <p className="text-sm text-muted-foreground text-center mb-4">
                                     🔄 Αναμένουμε στοιχεία από το Γ.Ε.ΜΗ. Τα πεδία θα συμπληρωθούν αυτόματα μόλις συνδεθεί η υπηρεσία.
