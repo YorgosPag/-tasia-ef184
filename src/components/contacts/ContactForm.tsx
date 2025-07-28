@@ -29,6 +29,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
   const entityType = useWatch({ control: form.control, name: 'entityType' });
   const statuses = useWatch({ control: form.control, name: 'job.statuses' }) || [];
   const branches = useWatch({ control: form.control, name: 'job.branches' }) || [];
+  const companyVersions = useWatch({ control: form.control, name: 'job.companyVersions' }) || [];
   const registrationType = useWatch({ control: form.control, name: 'job.registrationType' });
   const branchType = useWatch({ control: form.control, name: 'job.branchType' });
   
@@ -70,6 +71,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                         <TabsTrigger value="decisions">Αποφάσεις Οργάνων</TabsTrigger>
                         <TabsTrigger value="establishment">Στοιχεία Σύστασης (ΥΜΣ)</TabsTrigger>
                         <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
+                        <TabsTrigger value="versions">Ιστορικό Εκδόσεων Εταιρείας</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="general" className="mt-4">
@@ -423,6 +425,31 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                           </div>
                         </CardContent>
                       </Card>
+                    </TabsContent>
+                    
+                    <TabsContent value="versions" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Ιστορικό Εκδόσεων Εταιρείας</CardTitle>
+                                <CardDescription>
+                                    🛈 Οι εκδόσεις (τροποποιήσεις) της εταιρείας όπως καταγράφονται στο Γ.Ε.ΜΗ.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {companyVersions?.length > 0 ? (
+                                    <Table>
+                                        <TableHeader><TableRow><TableHead>Ημερομηνία Έκδοσης</TableHead><TableHead>Περιγραφή</TableHead></TableRow></TableHeader>
+                                        <TableBody>
+                                            {companyVersions.map((item: any, idx: number) => (
+                                                <TableRow key={idx}><TableCell>{item.versionDate || "—"}</TableCell><TableCell>{item.description || "—"}</TableCell></TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-6">Δεν βρέθηκαν εκδόσεις εταιρείας.</p>
+                                )}
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     <TabsContent value="representatives" className="mt-4">

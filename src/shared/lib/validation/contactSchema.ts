@@ -134,6 +134,10 @@ export const jobInfoSchema = z.object({
         status: z.string().optional(),
         established: z.string().optional(),
     })).optional(),
+    companyVersions: z.array(z.object({
+        versionDate: z.string().optional(),
+        description: z.string().optional(),
+    })).optional(),
   }).optional(),
 });
 
