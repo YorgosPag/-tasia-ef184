@@ -17,7 +17,7 @@ import { SocialsSection } from './ContactForm/sections/SocialsSection';
 import { LegalRepresentativeSection } from './ContactForm/sections/LegalRepresentativeSection';
 import { FormItem, FormLabel, FormControl, FormField, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
-import { Phone, Link as LinkIcon, Map, Info } from 'lucide-react';
+import { Phone, Link as LinkIcon, Map as MapIcon, Info } from 'lucide-react';
 
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
@@ -81,42 +81,23 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             </TabsContent>
 
             <TabsContent value="user-data" className="mt-4">
-                <Accordion type="multiple" defaultValue={['contact-socials', 'addresses', 'notes']} className="w-full space-y-2">
-                    <AccordionItem value="contact-socials">
-                       <AccordionTrigger>
-                            <div className="flex items-center gap-2 text-primary">
-                                <Phone className="h-5 w-5" />
-                                <span>Επικοινωνία & Socials</span>
-                            </div>
-                        </AccordionTrigger>
-                       <AccordionContent className="p-1">
-                           <ContactSection form={form} />
-                           <SocialsSection form={form} />
-                       </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="addresses">
-                        <AccordionTrigger>
-                            <div className="flex items-center gap-2 text-primary">
-                                <Map className="h-5 w-5" />
-                                <span>Διευθύνσεις</span>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="p-1">
-                            <AddressSection form={form} />
-                        </AccordionContent>
-                    </AccordionItem>
-                     <AccordionItem value="notes">
-                        <AccordionTrigger>
-                            <div className="flex items-center gap-2 text-primary">
-                                <Info className="h-5 w-5" />
-                                <span>Σημειώσεις</span>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="p-1">
-                            <NotesSection form={form} />
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                <Tabs defaultValue="contact-socials" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="contact-socials">Επικοινωνία & Socials</TabsTrigger>
+                        <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
+                        <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="contact-socials" className="mt-4">
+                        <ContactSection form={form} />
+                        <SocialsSection form={form} />
+                    </TabsContent>
+                    <TabsContent value="addresses" className="mt-4">
+                        <AddressSection form={form} />
+                    </TabsContent>
+                    <TabsContent value="notes" className="mt-4">
+                        <NotesSection form={form} />
+                    </TabsContent>
+                </Tabs>
             </TabsContent>
         </Tabs>
     </div>
@@ -126,11 +107,41 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
      <Accordion type="multiple" value={openSections} onValueChange={onOpenChange} className="w-full">
       <BasicInfoSection form={form} onFileSelect={onFileSelect} />
       <IdentitySection form={form} />
-      <ContactSection form={form} />
-      <SocialsSection form={form} />
-      <AddressSection form={form} />
+      <AccordionItem value="contact">
+            <AccordionTrigger>
+                <div className="flex items-center gap-2 text-primary">
+                    <Phone className="h-5 w-5" />
+                    <span>Επικοινωνία & Socials</span>
+                </div>
+            </AccordionTrigger>
+            <AccordionContent className="p-1">
+                <ContactSection form={form} />
+                <SocialsSection form={form} />
+            </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="addresses">
+            <AccordionTrigger>
+                <div className="flex items-center gap-2 text-primary">
+                    <MapIcon className="h-5 w-5" />
+                    <span>Διευθύνσεις</span>
+                </div>
+            </AccordionTrigger>
+            <AccordionContent className="p-1">
+                <AddressSection form={form} />
+            </AccordionContent>
+      </AccordionItem>
       <JobSection form={form} />
-      <NotesSection form={form} />
+      <AccordionItem value="notes">
+            <AccordionTrigger>
+                <div className="flex items-center gap-2 text-primary">
+                    <Info className="h-5 w-5" />
+                    <span>Σημειώσεις</span>
+                </div>
+            </AccordionTrigger>
+            <AccordionContent className="p-1">
+                <NotesSection form={form} />
+            </AccordionContent>
+      </AccordionItem>
     </Accordion>
   );
 
