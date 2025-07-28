@@ -27,6 +27,7 @@ const nextConfig = {
       },
     ],
   },
+  // Cache invalidation comment
 };
 
 export default nextConfig;
