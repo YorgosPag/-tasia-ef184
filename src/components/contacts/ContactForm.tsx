@@ -29,9 +29,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
   const entityType = useWatch({ control: form.control, name: 'entityType' });
   const { lists } = useCustomLists();
   const addressTypeOptions = React.useMemo(() => {
-    // ID for the "Address Types" list as requested.
-    const addressListId = '1g3KUTrrAlYs2HKXr'; 
-    const addressList = lists.find(l => l.id === addressListId);
+    const addressListKey = 'address_types';
+    const addressList = lists.find(l => l.key === addressListKey);
     return addressList?.items.map(item => ({ label: item.value, value: item.value })) || [];
   }, [lists]);
 
@@ -169,9 +168,10 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                         <FormLabel>Τύπος Διεύθυνσης</FormLabel>
                                         <Select onValueChange={(value) => {
                                             field.onChange(value);
-                                            if (!form.getValues(`addresses.${index}.customTitle`)) {
-                                                const newTitle = `Διεύθυνση ${index + 1} – ${value}`;
-                                                // This does not set customTitle, just updates dynamic display logic
+                                            const customTitle = form.getValues(`addresses.${index}.customTitle`);
+                                            if (!customTitle) {
+                                              // This logic doesn't set a field, it's for display only.
+                                              // The title is constructed dynamically above.
                                             }
                                         }} defaultValue={field.value}>
                                             <FormControl>
