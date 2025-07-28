@@ -108,6 +108,7 @@ export const jobInfoSchema = z.object({
     companyName: z.string().optional(),
     companyTitle: z.string().optional(),
     commercialTitle: z.string().optional(),
+    objective: z.string().optional(),
     gemhStatus: z.string().optional(),
     gemhDate: z.string().optional(),
     gemhAddress: z.string().optional(),

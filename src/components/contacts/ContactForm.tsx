@@ -20,6 +20,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Phone, Link as LinkIcon, Map as MapIcon, Info, UserCircle } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/shared/components/ui/table';
 import { Button } from '@/shared/components/ui/button';
+import { Textarea } from '@/shared/components/ui/textarea';
 
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
@@ -48,10 +49,11 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             
             <TabsContent value="gemh-data" className="mt-4">
                 <Tabs defaultValue="general" className="w-full">
-                    <TabsList className="flex h-auto flex-wrap justify-start gap-1">
+                    <TabsList className="flex flex-wrap gap-2 w-full justify-start h-auto">
                         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
                         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
                         <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
+                        <TabsTrigger value="objective">Σκοπός & Αντικείμενο</TabsTrigger>
                         <TabsTrigger value="capital">Κεφάλαιο Εταιρείας</TabsTrigger>
                         <TabsTrigger value="stocks">Μετοχική Σύνθεση</TabsTrigger>
                         <TabsTrigger value="documents">Έγγραφα ΓΕΜΗ</TabsTrigger>
@@ -76,8 +78,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-50">
                                     <FormItem><FormLabel>Επωνυμία (Αγγλικά)</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Διακριτικός Τίτλος (Αγγλικά)</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Ιστοσελίδα</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Email Επιχείρησης</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Ιστοσελίδα</FormLabel><FormControl><Input disabled placeholder="—" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Email Επιχείρησης</FormLabel><FormControl><Input disabled placeholder="—" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Ημερομηνία Σύστασης</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                 </div>
                             </CardContent>
@@ -96,7 +98,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                         <FormField name={`addresses.${gemhAddressIndex}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
                                         <FormField name={`addresses.${gemhAddressIndex}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
                                         <FormField name={`addresses.${gemhAddressIndex}.municipality`} control={form.control} render={({field}) => (<FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
-                                        <FormField name={`addresses.${gemhAddressIndex}.poBox`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχυδρομική Θυρίδα</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
+                                        <FormField name={`addresses.${gemhAddressIndex}.poBox`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχυδρομική Θυρίδα</FormLabel><FormControl><Input {...field} disabled placeholder="-"/></FormControl></FormItem>)}/>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -111,11 +113,33 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                     <FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
                                     <FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Ταχυδρομική Θυρίδα</FormLabel><FormControl><Input disabled placeholder="-" /></FormControl></FormItem>
+                                    <FormItem><FormLabel>Ταχυδρομική Θυρίδα</FormLabel><FormControl><Input disabled placeholder="-"/></FormControl></FormItem>
                                     </div>
                                 </CardContent>
                             </Card>
                         )}
+                    </TabsContent>
+                    
+                    <TabsContent value="objective" className="mt-4">
+                        <Card className="relative border-muted">
+                            <CardContent className="p-6 space-y-4">
+                                <p className="text-sm text-muted-foreground text-center mb-4">
+                                  🛈 Ο σκοπός της εταιρείας, όπως έχει δηλωθεί στο Γ.Ε.ΜΗ.
+                                </p>
+                                <FormField
+                                  name="job.objective"
+                                  control={form.control}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Σκοπός Εταιρείας</FormLabel>
+                                      <FormControl>
+                                        <Textarea {...field} disabled placeholder="—" className="min-h-[120px]" />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     <TabsContent value="capital" className="mt-4">
