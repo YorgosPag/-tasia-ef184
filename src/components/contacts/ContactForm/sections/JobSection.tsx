@@ -40,6 +40,8 @@ export function JobSection({ form }: ContactFormProps) {
         form.setValue('job.gemhGemiOffice', '');
         form.setValue('job.isBranch', undefined);
         form.setValue('job.autoRegistered', undefined);
+        form.setValue('job.legalType', '');
+        form.setValue('job.prefecture', '');
         // Also remove the GEMI address if it exists
         const currentAddresses = form.getValues('addresses') || [];
         const nonGemiAddresses = currentAddresses.filter(addr => !addr.fromGEMI);
@@ -76,6 +78,8 @@ export function JobSection({ form }: ContactFormProps) {
                          form.setValue('job.gemhGemiOffice', companyData.gemiOffice?.descr || '', { shouldDirty: true });
                          form.setValue('job.isBranch', companyData.isBranch || false, { shouldDirty: true });
                          form.setValue('job.autoRegistered', companyData.autoRegistered || false, { shouldDirty: true });
+                         form.setValue('job.legalType', companyData.legalType?.descr || '', { shouldDirty: true });
+                         form.setValue('job.prefecture', companyData.prefecture?.descr || '', { shouldDirty: true });
                          form.setValue('afm', companyData.afm || afmValue, { shouldDirty: true });
                          form.setValue('job.arGemi', companyData.gemiNo || arGemiValue, { shouldDirty: true });
 
@@ -191,6 +195,8 @@ export function JobSection({ form }: ContactFormProps) {
                     )} />
                      <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem><FormLabel>ΔΟΥ (από ΓΕΜΗ)</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
                      <FormField control={form.control} name="job.gemhGemiOffice" render={({ field }) => (<FormItem><FormLabel>Τοπική Υπηρεσία Γ.Ε.ΜΗ.</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                     <FormField control={form.control} name="job.legalType" render={({ field }) => (<FormItem><FormLabel>Νομική Μορφή</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                     <FormField control={form.control} name="job.prefecture" render={({ field }) => (<FormItem><FormLabel>Νομός</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
                     <div className="grid grid-cols-2 gap-4">
                         <FormItem>
                             <FormLabel>Υποκατάστημα / Μητρική</FormLabel>
@@ -234,3 +240,4 @@ export function JobSection({ form }: ContactFormProps) {
     
 
     
+

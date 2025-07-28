@@ -1,4 +1,5 @@
 
+
 import { z } from 'zod';
 
 export const ALL_ACCORDION_SECTIONS = ['personal', 'identity', 'contact', 'socials', 'addresses', 'job', 'notes', 'representative'];
@@ -114,6 +115,8 @@ export const jobInfoSchema = z.object({
     gemhGemiOffice: z.string().optional(),
     isBranch: z.boolean().optional(),
     autoRegistered: z.boolean().optional(),
+    legalType: z.string().optional(),
+    prefecture: z.string().optional(),
   }).optional(),
 });
 

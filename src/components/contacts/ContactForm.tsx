@@ -211,8 +211,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                             </CardContent>
                         </Card>
                     </TabsContent>
-
-                    <TabsContent value="activities" className="mt-4">
+                    
+                     <TabsContent value="activities" className="mt-4">
                         <Card className="relative border-muted">
                             <CardHeader>
                                 <CardTitle className="text-lg">Δραστηριότητες (ΚΑΔ)</CardTitle>
