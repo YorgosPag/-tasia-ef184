@@ -15,12 +15,13 @@ import { NotesSection } from './ContactForm/sections/NotesSection';
 import { type ContactFormProps } from './ContactForm/types';
 import { SocialsSection } from './ContactForm/sections/SocialsSection';
 import { LegalRepresentativeSection } from './ContactForm/sections/LegalRepresentativeSection';
-import { FormItem, FormLabel, FormControl, FormDescription } from '@/shared/components/ui/form';
+import { FormItem, FormLabel, FormControl, FormDescription, FormField, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Switch } from '@/shared/components/ui/switch';
 import { Button } from '@/shared/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/shared/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
@@ -65,7 +66,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             </TabsContent>
             
             <TabsContent value="addresses" className="mt-4">
-                <div className="space-y-4">
+                 <div className="space-y-4">
                     {/* Έδρα - First Address */}
                     <Card>
                       <CardContent className="p-6 space-y-4">
@@ -96,19 +97,44 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
                     {/* Additional Addresses */}
                     {fields.map((field, index) => {
-                         // We are using a static block for the headquarters (index 0)
-                         // so we skip the first item in the field array if we were to use it for all.
-                         // For simplicity, we just use the field array for *additional* addresses.
+                         const addressType = form.watch(`addresses.${index}.type`);
+                         const title = `Διεύθυνση ${index + 1}` + (addressType ? ` - ${addressType}` : '');
                          return (
                             <Card key={field.id} className="relative">
                               <CardContent className="p-6 space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-semibold">Διεύθυνση {index + 1} (π.χ. Υποκατάστημα)</h3>
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-semibold">{title}</h3>
                                     <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                                         <Trash2 className="h-4 w-4 text-destructive" />
                                     </Button>
                                 </div>
+                                
+                                <FormField
+                                  name={`addresses.${index}.type`}
+                                  control={form.control}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Τύπος Διεύθυνσης</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Επιλέξτε τύπο..."/>
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="Υποκατάστημα">Υποκατάστημα</SelectItem>
+                                                <SelectItem value="Αποθήκη">Αποθήκη</SelectItem>
+                                                <SelectItem value="Βιοτεχνία">Βιοτεχνία</SelectItem>
+                                                <SelectItem value="Λοιπό">Λοιπό</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
                                 <Separator />
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormItem><FormLabel>Οικισμός</FormLabel><FormControl><Input /></FormControl></FormItem>
                                     <FormItem><FormLabel>Δημοτική/Τοπική Κοινότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
@@ -125,7 +151,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     })}
 
                     <div className="flex justify-end">
-                        <Button type="button" variant="outline" size="sm" onClick={() => append({})}>
+                        <Button type="button" variant="outline" size="sm" onClick={() => append({ type: 'Υποκατάστημα' })}>
                             <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
                         </Button>
                     </div>
