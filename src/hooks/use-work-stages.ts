@@ -28,7 +28,7 @@ import { WorkStageFormValues, workStageSchema } from '@/tasia/components/project
 import type { WorkStage, WorkStageWithSubstages, Inspection } from '@/shared/types/project-types';
 import { exportToJson } from '@/shared/lib/exporter';
 import { formatDate } from '@/tasia/components/projects/work-stages/utils';
-import { useAuth } from './use-auth';
+import { useAuth } from '@/shared/hooks/use-auth';
 
 
 export function useWorkStages(projectId: string, projectTitle: string) {

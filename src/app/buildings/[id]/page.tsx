@@ -13,8 +13,8 @@ import { Card } from '@/shared/components/ui/card';
 import { Form } from '@/shared/components/ui/form';
 import { Button } from '@/shared/components/ui/button';
 import { buildingSchema, BuildingFormValues } from '@/tasia/components/projects/BuildingFormDialog';
-import { BuildingDetailsForm } from '@/tasia/components/buildings/BuildingDetailsForm';
-import { FloorsList } from '@/tasia/components/buildings/FloorsList';
+import { BuildingDetailsForm } from '@/components/buildings/BuildingDetailsForm';
+import { FloorsList } from '@/components/buildings/FloorsList';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
 
