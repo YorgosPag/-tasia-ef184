@@ -11,18 +11,13 @@ const firebaseConfig = {
   apiKey: "***REMOVED***",
   authDomain: "tasia-6f77i.firebaseapp.com",
   projectId: "tasia-6f77i",
-  storageBucket: "tasia-6f77i.firebasestorage.app", // Corrected Value
+  storageBucket: "tasia-6f77i.appspot.com",
   messagingSenderId: "204877276202",
   appId: "1:204877276202:web:31db4eb5b1c1b7c4078f53"
 };
 
 // Initialize Firebase
-let app;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApp();
-}
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // Export services for use in other parts of the application
 export const db = getFirestore(app);
