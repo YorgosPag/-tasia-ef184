@@ -1,0 +1,35 @@
+
+'use client';
+
+import React from 'react';
+import { Accordion } from '@/shared/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { BasicInfoSection } from '../sections/BasicInfoSection';
+import { GemhDataTabs } from '../tabs/GemhDataTabs';
+import { UserDataTabs } from '../tabs/UserDataTabs';
+import type { ContactFormProps } from '../types';
+
+export function LegalPersonLayout({ form, onFileSelect }: Pick<ContactFormProps, 'form' | 'onFileSelect'>) {
+  return (
+    <div className="w-full space-y-4">
+      <Accordion type="multiple" defaultValue={['personal']} className="w-full">
+        <BasicInfoSection form={form} onFileSelect={onFileSelect} />
+      </Accordion>
+
+      <Tabs defaultValue="gemh-data" className="w-full">
+        <TabsList className="h-auto flex-wrap justify-start">
+          <TabsTrigger value="gemh-data">Στοιχεία από ΓΕΜΗ</TabsTrigger>
+          <TabsTrigger value="user-data">Στοιχεία από Χρήστη</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="gemh-data" className="mt-4">
+          <GemhDataTabs form={form} />
+        </TabsContent>
+
+        <TabsContent value="user-data" className="mt-4">
+          <UserDataTabs form={form} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
