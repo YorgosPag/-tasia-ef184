@@ -99,10 +99,10 @@ export function FloorDetailsContainer() {
   // --- UI Event Handlers ---
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
+    // PDF check removed
+    if (file) {
       setSelectedFile(file);
-    } else if (file) {
-      toast({ variant: 'destructive', title: 'Λάθος τύπος αρχείου', description: 'Παρακαλώ επιλέξτε ένα αρχείο PDF.' });
+    } else {
       setSelectedFile(null);
     }
     event.target.value = ''; // Reset file input

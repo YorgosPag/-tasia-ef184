@@ -3,11 +3,10 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import { FloorPlanLoader } from './FloorPlanLoader';
+import { Loader2 } from 'lucide-react';
 import type { Unit } from '@/tasia/components/floor-plan/Unit';
 import { useFloorPlanDataManager } from '@/tasia/hooks/floor-plan/useFloorPlanDataManager';
-import { Loader2 } from 'lucide-react';
-import { UnitDialogForm } from '@/components/units/UnitDialogForm';
+import { UnitDialogForm } from '@/tasia/components/units/UnitDialogForm';
 
 
 interface FloorPlanCardProps {
@@ -38,24 +37,12 @@ export function FloorPlanCard({
   return (
     <Card className="p-0">
       <CardContent className="p-0">
-        {floorPlanUrl ? (
-          <FloorPlanLoader
-            pdfUrl={floorPlanUrl}
-            units={dataManager.units}
-            setUnits={dataManager.setUnits}
-            onPolygonDrawn={handlePolygonDrawn}
-            onUnitPointsUpdate={dataManager.handleUnitPointsUpdate}
-            onUnitClick={onUnitClick}
-            onUnitDelete={dataManager.handleDeleteUnit}
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
-            <p className="text-muted-foreground">Δεν έχει ανέβει κάτοψη για αυτόν τον όροφο.</p>
+        <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
+            <p className="text-muted-foreground">Η προβολή κατόψεων είναι προσωρινά απενεργοποιημένη.</p>
             <p className="text-sm text-muted-foreground mt-2">
-              Χρησιμοποιήστε το πεδίο παραπάνω για να ανεβάσετε ένα αρχείο PDF.
+              Η λειτουργικότητα θα αποκατασταθεί σύντομα.
             </p>
           </div>
-        )}
       </CardContent>
       <UnitDialogForm
         open={dataManager.isDialogOpen}

@@ -1,18 +1,14 @@
 
 'use client';
 
-import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
-import { FloorPlanViewer } from '@/components/floor-plan/FloorPlanViewer';
 
-export const FloorPlanLoader = dynamic(
-  () => import('@/components/floor-plan/FloorPlanViewer').then(mod => mod.FloorPlanViewer),
-  {
-    loading: () => (
-      <div className="flex h-40 w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    ),
-    ssr: false, // This component is client-side only
-  }
-);
+// This component is now a placeholder as react-pdf and its dynamic import were removed.
+export const FloorPlanLoader = () => {
+    return (
+        <div className="flex h-40 w-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
+             <p className="ml-2">Φόρτωση...</p>
+        </div>
+    );
+};
