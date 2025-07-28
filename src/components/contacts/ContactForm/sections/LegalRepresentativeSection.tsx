@@ -4,7 +4,7 @@
 import React from 'react';
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Textarea } from '@/shared/components/ui/textarea';
+import { Input } from '@/shared/components/ui/input';
 import { UserCircle } from 'lucide-react';
 import { type ContactFormProps } from '../types';
 import { Card, CardContent } from '@/shared/components/ui/card';
@@ -20,10 +20,37 @@ export function LegalRepresentativeSection({ form }: ContactFormProps) {
             </AccordionTrigger>
             <AccordionContent className="p-1 pt-4">
                 <Card>
-                    <CardContent className="p-6">
-                        <p className="text-sm text-muted-foreground">
-                            Αυτή η ενότητα είναι υπό κατασκευή. Εδώ θα μπορείτε να προσθέσετε και να διαχειριστείτε τους νόμιμους εκπροσώπους της εταιρείας.
-                        </p>
+                    <CardContent className="p-6 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div className="space-y-4">
+                                <FormItem>
+                                    <FormLabel>Ονοματεπώνυμο</FormLabel>
+                                    <FormControl><Input placeholder="π.χ. Ιωάννης Παπαδόπουλος" /></FormControl>
+                                </FormItem>
+                                 <FormItem>
+                                    <FormLabel>Ιδιότητα</FormLabel>
+                                    <FormControl><Input placeholder="π.χ. Διαχειριστής" /></FormControl>
+                                </FormItem>
+                                <FormItem>
+                                    <FormLabel>ΑΦΜ Εκπροσώπου</FormLabel>
+                                    <FormControl><Input placeholder="9 ψηφία" /></FormControl>
+                                </FormItem>
+                             </div>
+                             <div className="space-y-4">
+                                 <FormItem>
+                                    <FormLabel>ΔΟΥ Εκπροσώπου</FormLabel>
+                                    <FormControl><Input placeholder="π.χ. ΔΟΥ Καλαμαριάς" /></FormControl>
+                                </FormItem>
+                                <FormItem>
+                                    <FormLabel>Email Εκπροσώπου</FormLabel>
+                                    <FormControl><Input type="email" placeholder="π.χ. representative@email.com" /></FormControl>
+                                </FormItem>
+                                 <FormItem>
+                                    <FormLabel>Τηλέφωνο Εκπροσώπου</FormLabel>
+                                    <FormControl><Input type="tel" placeholder="+30 69..." /></FormControl>
+                                </FormItem>
+                             </div>
+                        </div>
                     </CardContent>
                 </Card>
             </AccordionContent>
