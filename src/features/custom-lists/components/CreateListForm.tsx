@@ -41,7 +41,7 @@ const createListSchema = z.object({
   title: z.string().min(2, {
     message: 'Ο τίτλος πρέπει να έχει τουλάχιστον 2 χαρακτήρες.',
   }),
-  key: z.string(), // Key is generated automatically, so it doesn't need direct user validation here.
+  key: z.string(), // Key is generated automatically, validation is not needed from the user.
   description: z.string().optional(),
   hasCode: z.boolean().default(false),
   isProtected: z.boolean().default(false),
@@ -71,11 +71,6 @@ export function CreateListForm() {
     }, [watchedTitle, form]);
 
     const onSubmit = async (values: CreateListFormValues) => {
-        // Final validation before submission
-        if (values.key.length < 2) {
-            form.setError('key', { type: 'manual', message: 'Δεν ήταν δυνατή η δημιουργία έγκυρου κλειδιού από αυτόν τον τίτλο.' });
-            return;
-        }
         const success = await createList(values);
         if (success) {
             form.reset();
