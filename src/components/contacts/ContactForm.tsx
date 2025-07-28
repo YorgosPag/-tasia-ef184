@@ -23,7 +23,8 @@ import { Phone, Link as LinkIcon, Map as MapIcon, Info } from 'lucide-react';
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
 
-  const gemhAddressIndex = (form.getValues('addresses') || []).findIndex(addr => addr.fromGEMI);
+  const addresses = useWatch({ control: form.control, name: 'addresses' }) || [];
+  const gemhAddressIndex = addresses.findIndex(addr => addr.fromGEMI);
   
   const renderLegalPersonForm = () => (
      <div className="w-full space-y-4">
@@ -80,19 +81,19 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             </TabsContent>
 
             <TabsContent value="user-data" className="mt-4">
-                <Tabs defaultValue="contact-socials" className="w-full">
+                <Tabs defaultValue="contact" className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="contact-socials">Επικοινωνία & Socials</TabsTrigger>
+                        <TabsTrigger value="contact">Επικοινωνία &amp; Socials</TabsTrigger>
                         <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
                         <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="contact-socials" className="mt-4">
+                     <TabsContent value="contact" className="mt-4">
                         <Accordion type="single" collapsible defaultValue="contact" className="w-full">
                              <AccordionItem value="contact">
                                 <AccordionTrigger>
                                     <div className="flex items-center gap-2 text-primary">
                                         <Phone className="h-5 w-5" />
-                                        <span>Στοιχεία Επικοινωνίας</span>
+                                        <span>Στοιχεία Επικοινωνίας &amp; Socials</span>
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent className="p-1">
@@ -102,9 +103,9 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                             </AccordionItem>
                         </Accordion>
                     </TabsContent>
-                    <TabsContent value="addresses" className="mt-4">
-                         <Accordion type="single" collapsible defaultValue="addresses" className="w-full">
-                            <AccordionItem value="addresses">
+                     <TabsContent value="addresses" className="mt-4">
+                        <Accordion type="single" collapsible defaultValue="addresses" className="w-full">
+                             <AccordionItem value="addresses">
                                 <AccordionTrigger>
                                     <div className="flex items-center gap-2 text-primary">
                                         <MapIcon className="h-5 w-5" />
@@ -117,7 +118,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                             </AccordionItem>
                         </Accordion>
                     </TabsContent>
-                    <TabsContent value="notes" className="mt-4">
+                     <TabsContent value="notes" className="mt-4">
                         <Accordion type="single" collapsible defaultValue="notes" className="w-full">
                             <AccordionItem value="notes">
                                 <AccordionTrigger>
