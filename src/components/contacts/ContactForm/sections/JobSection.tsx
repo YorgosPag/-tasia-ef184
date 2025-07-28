@@ -21,6 +21,7 @@ export function JobSection({ form }: ContactFormProps) {
     const arGemiValue = useWatch({ control: form.control, name: 'job.arGemi' });
     const afmValue = useWatch({ control: form.control, name: 'afm' });
     const isBranch = useWatch({ control: form.control, name: 'job.isBranch' });
+    const autoRegistered = useWatch({ control: form.control, name: 'job.autoRegistered' });
 
 
     const [debouncedArGemi] = useDebounce(arGemiValue, 1000);
@@ -37,6 +38,7 @@ export function JobSection({ form }: ContactFormProps) {
         form.setValue('job.gemhActivity', '');
         form.setValue('job.gemhDOY', '');
         form.setValue('job.isBranch', undefined);
+        form.setValue('job.autoRegistered', undefined);
         // Also remove the GEMI address if it exists
         const currentAddresses = form.getValues('addresses') || [];
         const nonGemiAddresses = currentAddresses.filter(addr => !addr.fromGEMI);
@@ -71,6 +73,7 @@ export function JobSection({ form }: ContactFormProps) {
                          form.setValue('job.gemhActivity', companyData.activity || '', { shouldDirty: true });
                          form.setValue('job.gemhDOY', companyData.doy || '', { shouldDirty: true });
                          form.setValue('job.isBranch', companyData.isBranch || false, { shouldDirty: true });
+                         form.setValue('job.autoRegistered', companyData.autoRegistered || false, { shouldDirty: true });
                          form.setValue('afm', companyData.afm || afmValue, { shouldDirty: true });
                          form.setValue('job.arGemi', companyData.gemiNo || arGemiValue, { shouldDirty: true });
 
@@ -142,6 +145,14 @@ export function JobSection({ form }: ContactFormProps) {
     if (entityType === 'Δημ. Υπηρεσία') {
         return null;
     }
+    
+    const getAutoRegisteredText = () => {
+        if (typeof autoRegistered === 'boolean') {
+            return autoRegistered ? 'Αυτοεγγεγραμμένη Εταιρεία' : 'Κανονική Εγγραφή (μέσω Γ.Ε.ΜΗ.)';
+        }
+        return '-';
+    }
+
 
     return (
         <AccordionItem value="job">
@@ -177,15 +188,26 @@ export function JobSection({ form }: ContactFormProps) {
                         </FormItem>
                     )} />
                      <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem><FormLabel>ΔΟΥ (από ΓΕΜΗ)</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                     <FormItem>
-                        <FormLabel>Υποκατάστημα / Μητρική</FormLabel>
-                        <FormControl>
-                            <Badge variant="outline" className="text-muted-foreground block w-fit mt-2">
-                               {typeof isBranch === 'boolean' ? (isBranch ? 'Υποκατάστημα' : 'Μητρική Εταιρεία') : '-'}
-                            </Badge>
-                        </FormControl>
-                        <FormDescription>Η πληροφορία αντλείται αυτόματα από το ΓΕΜΗ.</FormDescription>
-                     </FormItem>
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormItem>
+                            <FormLabel>Υποκατάστημα / Μητρική</FormLabel>
+                            <FormControl>
+                                <Badge variant="outline" className="text-muted-foreground block w-fit mt-2">
+                                {typeof isBranch === 'boolean' ? (isBranch ? 'Υποκατάστημα' : 'Μητρική Εταιρεία') : '-'}
+                                </Badge>
+                            </FormControl>
+                            <FormDescription>Η πληροφορία αντλείται αυτόματα από το ΓΕΜΗ.</FormDescription>
+                        </FormItem>
+                        <FormItem>
+                            <FormLabel>Τρόπος Εγγραφής</FormLabel>
+                            <FormControl>
+                                <Badge variant="outline" className="text-muted-foreground block w-fit mt-2">
+                                {getAutoRegisteredText()}
+                                </Badge>
+                            </FormControl>
+                            <FormDescription>Η πληροφορία αντλείται αυτόματα από το ΓΕΜΗ.</FormDescription>
+                        </FormItem>
+                    </div>
                     <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem><FormLabel>Επωνυμία</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="job.commercialTitle" render={({ field }) => (<FormItem><FormLabel>Διακριτικός Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="job.companyTitle" render={({ field }) => (<FormItem><FormLabel>Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />

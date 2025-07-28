@@ -112,6 +112,7 @@ export const jobInfoSchema = z.object({
     gemhActivity: z.string().optional(),
     gemhDOY: z.string().optional(),
     isBranch: z.boolean().optional(),
+    autoRegistered: z.boolean().optional(),
   }).optional(),
 });
 
