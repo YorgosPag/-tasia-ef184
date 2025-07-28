@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { useWatch } from 'react-hook-form';
+import { useWatch, useFieldArray } from 'react-hook-form';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Card, CardContent } from '@/shared/components/ui/card';
@@ -18,10 +18,16 @@ import { LegalRepresentativeSection } from './ContactForm/sections/LegalRepresen
 import { FormItem, FormLabel, FormControl, FormDescription } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Switch } from '@/shared/components/ui/switch';
-
+import { Button } from '@/shared/components/ui/button';
+import { PlusCircle, Trash2 } from 'lucide-react';
+import { Separator } from '@/shared/components/ui/separator';
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "addresses",
+  });
 
   const renderLegalPersonForm = () => (
     <Accordion type="multiple" defaultValue={['personal']} className="w-full">
@@ -59,16 +65,50 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             </TabsContent>
             
             <TabsContent value="addresses" className="mt-4">
-                <Accordion type="multiple" defaultValue={['addresses']} className="w-full">
-                    <AccordionItem value="addresses">
-                        <AccordionTrigger>
-                            <div className="flex items-center gap-2 text-primary">
-                                <span>Έδρα Νομικού Προσώπου</span>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="p-1 pt-4">
-                           <Card>
-                             <CardContent className="p-6 space-y-4">
+                <div className="space-y-4">
+                    {/* Έδρα - First Address */}
+                    <Card>
+                      <CardContent className="p-6 space-y-4">
+                         <h3 className="text-lg font-semibold text-primary">Έδρα Νομικού Προσώπου</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormItem><FormLabel>Οικισμός</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Δημοτική/Τοπική Κοινότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Δημοτική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Δήμος</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Περιφερειακή Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Περιφέρεια</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Αποκεντρωμένη Διοίκηση</FormLabel><FormControl><Input /></FormControl></FormItem>
+                            <FormItem><FormLabel>Μεγάλη Γεωγραφική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                        </div>
+                        <div className="pt-4">
+                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <FormLabel>Η έδρα αυτή προέρχεται από το ΓΕΜΗ</FormLabel>
+                                    <FormDescription>Ενεργοποιήστε αν η διεύθυνση έχει αντληθεί αυτόματα από το ΓΕΜΗ.</FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch defaultChecked={false} />
+                                </FormControl>
+                            </FormItem>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Additional Addresses */}
+                    {fields.map((field, index) => {
+                         // We are using a static block for the headquarters (index 0)
+                         // so we skip the first item in the field array if we were to use it for all.
+                         // For simplicity, we just use the field array for *additional* addresses.
+                         return (
+                            <Card key={field.id} className="relative">
+                              <CardContent className="p-6 space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-semibold">Διεύθυνση {index + 1} (π.χ. Υποκατάστημα)</h3>
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                </div>
+                                <Separator />
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormItem><FormLabel>Οικισμός</FormLabel><FormControl><Input /></FormControl></FormItem>
                                     <FormItem><FormLabel>Δημοτική/Τοπική Κοινότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
@@ -79,22 +119,18 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                     <FormItem><FormLabel>Αποκεντρωμένη Διοίκηση</FormLabel><FormControl><Input /></FormControl></FormItem>
                                     <FormItem><FormLabel>Μεγάλη Γεωγραφική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
                                 </div>
-                                <div className="pt-4">
-                                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>Η έδρα αυτή προέρχεται από το ΓΕΜΗ</FormLabel>
-                                            <FormDescription>Ενεργοποιήστε αν η διεύθυνση έχει αντληθεί αυτόματα από το ΓΕΜΗ.</FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch defaultChecked={false} />
-                                        </FormControl>
-                                    </FormItem>
-                                </div>
-                             </CardContent>
-                           </Card>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                              </CardContent>
+                            </Card>
+                         )
+                    })}
+
+                    <div className="flex justify-end">
+                        <Button type="button" variant="outline" size="sm" onClick={() => append({})}>
+                            <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
+                        </Button>
+                    </div>
+
+                </div>
             </TabsContent>
             
             <TabsContent value="notes" className="mt-4">
