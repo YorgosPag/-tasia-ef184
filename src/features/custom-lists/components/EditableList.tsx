@@ -78,6 +78,7 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
             <div>
               <p className="font-bold text-base">{list.title}</p>
               {list.description && <p className="text-sm text-muted-foreground">{list.description}</p>}
+              <p className="text-xs text-muted-foreground font-mono mt-1">ID: {list.id}</p>
             </div>
           )}
         </div>

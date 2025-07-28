@@ -13,13 +13,12 @@ interface ListItemViewProps {
 }
 
 export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
-  const { updateItem, deleteItem } = useCustomLists();
+  const { updateItem, deleteItem, lists } = useCustomLists();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.value);
   const [editCode, setEditCode] = useState(item.code || '');
 
   const handleSave = async () => {
-    // Check if there's an actual change to avoid unnecessary writes
     const valueChanged = editValue.trim() !== item.value;
     const codeChanged = hasCode && (editCode.trim() !== (item.code || ''));
     
@@ -30,14 +29,13 @@ export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
       }
       await updateItem(listId, item.id, dataToUpdate);
     }
-    setIsEditing(false); // This is the crucial part to exit editing mode
+    setIsEditing(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSave();
     } else if (e.key === 'Escape') {
-      // Revert changes and exit editing mode
       setEditValue(item.value);
       setEditCode(item.code || '');
       setIsEditing(false);
@@ -45,7 +43,14 @@ export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
   };
   
   const handleDelete = async () => {
-    await deleteItem(listId, item.id, item.value);
+    const list = lists.find(l => l.id === listId);
+    if (list) {
+      // Assuming a direct mapping or a more robust lookup if needed.
+      // For now, we pass a placeholder or a derived key. A real implementation
+      // might need a more stable way to link list UI to backend logic if based on a mutable title.
+      // Here, we use the list's ID which is stable.
+      await deleteItem(listId, list.id, item.id, item.value);
+    }
   }
 
   return (
@@ -75,6 +80,7 @@ export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
             {hasCode && <span className="font-mono text-xs bg-muted px-2 py-1 rounded-md">{item.code}</span>}
              <div className="flex flex-col flex-1 min-w-0">
                 <span className="text-sm truncate">{item.value}</span>
+                <span className="text-xs text-muted-foreground font-mono truncate">ID: {item.id}</span>
              </div>
         </div>
       )}
