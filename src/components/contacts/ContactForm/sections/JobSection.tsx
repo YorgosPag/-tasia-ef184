@@ -31,7 +31,6 @@ export function JobSection({ form }: ContactFormProps) {
         form.setValue('job.commercialTitle', '');
         form.setValue('job.gemhStatus', '');
         form.setValue('job.gemhDate', '');
-        form.setValue('job.gemhAddress', '');
         form.setValue('job.gemhActivity', '');
         form.setValue('job.gemhDOY', '');
         // Also remove the GEMI address if it exists
@@ -65,7 +64,6 @@ export function JobSection({ form }: ContactFormProps) {
                          form.setValue('job.commercialTitle', companyData.distinctiveTitle || '', { shouldDirty: true });
                          form.setValue('job.gemhStatus', companyData.status || '', { shouldDirty: true });
                          form.setValue('job.gemhDate', companyData.statusDate || '', { shouldDirty: true });
-                         form.setValue('job.gemhAddress', companyData.address || '', { shouldDirty: true });
                          form.setValue('job.gemhActivity', companyData.activity || '', { shouldDirty: true });
                          form.setValue('job.gemhDOY', companyData.doy || '', { shouldDirty: true });
                          form.setValue('afm', companyData.afm || afmValue, { shouldDirty: true });
@@ -147,7 +145,6 @@ export function JobSection({ form }: ContactFormProps) {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 p-1">
                  
-                  <h4 className="text-sm font-medium pt-2">Στοιχεία από ΓΕΜΗ</h4>
                   <p className="text-xs text-muted-foreground -mt-2">Εισάγετε ΑΦΜ ή Αρ. ΓΕΜΗ για αυτόματη συμπλήρωση.</p>
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -190,3 +187,5 @@ export function JobSection({ form }: ContactFormProps) {
         </AccordionItem>
     );
 }
+
+    

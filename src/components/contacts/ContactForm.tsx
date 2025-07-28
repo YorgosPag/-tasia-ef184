@@ -56,153 +56,141 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
   
   const renderLegalPersonForm = () => (
-    <Accordion type="multiple" defaultValue={['personal']} className="w-full">
+    <div className="w-full space-y-4">
       <BasicInfoSection form={form} onFileSelect={onFileSelect} />
       
       {(entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') && (
         <div className="pt-4">
-           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="basic">Βασικά Στοιχεία</TabsTrigger>
-              <TabsTrigger value="representative">Εκπρόσωπος</TabsTrigger>
-              <TabsTrigger value="contact">Επικοινωνία</TabsTrigger>
-              <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
-              <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="basic" className="mt-4">
-               {entityType === 'Νομικό Πρόσωπο' ? (
-                 <Tabs defaultValue="gemh-data" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="gemh-data">Στοιχεία από ΓΕΜΗ</TabsTrigger>
-                        <TabsTrigger value="user-data">Στοιχεία από Χρήστη</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="gemh-data" className="mt-4">
-                        <Accordion type="multiple" defaultValue={['job']} className="w-full space-y-2">
-                            <JobSection form={form} />
-                        </Accordion>
-                    </TabsContent>
-                    <TabsContent value="user-data" className="mt-4">
-                        <Card>
-                            <CardContent className="p-6 text-center text-muted-foreground">
-                                <p>Τα πεδία για χειροκίνητη εισαγωγή στοιχείων θα προστεθούν εδώ.</p>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                 </Tabs>
-               ) : (
-                <Accordion type="multiple" defaultValue={['job']} className="w-full space-y-2">
-                    <JobSection form={form} />
-                </Accordion>
-               )}
-            </TabsContent>
+           <Tabs defaultValue="gemh-data" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="gemh-data">Στοιχεία από ΓΕΜΗ</TabsTrigger>
+                  <TabsTrigger value="user-data">Στοιχεία από Χρήστη</TabsTrigger>
+              </TabsList>
 
-             <TabsContent value="representative" className="mt-4">
-                <Accordion type="multiple" defaultValue={['representative']} className="w-full">
-                  <LegalRepresentativeSection form={form} />
-                </Accordion>
-             </TabsContent>
-            
-            <TabsContent value="contact" className="mt-4">
-                <Accordion type="multiple" defaultValue={['contact', 'socials']} className="w-full space-y-2">
-                    <ContactSection form={form} />
-                    <SocialsSection form={form} />
-                </Accordion>
-            </TabsContent>
-            
-            <TabsContent value="addresses" className="mt-4">
-                 <div className="space-y-4">
-                    {gemhAddress && (
-                         <Card key={gemhAddress.fieldId} className="relative border-primary/50">
-                            <CardContent className="p-6 space-y-4">
-                                <h3 className="text-lg font-semibold text-primary">Έδρα (αυτόματη από το ΓΕΜΗ)</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <FormField name={`addresses.${gemhAddressIndex}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${gemhAddressIndex}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${gemhAddressIndex}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${gemhAddressIndex}.municipality`} control={form.control} render={({field}) => (<FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
-                                </div>
-                            </CardContent>
-                         </Card>
-                    )}
+              <TabsContent value="gemh-data" className="mt-4">
+                  <Accordion type="multiple" defaultValue={['job']} className="w-full space-y-2">
+                      <JobSection form={form} />
+                  </Accordion>
+              </TabsContent>
 
-                    {manualAddresses.map((field, index) => {
-                         const originalIndex = fields.findIndex(f => f.id === field.id);
-                         const addressType = form.watch(`addresses.${originalIndex}.type`);
-                         const title = `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
+              <TabsContent value="user-data" className="mt-4">
+                <Tabs defaultValue="representative" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="representative">Εκπρόσωπος</TabsTrigger>
+                    <TabsTrigger value="contact">Επικοινωνία</TabsTrigger>
+                    <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
+                    <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="representative" className="mt-4">
+                      <Accordion type="multiple" defaultValue={['representative']} className="w-full">
+                        <LegalRepresentativeSection form={form} />
+                      </Accordion>
+                  </TabsContent>
+                  
+                  <TabsContent value="contact" className="mt-4">
+                      <Accordion type="multiple" defaultValue={['contact', 'socials']} className="w-full space-y-2">
+                          <ContactSection form={form} />
+                          <SocialsSection form={form} />
+                      </Accordion>
+                  </TabsContent>
+                  
+                  <TabsContent value="addresses" className="mt-4">
+                      <div className="space-y-4">
+                          {gemhAddress && (
+                              <Card key={gemhAddress.fieldId} className="relative border-primary/50">
+                                  <CardContent className="p-6 space-y-4">
+                                      <h3 className="text-lg font-semibold text-primary">Έδρα (αυτόματη από το ΓΕΜΗ)</h3>
+                                      <p className="text-sm text-destructive font-semibold">❗Αυτόματα από Γ.Ε.ΜΗ.</p>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                          <FormField name={`addresses.${gemhAddressIndex}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} disabled /></FormControl></FormItem>)}/>
+                                          <FormField name={`addresses.${gemhAddressIndex}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
+                                          <FormField name={`addresses.${gemhAddressIndex}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
+                                          <FormField name={`addresses.${gemhAddressIndex}.municipality`} control={form.control} render={({field}) => (<FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input {...field} disabled/></FormControl></FormItem>)}/>
+                                      </div>
+                                  </CardContent>
+                              </Card>
+                          )}
 
-                         return (
-                            <Card key={field.fieldId} className="relative">
-                              <CardContent className="p-6 space-y-4">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-lg font-semibold">{title}</h3>
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(originalIndex)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                </div>
-                                
-                                <FormField
-                                  name={`addresses.${originalIndex}.type`}
-                                  control={form.control}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Τύπος Διεύθυνσης</FormLabel>
-                                         <CreatableCombobox 
-                                            options={addressTypeOptions}
-                                            value={field.value || ''}
-                                            onChange={(value) => {
-                                                field.onChange(value);
-                                            }}
-                                            onCreate={handleCreateAddressType}
-                                            placeholder="Επιλέξτε ή δημιουργήστε τύπο..."
-                                        />
-                                        <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
+                          {manualAddresses.map((field, index) => {
+                              const originalIndex = fields.findIndex(f => f.id === field.id);
+                              const addressType = form.watch(`addresses.${originalIndex}.type`);
+                              const title = `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
 
-                                <Separator />
-                                <div className="text-sm text-muted-foreground mb-1">Διεύθυνση</div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <FormField name={`addresses.${originalIndex}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${originalIndex}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${originalIndex}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
-                                    {addressFieldsMap.map(f => (
-                                        <AddressAutocompleteInput
-                                            key={f.formKey}
-                                            form={form}
-                                            name={`addresses.${originalIndex}.${f.formKey}` as any}
-                                            label={f.label}
-                                            algoliaKey={f.algoliaKey}
-                                            onSelect={(hit: any) => handleAddressSelect(form, originalIndex, hit)}
-                                            indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
-                                        />
-                                    ))}
-                                    <FormField name={`addresses.${originalIndex}.country`} control={form.control} render={({field}) => (<FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
-                                </div>
-                              </CardContent>
-                            </Card>
-                         )
-                    })}
+                              return (
+                                  <Card key={field.fieldId} className="relative">
+                                    <CardContent className="p-6 space-y-4">
+                                      <div className="flex justify-between items-center mb-4">
+                                          <h3 className="text-lg font-semibold">{title}</h3>
+                                          <Button type="button" variant="ghost" size="icon" onClick={() => remove(originalIndex)}>
+                                              <Trash2 className="h-4 w-4 text-destructive" />
+                                          </Button>
+                                      </div>
+                                      
+                                      <FormField
+                                        name={`addresses.${originalIndex}.type`}
+                                        control={form.control}
+                                        render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>Τύπος Διεύθυνσης</FormLabel>
+                                              <CreatableCombobox 
+                                                  options={addressTypeOptions}
+                                                  value={field.value || ''}
+                                                  onChange={(value) => {
+                                                      field.onChange(value);
+                                                  }}
+                                                  onCreate={handleCreateAddressType}
+                                                  placeholder="Επιλέξτε ή δημιουργήστε τύπο..."
+                                              />
+                                              <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
 
-                    <div className="flex justify-end">
-                        <Button type="button" variant="outline" size="sm" onClick={() => append({ type: '', isActive: true, street: '', number: '', postalCode: '', country: 'Ελλάδα' })}>
-                            <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
-                        </Button>
-                    </div>
+                                      <Separator />
+                                      <div className="text-sm text-muted-foreground mb-1">Διεύθυνση</div>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                          <FormField name={`addresses.${originalIndex}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
+                                          <FormField name={`addresses.${originalIndex}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
+                                          <FormField name={`addresses.${originalIndex}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
+                                          <FormField name={`addresses.${originalIndex}.country`} control={form.control} render={({field}) => (<FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)}/>
+                                          {addressFieldsMap.map(f => (
+                                              <AddressAutocompleteInput
+                                                  key={f.formKey}
+                                                  form={form}
+                                                  name={`addresses.${originalIndex}.${f.formKey}` as any}
+                                                  label={f.label}
+                                                  algoliaKey={f.algoliaKey}
+                                                  onSelect={(hit: any) => handleAddressSelect(form, originalIndex, hit)}
+                                                  indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
+                                              />
+                                          ))}
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                              )
+                          })}
 
-                </div>
-            </TabsContent>
-            
-            <TabsContent value="notes" className="mt-4">
-                <Accordion type="multiple" defaultValue={['notes']} className="w-full">
-                    <NotesSection form={form} />
-                </Accordion>
-            </TabsContent>
-          </Tabs>
+                          <div className="flex justify-end">
+                              <Button type="button" variant="outline" size="sm" onClick={() => append({ type: '', isActive: true, street: '', number: '', postalCode: '', country: 'Ελλάδα' })}>
+                                  <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
+                              </Button>
+                          </div>
+
+                      </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="notes" className="mt-4">
+                      <Accordion type="multiple" defaultValue={['notes']} className="w-full">
+                          <NotesSection form={form} />
+                      </Accordion>
+                  </TabsContent>
+                </Tabs>
+              </TabsContent>
+           </Tabs>
         </div>
       )}
-    </Accordion>
+    </div>
   );
 
   const renderDefaultForm = () => (
