@@ -5,7 +5,7 @@ import React from 'react';
 import { useWatch, useFieldArray } from 'react-hook-form';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
 import { BasicInfoSection } from './ContactForm/sections/BasicInfoSection';
 import { IdentitySection } from './ContactForm/sections/IdentitySection';
 import { ContactSection } from './ContactForm/sections/ContactSection';
