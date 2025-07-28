@@ -95,7 +95,9 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
 
   const handleAddressSelect = (index: number, hit: any) => {
      addressFieldsMap.forEach(field => {
-        form.setValue(`addresses.${index}.${field.formKey}`, hit[field.algoliaKey] || '', { shouldDirty: true });
+        const val = hit[field.algoliaKey];
+        const finalValue = Array.isArray(val) ? val[0] || '' : val || '';
+        form.setValue(`addresses.${index}.${field.formKey}`, finalValue, { shouldDirty: true });
      })
   };
 
@@ -554,3 +556,4 @@ export function ContactForm({ form, onFileSelect }: ContactFormProps) {
     </Accordion>
   );
 }
+

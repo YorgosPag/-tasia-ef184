@@ -7,10 +7,9 @@ import algoliasearch from 'algoliasearch/lite';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList, CommandInput as AlgoliaCommandInput } from '@/shared/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/shared/components/ui/command';
 import { useDebounce } from 'use-debounce';
 import type { UseFormReturn } from 'react-hook-form';
-
 
 const searchClient = algoliasearch(
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID!,
@@ -19,43 +18,42 @@ const searchClient = algoliasearch(
 
 const Autocomplete = ({ form, name, label, onSelect, algoliaKey }: { form: UseFormReturn, name: string, label: string, onSelect: (hit: any) => void, algoliaKey: string }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(form.getValues(name) || '');
+  const { refine } = useSearchBox();
+  const { hits } = useHits();
+
+  // Watch the form value directly
+  const fieldValue = form.watch(name);
+  const [inputValue, setInputValue] = useState(fieldValue || '');
   const [debouncedQuery] = useDebounce(inputValue, 300);
 
-  const { hits } = useHits();
-  const { refine } = useSearchBox();
-
-  const currentFieldValue = form.watch(name);
-  
-  // Sync local input state when the form value changes externally
+  // Sync local input state if form value changes from outside
   useEffect(() => {
-    if (currentFieldValue !== inputValue) {
-      setInputValue(currentFieldValue || '');
+    if (fieldValue !== inputValue) {
+      setInputValue(fieldValue || '');
     }
-  }, [currentFieldValue]);
+  }, [fieldValue, inputValue]);
 
-  // Refine algolia search when the user stops typing
+  // Refine Algolia search when the user stops typing
   useEffect(() => {
     refine(debouncedQuery);
   }, [debouncedQuery, refine]);
-  
+
   const handleSelect = (hit: any) => {
     onSelect(hit); // This will populate all other fields
-    const selectedLabel = hit[algoliaKey] || '';
-    form.setValue(name, selectedLabel, { shouldDirty: true, shouldValidate: true });
+    const selectedLabel = Array.isArray(hit[algoliaKey]) ? hit[algoliaKey][0] || '' : hit[algoliaKey] || '';
     setInputValue(selectedLabel);
+    form.setValue(name, selectedLabel, { shouldDirty: true });
     setIsOpen(false);
   };
-
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputValue(value);
-    form.setValue(name, value, { shouldDirty: true }); // Update the form field in real-time
-    if (!isOpen) {
-      setIsOpen(true);
-    }
+      const value = e.target.value;
+      setInputValue(value);
+      form.setValue(name, value, { shouldDirty: true });
+      if (!isOpen && value) {
+          setIsOpen(true);
+      }
   };
-
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -87,15 +85,18 @@ const Autocomplete = ({ form, name, label, onSelect, algoliaKey }: { form: UseFo
            <CommandList>
             {hits.length > 0 && (
               <CommandGroup>
-                {hits.map((hit) => (
-                  <CommandItem
-                    key={hit.objectID}
-                    value={hit[algoliaKey] as string}
-                    onSelect={() => handleSelect(hit)}
-                  >
-                    <span dangerouslySetInnerHTML={{ __html: (hit._highlightResult as any)?.[algoliaKey]?.value || (hit[algoliaKey] as string) }} />
-                  </CommandItem>
-                ))}
+                {hits.map((hit) => {
+                   const hitValue = (hit._highlightResult as any)?.[algoliaKey]?.value || (Array.isArray(hit[algoliaKey]) ? hit[algoliaKey][0] : hit[algoliaKey]) || '';
+                   return (
+                      <CommandItem
+                        key={hit.objectID}
+                        value={hitValue}
+                        onSelect={() => handleSelect(hit)}
+                      >
+                         <span dangerouslySetInnerHTML={{ __html: hitValue }} />
+                      </CommandItem>
+                   )
+                })}
               </CommandGroup>
             )}
             {hits.length === 0 && debouncedQuery && (
@@ -108,7 +109,8 @@ const Autocomplete = ({ form, name, label, onSelect, algoliaKey }: { form: UseFo
   );
 };
 
-export function AddressAutocompleteInput({ form, name, label, onSelect, indexName, algoliaKey }: { form: UseFormReturn, name: string, label: string, onSelect: (hit: any) => void, indexName: string, algoliaKey: string }) {
+
+export function AddressAutocompleteInput({ form, name, label, onSelect, indexName, algoliaKey }: { form: UseFormReturn<any>, name: string, label: string, onSelect: (hit: any) => void, indexName: string, algoliaKey: string }) {
   if (!process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY || !indexName) {
     return (
         <div className="text-destructive text-xs p-2 rounded-md bg-destructive/10">
@@ -124,3 +126,4 @@ export function AddressAutocompleteInput({ form, name, label, onSelect, indexNam
     </InstantSearch>
   );
 }
+
