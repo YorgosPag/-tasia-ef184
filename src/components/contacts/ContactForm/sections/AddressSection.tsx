@@ -8,7 +8,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shar
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Input } from '@/shared/components/ui/input';
 import { Map, PlusCircle, Trash2 } from 'lucide-react';
-import { AddressAutocompleteInput } from '../../AddressAutocompleteInput';
+import { AddressAutocompleteInput } from '@/components/common/autocomplete/AddressAutocompleteInput';
 import { addressFieldsMap, ADDRESS_TYPES, getFullAddress, handleAddressSelect } from '../utils/addressHelpers';
 import { type ContactFormProps } from '../types';
 

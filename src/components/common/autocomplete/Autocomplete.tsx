@@ -1,33 +1,23 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSearchBox, useHits, InstantSearch, Configure } from 'react-instantsearch-hooks-web';
-import algoliasearch from 'algoliasearch/lite';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+import { useSearchBox, useHits } from 'react-instantsearch-hooks-web';
+import type { UseFormReturn } from 'react-hook-form';
+import { useDebounce } from 'use-debounce';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/shared/components/ui/command';
-import { useDebounce } from 'use-debounce';
-import type { UseFormReturn } from 'react-hook-form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
 
-const searchClient = algoliasearch(
-  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID!,
-  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!,
-);
+interface AutocompleteProps {
+  form: UseFormReturn<any>;
+  name: string;
+  label: string;
+  onSelect: (hit: any) => void;
+  algoliaKey: string;
+}
 
-const Autocomplete = ({
-  form,
-  name,
-  label,
-  onSelect,
-  algoliaKey
-}: {
-  form: UseFormReturn<any>,
-  name: string,
-  label: string,
-  onSelect: (hit: any) => void,
-  algoliaKey: string
-}) => {
+export function Autocomplete({ form, name, label, onSelect, algoliaKey }: AutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { refine } = useSearchBox();
   const { hits } = useHits();
@@ -40,7 +30,7 @@ const Autocomplete = ({
     if (fieldValue !== inputValue) {
       setInputValue(fieldValue || '');
     }
-    // eslint-disable-next-line
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fieldValue]);
 
   useEffect(() => {
@@ -66,7 +56,7 @@ const Autocomplete = ({
   };
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <FormField
         control={form.control}
         name={name}
@@ -122,46 +112,5 @@ const Autocomplete = ({
         </Command>
       </PopoverContent>
     </Popover>
-  );
-};
-
-export function AddressAutocompleteInput({
-  form,
-  name,
-  label,
-  onSelect,
-  indexName,
-  algoliaKey
-}: {
-  form: UseFormReturn<any>,
-  name: string,
-  label: string,
-  onSelect: (hit: any) => void,
-  indexName: string,
-  algoliaKey: string
-}) {
-  if (
-    !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID ||
-    !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY ||
-    !indexName
-  ) {
-    return (
-      <div className="text-destructive text-xs p-2 rounded-md bg-destructive/10">
-        Η αναζήτηση Algolia δεν έχει ρυθμιστεί. Βεβαιωθείτε ότι οι μεταβλητές περιβάλλοντος υπάρχουν.
-      </div>
-    );
-  }
-
-  return (
-    <InstantSearch searchClient={searchClient} indexName={indexName}>
-      <Configure hitsPerPage={10} />
-      <Autocomplete
-        form={form}
-        name={name}
-        label={label}
-        onSelect={onSelect}
-        algoliaKey={algoliaKey}
-      />
-    </InstantSearch>
   );
 }
