@@ -66,6 +66,52 @@ export function JobSection({ form }: ContactFormProps) {
                          form.setValue('job.gemhDOY', companyData.doy || '', { shouldDirty: true });
                          form.setValue('afm', companyData.afm || afmValue, { shouldDirty: true });
                          form.setValue('job.arGemi', companyData.gemiNo || arGemiValue, { shouldDirty: true });
+
+                        // Parse and set address fields
+                        const rawAddress = companyData.address || '';
+                        if(rawAddress) {
+                            const addressParts = rawAddress.split(',').map((p:string) => p.trim());
+                            let streetPart = addressParts[0] || '';
+                            let cityPart = addressParts[1] || '';
+                            let zipPart = addressParts[2] || '';
+
+                            const streetMatch = streetPart.match(/^(.*)\s([\d\w-]+)$/);
+                            let street = streetMatch ? streetMatch[1] : streetPart;
+                            let number = streetMatch ? streetMatch[2] : '';
+                            
+                            const postalCodeRegex = /\b\d{5}\b/;
+                            let postalCode = '';
+
+                            if(zipPart && postalCodeRegex.test(zipPart)) {
+                                postalCode = zipPart;
+                            } else if (cityPart && postalCodeRegex.test(cityPart)) {
+                                postalCode = cityPart.match(postalCodeRegex)?.[0] || '';
+                                cityPart = cityPart.replace(postalCode, '').trim();
+                            }
+
+
+                            const currentAddresses = form.getValues('addresses') || [];
+                            const gemiAddressIndex = currentAddresses.findIndex(addr => addr.fromGEMI);
+
+                            const newAddress = {
+                                ...currentAddresses[gemiAddressIndex],
+                                type: 'Έδρα',
+                                fromGEMI: true,
+                                isActive: true,
+                                street: street,
+                                number: number,
+                                municipality: cityPart, // Closest field
+                                postalCode: postalCode,
+                                country: 'Ελλάδα',
+                            };
+                            
+                            if (gemiAddressIndex > -1) {
+                                form.setValue(`addresses.${gemiAddressIndex}`, newAddress, { shouldDirty: true });
+                            } else {
+                                form.setValue('addresses', [...currentAddresses, newAddress], { shouldDirty: true });
+                            }
+                        }
+
                     } else {
                          console.warn('Δεν βρέθηκε επιχείρηση στο ΓΕΜΗ');
                          clearGemiFields();
@@ -103,17 +149,12 @@ export function JobSection({ form }: ContactFormProps) {
             </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-4 p-1">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ρόλος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.specialty" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ειδικότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-                </div>
                  
-                 <Separator/>
                   <h4 className="text-sm font-medium pt-2">Στοιχεία από ΓΕΜΗ</h4>
                   <p className="text-xs text-muted-foreground -mt-2">Εισάγετε ΑΦΜ ή Αρ. ΓΕΜΗ για αυτόματη συμπλήρωση.</p>
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="job.arGemi" render={({ field }) => (
+                     <FormField control={form.control} name="job.arGemi" render={({ field }) => (
                         <FormItem className="flex items-center gap-4">
                             <FormLabel className="w-40 text-right">Αριθμός ΓΕΜΗ</FormLabel>
                             <div className="flex-1 relative">
@@ -141,6 +182,13 @@ export function JobSection({ form }: ContactFormProps) {
                     <FormField control={form.control} name="job.gemhStatus" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Κατάσταση ΓΕΜΗ</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
                     <FormField control={form.control} name="job.gemhDate" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ημ/νία Κατάστασης</FormLabel><div className="flex-1"><FormControl><Input {...field} disabled /></FormControl><FormMessage /></div></FormItem>)} />
                  </div>
+
+                 <Separator/>
+                 
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ρόλος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormField control={form.control} name="job.specialty" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ειδικότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                </div>
             </AccordionContent>
         </AccordionItem>
     );

@@ -83,35 +83,23 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
             
             <TabsContent value="addresses" className="mt-4">
                  <div className="space-y-4">
-                    {/* Έδρα - First Address */}
-                    <Card>
-                      <CardContent className="p-6 space-y-4">
-                         <h3 className="text-lg font-semibold text-primary">Έδρα (αυτόματη από το ΓΕΜΗ)</h3>
-                         <p className="text-sm text-muted-foreground">Η διεύθυνση αυτή αντλείται αυτόματα από τα στοιχεία του ΓΕΜΗ.</p>
-                        <FormField control={form.control} name="job.gemhAddress" render={({ field }) => (
-                            <FormItem className="pt-2">
-                                <FormLabel>Διεύθυνση από ΓΕΜΗ</FormLabel>
-                                <FormControl><Input {...field} disabled /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                         )} />
-                      </CardContent>
-                    </Card>
-
                     {/* Additional Addresses */}
                     {fields.map((field, index) => {
                          const addressType = form.watch(`addresses.${index}.type`);
-                         const title = `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
                          const fromGEMI = form.watch(`addresses.${index}.fromGEMI`);
+                         const title = fromGEMI ? 'Έδρα (αυτόματη από το ΓΕΜΗ)' : `Διεύθυνση ${index + 1}` + (addressType ? ` – ${addressType}` : '');
+
 
                          return (
                             <Card key={field.fieldId} className="relative">
                               <CardContent className="p-6 space-y-4">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-lg font-semibold">{title}</h3>
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
+                                    {!fromGEMI && (
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    )}
                                 </div>
                                 
                                 <FormField
@@ -137,71 +125,12 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 <Separator />
                                 <div className="text-sm text-muted-foreground mb-1">Διεύθυνση (χειροκίνητη εισαγωγή)</div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <FormField name={`addresses.${index}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field}/></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${index}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field}/></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${index}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field}/></FormControl></FormItem>)}/>
-                                    <FormField name={`addresses.${index}.country`} control={form.control} render={({field}) => (<FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input {...field}/></FormControl></FormItem>)}/>
-                                    <FormItem><FormLabel>Οικισμός</FormLabel><FormControl><Input /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Δημοτική/Τοπική Κοινότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Δημοτική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Δήμος</FormLabel><FormControl><Input /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Περιφερειακή Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Περιφέρεια</FormLabel><FormControl><Input /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Αποκεντρωμένη Διοίκηση</FormLabel><FormControl><Input /></FormControl></FormItem>
-                                    <FormItem><FormLabel>Μεγάλη Γεωγραφική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
+                                    <FormField name={`addresses.${index}.street`} control={form.control} render={({field}) => (<FormItem><FormLabel>Οδός</FormLabel><FormControl><Input {...field} disabled={fromGEMI} /></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${index}.number`} control={form.control} render={({field}) => (<FormItem><FormLabel>Αριθμός</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${index}.postalCode`} control={form.control} render={({field}) => (<FormItem><FormLabel>Ταχ. Κώδικας</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${index}.municipality`} control={form.control} render={({field}) => (<FormItem><FormLabel>Δήμος/Πόλη</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
+                                    <FormField name={`addresses.${index}.country`} control={form.control} render={({field}) => (<FormItem><FormLabel>Χώρα</FormLabel><FormControl><Input {...field} disabled={fromGEMI}/></FormControl></FormItem>)}/>
                                 </div>
-                                
-                                <Separator />
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                    <FormField
-                                    name={`addresses.${index}.fromGEMI`}
-                                    control={form.control}
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                                            <div className="space-y-0.5">
-                                                <FormLabel>Από ΓΕΜΗ</FormLabel>
-                                            </div>
-                                            <FormControl>
-                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                    />
-                                    <FormField
-                                    name={`addresses.${index}.isActive`}
-                                    control={form.control}
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                                            <div className="space-y-0.5">
-                                                <FormLabel>Ενεργή διεύθυνση</FormLabel>
-                                            </div>
-                                            <FormControl>
-                                                <Switch checked={field.value} onCheckedChange={field.onChange} defaultChecked={true} />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                    />
-                                </div>
-                                
-                                {!fromGEMI && (
-                                     <FormField
-                                      name={`addresses.${index}.originNote`}
-                                      control={form.control}
-                                      render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Σημείωση για την προέλευση της διεύθυνσης</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    placeholder="π.χ. Προστέθηκε από τον χρήστη έπειτα από επικοινωνία"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                )}
                               </CardContent>
                             </Card>
                          )
@@ -228,7 +157,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
   );
 
   const renderDefaultForm = () => (
-     <Accordion type="multiple" value={openSections} onValueChange={onOpenChange} className="w-full">
+     <Accordion type="multiple" value={openSections} onOpenChange={onOpenChange} className="w-full">
       <BasicInfoSection form={form} onFileSelect={onFileSelect} />
       <IdentitySection form={form} />
       <ContactSection form={form} />
@@ -241,3 +170,4 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
 
   return (entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') ? renderLegalPersonForm() : renderDefaultForm();
 }
+
