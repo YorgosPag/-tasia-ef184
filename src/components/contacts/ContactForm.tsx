@@ -22,6 +22,7 @@ import { Button } from '@/shared/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/shared/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Textarea } from '@/shared/components/ui/textarea';
 
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const entityType = useWatch({ control: form.control, name: 'entityType' });
@@ -99,6 +100,8 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     {fields.map((field, index) => {
                          const addressType = form.watch(`addresses.${index}.type`);
                          const title = `Διεύθυνση ${index + 1}` + (addressType ? ` - ${addressType}` : '');
+                         const fromGEMI = form.watch(`addresses.${index}.fromGEMI`);
+
                          return (
                             <Card key={field.id} className="relative">
                               <CardContent className="p-6 space-y-4">
@@ -145,6 +148,42 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                     <FormItem><FormLabel>Αποκεντρωμένη Διοίκηση</FormLabel><FormControl><Input /></FormControl></FormItem>
                                     <FormItem><FormLabel>Μεγάλη Γεωγραφική Ενότητα</FormLabel><FormControl><Input /></FormControl></FormItem>
                                 </div>
+                                
+                                <Separator />
+
+                                 <FormField
+                                  name={`addresses.${index}.fromGEMI`}
+                                  control={form.control}
+                                  render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                                        <div className="space-y-0.5">
+                                            <FormLabel>Η διεύθυνση προέρχεται από το ΓΕΜΗ</FormLabel>
+                                        </div>
+                                        <FormControl>
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+
+                                {!fromGEMI && (
+                                     <FormField
+                                      name={`addresses.${index}.originNote`}
+                                      control={form.control}
+                                      render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Σημείωση για την προέλευση της διεύθυνσης</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="π.χ. Προστέθηκε από τον χρήστη έπειτα από επικοινωνία"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                )}
                               </CardContent>
                             </Card>
                          )
