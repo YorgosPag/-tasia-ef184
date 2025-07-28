@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github, Youtube, Map, Send } from 'lucide-react';
+import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github, Youtube, Map as MapIcon, Send } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import type { Contact } from '@/shared/hooks/use-contacts';
@@ -185,7 +185,7 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
             })}
         </DetailSection>
 
-        <DetailSection title="Διευθύνσεις" icon={Map} alwaysShow>
+        <DetailSection title="Διευθύνσεις" icon={MapIcon} alwaysShow>
             {contact.addresses?.map((address, i) => {
                  const fullAddress = [
                     address.street, address.number, address.toponym,
@@ -206,7 +206,7 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
                            {googleMapsUrl && (
                             <Button asChild variant="outline" size="sm">
                                 <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                                    <Map className="mr-2 h-4 w-4" />
+                                    <MapIcon className="mr-2 h-4 w-4" />
                                     Χάρτης
                                 </a>
                             </Button>

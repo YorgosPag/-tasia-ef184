@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -8,7 +7,7 @@ import { Button } from '@/shared/components/ui/button';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Input } from '@/shared/components/ui/input';
-import { Map, PlusCircle, Trash2 } from 'lucide-react';
+import { Map as MapIcon, PlusCircle, Trash2 } from 'lucide-react';
 import { AddressAutocompleteInput } from '@/components/common/autocomplete/AddressAutocompleteInput';
 import { addressFieldsMap, ADDRESS_TYPES, getFullAddress, handleAddressSelect } from '../utils/addressHelpers';
 import { type ContactFormProps } from '../types';
@@ -123,7 +122,7 @@ export function AddressSection({ form }: ContactFormProps) {
                     <div className="flex justify-end pt-2">
                       <Button asChild variant="outline" size="sm" type="button">
                         <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                          <Map className="mr-2 h-4 w-4" />
+                          <MapIcon className="mr-2 h-4 w-4" />
                           Προβολή στον Χάρτη
                         </a>
                       </Button>
