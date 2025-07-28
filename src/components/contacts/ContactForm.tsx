@@ -184,21 +184,37 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                                 
                                 <Separator />
 
-                                 <FormField
-                                  name={`addresses.${index}.fromGEMI`}
-                                  control={form.control}
-                                  render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>Η διεύθυνση προέρχεται από το ΓΕΜΗ</FormLabel>
-                                        </div>
-                                        <FormControl>
-                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                        </FormControl>
-                                    </FormItem>
-                                  )}
-                                />
-
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                    <FormField
+                                    name={`addresses.${index}.fromGEMI`}
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                                            <div className="space-y-0.5">
+                                                <FormLabel>Από ΓΕΜΗ</FormLabel>
+                                            </div>
+                                            <FormControl>
+                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                    />
+                                    <FormField
+                                    name={`addresses.${index}.isActive`}
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                                            <div className="space-y-0.5">
+                                                <FormLabel>Ενεργή διεύθυνση</FormLabel>
+                                            </div>
+                                            <FormControl>
+                                                <Switch checked={field.value} onCheckedChange={field.onChange} defaultChecked={true} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                    />
+                                </div>
+                                
                                 {!fromGEMI && (
                                      <FormField
                                       name={`addresses.${index}.originNote`}
@@ -223,7 +239,7 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
                     })}
 
                     <div className="flex justify-end">
-                        <Button type="button" variant="outline" size="sm" onClick={() => append({ type: 'Υποκατάστημα' })}>
+                        <Button type="button" variant="outline" size="sm" onClick={() => append({ type: 'Υποκατάστημα', isActive: true })}>
                             <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
                         </Button>
                     </div>

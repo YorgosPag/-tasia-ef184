@@ -92,6 +92,7 @@ export const addressSchema = z.object({
         customTitle: z.string().optional(),
         fromGEMI: z.boolean().optional(),
         originNote: z.string().optional(),
+        isActive: z.boolean().optional().default(true),
     })).optional(),
 });
 
