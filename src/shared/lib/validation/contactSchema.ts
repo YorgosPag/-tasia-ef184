@@ -1,6 +1,8 @@
 
 
 import { z } from 'zod';
+import { getValidationRule } from '@/components/contacts/ContactForm/utils/documentMasks';
+
 
 export const ALL_ACCORDION_SECTIONS = ['personal', 'identity', 'contact', 'socials', 'addresses', 'job', 'notes', 'representative'];
 
@@ -169,19 +171,33 @@ export const contactSchema = personalInfoSchema
   .merge(jobInfoSchema)
   .merge(notesSchema)
   .superRefine((data, ctx) => {
-    if (data.entityType === 'Φυσικό Πρόσωπο' && !data.firstName) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['firstName'],
-            message: 'Το όνομα είναι υποχρεωτικό για φυσικά πρόσωπα.',
-        });
-    }
-     if (data.entityType === 'Φυσικό Πρόσωπο' && !data.lastName) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['lastName'],
-            message: 'Το επώνυμο είναι υποχρεωτικό για φυσικά πρόσωπα.',
-        });
+    if (data.entityType === 'Φυσικό Πρόσωπο') {
+        if (!data.firstName) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['firstName'],
+                message: 'Το όνομα είναι υποχρεωτικό για φυσικά πρόσωπα.',
+            });
+        }
+        if (!data.lastName) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['lastName'],
+                message: 'Το επώνυμο είναι υποχρεωτικό για φυσικά πρόσωπα.',
+            });
+        }
+        
+        // Dynamic validation for identity number
+        if (data.identity?.type && data.identity?.number) {
+            const rule = getValidationRule(data.identity.type);
+            if (rule.pattern && !rule.pattern.test(data.identity.number)) {
+                 ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: ['identity.number'],
+                    message: `Μη έγκυρη μορφή. Αναμενόμενη μορφή: ${rule.placeholder}`,
+                });
+            }
+        }
     }
   });
 

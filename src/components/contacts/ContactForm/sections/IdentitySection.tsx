@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -8,12 +7,13 @@ import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
 import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, Info } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { type ContactFormProps } from '../types';
 import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
 import { useCustomLists } from '@/hooks/useCustomLists';
+import { useDocumentNumberMask } from '../utils/documentMasks';
 
 export function IdentitySection({ form }: ContactFormProps) {
     const entityType = useWatch({ control: form.control, name: 'entityType' });
@@ -26,11 +26,11 @@ export function IdentitySection({ form }: ContactFormProps) {
     })) || [];
 
     const handleCreateIdentityType = async (newValue: string) => {
-        // This function allows creating a new value in the form state
-        // but does NOT save it to the custom list in Firestore.
-        // It simply returns true to let the combobox update its value.
         return true;
     };
+
+    const identityType = form.watch('identity.type');
+    const { placeholder, formatValue } = useDocumentNumberMask(identityType);
 
     return (
         <div className="space-y-4 p-1">
@@ -56,7 +56,28 @@ export function IdentitySection({ form }: ContactFormProps) {
                                 </FormItem>
                             )}
                         />
-                        <FormField control={form.control} name="identity.number" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Αριθμός</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                         <FormField 
+                            control={form.control} 
+                            name="identity.number" 
+                            render={({ field }) => (
+                                <FormItem className="flex items-center gap-4">
+                                    <FormLabel className="w-40 text-right">Αριθμός</FormLabel>
+                                    <div className="flex-1">
+                                        <FormControl>
+                                            <Input 
+                                                {...field}
+                                                placeholder={placeholder}
+                                                onChange={(e) => {
+                                                    const formattedValue = formatValue(e.target.value);
+                                                    field.onChange(formattedValue);
+                                                }}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </div>
+                                </FormItem>
+                            )} 
+                        />
                         <FormField control={form.control} name="identity.issueDate" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ημ/νία Έκδοσης</FormLabel><div className="flex-1"><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></div></FormItem>)} />
                         <FormField control={form.control} name="identity.issuingAuthority" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Εκδ. Αρχή</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                     </>
