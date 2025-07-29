@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -7,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { BedDouble, Bath, Square, ArrowRight, ZoomIn } from 'lucide-react';
-import { getStatusClass } from '@/tasia/lib/unit-helpers';
+import { getStatusClass } from '@/shared/lib/unit-helpers';
 import { Dialog, DialogContent, DialogTrigger } from '@/shared/components/ui/dialog';
 import React from 'react';
 

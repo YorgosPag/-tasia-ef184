@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -10,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Button } from '@/shared/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/components/ui/table';
 import { Loader2, Upload, Eye, Trash2 } from 'lucide-react';
-import { Unit } from '@/tasia/hooks/use-unit-details';
+import { Unit } from '@/hooks/use-unit-details';
 import { Input } from '@/shared/components/ui/input';
 
 interface FloorInfo {

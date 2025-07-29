@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -31,8 +30,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Loader2, PlusCircle, Trash2, Upload, Eye } from 'lucide-react';
-import { Unit } from '@/tasia/hooks/use-unit-details';
-import { Contact } from '@/tasia/components/contacts/page';
+import { Unit } from '@/hooks/use-unit-details';
+import { Contact } from '@/components/contacts/page';
 
 
 const contractStageSchema = z.object({

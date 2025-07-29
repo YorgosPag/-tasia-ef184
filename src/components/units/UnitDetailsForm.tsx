@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -8,13 +7,13 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shar
 import { Input } from '@/shared/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Unit } from '@/tasia/hooks/use-unit-details';
+import { Unit } from '@/hooks/use-unit-details';
 import { Switch } from '@/shared/components/ui/switch';
 import { Separator } from '@/shared/components/ui/separator';
-import { AMENITIES_LIST, KITCHEN_LAYOUTS, ORIENTATIONS } from '@/tasia/lib/unit-helpers';
+import { AMENITIES_LIST, KITCHEN_LAYOUTS, ORIENTATIONS } from '@/shared/lib/unit-helpers';
 import { AreaInputs } from './new/AreaInputs';
 import { AmenitiesChecklist } from './new/AmenitiesChecklist';
-import type { NewUnitFormValues as UnitFormValues } from '@/tasia/lib/unit-helpers';
+import type { NewUnitFormValues as UnitFormValues } from '@/shared/lib/unit-helpers';
 import { Card } from '@/shared/components/ui/card';
 
 
