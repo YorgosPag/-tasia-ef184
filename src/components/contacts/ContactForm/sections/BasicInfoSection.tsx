@@ -3,19 +3,20 @@
 
 import React from 'react';
 import { useWatch } from 'react-hook-form';
-import { AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Calendar } from '@/shared/components/ui/calendar';
-import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, User, Building2, Landmark, Info } from 'lucide-react';
-import { cn } from '@/shared/lib/utils';
-import { format } from 'date-fns';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
 import { Label } from '@/shared/components/ui/label';
 import { ImageUploader } from '../../ImageUploader';
 import { type ContactFormProps } from '../types';
+import { cn } from '@/shared/lib/utils';
+import { User, Building2, Landmark, Info } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
+import { Button } from '@/shared/components/ui/button';
+import { Calendar } from '@/shared/components/ui/calendar';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+
 
 export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 'form'|'onFileSelect'>) {
     const entityType = useWatch({ control: form.control, name: 'entityType' });
@@ -50,20 +51,13 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
     );
 
     return (
-        <AccordionItem value="personal">
-            <AccordionTrigger>
-            <div className="flex items-center gap-2 text-primary">
-                <User className="h-5 w-5" />
-                <span>Βασικά Στοιχεία</span>
-            </div>
-            </AccordionTrigger>
-            <AccordionContent className="space-y-4 p-1">
+        <div className="space-y-4 p-1">
             <FormField
                 control={form.control}
                 name="entityType"
                 render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0 pt-2">
-                    <FormLabel className="sm:w-40 sm:text-right sm:pt-2 shrink-0">Τύπος Οντότητας</FormLabel>
+                    <FormItem className="space-y-3">
+                    <FormLabel className="sr-only">Τύπος Οντότητας</FormLabel>
                     <FormControl>
                         <RadioGroup
                         onValueChange={(value) => {
@@ -129,8 +123,10 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                     </FormControl>
                     </FormItem>
                 )}
-                />
+            />
             
+            {entityType !== 'Φυσικό Πρόσωπο' && legalEntityFormContent}
+
             {entityType === 'Φυσικό Πρόσωπο' && (
                 <div className="space-y-4 border-t pt-4">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
@@ -154,8 +150,6 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                     </div>
                 </div>
             )}
-
-            </AccordionContent>
-      </AccordionItem>
+        </div>
     );
 }

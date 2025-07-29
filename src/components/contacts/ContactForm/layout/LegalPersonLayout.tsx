@@ -2,7 +2,6 @@
 'use client';
 
 import React from 'react';
-import { Accordion } from '@/shared/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { BasicInfoSection } from '../sections/BasicInfoSection';
 import { GemhDataTabs } from '../tabs/GemhDataTabs';
@@ -12,10 +11,10 @@ import type { ContactFormProps } from '../types';
 export function LegalPersonLayout({ form, onFileSelect }: Pick<ContactFormProps, 'form' | 'onFileSelect'>) {
   return (
     <div className="w-full space-y-4">
-      <Accordion type="multiple" defaultValue={['personal']} className="w-full">
-        <BasicInfoSection form={form} onFileSelect={onFileSelect} />
-      </Accordion>
+      {/* Entity Type Selection now at the top and Accordion is removed */}
+      <BasicInfoSection form={form} onFileSelect={onFileSelect} />
 
+      {/* Tabs for GEMH and User Data */}
       <Tabs defaultValue="gemh-data" className="w-full">
         <TabsList className="grid w-full grid-cols-2 gap-2">
           <TabsTrigger value="gemh-data">Στοιχεία από ΓΕΜΗ</TabsTrigger>
