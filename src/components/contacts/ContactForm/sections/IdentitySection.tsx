@@ -8,7 +8,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Calendar } from '@/shared/components/ui/calendar';
 import { Button } from '@/shared/components/ui/button';
-import { CalendarIcon, ChevronsUpDown, Check } from 'lucide-react';
+import { CalendarIcon, ChevronsUpDown, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { type ContactFormProps } from '../types';
@@ -30,7 +30,7 @@ export function IdentitySection({ form }: Pick<ContactFormProps, 'form'>) {
     
     const issuingAuthoritiesList = lists.find(l => l.id === 'iGOjn86fcktREwMeDFPz');
     const issuingAuthorityOptions = issuingAuthoritiesList?.items.map(item => ({
-        value: item.id,
+        value: item.value, // Use value for both value and label for CreatableCombobox compatibility
         label: item.value,
     })) || [];
     
@@ -38,6 +38,11 @@ export function IdentitySection({ form }: Pick<ContactFormProps, 'form'>) {
         // This is a placeholder as adding to the list is not required from the combobox
         return newValue;
     };
+    
+    const handleCreateAuthority = async (newValue: string) => {
+        // Placeholder for future logic if needed
+        return newValue;
+    }
 
     const identityType = form.watch('identity.type');
     const { placeholder, formatValue } = useDocumentNumberMask(identityType);
@@ -89,7 +94,7 @@ export function IdentitySection({ form }: Pick<ContactFormProps, 'form'>) {
                             )} 
                         />
                         <FormField control={form.control} name="identity.issueDate" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ημ/νία Έκδοσης</FormLabel><div className="flex-1"><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? (format(new Date(field.value), 'PPP')) : (<span>Επιλογή</span>)}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></div></FormItem>)} />
-                        <FormField
+                         <FormField
                           control={form.control}
                           name="identity.issuingAuthority"
                           render={({ field }) => (
