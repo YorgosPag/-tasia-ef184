@@ -152,16 +152,11 @@ function EditContactPageContent() {
 
             const dataToUpdate: { [key: string]: any } = { ...data, photoUrls };
             
-            if (data.birthDate) {
-                dataToUpdate.birthDate = Timestamp.fromDate(new Date(data.birthDate));
-            } else {
-                dataToUpdate.birthDate = null;
-            }
+            // Handle dates safely
+            dataToUpdate.birthDate = data.birthDate ? Timestamp.fromDate(new Date(data.birthDate)) : null;
 
-            if (data.identity?.issueDate) {
-                dataToUpdate.identity.issueDate = Timestamp.fromDate(new Date(data.identity.issueDate));
-            } else if (dataToUpdate.identity) {
-                dataToUpdate.identity.issueDate = null;
+            if (dataToUpdate.identity) {
+                dataToUpdate.identity.issueDate = data.identity?.issueDate ? Timestamp.fromDate(new Date(data.identity.issueDate)) : null;
             }
             
             if (data.addresses) {
