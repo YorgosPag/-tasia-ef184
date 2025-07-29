@@ -24,20 +24,22 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
 
     const legalEntityFormContent = (
       <div className="space-y-4 pt-4">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
-            <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Επωνυμία</FormLabel>
-            <div className="flex-1 space-y-2">
-            <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem>
-                    <FormControl><Input {...field} placeholder="π.χ. DevConstruct AE" /></FormControl>
-                    <FormDescription>Το πλήρες όνομα ή η εμπορική επωνυμία.</FormDescription>
-                    <FormMessage />
-                </FormItem>
-            )} />
+        {entityType !== 'Νομικό Πρόσωπο' && (
+             <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
+                <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Επωνυμία</FormLabel>
+                <div className="flex-1 space-y-2">
+                <FormField control={form.control} name="name" render={({ field }) => (
+                    <FormItem>
+                        <FormControl><Input {...field} placeholder="π.χ. DevConstruct AE" /></FormControl>
+                        <FormDescription>Το πλήρες όνομα ή η εμπορική επωνυμία.</FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                </div>
             </div>
-        </div>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
-            <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Λογότυπο</FormLabel>
+            {entityType === 'Νομικό Πρόσωπο' ? null : <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Λογότυπο</FormLabel>}
             <div className="flex-1">
                 <ImageUploader 
                     entityType={entityType}
@@ -81,7 +83,8 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                             <Label
                             htmlFor="Φυσικό Πρόσωπο"
                             className={cn(
-                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-[#e46767]/10 cursor-pointer transition-colors',
+                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 cursor-pointer transition-colors',
+                                'hover:bg-[#e46767]/10 hover:border-primary',
                                 field.value === 'Φυσικό Πρόσωπο' && 'border-primary'
                             )}
                             >
@@ -96,7 +99,8 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                             <Label
                             htmlFor="Νομικό Πρόσωπο"
                              className={cn(
-                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-[#e46767]/10 cursor-pointer transition-colors',
+                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 cursor-pointer transition-colors',
+                                'hover:bg-[#e46767]/10 hover:border-primary',
                                 field.value === 'Νομικό Πρόσωπο' && 'border-primary'
                             )}
                             >
@@ -111,7 +115,8 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                             <Label
                             htmlFor="Δημ. Υπηρεσία"
                              className={cn(
-                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-[#e46767]/10 cursor-pointer transition-colors',
+                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 cursor-pointer transition-colors',
+                                'hover:bg-[#e46767]/10 hover:border-primary',
                                 field.value === 'Δημ. Υπηρεσία' && 'border-primary'
                             )}
                             >

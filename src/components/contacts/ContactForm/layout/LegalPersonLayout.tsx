@@ -11,14 +11,14 @@ import type { ContactFormProps } from '../types';
 export function LegalPersonLayout({ form, onFileSelect }: Pick<ContactFormProps, 'form' | 'onFileSelect'>) {
   return (
     <div className="w-full space-y-4">
-      {/* Entity Type Selection now at the top and Accordion is removed */}
+      {/* Entity Type Selection now at the top */}
       <BasicInfoSection form={form} onFileSelect={onFileSelect} />
 
       {/* Tabs for GEMH and User Data */}
       <Tabs defaultValue="gemh-data" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 gap-2">
-          <TabsTrigger value="gemh-data">Στοιχεία από ΓΕΜΗ</TabsTrigger>
-          <TabsTrigger value="user-data">Στοιχεία από Χρήστη</TabsTrigger>
+         <TabsList className="grid w-full grid-cols-2 gap-2">
+            <TabsTrigger value="gemh-data" className="w-full">Στοιχεία από ΓΕΜΗ</TabsTrigger>
+            <TabsTrigger value="user-data" className="w-full">Στοιχεία από Χρήστη</TabsTrigger>
         </TabsList>
 
         <TabsContent value="gemh-data" className="mt-4">

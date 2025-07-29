@@ -1,8 +1,8 @@
+
 'use client';
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Accordion } from '@/shared/components/ui/accordion';
 
 import type { ContactFormProps } from '../types';
 import { JobSection } from '../sections/JobSection';
@@ -47,9 +47,7 @@ export function GemhDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
       </TabsList>
 
       <TabsContent value="general" className="mt-4">
-        <Accordion type="single" collapsible defaultValue="job" className="w-full space-y-2">
           <JobSection form={form} />
-        </Accordion>
       </TabsContent>
 
       <TabsContent value="registration" className="mt-4">
@@ -109,9 +107,7 @@ export function GemhDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
       </TabsContent>
 
       <TabsContent value="representatives" className="mt-4">
-        <Accordion type="single" collapsible defaultValue="representative" className="w-full">
-          <LegalRepresentativeSection form={form} />
-        </Accordion>
+        <LegalRepresentativeSection form={form} />
       </TabsContent>
 
       <TabsContent value="externalLinks" className="mt-4">

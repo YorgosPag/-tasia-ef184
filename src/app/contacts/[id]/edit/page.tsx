@@ -12,7 +12,7 @@ import { useToast } from '@/shared/hooks/use-toast';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
 import { Form } from '@/shared/components/ui/form';
-import { Loader2, ArrowLeft, Save, ChevronsUpDown } from 'lucide-react';
+import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import { ContactForm } from '@/components/contacts/ContactForm';
 import { contactSchema, ContactFormValues, ALL_ACCORDION_SECTIONS } from '@/shared/lib/validation/contactSchema';
 import { logActivity } from '@/shared/lib/logger';
@@ -43,11 +43,18 @@ export default function EditContactPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [fileToUpload, setFileToUpload] = useState<File | null>(null);
     const [openSections, setOpenSections] = useState<string[]>(ALL_ACCORDION_SECTIONS);
+    const [contactName, setContactName] = useState('');
+    const [isLegalEntity, setIsLegalEntity] = useState(false);
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactSchema),
         defaultValues: {},
     });
+    
+    const entityType = form.watch('entityType');
+    useEffect(() => {
+        setIsLegalEntity(entityType === 'Νομικό Πρόσωπο');
+    }, [entityType]);
 
     useEffect(() => {
         if (!contactId) return;
@@ -60,6 +67,7 @@ export default function EditContactPage() {
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+                     setContactName(data.name || '');
                     const formData: ContactFormValues = {
                         ...data,
                         id: docSnap.id,
@@ -125,8 +133,7 @@ export default function EditContactPage() {
             const docRef = doc(db, 'contacts', contactId);
             await updateDoc(docRef, cleanedData);
             
-            // After saving, reset the form with the new data to make it "not dirty"
-            // and reflect the new photo URL.
+            setContactName(data.name); // Update displayed name
             form.reset({ ...data, photoUrl: newPhotoUrl });
             setFileToUpload(null);
 
@@ -151,14 +158,6 @@ export default function EditContactPage() {
             setIsSubmitting(false);
         }
     };
-    
-    const toggleAllSections = () => {
-        if (openSections.length === ALL_ACCORDION_SECTIONS.length) {
-            setOpenSections([]);
-        } else {
-            setOpenSections(ALL_ACCORDION_SECTIONS);
-        }
-    };
 
     if (isLoading) {
         return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>;
@@ -177,6 +176,11 @@ export default function EditContactPage() {
                         Αποθήκευση Αλλαγών
                     </Button>
                 </div>
+                 {isLegalEntity && contactName && (
+                    <div className="text-center mb-4">
+                        <h2 className="text-2xl font-bold text-foreground">{contactName}</h2>
+                    </div>
+                )}
                 <Card>
                     <CardHeader>
                        <div className="flex justify-between items-center">
@@ -184,9 +188,6 @@ export default function EditContactPage() {
                                 <CardTitle>Επεξεργασία Επαφής</CardTitle>
                                 <CardDescription>Ενημερώστε τα παρακάτω πεδία για να επεξεργαστείτε την επαφή.</CardDescription>
                             </div>
-                             <Button variant="ghost" size="icon" onClick={toggleAllSections} type="button" title="Ανάπτυξη/Σύμπτυξη όλων">
-                                <ChevronsUpDown className="h-5 w-5"/>
-                            </Button>
                        </div>
                     </CardHeader>
                     <CardContent>
