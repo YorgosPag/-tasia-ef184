@@ -4,108 +4,22 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
-import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Edit, Mail, Phone, Link as LinkIcon, Building, Briefcase, Info, Home, User, Cake, MapPin, Globe, Linkedin, Facebook, Instagram, Github, Youtube, Map as MapIcon, Send } from 'lucide-react';
+import { Edit, User, Info, Phone, Link as LinkIcon, Map as MapIcon, Briefcase } from 'lucide-react';
 import Link from 'next/link';
-import { format } from 'date-fns';
 import type { Contact } from '@/shared/hooks/use-contacts';
+import { DetailSection } from './detail-view/DetailSection';
+import { DetailRow } from './detail-view/DetailRow';
+import { formatDate } from './utils/contactFormatters';
+import { ContactPlaceholder } from './detail-view/ContactPlaceholder';
+import { SocialsDetail } from './detail-view/SocialsDetail';
+import { AddressesDetail } from './detail-view/AddressesDetail';
+import { Send } from 'lucide-react';
 
-interface ContactDetailViewProps {
-  contact: Contact | null;
-}
-
-const socialIcons: { [key: string]: React.ElementType } = {
-    Website: Globe,
-    LinkedIn: Linkedin,
-    Facebook: Facebook,
-    Instagram: Instagram,
-    GitHub: Github,
-    YouTube: Youtube,
-    TikTok: Info, // Placeholder, no TikTok icon in lucide-react
-    default: LinkIcon,
-};
-
-const DetailSection = ({ title, children, icon, alwaysShow = false }: { title: string; children: React.ReactNode; icon: React.ElementType; alwaysShow?: boolean }) => {
-    const hasContent = React.Children.count(children) > 0 && (Array.isArray(children) ? children.filter(c => c).length > 0 : true);
-
-    if (!hasContent && !alwaysShow) {
-        return null;
-    }
-
-    return (
-        <div className="border-t pt-4 mt-4">
-            <h3 className="flex items-center text-lg font-semibold mb-3 text-primary">
-                {React.createElement(icon, { className: 'mr-2 h-5 w-5' })}
-                {title}
-            </h3>
-            <div className="space-y-3 pl-7">
-                {hasContent ? children : <p className="text-sm text-muted-foreground italic">Δεν υπάρχουν καταχωρημένα στοιχεία.</p>}
-            </div>
-        </div>
-    );
-};
-
-const DetailRow = ({ label, value, href, type, children }: { label: string; value?: string | null; href?: string, type?: string, children?: React.ReactNode }) => {
-  if (!value && !children) return null; // Don't render empty rows
-
-  const content = href && value ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{value}</a>
-  ) : (
-    <span>{value}</span>
-  );
-
-  return (
-    <div className="grid grid-cols-3 gap-2 text-sm items-center">
-      <dt className="font-medium text-muted-foreground">{label}</dt>
-      <dd className="col-span-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-            {children || content}
-        </div>
-        {type && <Badge variant="outline" className="text-xs whitespace-nowrap">{type}</Badge>}
-        </dd>
-    </div>
-  );
-};
-
-
-export function ContactDetailView({ contact }: ContactDetailViewProps) {
+export function ContactDetailView({ contact }: { contact: Contact | null }) {
   if (!contact) {
-    return (
-      <div className="flex h-full items-center justify-center rounded-lg border border-dashed">
-        <div className="text-center">
-          <p className="text-muted-foreground">Επιλέξτε μια επαφή από τη λίστα</p>
-          <p className="text-sm text-muted-foreground">για να δείτε τις λεπτομέρειες.</p>
-        </div>
-      </div>
-    );
+    return <ContactPlaceholder />;
   }
-  
-  const getBadgeVariant = (type?: Contact['entityType']) => {
-      switch(type) {
-          case 'Νομικό Πρόσωπο': return 'default';
-          case 'Δημ. Υπηρεσία': return 'secondary';
-          default: return 'outline';
-      }
-  }
-
-  const formatDate = (date: any) => {
-    if (!date) return null;
-    try {
-        const d = date.toDate ? date.toDate() : new Date(date);
-        return format(d, 'dd/MM/yyyy');
-    } catch {
-        return null;
-    }
-  }
-  
-  const hasPersonalInfo = contact.firstName || contact.lastName || contact.fatherName || contact.motherName || contact.birthDate || contact.birthPlace;
-  const hasIdentityInfo = contact.identity?.type || contact.identity?.number || contact.identity?.issueDate || contact.identity?.issuingAuthority || contact.afm || contact.doy;
-  const hasContactInfo = (contact.emails && contact.emails.length > 0) || (contact.phones && contact.phones.length > 0);
-  const hasSocials = contact.socials && contact.socials.length > 0;
-  const hasAddresses = contact.addresses && contact.addresses.length > 0;
-  const hasJobInfo = contact.job?.role || contact.job?.specialty;
-  const hasNotes = !!contact.notes;
 
   const entityTypeTab = contact.entityType === 'Φυσικό Πρόσωπο' ? 'individual' : (contact.entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public');
   const editUrl = `/contacts/${contact.id}/edit/${entityTypeTab}`;
@@ -174,63 +88,11 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
         </DetailSection>
         
         <DetailSection title="Κοινωνικά Δίκτυα &amp; Websites" icon={LinkIcon} alwaysShow>
-            {contact.socials?.map((social, i) => {
-                const Icon = socialIcons[social.type] || socialIcons.default;
-                return (
-                    <div key={i} className="flex items-center text-sm gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground"/>
-                        <a href={social.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex-1 truncate">{social.url}</a>
-                        <Badge variant="outline" className="text-xs">{social.type}</Badge>
-                        <Badge variant={social.label === 'Επαγγελματικό' ? 'secondary' : 'outline'} className="text-xs">{social.label}</Badge>
-                    </div>
-                );
-            })}
+            <SocialsDetail socials={contact.socials} />
         </DetailSection>
 
         <DetailSection title="Διευθύνσεις" icon={MapIcon} alwaysShow>
-            {contact.addresses?.map((address, i) => {
-                 const fullAddress = [
-                    address.street, address.number, address.toponym,
-                    address.settlements, address.municipalLocalCommunities, address.municipalUnities,
-                    address.municipality, address.regionalUnities, address.regions,
-                    address.decentralizedAdministrations, address.largeGeographicUnits,
-                    address.postalCode, address.country
-                 ].filter(Boolean).join(', ');
-
-                 const googleMapsUrl = fullAddress ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}` : null;
-                 
-                 return (
-                    <div key={i} className="p-3 rounded-md bg-muted/30 space-y-2">
-                        <div className="flex justify-between items-center w-full">
-                           <div>
-                                <p className="font-semibold text-sm">{address.type || 'Διεύθυνση'}</p>
-                           </div>
-                           {googleMapsUrl && (
-                            <Button asChild variant="outline" size="sm">
-                                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                                    <MapIcon className="mr-2 h-4 w-4" />
-                                    Χάρτης
-                                </a>
-                            </Button>
-                           )}
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 text-sm gap-x-4 gap-y-1">
-                          <DetailRow label="Οδός" value={`${address.street || ''} ${address.number || ''}`.trim()} />
-                          <DetailRow label="Τοπωνύμιο" value={address.toponym} />
-                          <DetailRow label="Τ.Κ." value={address.postalCode} />
-                          <DetailRow label="Οικισμός" value={address.settlements} />
-                          <DetailRow label="Δημοτική/Τοπική Κοινότητα" value={address.municipalLocalCommunities} />
-                          <DetailRow label="Δημοτική Ενότητα" value={address.municipalUnities} />
-                          <DetailRow label="Δήμος" value={address.municipality} />
-                          <DetailRow label="Περιφερειακή Ενότητα" value={address.regionalUnities} />
-                          <DetailRow label="Περιφέρεια" value={address.regions} />
-                          <DetailRow label="Αποκεντρωμένη Διοίκηση" value={address.decentralizedAdministrations} />
-                          <DetailRow label="Μεγάλη Γεωγραφική Ενότητα" value={address.largeGeographicUnits} />
-                          <DetailRow label="Χώρα" value={address.country} />
-                        </div>
-                    </div>
-                 )
-            })}
+            <AddressesDetail addresses={contact.addresses} />
         </DetailSection>
 
         {contact.entityType !== 'Δημ. Υπηρεσία' && (
