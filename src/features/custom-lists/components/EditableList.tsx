@@ -185,7 +185,7 @@ export function EditableList({ list, isOpen, onToggle, fetchAllLists }: Editable
                 <h4 className="font-semibold text-sm">Υπάρχοντα Στοιχεία ({list.items.length})</h4>
                 {list.items.length > 0 ? (
                   list.items.map((item) => (
-                    <ListItem key={item.id} item={item} listId={list.id} fetchAllLists={fetchAllLists} hasCode={list.hasCode} />
+                    <ListItem key={item.id} item={item} listId={list.id} hasCode={list.hasCode} fetchAllLists={fetchAllLists}/>
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">

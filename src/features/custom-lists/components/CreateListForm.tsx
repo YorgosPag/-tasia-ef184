@@ -32,11 +32,7 @@ const createListSchema = z.object({
 
 type CreateListFormValues = z.infer<typeof createListSchema>;
 
-interface CreateListFormProps {
-    fetchAllLists: () => Promise<void>;
-}
-
-export function CreateListForm({ fetchAllLists }: CreateListFormProps) {
+export function CreateListForm({ fetchAllLists }: { fetchAllLists: () => Promise<void>}) {
     const { createList, isSubmitting } = useCustomListActions(fetchAllLists);
 
     const form = useForm<CreateListFormValues>({
