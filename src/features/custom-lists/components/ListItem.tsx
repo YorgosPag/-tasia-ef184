@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -11,6 +10,7 @@ interface ListItemProps {
   item: ListItemType;
   listId: string;
   hasCode?: boolean;
+  canBeModified: boolean;
   fetchAllLists: () => Promise<void>;
 }
 
@@ -18,6 +18,7 @@ export function ListItem({
   item,
   listId,
   hasCode,
+  canBeModified,
   fetchAllLists,
 }: ListItemProps) {
   const { updateItem, deleteItem } = useCustomListActions(fetchAllLists);
@@ -75,6 +76,7 @@ export function ListItem({
         <ListItemDisplay
           item={item}
           hasCode={hasCode}
+          canBeModified={canBeModified}
           onEdit={() => setIsEditing(true)}
           onDelete={handleDelete}
         />

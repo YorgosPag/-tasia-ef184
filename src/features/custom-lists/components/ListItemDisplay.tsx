@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/shared/components/ui/button';
@@ -8,11 +7,12 @@ import type { ListItem as ListItemType } from '@/lib/customListService';
 interface ListItemDisplayProps {
   item: ListItemType;
   hasCode?: boolean;
+  canBeModified: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export function ListItemDisplay({ item, hasCode, onEdit, onDelete }: ListItemDisplayProps) {
+export function ListItemDisplay({ item, hasCode, canBeModified, onEdit, onDelete }: ListItemDisplayProps) {
   return (
     <>
       <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -28,25 +28,27 @@ export function ListItemDisplay({ item, hasCode, onEdit, onDelete }: ListItemDis
           </span>
         </div>
       </div>
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onEdit}
-          title="Επεξεργασία"
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:text-destructive"
-          onClick={onDelete}
-          title="Διαγραφή"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
+      {canBeModified && (
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onEdit}
+            title="Επεξεργασία"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive hover:text-destructive"
+            onClick={onDelete}
+            title="Διαγραφή"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </>
   );
 }
