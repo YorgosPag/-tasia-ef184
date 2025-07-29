@@ -63,7 +63,9 @@ export function ImageUploader({
   
   const handleDelete = async () => {
     if (!preview) return;
-
+    if(!entityType) return;
+    
+    // Logic to delete from Firebase Storage if it's a firebase URL
     if (entityId && initialImageUrl && initialImageUrl.startsWith('https://firebasestorage.googleapis.com')) {
         try {
             const storageRef = ref(storage, initialImageUrl);
@@ -98,8 +100,7 @@ export function ImageUploader({
   if (preview) {
     return (
       <div className="space-y-2">
-        <Label>{getLabel()}</Label>
-        <div className="relative group aspect-square w-32">
+        <div className="relative group w-32 aspect-square">
           <Image src={preview} alt="Preview" width={128} height={128} className="rounded-md object-contain" />
            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
                <Button type="button" size="icon" variant="ghost" className="text-white hover:text-white" {...getRootProps()}>
@@ -117,10 +118,9 @@ export function ImageUploader({
 
   return (
     <div className="space-y-2">
-      <Label>{getLabel()}</Label>
       <div
         {...getRootProps()}
-        className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/80
+        className={`flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted/80
         ${isDragActive ? 'border-primary' : 'border-input'}`}
       >
         <input {...getInputProps()} disabled={!entityType || isUploading} />
@@ -131,12 +131,11 @@ export function ImageUploader({
             <Progress value={uploadProgress} className="w-2/3 h-1.5 mt-1" />
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+          <div className="flex flex-col items-center justify-center text-center p-2">
             <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-            <p className="mb-1 text-sm text-muted-foreground">
-              <span className="font-semibold">Click to upload</span> or drag and drop
+            <p className="text-xs text-muted-foreground">
+              <span className="font-semibold">Upload</span> or drag
             </p>
-            <p className="text-xs text-muted-foreground">JPG, PNG or WEBP (MAX. 2MB)</p>
           </div>
         )}
       </div>

@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db, storage } from '@/shared/lib/firebase';
@@ -47,7 +47,6 @@ function EditContactPageContent() {
     const [openSections, setOpenSections] = useState<string[]>(ALL_ACCORDION_SECTIONS);
     const [contactName, setContactName] = useState('');
     const hasReset = useRef(false);
-    const prevEntityTypeRef = useRef<string | undefined>();
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactSchema),
@@ -55,6 +54,8 @@ function EditContactPageContent() {
     });
     
     const entityType = form.watch('entityType');
+    const isLegalEntity = entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία';
+    const prevEntityTypeRef = useRef<string | undefined>();
 
     const mapEntityTypeToTab = (type: ContactFormValues['entityType']): EntityType => {
         switch(type) {
@@ -76,7 +77,7 @@ function EditContactPageContent() {
     
     useEffect(() => {
         const newTab = mapEntityTypeToTab(entityType);
-
+        
         if (prevEntityTypeRef.current === entityType) return;
         prevEntityTypeRef.current = entityType;
 
@@ -85,7 +86,7 @@ function EditContactPageContent() {
             router.replace(newPath, { scroll: false });
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [entityType, viewParam, router, contactId, form.formState.isDirty]);
+    }, [entityType, viewParam, router, contactId]);
     
 
     useEffect(() => {
@@ -101,7 +102,7 @@ function EditContactPageContent() {
                     const data = docSnap.data();
                     setContactName(data.name || '');
                     
-                    const initialEntityType = mapTabToEntityType(viewParam) || data.entityType;
+                    const initialEntityType = mapTabToEntityType(viewParam);
                    
                     const formData: ContactFormValues = {
                         ...data,
@@ -174,7 +175,7 @@ function EditContactPageContent() {
             await updateDoc(docRef, cleanedData);
             
             setContactName(data.name); // Update displayed name
-            form.reset({ ...data, photoUrls });
+            form.reset({ ...data, photoUrls }, { keepDirty: false });
             setFileToUpload(null);
 
             await logActivity('UPDATE_CONTACT', {
