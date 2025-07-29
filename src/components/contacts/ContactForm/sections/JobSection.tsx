@@ -148,7 +148,7 @@ export function JobSection({ form }: Pick<ContactFormProps, 'form'>) {
     }, [debouncedArGemi, debouncedAfm]);
 
 
-    if (entityType === 'Δημ. Υπηρεσία') {
+    if (entityType === 'Δημ. Υπηρεσία' || entityType === 'Φυσικό Πρόσωπο') {
         return null;
     }
     
@@ -225,6 +225,8 @@ export function JobSection({ form }: Pick<ContactFormProps, 'form'>) {
 }
 
     
+    
+
     
 
     
