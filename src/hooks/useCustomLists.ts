@@ -65,35 +65,33 @@ export function useCustomLists() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
+  const fetchAllLists = useCallback(async () => {
     setIsLoading(true);
-    const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
+    try {
+      const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
+      const listsSnapshot = await getDocs(listsQuery);
+      
+      const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
+        const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
+        const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
+        const itemsSnapshot = await getDocs(itemsQuery);
+        list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
+        return list;
+      });
 
-    const unsubscribe = onSnapshot(listsQuery, async (snapshot) => {
-      try {
-        const listsDataPromises = snapshot.docs.map(async (listDoc) => {
-            const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
-            const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
-            const itemsSnapshot = await getDocs(itemsQuery);
-            list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
-            return list;
-        });
-        const listsData = await Promise.all(listsDataPromises);
-        setLists(listsData);
-      } catch (error) {
-         console.error("Error processing custom lists snapshot:", error);
-         toast({ variant: 'destructive', title: 'Σφάλμα Επεξεργασίας', description: 'Failed to process list data.' });
-      } finally {
-        setIsLoading(false);
-      }
-    }, (error) => {
-      console.error("Error fetching custom lists:", error);
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Failed to load lists.' });
+      const listsData = await Promise.all(listsDataPromises);
+      setLists(listsData);
+    } catch (error) {
+      console.error("Error fetching lists manually:", error);
+      toast({ variant: 'destructive', title: 'Σφάλμα Φόρτωσης', description: 'Failed to fetch list data.' });
+    } finally {
       setIsLoading(false);
-    });
-
-    return () => unsubscribe();
+    }
   }, [toast]);
+
+  useEffect(() => {
+    fetchAllLists();
+  }, [fetchAllLists]);
   
   const createList = useCallback(async (listData: CreateListData): Promise<CreateListResult> => {
       setIsSubmitting(true);
@@ -102,6 +100,7 @@ export function useCustomLists() {
         await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
         toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.' });
         await logActivity('CREATE_LIST', { entityId: listRef.id, entityType: 'custom-list', name: listData.title });
+        await fetchAllLists();
         return { success: true };
       } catch (error) {
           console.error('Error creating list:', error);
@@ -110,18 +109,19 @@ export function useCustomLists() {
       } finally {
           setIsSubmitting(false);
       }
-  }, [toast]);
+  }, [toast, fetchAllLists]);
 
   const updateList = useCallback(async (listId: string, data: Partial<CreateListData>): Promise<boolean> => {
       try {
         await updateDoc(doc(db, 'tsia-custom-lists', listId), data);
         toast({ title: 'Επιτυχία', description: 'Η λίστα ενημερώθηκε.' });
+        await fetchAllLists();
         return true;
       } catch (error) {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η ενημέρωση απέτυχε.' });
         return false;
       }
-  }, [toast]);
+  }, [toast, fetchAllLists]);
 
   const deleteList = useCallback(async (listId: string, listTitle: string): Promise<boolean> => {
     if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${listTitle}" και όλα τα περιεχόμενά της;`)) {
@@ -144,13 +144,14 @@ export function useCustomLists() {
         
         toast({ title: 'Επιτυχία', description: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.' });
         await logActivity('DELETE_LIST', { entityId: listId, entityType: 'custom-list', name: listTitle });
+        await fetchAllLists();
         return true;
     } catch (error) {
         console.error('Error deleting list:', error);
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
         return false;
     }
-  }, [toast]);
+  }, [toast, fetchAllLists]);
 
   const addItem = useCallback(async (listId: string, rawValue: string, hasCode?: boolean): Promise<boolean> => {
     setIsSubmitting(true);
@@ -200,6 +201,7 @@ export function useCustomLists() {
   
       await batch.commit();
       toast({ title: 'Επιτυχία', description: `${itemsToAdd.length} στοιχεία προστέθηκαν.` });
+      await fetchAllLists();
       return true;
   
     } catch (error) {
@@ -209,7 +211,7 @@ export function useCustomLists() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [lists, toast]);
+  }, [lists, toast, fetchAllLists]);
 
   const addNewItemToList = useCallback(async (listId: string, value: string, hasCode?: boolean, code?: string): Promise<string | null> => {
        try {
@@ -238,6 +240,7 @@ export function useCustomLists() {
         const docRef = await addDoc(itemsCollectionRef, newItemData);
         
         toast({ title: 'Επιτυχία', description: 'Το νέο στοιχείο προστέθηκε.' });
+        await fetchAllLists();
         return docRef.id;
 
     } catch (error) {
@@ -245,17 +248,18 @@ export function useCustomLists() {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η προσθήκη του νέου στοιχείου απέτυχε.' });
         return null;
     }
-  }, [lists, toast]);
+  }, [lists, toast, fetchAllLists]);
 
   const updateItem = useCallback(async (listId: string, itemId: string, data: { value: string; code?: string }): Promise<boolean> => {
      try {
          await updateDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId), data);
+         await fetchAllLists();
          return true;
      } catch (error) {
          toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η ενημέρωση του στοιχείου απέτυχε.' });
          return false;
      }
-  }, [toast]);
+  }, [toast, fetchAllLists]);
 
   const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string): Promise<boolean> => {
      if(!user) return false;
@@ -278,12 +282,13 @@ export function useCustomLists() {
      try {
         await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
         toast({ title: 'Επιτυχία', description: `Το στοιχείο "${itemValue}" διαγράφηκε.` });
+        await fetchAllLists();
         return true;
      } catch (error) {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή του στοιχείου απέτυχε.' });
         return false;
      }
-  }, [toast, user]);
+  }, [toast, user, fetchAllLists]);
   
 
   return { lists, isLoading, isSubmitting, createList, updateList, deleteList, addItem, addNewItemToList, updateItem, deleteItem };
