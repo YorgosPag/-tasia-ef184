@@ -56,6 +56,8 @@ function EditContactPageContent() {
     
     const { entityType, isDirty } = form.watch();
 
+    const isLegalEntity = entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία';
+
 
     const mapEntityTypeToTab = (type: ContactFormValues['entityType']): EntityType => {
         switch(type) {
