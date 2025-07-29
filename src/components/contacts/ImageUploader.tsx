@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -12,6 +13,7 @@ import { storage } from '@/shared/lib/firebase';
 import { Progress } from '@/shared/components/ui/progress';
 import { Label } from '@/shared/components/ui/label';
 import { useFormContext } from 'react-hook-form';
+import { EntityType } from '@/shared/lib/validation/contactSchema';
 
 interface ImageUploaderProps {
   entityType: 'Φυσικό Πρόσωπο' | 'Νομικό Πρόσωπο' | 'Δημ. Υπηρεσία' | undefined;
@@ -53,8 +55,8 @@ export function ImageUploader({
       const filePreviewUrl = URL.createObjectURL(file);
       setPreview(filePreviewUrl);
       onFileSelect(file);
-      // Manually mark the form as dirty when a new file is selected
-      form.setValue('photoUrl', filePreviewUrl, { shouldDirty: true });
+      const viewParam = entityType === 'Φυσικό Πρόσωπο' ? 'individual' : entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public';
+      form.setValue(`photoUrls.${viewParam}`, filePreviewUrl, { shouldDirty: true });
     },
     [entityType, toast, onFileSelect, form]
   );
@@ -62,7 +64,6 @@ export function ImageUploader({
   const handleDelete = async () => {
     if (!preview) return;
 
-    // For existing contacts with an image on storage
     if (entityId && initialImageUrl && initialImageUrl.startsWith('https://firebasestorage.googleapis.com')) {
         try {
             const storageRef = ref(storage, initialImageUrl);
@@ -78,7 +79,8 @@ export function ImageUploader({
     
     setPreview(null);
     onFileSelect(null);
-    form.setValue('photoUrl', '', { shouldDirty: true });
+    const viewParam = entityType === 'Φυσικό Πρόσωπο' ? 'individual' : entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public';
+    form.setValue(`photoUrls.${viewParam}`, '', { shouldDirty: true });
     toast({ title: 'Επιτυχία', description: 'Η εικόνα αφαιρέθηκε.' });
   }
 

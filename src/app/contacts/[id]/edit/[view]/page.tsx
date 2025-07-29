@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { useRouter, useParams, useSearchParams, usePathname } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,6 +47,7 @@ function EditContactPageContent() {
     const [fileToUpload, setFileToUpload] = useState<File | null>(null);
     const [openSections, setOpenSections] = useState<string[]>(ALL_ACCORDION_SECTIONS);
     const [contactName, setContactName] = useState('');
+    const hasReset = useRef(false);
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactSchema),
@@ -94,15 +95,15 @@ function EditContactPageContent() {
                 const docRef = doc(db, 'contacts', contactId);
                 const docSnap = await getDoc(docRef);
 
-                if (docSnap.exists()) {
+                if (docSnap.exists() && !hasReset.current) {
                     const data = docSnap.data();
                     setContactName(data.name || '');
                     
-                    const initialEntityType = mapTabToEntityType(viewParam); // Prioritize URL param
+                    const initialEntityType = data.entityType || mapTabToEntityType(viewParam);
                    
                     const formData: ContactFormValues = {
                         ...data,
-                        entityType: initialEntityType, // Set it from URL
+                        entityType: initialEntityType,
                         id: docSnap.id,
                         birthDate: data.birthDate instanceof Timestamp ? data.birthDate.toDate() : null,
                         identity: {
@@ -112,8 +113,8 @@ function EditContactPageContent() {
                         addresses: data.addresses || [],
                     };
                     form.reset(formData, { keepDirty: false });
-
-                } else {
+                    hasReset.current = true;
+                } else if (!docSnap.exists()) {
                     toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η επαφή δεν βρέθηκε.' });
                     router.push('/contacts');
                 }
@@ -133,18 +134,19 @@ function EditContactPageContent() {
     const onSubmit = async (data: ContactFormValues) => {
         setIsSubmitting(true);
         
-        let newPhotoUrl = data.photoUrl;
+        let photoUrls = data.photoUrls || {};
 
         try {
              if (fileToUpload) {
                 toast({ title: "Ενημέρωση επαφής", description: "Ανέβασμα νέας φωτογραφίας..." });
-                const filePath = `contact-images/${contactId}/${fileToUpload.name}`;
+                const filePath = `contact-images/${viewParam}/${contactId}/${fileToUpload.name}`;
                 const storageRef = ref(storage, filePath);
                 await uploadBytes(storageRef, fileToUpload);
-                newPhotoUrl = await getDownloadURL(storageRef);
+                const newPhotoUrl = await getDownloadURL(storageRef);
+                photoUrls[viewParam] = newPhotoUrl;
             }
 
-            const dataToUpdate: { [key: string]: any } = { ...data, photoUrl: newPhotoUrl };
+            const dataToUpdate: { [key: string]: any } = { ...data, photoUrls };
             
             if (data.birthDate) {
                 dataToUpdate.birthDate = Timestamp.fromDate(new Date(data.birthDate));
@@ -164,12 +166,13 @@ function EditContactPageContent() {
 
             const cleanedData = deepClean(dataToUpdate);
             delete cleanedData.id;
+            delete cleanedData.photoUrl; // Remove obsolete field
 
             const docRef = doc(db, 'contacts', contactId);
             await updateDoc(docRef, cleanedData);
             
             setContactName(data.name); // Update displayed name
-            form.reset({ ...data, photoUrl: newPhotoUrl });
+            form.reset({ ...data, photoUrls });
             setFileToUpload(null);
 
             await logActivity('UPDATE_CONTACT', {
@@ -198,6 +201,8 @@ function EditContactPageContent() {
         return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>;
     }
 
+    const currentPhotoUrl = form.getValues('photoUrls')?.[viewParam] || '';
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -214,7 +219,7 @@ function EditContactPageContent() {
                              <ImageUploader 
                                 entityType={entityType}
                                 entityId={contactId}
-                                initialImageUrl={form.getValues('photoUrl')}
+                                initialImageUrl={currentPhotoUrl}
                                 onFileSelect={setFileToUpload}
                             />
                          </div>

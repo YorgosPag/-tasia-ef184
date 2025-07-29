@@ -24,7 +24,12 @@ export const personalInfoSchema = z.object({
   birthPlace: z.string().optional(),
   gender: z.enum(['Άνδρας', 'Γυναίκα', 'Άλλο']).optional(),
   nationality: z.string().optional(),
-  photoUrl: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
+  
+  photoUrls: z.object({
+    individual: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
+    legal: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
+    public: z.string().url('Μη έγκυρο URL').or(z.literal('')).optional(),
+  }).optional(),
   
   // For legal entities
   representatives: z.array(personSchema).optional(),
@@ -184,4 +189,3 @@ export const contactSchema = personalInfoSchema
 export type ContactFormValues = z.infer<typeof contactSchema>;
 
 export type EntityType = 'individual' | 'legal' | 'public';
-    
