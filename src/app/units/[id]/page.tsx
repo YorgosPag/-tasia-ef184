@@ -2,7 +2,7 @@
 'use client';
 import { Loader2 } from 'lucide-react';
 import { useUnitDetails } from '@/hooks/use-unit-details';
-import { UnitDetailsPageView } from '@/tasia/components/units/UnitDetailsPageView';
+import { UnitDetailsPageView } from '@/components/units/UnitDetailsPageView';
 
 export default function UnitDetailsPage() {
   const {

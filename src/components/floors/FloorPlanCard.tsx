@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import type { Unit } from '@/tasia/components/floor-plan/Unit';
 import { useFloorPlanDataManager } from '@/hooks/floor-plan/useFloorPlanDataManager';
-import { UnitDialogForm } from '@/tasia/components/units/UnitDialogForm';
+import { UnitDialogForm } from '@/components/units/UnitDialogForm';
 
 
 interface FloorPlanCardProps {

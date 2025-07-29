@@ -7,7 +7,7 @@ import { Loader2, Search } from 'lucide-react';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { UnitCard } from '@/tasia/components/units/UnitCard';
+import { UnitCard } from '@/components/units/UnitCard';
 import { useRouter } from 'next/navigation';
 
 export default function UnitsPage() {

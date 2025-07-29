@@ -23,7 +23,7 @@ import { logActivity } from '@/shared/lib/logger';
 import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/shared/lib/unit-helpers';
 import type { NewUnitFormValues as UnitFormValues } from '@/shared/lib/unit-helpers';
 import { AttachmentFormValues, attachmentSchema } from '@/components/units/AttachmentDialog';
-import type { UnitContract } from '@/tasia/components/units/tabs/UnitContractsTab';
+import type { UnitContract } from '@/components/units/tabs/UnitContractsTab';
 
 export interface Unit {
   id: string;

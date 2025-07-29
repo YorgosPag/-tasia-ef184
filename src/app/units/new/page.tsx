@@ -1,15 +1,15 @@
 
 'use client';
 
-import { UnitLocationSelector } from '@/tasia/components/units/new/UnitLocationSelector';
+import { UnitLocationSelector } from '@/components/units/new/UnitLocationSelector';
 import { useUnitLocationState } from '@/hooks/useUnitLocationState';
 import { useDataStore } from '@/shared/hooks/use-data-store';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { newUnitSchema, MULTI_FLOOR_TYPES, getUnitDataFromForm } from '@/shared/lib/unit-helpers';
 import type { NewUnitFormValues } from '@/shared/lib/unit-helpers';
-import { AreaInputs } from '@/tasia/components/units/new/AreaInputs';
-import { AmenitiesChecklist } from '@/tasia/components/units/new/AmenitiesChecklist';
+import { AreaInputs } from '@/components/units/new/AreaInputs';
+import { AmenitiesChecklist } from '@/components/units/new/AmenitiesChecklist';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import { Button } from '@/shared/components/ui/button';
