@@ -54,8 +54,8 @@ function EditContactPageContent() {
         defaultValues: {},
     });
     
-    const entityType = form.watch('entityType');
-    const isLegalEntity = entityType === 'Νομικό Πρόσωπο';
+    const { entityType, isDirty } = form.watch();
+
 
     const mapEntityTypeToTab = (type: ContactFormValues['entityType']): EntityType => {
         switch(type) {
@@ -78,7 +78,7 @@ function EditContactPageContent() {
     // Sync URL with form state
     useEffect(() => {
         const newTab = mapEntityTypeToTab(entityType);
-        if (newTab && newTab !== viewParam) {
+        if (newTab && newTab !== viewParam && !isDirty) { // Only sync URL if form is NOT dirty
             const newPath = `/contacts/${contactId}/edit/${newTab}`;
             router.replace(newPath, { scroll: false });
         }
@@ -99,7 +99,7 @@ function EditContactPageContent() {
                     const data = docSnap.data();
                     setContactName(data.name || '');
                     
-                    const initialEntityType = data.entityType || mapTabToEntityType(viewParam);
+                    const initialEntityType = mapTabToEntityType(viewParam) || data.entityType;
                    
                     const formData: ContactFormValues = {
                         ...data,
