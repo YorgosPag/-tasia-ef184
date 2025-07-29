@@ -207,7 +207,6 @@ function EditContactPageContent() {
                     isDirty={form.formState.isDirty}
                     onBack={() => router.back()}
                     form={form}
-                    onFileSelect={setFileToUpload}
                 />
                 
                 <Card>

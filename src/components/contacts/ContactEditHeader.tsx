@@ -2,10 +2,9 @@
 'use client';
 
 import React from 'react';
-import { UseFormReturn, useWatch } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/shared/components/ui/button';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
-import { ImageUploader } from './ImageUploader';
 import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
 import { CardDescription, CardTitle } from '@/shared/components/ui/card';
 
@@ -15,7 +14,6 @@ interface ContactEditHeaderProps {
   isDirty: boolean;
   onBack: () => void;
   form: UseFormReturn<ContactFormValues>;
-  onFileSelect: (file: File | null) => void;
 }
 
 export function ContactEditHeader({
@@ -24,17 +22,10 @@ export function ContactEditHeader({
   isDirty,
   onBack,
   form,
-  onFileSelect,
 }: ContactEditHeaderProps) {
-  const entityType = useWatch({ control: form.control, name: 'entityType' });
-  const contactId = form.getValues('id');
   
-  const viewParam = entityType === 'Φυσικό Πρόσωπο' ? 'individual' : (entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public');
-  const photoUrls = form.watch('photoUrls');
-  const currentPhotoUrl = photoUrls?.[viewParam] || '';
-
   return (
-    <div className="sticky top-0 bg-background py-2 z-10 border-b mb-4 space-y-4">
+    <div className="sticky top-0 bg-background py-4 z-10 border-b mb-4">
         {/* Top Bar: Back and Save */}
         <div className="flex items-center justify-between px-1">
             <div className="flex-1">
@@ -56,23 +47,6 @@ export function ContactEditHeader({
                 </Button>
             </div>
         </div>
-      
-      {/* Bottom Bar: Image Uploader and Centered Title */}
-      <div className="flex items-center justify-start px-1 gap-4">
-        <ImageUploader
-          entityType={entityType}
-          entityId={contactId}
-          initialImageUrl={currentPhotoUrl}
-          onFileSelect={onFileSelect}
-        />
-        <div className="flex-1 text-center">
-             <h2 className="text-xl font-bold text-foreground truncate" title={contactName}>
-                {contactName}
-            </h2>
-        </div>
-        {/* Empty div to balance the layout and keep the title centered */}
-        <div className="w-32"></div> 
-      </div>
     </div>
   );
 }
