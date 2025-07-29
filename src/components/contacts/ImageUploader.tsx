@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -92,11 +91,6 @@ export function ImageUploader({
     multiple: false,
   });
 
-  const getLabel = () => {
-    if (!entityType) return 'Επιλέξτε Τύπο Οντότητας';
-    return entityType === 'Φυσικό Πρόσωπο' ? 'Φωτογραφία' : 'Λογότυπο';
-  };
-
   if (preview) {
     return (
       <div className="space-y-2">
@@ -134,7 +128,7 @@ export function ImageUploader({
           <div className="flex flex-col items-center justify-center text-center p-2">
             <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
             <p className="text-xs text-muted-foreground">
-              <span className="font-semibold">Upload</span> or drag
+                JPG, PNG, WEBP (μέγ. 2MB)
             </p>
           </div>
         )}
