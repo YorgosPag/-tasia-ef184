@@ -26,9 +26,9 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Loader2, PlusCircle, Edit, Trash2, Copy } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
-import { getStatusClass } from '@/tasia/components/floor-plan/utils';
+import { getStatusClass } from '@/shared/lib/unit-helpers';
 import type { Unit } from '@/tasia/components/floor-plan/Unit';
-import type { AttachmentFormValues } from '@/tasia/components/units/AttachmentDialog';
+import type { AttachmentFormValues } from '@/components/units/AttachmentDialog';
 import { cn } from '@/shared/lib/utils';
 
 interface UnitListItem {
