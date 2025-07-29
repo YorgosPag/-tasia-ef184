@@ -8,18 +8,17 @@ import { Button } from '@/shared/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
-import { Switch } from '@/shared/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useCustomListActions } from '@/hooks/useCustomListActions';
+import { useCustomListActions } from '@/hooks/customList/useCustomListActions';
 import type { CreateListData } from '@/lib/customListService';
+import { BooleanSwitchField } from './form/BooleanSwitchField';
 
 const createListSchema = z.object({
   title: z.string().min(2, {
@@ -98,46 +97,18 @@ export function CreateListForm({ fetchAllLists }: { fetchAllLists: () => Promise
                                 </FormItem>
                             )}
                         />
-                        <div className="flex flex-wrap gap-8">
-                            <FormField
-                                control={form.control}
-                                name="hasCode"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm flex-1 min-w-[250px]">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>Η λίστα περιέχει κωδικό;</FormLabel>
-                                            <FormDescription>
-                                                Ενεργοποιήστε αν κάθε στοιχείο έχει και έναν μοναδικό κωδικό.
-                                            </FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
+                        <div className="flex flex-wrap gap-4">
+                           <BooleanSwitchField
+                              control={form.control}
+                              name="hasCode"
+                              label="Η λίστα περιέχει κωδικό;"
+                              description="Ενεργοποιήστε αν κάθε στοιχείο έχει και έναν μοναδικό κωδικό."
                             />
-                            <FormField
-                                control={form.control}
-                                name="isProtected"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm flex-1 min-w-[250px]">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>Προστατευμένη Λίστα;</FormLabel>
-                                            <FormDescription>
-                                                Εμποδίζει τη διαγραφή της λίστας από το UI.
-                                            </FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
+                            <BooleanSwitchField
+                              control={form.control}
+                              name="isProtected"
+                              label="Προστατευμένη Λίστα;"
+                              description="Εμποδίζει τη διαγραφή της λίστας από το UI (εκτός admin)."
                             />
                         </div>
                         <Button
