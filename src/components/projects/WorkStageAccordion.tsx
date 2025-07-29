@@ -10,8 +10,8 @@ import {
 } from '@/shared/components/ui/accordion';
 import { Company } from '@/shared/hooks/use-data-store';
 import type { WorkStage, WorkStageWithSubstages } from '@/shared/types/project-types';
-import { WorkStageItem } from './WorkStageItem';
-import { WorkStageDetails } from './WorkStageDetails';
+import { WorkStageItem } from './work-stages/WorkStageItem';
+import { WorkStageDetails } from './work-stages/WorkStageDetails';
 
 interface WorkStageAccordionProps {
     workStages: WorkStageWithSubstages[];

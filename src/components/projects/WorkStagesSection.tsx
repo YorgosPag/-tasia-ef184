@@ -8,7 +8,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Company } from '@/shared/hooks/use-data-store';
 import { useWorkStages } from '@/hooks/use-work-stages';
 import { WorkStageFormDialog } from './PhaseFormDialog';
-import { WorkStageAccordion } from './work-stages/WorkStageAccordion';
+import { WorkStageAccordion } from './WorkStageAccordion';
 import type { Project, WorkStage } from '@/shared/types/project-types';
 import { WorkStagesEmptyState } from './work-stages/WorkStagesEmptyState';
 import { useAuth } from '@/shared/hooks/use-auth';
