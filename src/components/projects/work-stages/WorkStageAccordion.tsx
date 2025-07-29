@@ -9,9 +9,9 @@ import {
   AccordionTrigger,
 } from '@/shared/components/ui/accordion';
 import { Company } from '@/shared/hooks/use-data-store';
-import type { WorkStage, WorkStageWithSubstages } from '@/tasia/types/project-types';
-import { WorkStageItem } from '../../../tasia/components/projects/work-stages/WorkStageItem';
-import { WorkStageDetails } from '../../../tasia/components/projects/work-stages/WorkStageDetails';
+import type { WorkStage, WorkStageWithSubstages } from '@/shared/types/project-types';
+import { WorkStageItem } from './WorkStageItem';
+import { WorkStageDetails } from './WorkStageDetails';
 
 interface WorkStageAccordionProps {
     workStages: WorkStageWithSubstages[];

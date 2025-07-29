@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Button } from '@/shared/components/ui/button';
 import { Company } from '@/shared/hooks/use-data-store';
 import { useWorkStages } from '@/hooks/use-work-stages';
-import { WorkStageFormDialog } from '@/tasia/components/projects/work-stages/WorkStageFormDialog';
+import { WorkStageFormDialog } from '@/components/projects/work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from '@/components/projects/work-stages/WorkStageAccordion';
 import type { Project, WorkStage } from '@/shared/types/project-types';
-import { WorkStagesEmptyState } from '@/components/projects/work-stages/WorkStagesEmptyState';
+import { WorkStagesEmptyState } from './WorkStagesEmptyState';
 import { useAuth } from '@/shared/hooks/use-auth';
 
 interface WorkStagesSectionProps {
@@ -113,5 +113,3 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
         </Card>
     );
 }
-
-    
