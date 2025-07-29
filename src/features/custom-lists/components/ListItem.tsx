@@ -47,8 +47,8 @@ export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
   };
   
   const handleDelete = async () => {
-    // The listKey is the list's document ID in this context
-    await deleteItem(listId, listId, item.id, item.value);
+    // Pass the list's Firestore ID for the dependency check.
+    await deleteItem(listId, item.id, item.value);
   }
 
   return (

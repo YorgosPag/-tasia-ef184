@@ -28,7 +28,7 @@ export interface ListItem {
 }
 
 export interface CustomList {
-  id: string;
+  id: string; // The Firestore document ID, now used as the unique, immutable key
   title: string;
   description?: string;
   hasCode?: boolean;
@@ -39,12 +39,6 @@ export interface CustomList {
 
 export type CreateListData = Omit<CustomList, 'id' | 'createdAt' | 'items'>;
 
-// --- Mapping for dependency checks ---
-const listKeyToContactFieldMap: Record<string, string> = {
-  'jIt8lRiNcgatSchI90yd': 'identity.type',
-  'iGOjn86fcktREwMeDFPz': 'identity.issuingAuthority',
-  // ... other mappings
-};
 
 // --- Firestore Operations ---
 
@@ -126,8 +120,7 @@ export async function deleteCustomListItem(listId: string, itemId: string): Prom
   await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
 }
 
-export async function checkListItemDependencies(listKey: string, itemValue: string): Promise<string | null> {
-  const contactField = listKeyToContactFieldMap[listKey];
+export async function checkListItemDependencies(contactField: string, itemValue: string): Promise<string | null> {
   if (!contactField) return null;
 
   const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));

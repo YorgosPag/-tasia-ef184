@@ -13,8 +13,20 @@ import {
   updateCustomListItem,
   deleteCustomListItem,
   checkListItemDependencies,
+  getAllCustomLists,
 } from '@/lib/customListService';
-import type { CreateListData } from '@/lib/customListService';
+import type { CreateListData, CustomList } from '@/lib/customListService';
+
+// This map connects a list's *unique Firestore ID* to a specific field in the `contacts` collection.
+// It's used to check if a list item is in use before allowing its deletion.
+const listIdToContactFieldMap: Record<string, string> = {
+  // 'List ID': 'contacts_field_name'
+  'hOKgJ1K2k8g7e9Y3d1t5': 'job.role', // Ρόλοι
+  'fLpWc4e8gH2jK1n7m0p3': 'job.specialty', // Ειδικότητες
+  'bC9eF1g3h5i7k9l0m2n4': 'doy', // ΔΟΥ
+  'jIt8lRiNcgatSchI90yd': 'identity.type', // Έγγραφα Ταυτοποίησης
+  'iGOjn86fcktREwMeDFPz': 'identity.issuingAuthority' // Εκδούσες Αρχές
+};
 
 export function useCustomListActions(fetchAllLists: () => Promise<void>) {
   const { user } = useAuth();
@@ -97,8 +109,8 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
   const addNewItemToList = useCallback(async (listId: string, value: string, hasCode?: boolean, code?: string) => {
      if (!user) return null;
      
-     // Check for duplicates before attempting to add.
-     const list = (await getAllCustomLists()).find(l => l.id === listId);
+     const lists = await getAllCustomLists();
+     const list = lists.find(l => l.id === listId);
      const isDuplicate = list?.items.some(item => item.value.toLowerCase() === value.toLowerCase() || (hasCode && item.code && code && item.code.toLowerCase() === code.toLowerCase()));
      
      if(isDuplicate){
@@ -121,9 +133,9 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
      );
   }, [user, fetchAllLists, toast]);
 
-  const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string) => {
+  const deleteItem = useCallback(async (listId: string, itemId: string, itemValue: string) => {
     if (!user) return null;
-    const dependency = await checkListItemDependencies(listKey, itemValue);
+    const dependency = await checkListItemDependencies(listIdToContactFieldMap[listId], itemValue);
     if (dependency) {
         toast({
             variant: 'destructive',
