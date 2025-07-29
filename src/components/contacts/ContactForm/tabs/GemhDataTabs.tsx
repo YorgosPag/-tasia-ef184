@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -27,7 +26,7 @@ import { ExternalLinksSection } from '../sections/ExternalLinksSection';
 export function GemhDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
   return (
     <Tabs defaultValue="general" className="w-full">
-      <TabsList className="flex flex-wrap gap-2 w-full justify-start h-auto">
+      <TabsList className="flex flex-wrap h-auto justify-start w-full gap-1">
         <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
         <TabsTrigger value="registration">Καταχώριση στο ΓΕΜΗ</TabsTrigger>
         <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>

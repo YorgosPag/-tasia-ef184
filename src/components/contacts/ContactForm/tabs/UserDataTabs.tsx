@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -14,7 +13,7 @@ import type { ContactFormProps } from '../types';
 export function UserDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
   return (
     <Tabs defaultValue="contact" className="w-full">
-      <TabsList className="flex h-auto flex-wrap justify-start gap-1">
+      <TabsList className="flex flex-wrap h-auto justify-start w-full gap-1">
         <TabsTrigger value="contact">Επικοινωνία & Socials</TabsTrigger>
         <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
         <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
