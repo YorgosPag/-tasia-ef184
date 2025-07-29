@@ -30,6 +30,7 @@ export function ContactEditHeader({
   
   const viewParam = entityType === 'Φυσικό Πρόσωπο' ? 'individual' : (entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public');
   const currentPhotoUrl = form.watch('photoUrls')?.[viewParam] || '';
+  const isLegalEntity = entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία';
 
   return (
     <div className="sticky top-0 bg-background py-2 z-10 border-b mb-4">
@@ -47,7 +48,7 @@ export function ContactEditHeader({
         </Button>
       </div>
       
-      <div className="flex items-start justify-center px-1 mt-4">
+      <div className="flex items-start justify-start px-1 mt-4">
         <ImageUploader
           entityType={entityType}
           entityId={contactId}
