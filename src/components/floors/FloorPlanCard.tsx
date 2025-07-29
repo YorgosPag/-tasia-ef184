@@ -5,7 +5,7 @@ import React from 'react';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import type { Unit } from '@/tasia/components/floor-plan/Unit';
-import { useFloorPlanDataManager } from '@/tasia/hooks/floor-plan/useFloorPlanDataManager';
+import { useFloorPlanDataManager } from '@/hooks/floor-plan/useFloorPlanDataManager';
 import { UnitDialogForm } from '@/tasia/components/units/UnitDialogForm';
 
 
