@@ -19,11 +19,11 @@ import {
 } from "@/shared/components/ui/alert-dialog";
 import type { WorkStage, WorkStageWithSubstages } from '@/shared/types/project-types';
 import { Checklist } from './Checklist';
-import { formatDate, getCompanyNames, formatCurrency, getStatusVariant, calculateChecklistProgress } from '@/components/projects/work-stages/utils';
+import { formatDate, getCompanyNames, formatCurrency, getStatusVariant, calculateChecklistProgress } from './utils';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
 import { WorkStagePhotoGallery } from './WorkStagePhotoGallery';
-import { WorkStageCommentsThread } from '@/components/projects/work-stages/WorkStageCommentsThread';
-import { WorkStageCommentForm } from '@/components/projects/work-stages/WorkStageCommentForm';
+import { WorkStageCommentsThread } from './WorkStageCommentsThread';
+import { WorkStageCommentForm } from './WorkStageCommentForm';
 import { WorkStageItem } from './WorkStageItem';
 
 const DetailItem = ({ icon, label, children }: { icon: React.ElementType, label: string, children: React.ReactNode }) => (
