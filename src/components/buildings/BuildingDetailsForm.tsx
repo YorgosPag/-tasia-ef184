@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -7,11 +8,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/shared/components/ui/input';
 import { Textarea } from '@/shared/components/ui/textarea';
 import type { Building, BuildingFormValues } from '@/app/buildings/[id]/page';
+import { format } from 'date-fns';
+import { Timestamp } from 'firebase/firestore';
 
 interface BuildingDetailsFormProps {
   form: UseFormReturn<BuildingFormValues>;
   building: Building;
 }
+
+const formatDate = (timestamp?: Timestamp | Date) => {
+    if (!timestamp) return '-';
+    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
+    return format(date, 'dd/MM/yyyy');
+};
 
 export function BuildingDetailsForm({ form, building }: BuildingDetailsFormProps) {
   return (
@@ -19,7 +28,7 @@ export function BuildingDetailsForm({ form, building }: BuildingDetailsFormProps
       <CardHeader>
         <CardTitle>Κτίριο: {building.address}</CardTitle>
         <CardDescription>
-          Τύπος: {building.type} | Ημερομηνία Δημιουργίας: {building.createdAt}
+          Τύπος: {building.type} | Ημερομηνία Δημιουργίας: {formatDate(building.createdAt)}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
