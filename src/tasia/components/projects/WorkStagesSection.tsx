@@ -12,7 +12,7 @@ import { useDataStore, Company } from '@/shared/hooks/use-data-store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { BuildingsSection } from '@/components/projects/BuildingsSection';
 import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
-import { ProjectActivityTimeline } from '@/tasia/components/projects/ProjectActivityTimeline';
+import { ProjectActivityTimeline } from '@/components/projects/ProjectActivityTimeline';
 import { MeetingsSection } from '@/components/projects/MeetingsSection';
 import { ContractsSection } from '@/components/projects/ContractsSection';
 import { MaterialsSection } from '@/components/projects/MaterialsSection';
