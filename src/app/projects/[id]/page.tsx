@@ -8,7 +8,7 @@ import { db } from '@/shared/lib/firebase';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { ProjectHeader } from '@/tasia/components/projects/ProjectHeader';
+import { ProjectHeader } from '@/components/projects/ProjectHeader';
 import { useDataStore, Company } from '@/shared/hooks/use-data-store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { BuildingsSection } from '@/tasia/components/projects/BuildingsSection';
@@ -16,7 +16,7 @@ import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
 import { ProjectActivityTimeline } from '@/tasia/components/projects/ProjectActivityTimeline';
 import { MeetingsSection } from '@/tasia/components/projects/MeetingsSection';
 import { ContractsSection } from '@/tasia/components/projects/ContractsSection';
-import { MaterialsSection } from '@/tasia/components/projects/MaterialsSection';
+import { MaterialsSection } from '@/components/projects/MaterialsSection';
 import type { ProjectWithWorkStageSummary as Project } from '@/shared/types/project-types';
 
 export default function ProjectDetailsPage() {
