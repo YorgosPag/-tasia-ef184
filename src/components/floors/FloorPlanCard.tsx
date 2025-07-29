@@ -3,18 +3,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import dynamic from 'next/dynamic';
-import { FloorPlanLoader } from './FloorPlanLoader';
-
-
-const FloorPlanViewer = dynamic(
-  () => import('./FloorPlanViewer').then((mod) => mod.FloorPlanViewer),
-  {
-    ssr: false,
-    loading: () => <FloorPlanLoader />,
-  }
-);
-
+import { FloorPlanViewer } from './FloorPlanViewer';
 
 interface FloorPlanCardProps {
   floorPlanUrl?: string;

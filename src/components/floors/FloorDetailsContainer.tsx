@@ -80,9 +80,9 @@ export function FloorDetailsContainer() {
   }, [floorId, router, toast]);
   
 
-  const handleFileUpload = async (file: File) => {
-    if (!file || !floor || !user || !floor.originalId) {
-       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκαν οι απαραίτητες πληροφορίες (Όροφος, Χρήστης, Original ID) για τη μεταφόρτωση.' });
+  const handleFileUpload = async (file: File | null) => {
+    if (!file || !floor || !user) {
+       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκαν οι απαραίτητες πληροφορίες (Όροφος, Χρήστης) για τη μεταφόρτωση.' });
        return;
     }
     
@@ -102,7 +102,7 @@ export function FloorDetailsContainer() {
         const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
         if (buildingDoc.exists()) {
             const buildingData = buildingDoc.data() as Building;
-            if (buildingData.projectId && buildingData.originalId) {
+            if (buildingData.projectId && buildingData.originalId && floor.originalId) {
                 const subCollectionFloorRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId);
                 const subDocSnap = await getDoc(subCollectionFloorRef);
                 if (subDocSnap.exists()) {
@@ -110,6 +110,8 @@ export function FloorDetailsContainer() {
                 } else {
                    console.warn(`Subcollection floor document not found at: projects/${buildingData.projectId}/buildings/${buildingData.originalId}/floors/${floor.originalId}`);
                 }
+            } else {
+                 console.warn(`Could not find all necessary IDs to update subcollection: projectId=${buildingData.projectId}, building.originalId=${buildingData.originalId}, floor.originalId=${floor.originalId}`);
             }
         }
         await batch.commit();
