@@ -14,9 +14,7 @@ interface Floor {
 interface FloorInfoHeaderProps {
   floor: Floor;
   onBack: () => void;
-  onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onFileUpload: () => void;
-  selectedFile: File | null;
+  onFileUpload: (file: File) => void;
   isUploading: boolean;
 }
 
@@ -27,11 +25,19 @@ interface FloorInfoHeaderProps {
 export function FloorInfoHeader({
   floor,
   onBack,
-  onFileChange,
   onFileUpload,
-  selectedFile,
   isUploading,
 }: FloorInfoHeaderProps) {
+    
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      onFileUpload(file);
+    }
+    // Reset file input to allow re-uploading the same file
+    event.target.value = '';
+  };
+    
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -47,28 +53,22 @@ export function FloorInfoHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {selectedFile && !isUploading && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Paperclip className="h-4 w-4" />
-                <span>{selectedFile.name}</span>
-            </div>
-        )}
         <Input
           id="pdf-upload"
           type="file"
           accept="application/pdf"
-          onChange={onFileChange}
+          onChange={handleFileChange}
           className="hidden"
+          disabled={isUploading}
         />
         <label htmlFor="pdf-upload">
             <Button asChild variant="outline" size="sm" disabled={isUploading}>
-                <span>Επιλογή PDF</span>
+                <span>
+                 {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <Upload className="mr-2" />}
+                 {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα PDF'}
+                </span>
             </Button>
         </label>
-        <Button onClick={onFileUpload} disabled={!selectedFile || isUploading} size="sm">
-          {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <Upload className="mr-2" />}
-          {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα'}
-        </Button>
       </div>
     </div>
   );

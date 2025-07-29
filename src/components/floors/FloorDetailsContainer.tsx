@@ -22,8 +22,6 @@ import { FloorInfoHeader } from '@/components/floors/FloorInfoHeader';
 import { FloorPlanCard } from '@/components/floors/FloorPlanCard';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
-import type { Unit } from '@/tasia/components/floor-plan/Unit';
-
 
 // --- Interfaces & Schemas ---
 interface Floor {
@@ -55,19 +53,14 @@ export function FloorDetailsContainer() {
 
   // --- State Management ---
   const [floor, setFloor] = useState<Floor | null>(null);
-  const [initialUnits, setInitialUnits] = useState<Unit[]>([]);
-  const [isLoadingFloor, setIsLoadingFloor] = useState(true);
-  const [isLoadingUnits, setIsLoadingUnits] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
-  const isLoading = isLoadingFloor || isLoadingUnits;
-
   // --- Data Fetching Effects ---
   useEffect(() => {
     if (!floorId) return;
 
-    setIsLoadingFloor(true);
+    setIsLoading(true);
     const docRef = doc(db, 'floors', floorId);
     const unsubscribeFloor = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -76,89 +69,53 @@ export function FloorDetailsContainer() {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Ο όροφος δεν βρέθηκε.' });
         router.push('/buildings');
       }
-      setIsLoadingFloor(false);
+      setIsLoading(false);
     }, (error) => {
       console.error("Error fetching floor:", error);
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch floor details.' });
-      setIsLoadingFloor(false);
-    });
-
-    setIsLoadingUnits(true);
-    const unitsQuery = query(collection(db, 'units'), where('floorIds', 'array-contains', floorId));
-    const unsubscribeUnits = onSnapshot(unitsQuery, (snapshot) => {
-        setInitialUnits(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit)));
-        setIsLoadingUnits(false);
-    }, (error) => {
-        console.error('Error fetching units:', error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των ακινήτων.' });
-        setIsLoadingUnits(false);
+      setIsLoading(false);
     });
     
     return () => {
       unsubscribeFloor();
-      unsubscribeUnits();
     };
   }, [floorId, router, toast]);
   
 
-  // --- UI Event Handlers ---
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      setSelectedFile(file);
-    } else if (file) {
-      toast({ variant: 'destructive', title: 'Λάθος τύπος αρχείου', description: 'Παρακαλώ επιλέξτε ένα αρχείο PDF.' });
-      setSelectedFile(null);
-    }
-  };
-
-  const handleFileUpload = async () => {
-    if (!selectedFile || !floor || !user) return;
+  const handleFileUpload = async (file: File) => {
+    if (!file || !floor || !user) return;
     setIsUploading(true);
-    const storageRef = ref(storage, `floor_plans/${floor.id}/${selectedFile.name}`);
+    const storageRef = ref(storage, `floor_plans/${floor.id}/${file.name}`);
     try {
-        await uploadBytes(storageRef, selectedFile);
+        await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
 
         const batch = writeBatch(db);
 
-        // Update the top-level floor document
         const topLevelFloorRef = doc(db, 'floors', floor.id);
         batch.update(topLevelFloorRef, { floorPlanUrl: downloadURL });
 
-        // Update the nested floor document
         const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
         if (buildingDoc.exists()) {
             const buildingData = buildingDoc.data() as Building;
             if (buildingData.projectId && floor.originalId) {
                 const subCollectionFloorRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId);
-                // Check if the nested doc exists before trying to update it
                 const subDocSnap = await getDoc(subCollectionFloorRef);
                 if (subDocSnap.exists()) {
                    batch.update(subCollectionFloorRef, { floorPlanUrl: downloadURL });
-                } else {
-                    console.warn(`Nested floor document not found at path: ${subCollectionFloorRef.path}`);
                 }
-            } else {
-                 console.warn(`Missing projectId or originalId on building ${floor.buildingId} or floor ${floor.id}`);
             }
         }
-
         await batch.commit();
         
         toast({ title: 'Επιτυχία', description: 'Η κάτοψη ανέβηκε.' });
-        
         await logActivity('UPLOAD_FLOORPLAN', {
             entityId: floor.id,
             entityType: 'floorplan',
-            details: `Uploaded ${selectedFile.name} for floor ${floor.level}`,
+            details: `Uploaded ${file.name} for floor ${floor.level}`,
             projectId: buildingDoc.data()?.projectId,
         });
 
-        setSelectedFile(null);
-        // Reset file input after successful upload
-        const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
     } catch (error: any) {
         console.error("Upload error:", error);
         toast({ variant: 'destructive', title: 'Σφάλμα', description: `Δεν ήταν δυνατή η μεταφόρτωση: ${error.message}` });
@@ -167,10 +124,6 @@ export function FloorDetailsContainer() {
     }
   };
 
-
-  const handleUnitSelect = (unitId: string) => {
-    router.push(`/units/${unitId}`);
-  };
 
   if (isLoading || !floor) {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-16 w-16 animate-spin text-muted-foreground" /></div>;
@@ -181,10 +134,8 @@ export function FloorDetailsContainer() {
       <FloorInfoHeader
         floor={floor}
         onBack={() => router.back()}
-        onFileChange={handleFileChange}
-        onFileUpload={handleFileUpload}
-        selectedFile={selectedFile}
         isUploading={isUploading}
+        onFileUpload={handleFileUpload}
       />
       <FloorPlanCard
         floorPlanUrl={floor.floorPlanUrl}
