@@ -152,7 +152,6 @@ function EditContactPageContent() {
 
             const dataToUpdate: { [key: string]: any } = { ...data, photoUrls };
             
-            // Handle dates safely
             dataToUpdate.birthDate = data.birthDate ? Timestamp.fromDate(new Date(data.birthDate)) : null;
 
             if (dataToUpdate.identity) {
@@ -212,15 +211,7 @@ function EditContactPageContent() {
                 />
                 
                 <Card>
-                    <CardHeader>
-                       <div className="flex justify-between items-center">
-                            <div>
-                                <CardTitle>Επεξεργασία Επαφής</CardTitle>
-                                <CardDescription>Ενημερώστε τα παρακάτω πεδία για να επεξεργαστείτε την επαφή.</CardDescription>
-                            </div>
-                       </div>
-                    </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
                          <ContactForm form={form} onFileSelect={setFileToUpload} openSections={openSections} onOpenChange={setOpenSections} />
                     </CardContent>
                 </Card>
