@@ -21,9 +21,9 @@ import type { WorkStage, WorkStageWithSubstages } from '@/shared/types/project-t
 import { Checklist } from './Checklist';
 import { formatDate, getCompanyNames, formatCurrency, getStatusVariant, calculateChecklistProgress } from './utils';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
-import { WorkStagePhotoGallery } from './WorkStagePhotoGallery';
-import { WorkStageCommentsThread } from './WorkStageCommentsThread';
-import { WorkStageCommentForm } from './WorkStageCommentForm';
+import { WorkStagePhotoGallery } from '../../../../components/projects/work-stages/WorkStagePhotoGallery';
+import { WorkStageCommentsThread } from '../../../../components/projects/work-stages/WorkStageCommentsThread';
+import { WorkStageCommentForm } from '../../../../components/projects/work-stages/WorkStageCommentForm';
 import { WorkStageItem } from './WorkStageItem';
 
 const DetailItem = ({ icon, label, children }: { icon: React.ElementType, label: string, children: React.ReactNode }) => (

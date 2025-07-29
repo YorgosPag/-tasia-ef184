@@ -29,7 +29,7 @@ import { cn } from '@/shared/lib/utils';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { Company } from '@/shared/hooks/use-data-store';
-import { WorkStageFormValues } from '@/tasia/components/projects/work-stages/workStageSchema';
+import { WorkStageFormValues } from '@/components/projects/work-stages/workStageSchema';
 import type { WorkStage } from '@/tasia/types/project-types';
 
 interface WorkStageFormDialogProps {
