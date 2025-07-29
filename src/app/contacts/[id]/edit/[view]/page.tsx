@@ -38,8 +38,8 @@ function deepClean(obj: any) {
 function EditContactPageContent() {
     const router = useRouter();
     const params = useParams();
-    const searchParams = useSearchParams();
     const contactId = params.id as string;
+    const viewParam = params.view as EntityType;
     const { toast } = useToast();
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +55,6 @@ function EditContactPageContent() {
     
     const entityType = form.watch('entityType');
     const pathname = usePathname();
-    const tabParam = pathname.split('/').pop() as EntityType;
     const isLegalEntity = entityType === 'Νομικό Πρόσωπο';
 
     const mapEntityTypeToTab = (type: ContactFormValues['entityType']): EntityType => {
@@ -67,7 +66,7 @@ function EditContactPageContent() {
         }
     }
 
-    const mapTabToEntityType = (tab: EntityType | null): ContactFormValues['entityType'] => {
+    const mapTabToEntityType = (tab: EntityType | string | null): ContactFormValues['entityType'] => {
         switch(tab) {
             case 'individual': return 'Φυσικό Πρόσωπο';
             case 'legal': return 'Νομικό Πρόσωπο';
@@ -79,22 +78,13 @@ function EditContactPageContent() {
     // Sync URL with form state
     useEffect(() => {
         const newTab = mapEntityTypeToTab(entityType);
-        if (newTab !== tabParam) {
-            const newPath = pathname.substring(0, pathname.lastIndexOf('/') + 1) + newTab;
-            router.replace(newPath);
+        if (newTab && newTab !== viewParam) {
+            const newPath = `/contacts/${contactId}/edit/${newTab}`;
+            router.replace(newPath, { scroll: false });
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [entityType, tabParam, router]);
+    }, [entityType, viewParam, router, contactId]);
     
-    // Sync form with URL state
-    useEffect(() => {
-        const newEntityType = mapTabToEntityType(tabParam);
-        if (newEntityType !== entityType) {
-            form.setValue('entityType', newEntityType, { shouldDirty: true });
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tabParam]);
-
 
     useEffect(() => {
         if (!contactId) return;
@@ -109,7 +99,7 @@ function EditContactPageContent() {
                     const data = docSnap.data();
                     setContactName(data.name || '');
                     
-                    const initialEntityType = mapTabToEntityType(tabParam) || data.entityType || 'Φυσικό Πρόσωπο';
+                    const initialEntityType = mapTabToEntityType(viewParam) || data.entityType || 'Φυσικό Πρόσωπο';
                    
                     const formData: ContactFormValues = {
                         ...data,
@@ -138,7 +128,7 @@ function EditContactPageContent() {
 
         fetchContact();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [contactId, router, toast]);
+    }, [contactId, viewParam]);
 
 
     const onSubmit = async (data: ContactFormValues) => {
