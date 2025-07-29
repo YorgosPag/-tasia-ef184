@@ -26,24 +26,24 @@ import { ExternalLinksSection } from '../sections/ExternalLinksSection';
 export function GemhDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
   return (
     <Tabs defaultValue="general" className="w-full">
-      <TabsList className="flex flex-wrap h-auto justify-start w-full gap-1">
-        <TabsTrigger value="general">Γενικά Στοιχεία</TabsTrigger>
-        <TabsTrigger value="registration">Καταχώριση στο ΓΕΜΗ</TabsTrigger>
-        <TabsTrigger value="enriched">Εμπλουτισμένα Στοιχεία</TabsTrigger>
-        <TabsTrigger value="headquarters">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
-        <TabsTrigger value="branches">Καταστήματα / Υποκαταστήματα</TabsTrigger>
-        <TabsTrigger value="objective">Σκοπός & Αντικείμενο</TabsTrigger>
-        <TabsTrigger value="statuses">Καταστάσεις ΓΕΜΗ</TabsTrigger>
-        <TabsTrigger value="capital">Κεφάλαιο Εταιρείας</TabsTrigger>
-        <TabsTrigger value="stocks">Μετοχική Σύνθεση</TabsTrigger>
-        <TabsTrigger value="documents">Έγγραφα ΓΕΜΗ</TabsTrigger>
-        <TabsTrigger value="docSummary">Σύνοψη Εγγράφων ΓΕΜΗ</TabsTrigger>
-        <TabsTrigger value="activities">Δραστηριότητες (ΚΑΔ)</TabsTrigger>
-        <TabsTrigger value="decisions">Αποφάσεις Οργάνων</TabsTrigger>
-        <TabsTrigger value="establishment">Στοιχεία Σύστασης (ΥΜΣ)</TabsTrigger>
-        <TabsTrigger value="representatives">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
-        <TabsTrigger value="versions">Ιστορικό Εκδόσεων Εταιρείας</TabsTrigger>
-        <TabsTrigger value="externalLinks">Σύνδεσμοι Τρίτων Φορέων</TabsTrigger>
+      <TabsList className="flex flex-wrap h-auto justify-start w-full gap-2">
+        <TabsTrigger value="general" className="flex-1 min-w-[160px] text-center">Γενικά Στοιχεία</TabsTrigger>
+        <TabsTrigger value="registration" className="flex-1 min-w-[160px] text-center">Καταχώριση στο ΓΕΜΗ</TabsTrigger>
+        <TabsTrigger value="enriched" className="flex-1 min-w-[160px] text-center">Εμπλουτισμένα Στοιχεία</TabsTrigger>
+        <TabsTrigger value="headquarters" className="flex-1 min-w-[160px] text-center">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
+        <TabsTrigger value="branches" className="flex-1 min-w-[160px] text-center">Καταστήματα / Υποκαταστήματα</TabsTrigger>
+        <TabsTrigger value="objective" className="flex-1 min-w-[160px] text-center">Σκοπός & Αντικείμενο</TabsTrigger>
+        <TabsTrigger value="statuses" className="flex-1 min-w-[160px] text-center">Καταστάσεις ΓΕΜΗ</TabsTrigger>
+        <TabsTrigger value="capital" className="flex-1 min-w-[160px] text-center">Κεφάλαιο Εταιρείας</TabsTrigger>
+        <TabsTrigger value="stocks" className="flex-1 min-w-[160px] text-center">Μετοχική Σύνθεση</TabsTrigger>
+        <TabsTrigger value="documents" className="flex-1 min-w-[160px] text-center">Έγγραφα ΓΕΜΗ</TabsTrigger>
+        <TabsTrigger value="docSummary" className="flex-1 min-w-[160px] text-center">Σύνοψη Εγγράφων ΓΕΜΗ</TabsTrigger>
+        <TabsTrigger value="activities" className="flex-1 min-w-[160px] text-center">Δραστηριότητες (ΚΑΔ)</TabsTrigger>
+        <TabsTrigger value="decisions" className="flex-1 min-w-[160px] text-center">Αποφάσεις Οργάνων</TabsTrigger>
+        <TabsTrigger value="establishment" className="flex-1 min-w-[160px] text-center">Στοιχεία Σύστασης (ΥΜΣ)</TabsTrigger>
+        <TabsTrigger value="representatives" className="flex-1 min-w-[160px] text-center">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
+        <TabsTrigger value="versions" className="flex-1 min-w-[160px] text-center">Ιστορικό Εκδόσεων Εταιρείας</TabsTrigger>
+        <TabsTrigger value="externalLinks" className="flex-1 min-w-[160px] text-center">Σύνδεσμοι Τρίτων Φορέων</TabsTrigger>
       </TabsList>
 
       <TabsContent value="general" className="mt-4">

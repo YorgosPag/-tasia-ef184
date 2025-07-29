@@ -13,10 +13,10 @@ import type { ContactFormProps } from '../types';
 export function UserDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
   return (
     <Tabs defaultValue="contact" className="w-full">
-      <TabsList className="flex flex-wrap h-auto justify-start w-full gap-1">
-        <TabsTrigger value="contact">Επικοινωνία & Socials</TabsTrigger>
-        <TabsTrigger value="addresses">Διευθύνσεις</TabsTrigger>
-        <TabsTrigger value="notes">Σημειώσεις</TabsTrigger>
+      <TabsList className="flex flex-wrap h-auto justify-start w-full gap-2">
+        <TabsTrigger value="contact" className="flex-1 min-w-[160px] text-center">Επικοινωνία & Socials</TabsTrigger>
+        <TabsTrigger value="addresses" className="flex-1 min-w-[160px] text-center">Διευθύνσεις</TabsTrigger>
+        <TabsTrigger value="notes" className="flex-1 min-w-[160px] text-center">Σημειώσεις</TabsTrigger>
       </TabsList>
       <TabsContent value="contact" className="mt-4">
         <Accordion type="single" collapsible defaultValue="contact" className="w-full">
