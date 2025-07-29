@@ -27,8 +27,8 @@ import { logActivity } from '@/shared/lib/logger';
 import { WorkStageFormValues, workStageSchema } from '@/components/projects/work-stages/workStageSchema';
 import type { WorkStage, WorkStageWithSubstages } from '@/shared/types/project-types';
 import { exportToJson } from '@/shared/lib/exporter';
-import { formatDate } from '@/tasia/components/projects/work-stages/utils';
-import { useAuth } from './use-auth';
+import { formatDate } from '@/components/projects/work-stages/utils';
+import { useAuth } from '@/shared/hooks/use-auth';
 
 // --- Internal Hooks for Logic Separation ---
 
