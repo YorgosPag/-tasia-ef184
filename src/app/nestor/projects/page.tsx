@@ -8,3 +8,4 @@ export default function NestorProjectsPage() {
   const projectsPageProps = useProjectsPage();
   return <ProjectsPageView {...projectsPageProps} />;
 }
+
