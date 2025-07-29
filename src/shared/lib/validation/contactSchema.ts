@@ -198,6 +198,14 @@ export const contactSchema = personalInfoSchema
                 });
             }
         }
+
+        if(!data.identity?.issuingAuthority) {
+             ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['identity.issuingAuthority'],
+                message: 'Η εκδούσα αρχή είναι υποχρεωτική.',
+            });
+        }
     }
   });
 
