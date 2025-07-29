@@ -16,7 +16,6 @@ import {
   checkListDependencies,
 } from '@/lib/customListService';
 import type { CreateListData, CustomList } from '@/lib/customListService';
-import { useCustomLists } from './useCustomLists';
 
 const listIdToContactFieldMap: Record<string, string> = {
   'hOKgJ1K2k8g7e9Y3d1t5': 'job.role',
@@ -26,11 +25,10 @@ const listIdToContactFieldMap: Record<string, string> = {
   'iGOjn86fcktREwMeDFPz': 'identity.issuingAuthority',
 };
 
-export function useCustomListActions() {
+export function useCustomListActions(fetchAllLists: () => Promise<void>) {
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { fetchAllLists } = useCustomLists();
 
   const withToastAndRefresh = async <T,>(
     operation: () => Promise<T>,
@@ -158,10 +156,6 @@ export function useCustomListActions() {
 
   const addNewItemToList = useCallback(
     async (listId: string, value: string, hasCode?: boolean, code?: string) => {
-      // This function is intended for direct creation from a combobox.
-      // Re-fetching all lists to check for duplicates inside this function is inefficient.
-      // The parent component should handle duplicate checks if necessary before calling.
-      // For now, we trust the service layer to handle duplicates if it's designed to.
       const success = await withToastAndRefresh(
         () => addItemsToCustomList(listId, code ? `${code} ${value}` : value, hasCode),
         {

@@ -83,7 +83,7 @@ export function SimpleListsTab() {
           ) : (
             <div className="w-full space-y-2">
                 {filteredLists.length > 0 ? (
-                     filteredLists.map(list => <EditableList key={list.id} list={list} isOpen={openItems.includes(list.id)} onToggle={toggleAccordionItem} />)
+                     filteredLists.map(list => <EditableList key={list.id} list={list} isOpen={openItems.includes(list.id)} onToggle={toggleAccordionItem} fetchAllLists={fetchAllLists} />)
                 ) : (
                     <p className="text-center py-8 text-muted-foreground">Δεν βρέθηκαν λίστες.</p>
                 )}

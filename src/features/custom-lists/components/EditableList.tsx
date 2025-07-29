@@ -22,14 +22,11 @@ interface EditableListProps {
   list: CustomList;
   isOpen: boolean;
   onToggle: (id: string) => void;
+  fetchAllLists: () => Promise<void>;
 }
 
-export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
-  // Note: This component doesn't need to call useCustomLists directly.
-  // It should receive the refetch function as a prop if needed, or rely
-  // on the parent component's state management. For this case,
-  // useCustomListActions is sufficient as it triggers the refetch.
-  const { addItem, updateList, deleteList, isSubmitting } = useCustomListActions();
+export function EditableList({ list, isOpen, onToggle, fetchAllLists }: EditableListProps) {
+  const { addItem, updateList, deleteList, isSubmitting } = useCustomListActions(fetchAllLists);
   const [itemValue, setItemValue] = useState('');
   const { isAdmin } = useAuth();
 
@@ -188,7 +185,7 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
                 <h4 className="font-semibold text-sm">Υπάρχοντα Στοιχεία ({list.items.length})</h4>
                 {list.items.length > 0 ? (
                   list.items.map((item) => (
-                    <ListItem key={item.id} item={item} listId={list.id} hasCode={list.hasCode} />
+                    <ListItem key={item.id} item={item} listId={list.id} fetchAllLists={fetchAllLists} hasCode={list.hasCode} />
                   ))
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">

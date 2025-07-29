@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Edit, Trash2 } from 'lucide-react';
-import { useCustomLists } from '@/hooks/useCustomLists';
 import { useCustomListActions } from '@/hooks/useCustomListActions';
 import type { ListItem as ListItemType } from '@/lib/customListService';
 
@@ -13,10 +12,10 @@ interface ListItemViewProps {
   item: ListItemType;
   listId: string;
   hasCode?: boolean;
+  fetchAllLists: () => Promise<void>;
 }
 
-export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
-  const { fetchAllLists } = useCustomLists();
+export function ListItem({ item, listId, hasCode, fetchAllLists }: ListItemViewProps) {
   const { updateItem, deleteItem } = useCustomListActions(fetchAllLists);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.value);
@@ -47,7 +46,6 @@ export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
   };
   
   const handleDelete = async () => {
-    // Pass the list's Firestore ID for the dependency check.
     await deleteItem(listId, item.id, item.value);
   }
 
