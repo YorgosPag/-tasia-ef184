@@ -1,7 +1,6 @@
-
 'use client';
 
-import { Unit } from './Unit';
+import { Unit } from '@/tasia/components/floor-plan/Unit';
 
 export const ALL_STATUSES: Unit['status'][] = [
   'Διαθέσιμο',

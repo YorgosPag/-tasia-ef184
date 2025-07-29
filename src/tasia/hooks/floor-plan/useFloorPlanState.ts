@@ -1,13 +1,13 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, MutableRefObject } from 'react';
 import { useLocalStorageState } from '@/shared/hooks/use-local-storage-state';
 import { usePolygonDraw } from './usePolygonDraw';
 import { useZoom } from './useZoom';
 import { usePrecisionZoom } from './usePrecisionZoom';
 import { Unit } from '@/tasia/components/floor-plan/Unit';
-import { ALL_STATUSES, STATUS_COLOR_MAP } from '@/tasia/components/floor-plan/utils';
+import { ALL_STATUSES, STATUS_COLOR_MAP } from '@/components/units/utils';
 
 interface PageDimensions {
     width: number;
