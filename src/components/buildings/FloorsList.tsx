@@ -22,25 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from '@/shared/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -51,14 +32,7 @@ import { format } from 'date-fns';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
 import type { Building } from '@/app/buildings/[id]/page';
-
-const floorSchema = z.object({
-  level: z.string().min(1, { message: 'Το επίπεδο είναι υποχρεωτικό.' }),
-  description: z.string().optional(),
-  floorPlanUrl: z.string().url({ message: "Το URL της κάτοψης δεν είναι έγκυρο." }).or(z.literal('')),
-});
-
-type FloorFormValues = z.infer<typeof floorSchema>;
+import { NewFloorDialog, floorSchema, type FloorFormValues } from './NewFloorDialog';
 
 interface Floor {
   id: string;
@@ -90,7 +64,7 @@ export function FloorsList({ building }: FloorsListProps) {
     if (!building.id) return;
     
     setIsLoadingFloors(true);
-    const q = query(collection(db, 'floors'), where('buildingId', '==', building.id));
+    const q = query(collection(db, 'floors'), where('buildingId', '==', building.id), orderBy('level', 'asc'));
 
     const unsubscribe = onSnapshot(q,
       (snapshot) => {
@@ -167,23 +141,9 @@ export function FloorsList({ building }: FloorsListProps) {
         <div className="flex items-center justify-between">
           <CardTitle>Όροφοι του Κτιρίου</CardTitle>
           {isEditor && (
-            <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-              <DialogTrigger asChild><Button size="sm"><PlusCircle className="mr-2" />Νέος Όροφος</Button></DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader><DialogTitle>Προσθήκη Νέου Ορόφου</DialogTitle><DialogDescription>Συμπληρώστε τις πληροφορίες για να προσθέσετε έναν νέο όροφο στο κτίριο.</DialogDescription></DialogHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmitFloor)} className="grid gap-4 py-4">
-                    <FormField control={form.control} name="level" render={({ field }) => (<FormItem><FormLabel>Επίπεδο Ορόφου</FormLabel><FormControl><Input placeholder="π.χ. 1, 0, -1, Ισόγειο" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>Περιγραφή (Προαιρετικό)</FormLabel><FormControl><Input placeholder="π.χ. Γραφεία εταιρείας" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="floorPlanUrl" render={({ field }) => (<FormItem><FormLabel>URL Κάτοψης (Προαιρετικό)</FormLabel><FormControl><Input placeholder="https://example.com/plan.pdf" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <DialogFooter>
-                      <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
-                      <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Προσθήκη Ορόφου</Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+            <Button size="sm" onClick={() => handleDialogOpenChange(true)}>
+                <PlusCircle className="mr-2" />Νέος Όροφος
+            </Button>
           )}
         </div>
       </CardHeader>
@@ -207,6 +167,13 @@ export function FloorsList({ building }: FloorsListProps) {
           <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν όροφοι για αυτό το κτίριο.</p>
         )}
       </CardContent>
+      <NewFloorDialog
+        open={isDialogOpen}
+        onOpenChange={handleDialogOpenChange}
+        form={form}
+        onSubmit={form.handleSubmit(onSubmitFloor)}
+        isSubmitting={isSubmitting}
+      />
     </Card>
   );
 }
