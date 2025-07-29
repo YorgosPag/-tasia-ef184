@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   doc,
@@ -253,17 +253,22 @@ export function useUnitDetails() {
   const params = useParams();
   const router = useRouter();
   const unitId = params.id as string;
-  const { toast } = useToast();
 
   const { isLoading, setIsLoading, isSubmitting, setIsSubmitting, editingAttachment, setEditingAttachment, isAttachmentDialogOpen, setIsAttachmentDialogOpen } = useUnitUIState();
-  const { unitForm, onUnitSubmit } = useUnitForm(null, isSubmitting, setIsSubmitting);
-  const { unit, attachments } = useUnitDetailsData(unitId, unitForm, setIsLoading);
   
-  // Re-initialize unit form hook with the loaded unit
-  const { unitForm: finalUnitForm, onUnitSubmit: finalOnUnitSubmit } = useUnitForm(unit, isSubmitting, setIsSubmitting);
-   useEffect(() => {
+  // Create a placeholder form initially
+  const initialForm = useForm<UnitFormValues>({ resolver: zodResolver(unitSchema) });
+  
+  // Fetch data and populate the real form
+  const { unit, attachments } = useUnitDetailsData(unitId, initialForm, setIsLoading);
+  
+  // Now create the final hooks with the loaded unit data
+  const { unitForm, onUnitSubmit } = useUnitForm(unit, isSubmitting, setIsSubmitting);
+  
+  // Re-sync form when unit data is fully loaded
+  useEffect(() => {
     if(unit) {
-      finalUnitForm.reset({
+      unitForm.reset({
           identifier: unit.identifier, name: unit.name, type: unit.type || '', status: unit.status,
           floorIds: unit.floorIds || [], netArea: unit.netArea?.toString() || '',
           grossArea: unit.grossArea?.toString() || '', commonArea: unit.commonArea?.toString() || '',
@@ -277,7 +282,7 @@ export function useUnitDetails() {
           levelSpan: unit.levelSpan || 1,
       });
     }
-  }, [unit, finalUnitForm]);
+  }, [unit, unitForm]);
 
   const { attachmentForm, onSubmitAttachment, handleAddNewAttachment, handleEditAttachment, handleDeleteAttachment } = useAttachmentForm(unit, isSubmitting, setIsSubmitting, editingAttachment, setEditingAttachment, setIsAttachmentDialogOpen);
   
@@ -296,9 +301,9 @@ export function useUnitDetails() {
     isSubmitting,
     isAttachmentDialogOpen,
     editingAttachment,
-    unitForm: finalUnitForm,
+    unitForm,
     attachmentForm,
-    onUnitSubmit: finalOnUnitSubmit,
+    onUnitSubmit,
     onSubmitAttachment,
     handleAttachmentDialogChange,
     handleAddNewAttachment,

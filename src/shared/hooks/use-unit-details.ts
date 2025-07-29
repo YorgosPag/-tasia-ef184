@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   doc,
@@ -62,19 +62,24 @@ export interface Unit {
   }>;
 }
 
-export function useUnitDetails() {
-  const params = useParams();
-  const router = useRouter();
-  const unitId = params.id as string;
-  const { toast } = useToast();
+// --- Individual Hooks ---
 
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [attachments, setAttachments] = useState<AttachmentFormValues[]>([]);
+function useUnitUIState() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingAttachment, setEditingAttachment] = useState<AttachmentFormValues | null>(null);
   const [isAttachmentDialogOpen, setIsAttachmentDialogOpen] = useState(false);
 
+  return {
+    isLoading, setIsLoading,
+    isSubmitting, setIsSubmitting,
+    editingAttachment, setEditingAttachment,
+    isAttachmentDialogOpen, setIsAttachmentDialogOpen
+  };
+}
+
+function useUnitForm(unit: Unit | null, isSubmitting: boolean, setIsSubmitting: (submitting: boolean) => void) {
+  const { toast } = useToast();
   const unitForm = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: {
@@ -84,71 +89,6 @@ export function useUnitDetails() {
       description: '', isPenthouse: false, amenities: [], levelSpan: 1,
     },
   });
-
-  const attachmentForm = useForm<AttachmentFormValues>({
-    resolver: zodResolver(attachmentSchema),
-    defaultValues: {
-      type: 'parking', identifier: '', details: '', area: '', price: '', sharePercentage: '', isBundle: true, isStandalone: false
-    }
-  });
-
-  useEffect(() => {
-    if (!unitId) return;
-    
-    const unitDocRef = doc(db, 'units', unitId);
-    const unsubscribeUnit = onSnapshot(unitDocRef, (unitDocSnap) => {
-        setIsLoading(true);
-        if (!unitDocSnap.exists()) {
-          toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Το ακίνητο δεν βρέθηκε.' });
-          router.push('/units');
-          return;
-        }
-
-        const unitData = { id: unitDocSnap.id, ...unitDocSnap.data() } as Unit;
-        setUnit(unitData);
-
-        unitForm.reset({
-          identifier: unitData.identifier,
-          name: unitData.name,
-          type: unitData.type || '',
-          status: unitData.status,
-          floorIds: unitData.floorIds || [],
-          netArea: unitData.netArea?.toString() || '',
-          grossArea: unitData.grossArea?.toString() || '',
-          commonArea: unitData.commonArea?.toString() || '',
-          semiOutdoorArea: unitData.semiOutdoorArea?.toString() || '',
-          architecturalProjectionsArea: unitData.architecturalProjectionsArea?.toString() || '',
-          balconiesArea: unitData.balconiesArea?.toString() || '',
-          price: unitData.price?.toString() || '',
-          bedrooms: unitData.bedrooms?.toString() || '',
-          bathrooms: unitData.bathrooms || '',
-          orientation: unitData.orientation || '',
-          kitchenLayout: unitData.kitchenLayout || '',
-          description: unitData.description || '',
-          isPenthouse: unitData.isPenthouse || false,
-          amenities: unitData.amenities || [],
-          levelSpan: unitData.levelSpan || 1,
-        });
-        setIsLoading(false);
-    }, (error) => {
-        console.error("Error fetching unit details:", error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Failed to load unit data.' });
-        setIsLoading(false);
-    });
-    
-    const attachmentsQuery = query(collection(db, 'attachments'), where('unitId', '==', unitId));
-    const unsubscribeAttachments = onSnapshot(attachmentsQuery, (snapshot) => {
-        const attachmentsData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AttachmentFormValues));
-        setAttachments(attachmentsData);
-    }, (error) => {
-        console.error("Error fetching attachments:", error);
-    });
-
-    return () => {
-        unsubscribeUnit();
-        unsubscribeAttachments();
-    };
-  }, [unitId, router, toast, unitForm]);
 
   const onUnitSubmit = async (data: UnitFormValues) => {
     if (!unit) return;
@@ -174,6 +114,18 @@ export function useUnitDetails() {
     }
   };
 
+  return { unitForm, onUnitSubmit: unitForm.handleSubmit(onUnitSubmit) };
+}
+
+function useAttachmentForm(unit: Unit | null, isSubmitting: boolean, setIsSubmitting: (submitting: boolean) => void, editingAttachment: AttachmentFormValues | null, setEditingAttachment: (att: AttachmentFormValues | null) => void, setIsAttachmentDialogOpen: (open: boolean) => void) {
+  const { toast } = useToast();
+  const attachmentForm = useForm<AttachmentFormValues>({
+    resolver: zodResolver(attachmentSchema),
+    defaultValues: {
+      type: 'parking', identifier: '', details: '', area: '', price: '', sharePercentage: '', isBundle: true, isStandalone: false
+    }
+  });
+
   const onSubmitAttachment = async(data: AttachmentFormValues) => {
     if(!unit) return;
     setIsSubmitting(true);
@@ -196,14 +148,14 @@ export function useUnitDetails() {
             toast({ title: 'Επιτυχία', description: 'Το παρακολούθημα δημιουργήθηκε.' });
             await logActivity('CREATE_ATTACHMENT', { entityId: newAttRef.id, entityType: 'attachment', details: finalAttData, projectId: unit.projectId });
         }
-        handleAttachmentDialogChange(false);
+        setIsAttachmentDialogOpen(false);
     } catch(error) {
         console.error("Failed to save attachment:", error);
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η αποθήκευση απέτυχε.' });
     } finally {
         setIsSubmitting(false);
     }
-  }
+  };
 
   const handleDeleteAttachment = async (attachmentId: string) => {
       try {
@@ -217,29 +169,130 @@ export function useUnitDetails() {
           console.error("Error deleting attachment:", error);
           toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
       }
-  }
-
-  const handleAttachmentDialogChange = (open: boolean) => {
-      setIsAttachmentDialogOpen(open);
-      if(!open) {
-          setEditingAttachment(null);
-          attachmentForm.reset();
-      }
-  }
-
+  };
+  
   const handleAddNewAttachment = () => {
       setEditingAttachment(null);
       attachmentForm.reset({
           type: 'parking', identifier: '', details: '', area: '', price: '', sharePercentage: '', isBundle: true, isStandalone: false
       });
       setIsAttachmentDialogOpen(true);
-  }
+  };
   
   const handleEditAttachment = (attachment: AttachmentFormValues) => {
       setEditingAttachment(attachment);
       attachmentForm.reset(attachment);
       setIsAttachmentDialogOpen(true);
-  }
+  };
+
+  return { 
+    attachmentForm, 
+    onSubmitAttachment: attachmentForm.handleSubmit(onSubmitAttachment),
+    handleDeleteAttachment,
+    handleAddNewAttachment,
+    handleEditAttachment,
+  };
+}
+
+function useUnitDetailsData(unitId: string, unitForm: any, setIsLoading: (loading: boolean) => void) {
+  const [unit, setUnit] = useState<Unit | null>(null);
+  const [attachments, setAttachments] = useState<AttachmentFormValues[]>([]);
+  const router = useRouter();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!unitId) return;
+    
+    const unitDocRef = doc(db, 'units', unitId);
+    const unsubscribeUnit = onSnapshot(unitDocRef, (unitDocSnap) => {
+        if (!unitDocSnap.exists()) {
+          toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Το ακίνητο δεν βρέθηκε.' });
+          router.push('/units');
+          return;
+        }
+
+        const unitData = { id: unitDocSnap.id, ...unitDocSnap.data() } as Unit;
+        setUnit(unitData);
+
+        unitForm.reset({
+          identifier: unitData.identifier, name: unitData.name,
+          type: unitData.type || '', status: unitData.status, floorIds: unitData.floorIds || [],
+          netArea: unitData.netArea?.toString() || '', grossArea: unitData.grossArea?.toString() || '',
+          commonArea: unitData.commonArea?.toString() || '', semiOutdoorArea: unitData.semiOutdoorArea?.toString() || '',
+          architecturalProjectionsArea: unitData.architecturalProjectionsArea?.toString() || '',
+          balconiesArea: unitData.balconiesArea?.toString() || '',
+          price: unitData.price?.toString() || '', bedrooms: unitData.bedrooms?.toString() || '',
+          bathrooms: unitData.bathrooms || '', orientation: unitData.orientation || '',
+          kitchenLayout: unitData.kitchenLayout || '', description: unitData.description || '',
+          isPenthouse: unitData.isPenthouse || false, amenities: unitData.amenities || [],
+          levelSpan: unitData.levelSpan || 1,
+        });
+        setIsLoading(false);
+    }, (error) => {
+        console.error("Error fetching unit details:", error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Failed to load unit data.' });
+        setIsLoading(false);
+    });
+    
+    const attachmentsQuery = query(collection(db, 'attachments'), where('unitId', '==', unitId));
+    const unsubscribeAttachments = onSnapshot(attachmentsQuery, (snapshot) => {
+        setAttachments(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AttachmentFormValues)));
+    }, (error) => console.error("Error fetching attachments:", error));
+
+    return () => {
+        unsubscribeUnit();
+        unsubscribeAttachments();
+    };
+  }, [unitId, router, toast, unitForm, setIsLoading]);
+
+  return { unit, attachments };
+}
+
+// --- Main Hook (Orchestrator) ---
+export function useUnitDetails() {
+  const params = useParams();
+  const router = useRouter();
+  const unitId = params.id as string;
+
+  const { isLoading, setIsLoading, isSubmitting, setIsSubmitting, editingAttachment, setEditingAttachment, isAttachmentDialogOpen, setIsAttachmentDialogOpen } = useUnitUIState();
+  
+  // Create a placeholder form initially
+  const initialForm = useForm<UnitFormValues>({ resolver: zodResolver(unitSchema) });
+  
+  // Fetch data and populate the real form
+  const { unit, attachments } = useUnitDetailsData(unitId, initialForm, setIsLoading);
+  
+  // Now create the final hooks with the loaded unit data
+  const { unitForm, onUnitSubmit } = useUnitForm(unit, isSubmitting, setIsSubmitting);
+  
+  // Re-sync form when unit data is fully loaded
+  useEffect(() => {
+    if(unit) {
+      unitForm.reset({
+          identifier: unit.identifier, name: unit.name, type: unit.type || '', status: unit.status,
+          floorIds: unit.floorIds || [], netArea: unit.netArea?.toString() || '',
+          grossArea: unit.grossArea?.toString() || '', commonArea: unit.commonArea?.toString() || '',
+          semiOutdoorArea: unit.semiOutdoorArea?.toString() || '',
+          architecturalProjectionsArea: unit.architecturalProjectionsArea?.toString() || '',
+          balconiesArea: unit.balconiesArea?.toString() || '',
+          price: unit.price?.toString() || '', bedrooms: unit.bedrooms?.toString() || '',
+          bathrooms: unit.bathrooms || '', orientation: unit.orientation || '',
+          kitchenLayout: unit.kitchenLayout || '', description: unit.description || '',
+          isPenthouse: unit.isPenthouse || false, amenities: unit.amenities || [],
+          levelSpan: unit.levelSpan || 1,
+      });
+    }
+  }, [unit, unitForm]);
+
+  const { attachmentForm, onSubmitAttachment, handleAddNewAttachment, handleEditAttachment, handleDeleteAttachment } = useAttachmentForm(unit, isSubmitting, setIsSubmitting, editingAttachment, setEditingAttachment, setIsAttachmentDialogOpen);
+  
+  const handleAttachmentDialogChange = (open: boolean) => {
+      setIsAttachmentDialogOpen(open);
+      if(!open) {
+          setEditingAttachment(null);
+          attachmentForm.reset();
+      }
+  };
 
   return {
     unit,
@@ -250,8 +303,8 @@ export function useUnitDetails() {
     editingAttachment,
     unitForm,
     attachmentForm,
-    onUnitSubmit: unitForm.handleSubmit(onUnitSubmit),
-    onSubmitAttachment: attachmentForm.handleSubmit(onSubmitAttachment),
+    onUnitSubmit,
+    onSubmitAttachment,
     handleAttachmentDialogChange,
     handleAddNewAttachment,
     handleEditAttachment,
