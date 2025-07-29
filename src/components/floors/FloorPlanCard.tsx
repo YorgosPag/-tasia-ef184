@@ -7,6 +7,17 @@ import { Loader2 } from 'lucide-react';
 import type { Unit } from '@/tasia/components/floor-plan/Unit';
 import { useFloorPlanDataManager } from '@/hooks/floor-plan/useFloorPlanDataManager';
 import { UnitDialogForm } from '@/components/units/UnitDialogForm';
+import dynamic from 'next/dynamic';
+import { FloorPlanLoader } from './FloorPlanLoader';
+
+
+const FloorPlanViewer = dynamic(
+  () => import('./FloorPlanViewer').then((mod) => mod.FloorPlanViewer),
+  {
+    ssr: false,
+    loading: () => <FloorPlanLoader />,
+  }
+);
 
 
 interface FloorPlanCardProps {
@@ -37,12 +48,15 @@ export function FloorPlanCard({
   return (
     <Card className="p-0">
       <CardContent className="p-0">
-        <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
-            <p className="text-muted-foreground">Η προβολή κατόψεων είναι προσωρινά απενεργοποιημένη.</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Η λειτουργικότητα θα αποκατασταθεί σύντομα.
-            </p>
-          </div>
+         <FloorPlanViewer
+          pdfUrl={floorPlanUrl}
+          units={dataManager.units}
+          setUnits={dataManager.setUnits}
+          onPolygonDrawn={handlePolygonDrawn}
+          onUnitClick={onUnitClick}
+          onUnitPointsUpdate={dataManager.handleUnitPointsUpdate}
+          highlightedUnitId={dataManager.highlightedUnitId}
+        />
       </CardContent>
       <UnitDialogForm
         open={dataManager.isDialogOpen}
