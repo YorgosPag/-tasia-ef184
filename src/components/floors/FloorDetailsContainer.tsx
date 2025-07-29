@@ -110,7 +110,6 @@ export function FloorDetailsContainer() {
       toast({ variant: 'destructive', title: 'Λάθος τύπος αρχείου', description: 'Παρακαλώ επιλέξτε ένα αρχείο PDF.' });
       setSelectedFile(null);
     }
-    event.target.value = ''; // Reset file input
   };
 
   const handleFileUpload = async () => {
@@ -157,6 +156,9 @@ export function FloorDetailsContainer() {
         });
 
         setSelectedFile(null);
+        // Reset file input after successful upload
+        const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
     } catch (error: any) {
         console.error("Upload error:", error);
         toast({ variant: 'destructive', title: 'Σφάλμα', description: `Δεν ήταν δυνατή η μεταφόρτωση: ${error.message}` });
@@ -185,10 +187,7 @@ export function FloorDetailsContainer() {
         isUploading={isUploading}
       />
       <FloorPlanCard
-        floorId={floor.id}
         floorPlanUrl={floor.floorPlanUrl}
-        initialUnits={initialUnits}
-        onUnitClick={handleUnitSelect}
       />
     </div>
   );
