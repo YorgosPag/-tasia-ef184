@@ -13,7 +13,7 @@ interface CreatableComboboxProps {
   options: { value: string; label: string }[];
   value: string;
   onChange: (value: string) => void;
-  onCreate: (value: string) => Promise<boolean>;
+  onCreate: (value: string) => Promise<string | null>; // Returns the new value/id or null
   placeholder?: string;
 }
 
@@ -25,9 +25,9 @@ export function CreatableCombobox({ options, value, onChange, onCreate, placehol
   const handleCreate = async () => {
     if (!searchQuery) return;
     setIsCreating(true);
-    const success = await onCreate(searchQuery);
-    if (success) {
-      onChange(searchQuery);
+    const newId = await onCreate(searchQuery);
+    if (newId) {
+      onChange(searchQuery); // Change to the new value directly
       setOpen(false);
     }
     setIsCreating(false);
@@ -35,6 +35,7 @@ export function CreatableCombobox({ options, value, onChange, onCreate, placehol
   };
 
   const filteredOptions = options.filter(opt => opt.label.toLowerCase().includes(searchQuery.toLowerCase()));
+  const showCreateOption = searchQuery && !filteredOptions.some(opt => opt.label.toLowerCase() === searchQuery.toLowerCase());
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,9 +46,7 @@ export function CreatableCombobox({ options, value, onChange, onCreate, placehol
           aria-expanded={open}
           className="w-full justify-between font-normal"
         >
-          {value
-            ? options.find((option) => option.value === value)?.label
-            : placeholder || "Επιλέξτε..."}
+          {value || (placeholder || "Επιλέξτε...")}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -60,10 +59,14 @@ export function CreatableCombobox({ options, value, onChange, onCreate, placehol
           />
           <CommandList>
             <CommandEmpty>
-                <Button variant="ghost" className="w-full" onClick={handleCreate} disabled={isCreating}>
-                    {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-                    Δημιουργία "{searchQuery}"
-                </Button>
+                {showCreateOption ? (
+                    <Button variant="ghost" className="w-full" onClick={handleCreate} disabled={isCreating}>
+                        {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                        Δημιουργία "{searchQuery}"
+                    </Button>
+                ) : (
+                    <span>Δεν βρέθηκαν αποτελέσματα.</span>
+                )}
             </CommandEmpty>
             <CommandGroup>
               {filteredOptions.map((option) => (

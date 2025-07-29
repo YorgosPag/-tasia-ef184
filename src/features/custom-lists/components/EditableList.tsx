@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -11,6 +12,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { Input } from '@/shared/components/ui/input';
 import { Plus, Loader2, Edit, Trash2, ChevronDown } from 'lucide-react';
 import { type CustomList, useCustomLists } from '@/hooks/useCustomLists';
+import { useCustomListActions } from '@/hooks/useCustomListActions';
 import { ListItem } from './ListItem';
 import { Card } from '@/shared/components/ui/card';
 import { cn } from '@/shared/lib/utils';
@@ -22,7 +24,8 @@ interface EditableListProps {
 }
 
 export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
-  const { addItem, updateList, deleteList, isSubmitting } = useCustomLists();
+  const { lists, fetchAllLists } = useCustomLists();
+  const { addItem, updateList, deleteList, isSubmitting } = useCustomListActions(lists, fetchAllLists);
   const [itemValue, setItemValue] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [newTitle, setNewTitle] = useState(list.title);

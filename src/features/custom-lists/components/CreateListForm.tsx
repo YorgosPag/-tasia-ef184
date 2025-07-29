@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -18,6 +19,7 @@ import { Switch } from '@/shared/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { PlusCircle, Loader2 } from 'lucide-react';
 import { useCustomLists, CreateListData } from '@/hooks/useCustomLists';
+import { useCustomListActions } from '@/hooks/useCustomListActions';
 
 const createListSchema = z.object({
   title: z.string().min(2, {
@@ -31,7 +33,8 @@ const createListSchema = z.object({
 type CreateListFormValues = z.infer<typeof createListSchema>;
 
 export function CreateListForm() {
-    const { createList, isSubmitting } = useCustomLists();
+    const { lists, fetchAllLists } = useCustomLists();
+    const { createList, isSubmitting } = useCustomListActions(lists, fetchAllLists);
 
     const form = useForm<CreateListFormValues>({
         resolver: zodResolver(createListSchema),

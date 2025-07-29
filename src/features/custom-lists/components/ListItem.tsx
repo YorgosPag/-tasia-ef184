@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Edit, Trash2 } from 'lucide-react';
 import { useCustomLists, type ListItem as ListItemType } from '@/hooks/useCustomLists';
+import { useCustomListActions } from '@/hooks/useCustomListActions';
 
 interface ListItemViewProps {
   item: ListItemType;
@@ -14,7 +15,8 @@ interface ListItemViewProps {
 }
 
 export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
-  const { updateItem, deleteItem, lists } = useCustomLists();
+  const { lists, fetchAllLists } = useCustomLists();
+  const { updateItem, deleteItem } = useCustomListActions(lists, fetchAllLists);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.value);
   const [editCode, setEditCode] = useState(item.code || '');

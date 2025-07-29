@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -13,11 +14,13 @@ import { format } from 'date-fns';
 import { type ContactFormProps } from '../types';
 import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
 import { useCustomLists } from '@/hooks/useCustomLists';
+import { useCustomListActions } from '@/hooks/useCustomListActions';
 import { useDocumentNumberMask } from '../utils/documentMasks';
 
 export function IdentitySection({ form }: ContactFormProps) {
     const entityType = useWatch({ control: form.control, name: 'entityType' });
-    const { lists } = useCustomLists();
+    const { lists, fetchAllLists } = useCustomLists();
+    const { addNewItemToList } = useCustomListActions(lists, fetchAllLists);
 
     const identityTypesList = lists.find(l => l.id === 'jIt8lRiNcgatSchI90yd');
     const identityTypeOptions = identityTypesList?.items.map(item => ({
@@ -26,7 +29,8 @@ export function IdentitySection({ form }: ContactFormProps) {
     })) || [];
 
     const handleCreateIdentityType = async (newValue: string) => {
-        return true;
+        if (!identityTypesList) return null;
+        return await addNewItemToList(identityTypesList.id, newValue, identityTypesList.hasCode);
     };
 
     const identityType = form.watch('identity.type');
