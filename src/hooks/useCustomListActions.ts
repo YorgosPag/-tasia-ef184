@@ -13,6 +13,7 @@ import {
   updateCustomListItem,
   deleteCustomListItem,
   checkListItemDependencies,
+  checkListDependencies,
   getAllCustomLists,
 } from '@/lib/customListService';
 import type { CreateListData, CustomList } from '@/lib/customListService';
@@ -29,7 +30,7 @@ const listIdToContactFieldMap: Record<string, string> = {
 };
 
 export function useCustomListActions(fetchAllLists: () => Promise<void>) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -86,18 +87,33 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
       );
   }, [user, fetchAllLists, toast]);
 
-  const deleteList = useCallback(async (listId: string, listTitle: string) => {
-    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${listTitle}" και όλα τα περιεχόμενά της;`)) {
+  const deleteList = useCallback(async (list: CustomList) => {
+    if (!user || !isAdmin) return null;
+
+    const contactField = listIdToContactFieldMap[list.id];
+    if (contactField) {
+        const dependencies = await checkListDependencies(contactField, list.items.map(item => item.value));
+        if (dependencies.length > 0) {
+            const examples = dependencies.slice(0, 2).join(', ');
+            const warningMessage = `Η λίστα "${list.title}" χρησιμοποιείται από επαφές (${examples}${dependencies.length > 2 ? '...' : ''}). Είστε σίγουροι ότι θέλετε να συνεχίσετε με τη διαγραφή;`;
+            if (!confirm(warningMessage)) {
+                return null;
+            }
+        }
+    }
+    
+    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
         return null;
     }
+
     return withToastAndRefresh(
         async () => {
-            await deleteCustomList(listId);
-            await logActivity('DELETE_LIST', { entityId: listId, entityType: 'custom-list', name: listTitle });
+            await deleteCustomList(list.id);
+            await logActivity('DELETE_LIST', { entityId: list.id, entityType: 'custom-list', name: list.title });
         },
         { successMessage: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.', errorMessage: 'Η διαγραφή απέτυχε.'}
     );
-  }, [user, fetchAllLists, toast]);
+  }, [user, isAdmin, fetchAllLists, toast]);
 
   const addItem = useCallback(async (listId: string, rawValue: string, hasCode?: boolean) => {
     return withToastAndRefresh(

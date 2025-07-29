@@ -130,3 +130,16 @@ export async function checkListItemDependencies(contactField: string, itemValue:
   }
   return null;
 }
+
+
+export async function checkListDependencies(contactField: string, itemValues: string[]): Promise<string[]> {
+    if (!contactField || itemValues.length === 0) return [];
+  
+    // Firestore 'in' queries are limited to 30 values. We might need to batch this in the future.
+    const queryableValues = itemValues.slice(0, 30);
+  
+    const q = query(collection(db, 'contacts'), where(contactField, 'in', queryableValues), limit(2));
+    const snapshot = await getDocs(q);
+    
+    return snapshot.docs.map(doc => doc.data().name as string);
+}

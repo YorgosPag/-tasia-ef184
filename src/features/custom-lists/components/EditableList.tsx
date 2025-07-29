@@ -16,6 +16,7 @@ import { useCustomListActions } from '@/hooks/useCustomListActions';
 import { ListItem } from './ListItem';
 import { Card } from '@/shared/components/ui/card';
 import { cn } from '@/shared/lib/utils';
+import { useAuth } from '@/shared/hooks/use-auth';
 
 interface EditableListProps {
   list: CustomList;
@@ -26,6 +27,7 @@ interface EditableListProps {
 export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
   const { fetchAllLists } = useCustomLists();
   const { addItem, updateList, deleteList, isSubmitting } = useCustomListActions(fetchAllLists);
+  const { isAdmin } = useAuth();
   const [itemValue, setItemValue] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [newTitle, setNewTitle] = useState(list.title);
@@ -49,7 +51,7 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent toggling the accordion
-    deleteList(list.id, list.title);
+    deleteList(list);
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
@@ -86,15 +88,15 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
           )}
         </div>
         <div className="flex items-center gap-2 ml-4">
-          {!list.isProtected && (
-            <Button variant="ghost" size="icon" onClick={handleEditClick} title="Επεξεργασία Λίστας">
-              <Edit className="h-4 w-4" />
-            </Button>
-          )}
-          {!list.isProtected && (
-            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={handleDelete} title="Διαγραφή Λίστας">
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          {(isAdmin || !list.isProtected) && (
+            <>
+              <Button variant="ghost" size="icon" onClick={handleEditClick} title="Επεξεργασία Λίστας">
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={handleDelete} title="Διαγραφή Λίστας">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
           )}
           <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200 cursor-pointer", isOpen && "rotate-180")} onClick={() => onToggle(list.id)} />
         </div>
