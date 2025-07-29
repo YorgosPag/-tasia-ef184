@@ -18,6 +18,8 @@ import { ContactForm } from '@/components/contacts/ContactForm';
 import { contactSchema, ContactFormValues, ALL_ACCORDION_SECTIONS, EntityType } from '@/shared/lib/validation/contactSchema';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
+import { ImageUploader } from '@/components/contacts/ImageUploader';
+
 
 function deepClean(obj: any) {
   for (const key in obj) {
@@ -82,13 +84,15 @@ function EditContactPageContent() {
     useEffect(() => {
         const newTab = mapEntityTypeToTab(entityType);
         if (newTab !== tabParam) {
-            const current = new URLSearchParams(Array.from(searchParams.entries()));
-            current.set('tab', newTab);
-            const search = current.toString();
-            const query = search ? `?${search}` : "";
-            router.replace(`${pathname}${query}`);
+            // Replace the last segment of the path with the new tab name
+            const pathParts = pathname.split('/');
+            pathParts.pop(); // remove current tab segment or 'edit'
+            const newPath = `${pathParts.join('/')}/${newTab}`;
+            router.replace(newPath);
         }
-    }, [entityType, tabParam, router, searchParams, pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [entityType]);
+
 
     useEffect(() => {
         if (!contactId) return;
@@ -101,13 +105,15 @@ function EditContactPageContent() {
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                     setContactName(data.name || '');
+                    setContactName(data.name || '');
                     
-                    const initialTab = mapTabToEntityType(tabParam) || data.entityType;
-
+                    const pathSegments = pathname.split('/');
+                    const tabFromUrl = pathSegments[pathSegments.length - 1] as EntityType;
+                    const initialEntityType = mapTabToEntityType(tabFromUrl) || data.entityType;
+                   
                     const formData: ContactFormValues = {
                         ...data,
-                        entityType: initialTab,
+                        entityType: initialEntityType,
                         id: docSnap.id,
                         birthDate: data.birthDate instanceof Timestamp ? data.birthDate.toDate() : null,
                         identity: {
@@ -116,7 +122,8 @@ function EditContactPageContent() {
                         },
                         addresses: data.addresses || [],
                     };
-                    form.reset(formData);
+                    form.reset(formData, { keepDirty: false });
+
                 } else {
                     toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η επαφή δεν βρέθηκε.' });
                     router.push('/contacts');
@@ -205,21 +212,30 @@ function EditContactPageContent() {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                 <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between sticky top-0 bg-background py-2 z-10">
                     <Button type="button" variant="outline" size="sm" onClick={() => router.back()}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Πίσω στις Επαφές
                     </Button>
+                    {isLegalEntity && contactName && (
+                        <h2 className="text-xl font-bold text-foreground text-center flex-1">{contactName}</h2>
+                    )}
+                     {isLegalEntity && (
+                         <div className="w-32">
+                             <ImageUploader 
+                                entityType={entityType}
+                                entityId={contactId}
+                                initialImageUrl={form.getValues('photoUrl')}
+                                onFileSelect={setFileToUpload}
+                            />
+                         </div>
+                    )}
                     <Button type="submit" disabled={isSubmitting || !form.formState.isDirty}>
                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Αποθήκευση Αλλαγών
                     </Button>
                 </div>
-                 {isLegalEntity && contactName && (
-                    <div className="text-center mb-4">
-                        <h2 className="text-2xl font-bold text-foreground">{contactName}</h2>
-                    </div>
-                )}
+                
                 <Card>
                     <CardHeader>
                        <div className="flex justify-between items-center">

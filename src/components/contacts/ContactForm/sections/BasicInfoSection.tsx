@@ -38,17 +38,6 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                 </div>
             </div>
         )}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
-            {entityType === 'Νομικό Πρόσωπο' ? null : <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Λογότυπο</FormLabel>}
-            <div className="flex-1">
-                <ImageUploader 
-                    entityType={entityType}
-                    entityId={contactId}
-                    initialImageUrl={form.getValues('photoUrl')}
-                    onFileSelect={onFileSelect}
-                />
-            </div>
-        </div>
       </div>
     );
 
@@ -64,12 +53,11 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                         <RadioGroup
                         onValueChange={(value) => {
                             field.onChange(value);
-                            if (value === 'Φυσικό Πρόσωπο') {
+                            form.setValue('name', '', { shouldDirty: true }); // Clear name when type changes
+                             if (value === 'Φυσικό Πρόσωπο') {
                                 const firstName = form.getValues('firstName') || '';
                                 const lastName = form.getValues('lastName') || '';
-                                form.setValue('name', `${firstName} ${lastName}`.trim());
-                            } else {
-                                form.setValue('name', '');
+                                form.setValue('name', `${firstName} ${lastName}`.trim(), { shouldDirty: true });
                             }
                         }}
                         defaultValue={field.value}
