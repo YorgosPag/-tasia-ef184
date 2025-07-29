@@ -10,7 +10,7 @@ import { ArrowLeft, Loader2, PlusCircle } from 'lucide-react';
 import { UnitDetailsForm } from './UnitDetailsForm';
 import type { NewUnitFormValues as UnitFormValues } from '@/tasia/lib/unit-helpers';
 import { AttachmentDialog, AttachmentFormValues } from '@/components/units/AttachmentDialog';
-import { UnitsListTable } from '@/tasia/components/floors/UnitsListTable';
+import { UnitsListTable } from '@/components/units/UnitsListTable';
 import { Unit } from '@/tasia/hooks/use-unit-details';
 import { UnitContactForm } from './UnitContactForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
