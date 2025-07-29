@@ -37,6 +37,7 @@ function EditContactPageContent() {
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
+    const pathname = usePathname();
     const contactId = params.id as string;
     const { toast } = useToast();
     const { user } = useAuth();
@@ -87,16 +88,7 @@ function EditContactPageContent() {
             const query = search ? `?${search}` : "";
             router.replace(`${pathname}${query}`);
         }
-    }, [entityType, tabParam, router, searchParams]);
-
-    // Sync form state with URL
-    useEffect(() => {
-        if (tabParam && mapTabToEntityType(tabParam) !== entityType) {
-            form.setValue('entityType', mapTabToEntityType(tabParam), { shouldDirty: true });
-        }
-    }, [tabParam, entityType, form]);
-
-    const pathname = usePathname();
+    }, [entityType, tabParam, router, searchParams, pathname]);
 
     useEffect(() => {
         if (!contactId) return;
@@ -110,8 +102,12 @@ function EditContactPageContent() {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                      setContactName(data.name || '');
+                    
+                    const initialTab = mapTabToEntityType(tabParam) || data.entityType;
+
                     const formData: ContactFormValues = {
                         ...data,
+                        entityType: initialTab,
                         id: docSnap.id,
                         birthDate: data.birthDate instanceof Timestamp ? data.birthDate.toDate() : null,
                         identity: {
@@ -121,11 +117,6 @@ function EditContactPageContent() {
                         addresses: data.addresses || [],
                     };
                     form.reset(formData);
-                    // Set initial tab from fetched data
-                    const initialTab = mapEntityTypeToTab(data.entityType);
-                    if (initialTab !== tabParam) {
-                       router.replace(`${pathname}?tab=${initialTab}`);
-                    }
                 } else {
                     toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η επαφή δεν βρέθηκε.' });
                     router.push('/contacts');
