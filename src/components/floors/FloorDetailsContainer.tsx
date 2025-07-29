@@ -36,6 +36,11 @@ interface Floor {
   floorPlanUrl?: string;
 }
 
+interface Building {
+    originalId?: string;
+    projectId?: string;
+}
+
 /**
  * FloorDetailsContainer is the main "smart" component for the floor details page.
  * It handles all data fetching, state management, and business logic (file uploads).
@@ -109,25 +114,54 @@ export function FloorDetailsContainer() {
   };
 
   const handleFileUpload = async () => {
-    if (!selectedFile || !floorId || !user) return;
+    if (!selectedFile || !floor || !user) return;
     setIsUploading(true);
-    const storageRef = ref(storage, `floor_plans/${floorId}/${selectedFile.name}`);
+    const storageRef = ref(storage, `floor_plans/${floor.id}/${selectedFile.name}`);
     try {
-      await uploadBytes(storageRef, selectedFile);
-      const downloadURL = await getDownloadURL(storageRef);
-      await updateDoc(doc(db, 'floors', floorId), { floorPlanUrl: downloadURL });
-      toast({ title: 'Επιτυχία', description: 'Η κάτοψη ανέβηκε.' });
-      await logActivity('UPLOAD_FLOORPLAN', {
-        entityId: floorId,
-        entityType: 'floorplan',
-        details: `Uploaded ${selectedFile.name} for floor ${floorId}`,
-      });
-      setSelectedFile(null);
+        await uploadBytes(storageRef, selectedFile);
+        const downloadURL = await getDownloadURL(storageRef);
+
+        const batch = writeBatch(db);
+
+        // Update the top-level floor document
+        const topLevelFloorRef = doc(db, 'floors', floor.id);
+        batch.update(topLevelFloorRef, { floorPlanUrl: downloadURL });
+
+        // Update the nested floor document
+        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
+        if (buildingDoc.exists()) {
+            const buildingData = buildingDoc.data() as Building;
+            if (buildingData.projectId && floor.originalId) {
+                const subCollectionFloorRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId);
+                // Check if the nested doc exists before trying to update it
+                const subDocSnap = await getDoc(subCollectionFloorRef);
+                if (subDocSnap.exists()) {
+                   batch.update(subCollectionFloorRef, { floorPlanUrl: downloadURL });
+                } else {
+                    console.warn(`Nested floor document not found at path: ${subCollectionFloorRef.path}`);
+                }
+            } else {
+                 console.warn(`Missing projectId or originalId on building ${floor.buildingId} or floor ${floor.id}`);
+            }
+        }
+
+        await batch.commit();
+        
+        toast({ title: 'Επιτυχία', description: 'Η κάτοψη ανέβηκε.' });
+        
+        await logActivity('UPLOAD_FLOORPLAN', {
+            entityId: floor.id,
+            entityType: 'floorplan',
+            details: `Uploaded ${selectedFile.name} for floor ${floor.level}`,
+            projectId: buildingDoc.data()?.projectId,
+        });
+
+        setSelectedFile(null);
     } catch (error: any) {
-      console.error("Upload error:", error);
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Δεν ήταν δυνατή η μεταφόρτωση: ${error.message}` });
+        console.error("Upload error:", error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: `Δεν ήταν δυνατή η μεταφόρτωση: ${error.message}` });
     } finally {
-      setIsUploading(false);
+        setIsUploading(false);
     }
   };
 
