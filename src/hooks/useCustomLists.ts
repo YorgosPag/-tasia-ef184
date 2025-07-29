@@ -51,10 +51,10 @@ interface CreateListResult {
 
 const listKeyToContactFieldMap: Record<string, string> = {
     'jIt8lRiNcgatSchI90yd': 'identity.type', // Έγγραφα Ταυτοποίησης
-    'roles_placeholder_id': 'job.role', // Replace with actual ID
-    'specialties_placeholder_id': 'job.specialty', // Replace with actual ID
-    'doy_placeholder_id': 'doy', // Replace with actual ID
+    // Add other list IDs to contact field mappings here
+    // e.g. 'roles_list_id': 'job.role'
 };
+
 
 // --- Custom Hook ---
 
@@ -237,23 +237,6 @@ export function useCustomLists() {
         // Add the document to Firestore
         const docRef = await addDoc(itemsCollectionRef, newItemData);
         
-        // Manually update local state to reflect the change instantly
-        setLists(currentLists => 
-            currentLists.map(l => {
-                if (l.id === listId) {
-                    const newItem: ListItem = {
-                        id: docRef.id,
-                        value: newItemData.value,
-                        code: newItemData.code,
-                        createdAt: new Date(), // Use current date as placeholder
-                    };
-                    const updatedItems = [...l.items, newItem].sort((a,b) => a.value.localeCompare(b.value));
-                    return { ...l, items: updatedItems };
-                }
-                return l;
-            })
-        );
-        
         toast({ title: 'Επιτυχία', description: 'Το νέο στοιχείο προστέθηκε.' });
         return docRef.id;
 
@@ -294,17 +277,6 @@ export function useCustomLists() {
 
      try {
         await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
-        
-        // Optimistically update the local state for immediate feedback
-        setLists(currentLists => 
-            currentLists.map(l => {
-                if (l.id === listId) {
-                    return { ...l, items: l.items.filter(item => item.id !== itemId) };
-                }
-                return l;
-            })
-        );
-
         toast({ title: 'Επιτυχία', description: `Το στοιχείο "${itemValue}" διαγράφηκε.` });
         return true;
      } catch (error) {
