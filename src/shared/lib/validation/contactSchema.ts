@@ -1,6 +1,6 @@
 
 import { z } from 'zod';
-import { getValidationRule } from './schemas/utils/documentValidation';
+import { getValidationRule } from '@/hooks/useDocumentNumberMask';
 import { personalInfoSchema } from './schemas/personalInfoSchema';
 import { identityTaxSchema } from './schemas/identityTaxSchema';
 import { contactInfoSchema } from './schemas/contactInfoSchema';
