@@ -17,9 +17,8 @@ import { db, storage } from '@/shared/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/shared/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-
-import { FloorInfoHeader } from './FloorInfoHeader';
-import { FloorPlanCard } from './FloorPlanCard';
+import { FloorInfoHeader } from '@/components/floors/FloorInfoHeader';
+import { FloorPlanCard } from '@/components/floors/FloorPlanCard';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
 import type { Unit } from '@/tasia/components/floor-plan/Unit';
