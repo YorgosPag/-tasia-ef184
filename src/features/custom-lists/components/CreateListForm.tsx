@@ -16,7 +16,7 @@ import {
 import { Input } from '@/shared/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useCustomListActions } from '@/hooks/customList/useCustomListActions';
+import { useCustomListActions } from '@/hooks/useCustomListActions';
 import type { CreateListData } from '@/lib/customListService';
 import { BooleanSwitchField } from './form/BooleanSwitchField';
 
