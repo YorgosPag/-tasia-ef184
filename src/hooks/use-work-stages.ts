@@ -128,10 +128,8 @@ function useWorkStageForm(projectId: string) {
         if (finalData.documents && Array.isArray(finalData.documents)) {
             const documentTasks = finalData.documents.map((docName: string) => ({ task: docName, completed: false, }));
             const existingChecklist = editingWorkStage && 'checklist' in editingWorkStage ? (editingWorkStage.checklist || []) : [];
-            const existingDocumentTasks = existingChecklist.filter(item => finalData.documents.includes(item.task));
-            const newDocumentTasks = documentTasks.filter(item => !existingChecklist.some(ex => ex.task === item.task));
-            const otherTasks = existingChecklist.filter(item => !finalData.documents.includes(item.task) && !item.task.startsWith('Doc:'));
-            finalData.checklist = [...otherTasks, ...existingDocumentTasks, ...newDocumentTasks];
+            const nonDocumentTasks = existingChecklist.filter(item => !item.task.startsWith('Doc:'));
+            finalData.checklist = [...nonDocumentTasks, ...documentTasks];
         }
 
         try {

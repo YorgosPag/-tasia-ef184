@@ -9,10 +9,6 @@ import {
   Timestamp,
   writeBatch,
   getDoc,
-  updateDoc,
-  query,
-  collection,
-  where,
 } from 'firebase/firestore';
 import { db, storage } from '@/shared/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -22,6 +18,7 @@ import { FloorInfoHeader } from '@/components/floors/FloorInfoHeader';
 import { FloorPlanCard } from '@/components/floors/FloorPlanCard';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
+import { FloorPlanUploadCard } from './FloorPlanUploadCard';
 
 // --- Interfaces & Schemas ---
 interface Floor {
@@ -64,7 +61,8 @@ export function FloorDetailsContainer() {
     const docRef = doc(db, 'floors', floorId);
     const unsubscribeFloor = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
-        setFloor({ id: docSnap.id, ...docSnap.data() } as Floor);
+        const floorData = { id: docSnap.id, ...docSnap.data() } as Floor;
+        setFloor(floorData);
       } else {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Ο όροφος δεν βρέθηκε.' });
         router.push('/buildings');
@@ -83,7 +81,11 @@ export function FloorDetailsContainer() {
   
 
   const handleFileUpload = async (file: File) => {
-    if (!file || !floor || !user) return;
+    if (!file || !floor || !user || !floor.originalId) {
+       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκαν οι απαραίτητες πληροφορίες (Όροφος, Χρήστης, Original ID) για τη μεταφόρτωση.' });
+       return;
+    }
+    
     setIsUploading(true);
     const storageRef = ref(storage, `floor_plans/${floor.id}/${file.name}`);
     try {
@@ -92,17 +94,21 @@ export function FloorDetailsContainer() {
 
         const batch = writeBatch(db);
 
+        // Update top-level document
         const topLevelFloorRef = doc(db, 'floors', floor.id);
         batch.update(topLevelFloorRef, { floorPlanUrl: downloadURL });
 
+        // Update subcollection document
         const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
         if (buildingDoc.exists()) {
             const buildingData = buildingDoc.data() as Building;
-            if (buildingData.projectId && floor.originalId) {
+            if (buildingData.projectId && buildingData.originalId) {
                 const subCollectionFloorRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId);
                 const subDocSnap = await getDoc(subCollectionFloorRef);
                 if (subDocSnap.exists()) {
                    batch.update(subCollectionFloorRef, { floorPlanUrl: downloadURL });
+                } else {
+                   console.warn(`Subcollection floor document not found at: projects/${buildingData.projectId}/buildings/${buildingData.originalId}/floors/${floor.originalId}`);
                 }
             }
         }
@@ -134,9 +140,8 @@ export function FloorDetailsContainer() {
       <FloorInfoHeader
         floor={floor}
         onBack={() => router.back()}
-        isUploading={isUploading}
-        onFileUpload={handleFileUpload}
       />
+       <FloorPlanUploadCard onFileUpload={handleFileUpload} isUploading={isUploading} />
       <FloorPlanCard
         floorPlanUrl={floor.floorPlanUrl}
       />
