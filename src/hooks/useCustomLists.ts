@@ -294,6 +294,17 @@ export function useCustomLists() {
 
      try {
         await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
+        
+        // Optimistically update the local state for immediate feedback
+        setLists(currentLists => 
+            currentLists.map(l => {
+                if (l.id === listId) {
+                    return { ...l, items: l.items.filter(item => item.id !== itemId) };
+                }
+                return l;
+            })
+        );
+
         toast({ title: 'Επιτυχία', description: `Το στοιχείο "${itemValue}" διαγράφηκε.` });
         return true;
      } catch (error) {
