@@ -22,11 +22,6 @@ import { useAuth } from '@/shared/hooks/use-auth';
 import { logActivity } from '@/shared/lib/logger';
 import { type CustomList, type CreateListData } from './useCustomLists';
 
-interface CreateListResult {
-    success: boolean;
-    error?: string;
-}
-
 const listKeyToContactFieldMap: Record<string, string> = {
     'jIt8lRiNcgatSchI90yd': 'identity.type', // Έγγραφα Ταυτοποίησης
 };
@@ -36,75 +31,94 @@ export function useCustomListActions(lists: CustomList[], fetchAllLists: () => P
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const createList = useCallback(async (listData: CreateListData): Promise<CreateListResult> => {
+  const withToastAndRefresh = async <T,>(
+    operation: () => Promise<T>,
+    {
+      loadingMessage = 'Επεξεργασία...',
+      successMessage,
+      errorMessage,
+      onFinally,
+    }: {
+      loadingMessage?: string;
+      successMessage: string;
+      errorMessage: string;
+      onFinally?: () => void;
+    }
+  ): Promise<T | null> => {
     if (!user) {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν έχετε δικαίωμα για αυτή την ενέργεια.' });
-        return { success: false, error: 'Unauthorized' };
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν έχετε δικαίωμα για αυτή την ενέργεια.' });
+      return null;
     }
+    
     setIsSubmitting(true);
+    // Optional: show a loading toast
+    // const { id } = toast({ title: loadingMessage });
+
     try {
-      const listRef = doc(collection(db, 'tsia-custom-lists'));
-      await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
-      toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.' });
-      await logActivity('CREATE_LIST', { entityId: listRef.id, entityType: 'custom-list', name: listData.title });
+      const result = await operation();
+      toast({ title: 'Επιτυχία', description: successMessage });
       await fetchAllLists();
-      return { success: true };
+      return result;
     } catch (error) {
-        console.error('Error creating list:', error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η δημιουργία της λίστας απέτυχε.' });
-        return { success: false, error: (error as Error).message };
+      console.error(errorMessage, error);
+      toast({ variant: 'destructive', title: 'Σφάλμα', description: `${errorMessage}: ${(error as Error).message}` });
+      return null;
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
+      onFinally?.();
     }
-  }, [toast, user, fetchAllLists]);
+  };
 
-  const updateList = useCallback(async (listId: string, data: Partial<CreateListData>): Promise<boolean> => {
-    if(!user) return false;
-    try {
-      await updateDoc(doc(db, 'tsia-custom-lists', listId), data);
-      toast({ title: 'Επιτυχία', description: 'Η λίστα ενημερώθηκε.' });
-      await fetchAllLists();
-      return true;
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η ενημέρωση απέτυχε.' });
-      return false;
-    }
-  }, [toast, user, fetchAllLists]);
 
-  const deleteList = useCallback(async (listId: string, listTitle: string): Promise<boolean> => {
-    if(!user) return false;
+  const createList = useCallback(async (listData: CreateListData) => {
+    return withToastAndRefresh(
+        async () => {
+            const listRef = doc(collection(db, 'tsia-custom-lists'));
+            await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
+            await logActivity('CREATE_LIST', { entityId: listRef.id, entityType: 'custom-list', name: listData.title });
+            return listRef.id;
+        },
+        { successMessage: 'Η λίστα δημιουργήθηκε.', errorMessage: 'Η δημιουργία της λίστας απέτυχε.' }
+    );
+  }, [user, fetchAllLists]);
+
+  const updateList = useCallback(async (listId: string, data: Partial<CreateListData>) => {
+      return withToastAndRefresh(
+          () => updateDoc(doc(db, 'tsia-custom-lists', listId), data),
+          { successMessage: 'Η λίστα ενημερώθηκε.', errorMessage: 'Η ενημέρωση απέτυχε.' }
+      );
+  }, [user, fetchAllLists]);
+
+  const deleteList = useCallback(async (listId: string, listTitle: string) => {
     if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${listTitle}" και όλα τα περιεχόμενά της;`)) {
-        return false;
+        return null;
     }
-    try {
-        const batch = writeBatch(db);
-        const listRef = doc(db, 'tsia-custom-lists', listId);
-        const itemsQuery = query(collection(listRef, 'tsia-items'));
-        const itemsSnapshot = await getDocs(itemsQuery);
-        itemsSnapshot.docs.forEach(itemDoc => batch.delete(itemDoc.ref));
-        batch.delete(listRef);
-        await batch.commit();
-        toast({ title: 'Επιτυχία', description: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.' });
-        await logActivity('DELETE_LIST', { entityId: listId, entityType: 'custom-list', name: listTitle });
-        await fetchAllLists();
-        return true;
-    } catch (error) {
-        console.error('Error deleting list:', error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.' });
-        return false;
-    }
-  }, [toast, user, fetchAllLists]);
+    return withToastAndRefresh(
+        async () => {
+            const batch = writeBatch(db);
+            const listRef = doc(db, 'tsia-custom-lists', listId);
+            const itemsQuery = query(collection(listRef, 'tsia-items'));
+            const itemsSnapshot = await getDocs(itemsQuery);
+            itemsSnapshot.docs.forEach(itemDoc => batch.delete(itemDoc.ref));
+            batch.delete(listRef);
+            await batch.commit();
+            await logActivity('DELETE_LIST', { entityId: listId, entityType: 'custom-list', name: listTitle });
+        },
+        { successMessage: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.', errorMessage: 'Η διαγραφή απέτυχε.'}
+    );
+  }, [user, fetchAllLists]);
 
-  const addItem = useCallback(async (listId: string, rawValue: string, hasCode?: boolean): Promise<boolean> => {
-    if (!user) return false;
-    setIsSubmitting(true);
-    try {
-      const list = lists.find(l => l.id === listId);
-      if (!list) throw new Error("List not found.");
-      const itemsCollectionRef = collection(db, 'tsia-custom-lists', listId, 'tsia-items');
-      const existingItems = list.items;
-      let itemsToAdd: { value: string; code?: string }[] = [];
-      if (hasCode) {
+  const addItem = useCallback(async (listId: string, rawValue: string, hasCode?: boolean) => {
+    const list = lists.find(l => l.id === listId);
+    if (!list) {
+        toast({variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε η λίστα.'});
+        return null;
+    }
+    const itemsCollectionRef = collection(db, 'tsia-custom-lists', listId, 'tsia-items');
+    const existingItems = list.items;
+    let itemsToAdd: { value: string; code?: string }[] = [];
+
+    if (hasCode) {
         const lines = rawValue.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
         itemsToAdd = lines.map(line => {
           const firstSpaceIndex = line.indexOf(' ');
@@ -122,61 +136,52 @@ export function useCustomListActions(lists: CustomList[], fetchAllLists: () => P
         toast({ variant: 'default', title: 'Δεν προστέθηκαν νέα στοιχεία', description: 'Όλα τα στοιχεία που εισάγατε υπάρχουν ήδη.' });
         return true;
       }
-      const batch = writeBatch(db);
-      itemsToAdd.forEach(item => {
-        const newItemRef = doc(itemsCollectionRef);
-        batch.set(newItemRef, { ...item, createdAt: serverTimestamp() });
-      });
-      await batch.commit();
-      toast({ title: 'Επιτυχία', description: `${itemsToAdd.length} στοιχεία προστέθηκαν.` });
-      await fetchAllLists();
-      return true;
-    } catch (error) {
-      console.error('Error adding item(s):', error);
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η προσθήκη απέτυχε.' });
-      return false;
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [lists, toast, user, fetchAllLists]);
+    
+    return withToastAndRefresh(
+        async () => {
+            const batch = writeBatch(db);
+            itemsToAdd.forEach(item => {
+                const newItemRef = doc(itemsCollectionRef);
+                batch.set(newItemRef, { ...item, createdAt: serverTimestamp() });
+            });
+            await batch.commit();
+        },
+        { successMessage: `${itemsToAdd.length} στοιχεία προστέθηκαν.`, errorMessage: 'Η προσθήκη απέτυχε.'}
+    );
+  }, [lists, user, fetchAllLists, toast]);
 
-  const addNewItemToList = useCallback(async (listId: string, value: string, hasCode?: boolean, code?: string): Promise<string | null> => {
-    if (!user) return null;
-    try {
+  const addNewItemToList = useCallback(async (listId: string, value: string, hasCode?: boolean, code?: string) => {
      const list = lists.find(l => l.id === listId);
-     if (!list) throw new Error("List not found.");
-     const itemsCollectionRef = collection(db, 'tsia-custom-lists', listId, 'tsia-items');
+     if (!list) {
+         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε η λίστα.'});
+         return null;
+     };
      if (list.items.some(item => item.value.toLowerCase() === value.toLowerCase())) {
           toast({ variant: 'destructive', title: 'Διπλότυπη Εγγραφή', description: 'Αυτό το στοιχείο υπάρχει ήδη σε αυτή τη λίστα.' });
           return null;
      }
-     const newItemData: { value: string, code?: string, createdAt: any } = { value, createdAt: serverTimestamp() };
-     if (hasCode) newItemData.code = code || value;
-     const docRef = await addDoc(itemsCollectionRef, newItemData);
-     toast({ title: 'Επιτυχία', description: 'Το νέο στοιχείο προστέθηκε.' });
-     await fetchAllLists();
-     return docRef.id;
- } catch (error) {
-     console.error('Error adding new item:', error);
-     toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η προσθήκη του νέου στοιχείου απέτυχε.' });
-     return null;
- }
-}, [lists, toast, user, fetchAllLists]);
 
-  const updateItem = useCallback(async (listId: string, itemId: string, data: { value: string; code?: string }): Promise<boolean> => {
-     if(!user) return false;
-     try {
-         await updateDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId), data);
-         await fetchAllLists();
-         return true;
-     } catch (error) {
-         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η ενημέρωση του στοιχείου απέτυχε.' });
-         return false;
-     }
-  }, [toast, user, fetchAllLists]);
+     return withToastAndRefresh(
+         async () => {
+            const itemsCollectionRef = collection(db, 'tsia-custom-lists', listId, 'tsia-items');
+            const newItemData: { value: string, code?: string, createdAt: any } = { value, createdAt: serverTimestamp() };
+            if (hasCode) newItemData.code = code || value;
+            const docRef = await addDoc(itemsCollectionRef, newItemData);
+            return docRef.id;
+         },
+         { successMessage: 'Το νέο στοιχείο προστέθηκε.', errorMessage: 'Η προσθήκη του νέου στοιχείου απέτυχε.' }
+     );
+  }, [lists, user, fetchAllLists, toast]);
 
-  const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string): Promise<boolean> => {
-    if(!user) return false;
+  const updateItem = useCallback(async (listId: string, itemId: string, data: { value: string; code?: string }) => {
+     return withToastAndRefresh(
+         () => updateDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId), data),
+         { successMessage: 'Το στοιχείο ενημερώθηκε.', errorMessage: 'Η ενημέρωση του στοιχείου απέτυχε.'}
+     );
+  }, [user, fetchAllLists]);
+
+  const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string) => {
+    if(!user) return null;
     const contactField = listKeyToContactFieldMap[listKey];
     if (contactField) {
        const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
@@ -188,19 +193,15 @@ export function useCustomListActions(lists: CustomList[], fetchAllLists: () => P
                title: "Αδυναμία Διαγραφής",
                description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${contactInUse.name}.`
            });
-           return false;
+           return null;
        }
     }
-    try {
-       await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
-       toast({ title: 'Επιτυχία', description: `Το στοιχείο "${itemValue}" διαγράφηκε.` });
-       await fetchAllLists();
-       return true;
-    } catch (error) {
-       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή του στοιχείου απέτυχε.' });
-       return false;
-    }
- }, [toast, user, fetchAllLists]);
+    
+    return withToastAndRefresh(
+        () => deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId)),
+        { successMessage: `Το στοιχείο "${itemValue}" διαγράφηκε.`, errorMessage: 'Η διαγραφή του στοιχείου απέτυχε.'}
+    );
+ }, [user, fetchAllLists, toast]);
 
   return {
     isSubmitting,
