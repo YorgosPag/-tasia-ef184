@@ -22,8 +22,6 @@ export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: 
     <NaturalPersonLayout
       form={form}
       onFileSelect={onFileSelect}
-      openSections={openSections}
-      onOpenChange={onOpenChange}
     />
   );
 }
