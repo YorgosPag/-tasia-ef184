@@ -10,7 +10,7 @@ import { useWorkStages } from '@/hooks/use-work-stages';
 import { WorkStageFormDialog } from '@/components/projects/work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from '@/components/projects/work-stages/WorkStageAccordion';
 import type { Project, WorkStage } from '@/shared/types/project-types';
-import { WorkStagesEmptyState } from './WorkStagesEmptyState';
+import { WorkStagesEmptyState } from '@/components/projects/work-stages/WorkStagesEmptyState';
 import { useAuth } from '@/shared/hooks/use-auth';
 
 interface WorkStagesSectionProps {

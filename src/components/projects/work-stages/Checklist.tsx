@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -8,7 +9,7 @@ import { Label } from '@/shared/components/ui/label';
 import { Button } from '@/shared/components/ui/button';
 import { Plus, FileText, MessageSquare, Save } from 'lucide-react';
 import type { WorkStage } from '@/shared/types/project-types';
-import { calculateChecklistProgress, formatDate } from './utils';
+import { calculateChecklistProgress, formatDate } from '@/components/projects/work-stages/utils';
 
 
 interface ChecklistProps {
