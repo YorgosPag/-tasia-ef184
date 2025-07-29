@@ -18,7 +18,7 @@ import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 
 
-export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 'form'|'onFileSelect'>) {
+export function BasicInfoSection({ form }: Pick<ContactFormProps, 'form'|'onFileSelect'>) {
     const entityType = useWatch({ control: form.control, name: 'entityType' });
     const contactId = form.getValues('id'); 
 
@@ -122,17 +122,6 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
 
             {entityType === 'Φυσικό Πρόσωπο' && (
                 <div className="space-y-4 border-t pt-4">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:gap-4 space-y-2 sm:space-y-0">
-                        <FormLabel className="sm:w-40 sm:text-right sm:pt-2.5 shrink-0">Φωτογραφία</FormLabel>
-                        <div className="flex-1">
-                            <ImageUploader 
-                                entityType={entityType}
-                                entityId={contactId}
-                                initialImageUrl={form.getValues('photoUrl')}
-                                onFileSelect={onFileSelect}
-                            />
-                        </div>
-                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="firstName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Όνομα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
                         <FormField control={form.control} name="lastName" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Επώνυμο</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />

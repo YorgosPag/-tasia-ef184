@@ -3,22 +3,21 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, Suspense, useRef } from 'react';
-import { useRouter, useParams, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db, storage } from '@/shared/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/shared/hooks/use-toast';
-import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
 import { Form } from '@/shared/components/ui/form';
-import { Loader2, ArrowLeft, Save } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { ContactForm } from '@/components/contacts/ContactForm';
 import { contactSchema, ContactFormValues, ALL_ACCORDION_SECTIONS, EntityType } from '@/shared/lib/validation/contactSchema';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
-import { ImageUploader } from '@/components/contacts/ImageUploader';
+import { ContactEditHeader } from '@/components/contacts/ContactEditHeader';
 
 
 function deepClean(obj: any) {
@@ -57,9 +56,6 @@ function EditContactPageContent() {
     
     const entityType = form.watch('entityType');
 
-    const isLegalEntity = entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία';
-
-
     const mapEntityTypeToTab = (type: ContactFormValues['entityType']): EntityType => {
         switch(type) {
             case 'Φυσικό Πρόσωπο': return 'individual';
@@ -78,7 +74,6 @@ function EditContactPageContent() {
         }
     }
     
-    // Sync URL with form state
     useEffect(() => {
         const newTab = mapEntityTypeToTab(entityType);
 
@@ -142,15 +137,16 @@ function EditContactPageContent() {
         setIsSubmitting(true);
         
         let photoUrls = data.photoUrls || {};
+        const viewParamForPhoto = mapEntityTypeToTab(data.entityType);
 
         try {
              if (fileToUpload) {
                 toast({ title: "Ενημέρωση επαφής", description: "Ανέβασμα νέας φωτογραφίας..." });
-                const filePath = `contact-images/${viewParam}/${contactId}/${fileToUpload.name}`;
+                const filePath = `contact-images/${viewParamForPhoto}/${contactId}/${fileToUpload.name}`;
                 const storageRef = ref(storage, filePath);
                 await uploadBytes(storageRef, fileToUpload);
                 const newPhotoUrl = await getDownloadURL(storageRef);
-                photoUrls[viewParam] = newPhotoUrl;
+                photoUrls[viewParamForPhoto] = newPhotoUrl;
             }
 
             const dataToUpdate: { [key: string]: any } = { ...data, photoUrls };
@@ -173,7 +169,6 @@ function EditContactPageContent() {
 
             const cleanedData = deepClean(dataToUpdate);
             delete cleanedData.id;
-            delete cleanedData.photoUrl; // Remove obsolete field
 
             const docRef = doc(db, 'contacts', contactId);
             await updateDoc(docRef, cleanedData);
@@ -208,34 +203,17 @@ function EditContactPageContent() {
         return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>;
     }
 
-    const currentPhotoUrl = form.getValues('photoUrls')?.[viewParam] || '';
-
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                 <div className="flex items-center justify-between sticky top-0 bg-background py-2 z-10">
-                    <Button type="button" variant="outline" size="sm" onClick={() => router.back()}>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Πίσω στις Επαφές
-                    </Button>
-                    {isLegalEntity && contactName && (
-                        <h2 className="text-xl font-bold text-foreground text-center flex-1">{contactName}</h2>
-                    )}
-                     {isLegalEntity && (
-                         <div className="w-32">
-                             <ImageUploader 
-                                entityType={entityType}
-                                entityId={contactId}
-                                initialImageUrl={currentPhotoUrl}
-                                onFileSelect={setFileToUpload}
-                            />
-                         </div>
-                    )}
-                    <Button type="submit" disabled={isSubmitting || !form.formState.isDirty}>
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                        Αποθήκευση Αλλαγών
-                    </Button>
-                </div>
+            <form id="contact-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <ContactEditHeader
+                    contactName={contactName}
+                    isSubmitting={isSubmitting}
+                    isDirty={form.formState.isDirty}
+                    onBack={() => router.back()}
+                    form={form}
+                    onFileSelect={setFileToUpload}
+                />
                 
                 <Card>
                     <CardHeader>

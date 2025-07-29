@@ -8,11 +8,11 @@ import { GemhDataTabs } from '../tabs/GemhDataTabs';
 import { UserDataTabs } from '../tabs/UserDataTabs';
 import type { ContactFormProps } from '../types';
 
-export function LegalPersonLayout({ form, onFileSelect }: Pick<ContactFormProps, 'form' | 'onFileSelect'>) {
+export function LegalPersonLayout({ form }: Pick<ContactFormProps, 'form' | 'onFileSelect'>) {
   return (
     <div className="w-full space-y-4">
       {/* Entity Type Selection now at the top */}
-      <BasicInfoSection form={form} onFileSelect={onFileSelect} />
+      <BasicInfoSection form={form} />
 
       {/* Tabs for GEMH and User Data */}
       <Tabs defaultValue="gemh-data" className="w-full">
