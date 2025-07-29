@@ -22,7 +22,7 @@ import { FloorInfoHeader } from './FloorInfoHeader';
 import { FloorPlanCard } from './FloorPlanCard';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
-import type { Unit } from '@/components/floor-plan/Unit';
+import type { Unit } from '@/tasia/components/floor-plan/Unit';
 
 
 // --- Interfaces & Schemas ---

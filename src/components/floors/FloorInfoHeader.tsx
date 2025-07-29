@@ -35,7 +35,7 @@ export function FloorInfoHeader({
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" className="w-fit" onClick={onBack}>
+        <Button variant="outline" size="sm" className="w-fit" type="button" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Επιστροφή
         </Button>
