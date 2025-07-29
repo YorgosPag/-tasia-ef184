@@ -11,9 +11,11 @@ import { NaturalPersonLayout } from './ContactForm/layout/NaturalPersonLayout';
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const { entityType } = useWatchedFields(form);
 
-  return entityType === 'Νομικό Πρόσωπο' ? (
-    <LegalPersonLayout form={form} onFileSelect={onFileSelect} />
-  ) : (
+  if (entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') {
+    return <LegalPersonLayout form={form} onFileSelect={onFileSelect} />;
+  }
+
+  return (
     <NaturalPersonLayout
       form={form}
       onFileSelect={onFileSelect}

@@ -3,7 +3,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useWatch } from 'react-hook-form';
-import { AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { Briefcase, Loader2 } from 'lucide-react';
@@ -16,7 +15,7 @@ const GEMI_API_URL = 'https://opendata-api.businessportal.gr/api/opendata/v1/com
 const GEMI_API_KEY = 'b98MlVJ7vDF8gQIWN6d79cgStU8QJp9o';
 
 
-export function JobSection({ form }: ContactFormProps) {
+export function JobSection({ form }: Pick<ContactFormProps, 'form'>) {
     const entityType = useWatch({ control: form.control, name: 'entityType' });
     const arGemiValue = useWatch({ control: form.control, name: 'job.arGemi' });
     const afmValue = useWatch({ control: form.control, name: 'afm' });
@@ -162,78 +161,66 @@ export function JobSection({ form }: ContactFormProps) {
 
 
     return (
-        <AccordionItem value="job">
-            <AccordionTrigger>
-            <div className="flex items-center gap-2 text-primary">
-                <Briefcase className="h-5 w-5" />
-                <span>Επαγγελματικά Στοιχεία</span>
-            </div>
-            </AccordionTrigger>
-            <AccordionContent className="space-y-4 p-1">
-                 
-                  <p className="text-xs text-muted-foreground -mt-2">Εισάγετε ΑΦΜ ή Αρ. ΓΕΜΗ για αυτόματη συμπλήρωση.</p>
-
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <FormField control={form.control} name="job.arGemi" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Αριθμός ΓΕΜΗ</FormLabel>
-                            <div className="relative">
-                                <FormControl><Input {...field} /></FormControl>
-                                {isLoadingGemi && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-muted-foreground" />}
-                            </div>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                     <FormField control={form.control} name="afm" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>ΑΦΜ</FormLabel>
-                             <div className="relative">
-                                <FormControl><Input {...field} /></FormControl>
-                                {isLoadingGemi && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-muted-foreground" />}
-                            </div>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                     <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem><FormLabel>ΔΟΥ (από ΓΕΜΗ)</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                     <FormField control={form.control} name="job.gemhGemiOffice" render={({ field }) => (<FormItem><FormLabel>Τοπική Υπηρεσία Γ.Ε.ΜΗ.</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                     <FormField control={form.control} name="job.legalType" render={({ field }) => (<FormItem><FormLabel>Νομική Μορφή</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                     <FormField control={form.control} name="job.prefecture" render={({ field }) => (<FormItem><FormLabel>Νομός</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                    <div className="grid grid-cols-2 gap-4">
-                        <FormItem>
-                            <FormLabel>Υποκατάστημα / Μητρική</FormLabel>
-                            <FormControl>
-                                <Badge variant="outline" className="text-muted-foreground block w-fit mt-2">
-                                {typeof isBranch === 'boolean' ? (isBranch ? 'Υποκατάστημα' : 'Μητρική Εταιρεία') : '-'}
-                                </Badge>
-                            </FormControl>
-                            <FormDescription>Η πληροφορία αντλείται αυτόματα από το ΓΕΜΗ.</FormDescription>
-                        </FormItem>
-                        <FormItem>
-                            <FormLabel>Τρόπος Εγγραφής</FormLabel>
-                            <FormControl>
-                                <Badge variant="outline" className="text-muted-foreground block w-fit mt-2">
-                                {getAutoRegisteredText()}
-                                </Badge>
-                            </FormControl>
-                            <FormDescription>Η πληροφορία αντλείται αυτόματα από το ΓΕΜΗ.</FormDescription>
-                        </FormItem>
+        <div className="space-y-4 p-1">
+            <p className="text-xs text-muted-foreground -mt-2">Εισάγετε ΑΦΜ ή Αρ. ΓΕΜΗ για αυτόματη συμπλήρωση.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={form.control} name="job.arGemi" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Αριθμός ΓΕΜΗ</FormLabel>
+                    <div className="relative">
+                        <FormControl><Input {...field} /></FormControl>
+                        {isLoadingGemi && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-muted-foreground" />}
                     </div>
-                    <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem><FormLabel>Επωνυμία</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="job.commercialTitle" render={({ field }) => (<FormItem><FormLabel>Διακριτικός Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="job.companyTitle" render={({ field }) => (<FormItem><FormLabel>Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="job.gemhActivity" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>Δραστηριότητα</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="job.gemhStatus" render={({ field }) => (<FormItem><FormLabel>Κατάσταση ΓΕΜΗ</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="job.gemhDate" render={({ field }) => (<FormItem><FormLabel>Ημ/νία Κατάστασης</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
-                 </div>
-
-                 <Separator/>
-                 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ρόλος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
-                    <FormField control={form.control} name="job.specialty" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ειδικότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                    <FormMessage />
+                </FormItem>
+            )} />
+                <FormField control={form.control} name="afm" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>ΑΦΜ</FormLabel>
+                        <div className="relative">
+                        <FormControl><Input {...field} /></FormControl>
+                        {isLoadingGemi && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-muted-foreground" />}
+                    </div>
+                    <FormMessage />
+                </FormItem>
+            )} />
+                <FormField control={form.control} name="job.gemhDOY" render={({ field }) => (<FormItem><FormLabel>ΔΟΥ (από ΓΕΜΗ)</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="job.gemhGemiOffice" render={({ field }) => (<FormItem><FormLabel>Τοπική Υπηρεσία Γ.Ε.ΜΗ.</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="job.legalType" render={({ field }) => (<FormItem><FormLabel>Νομική Μορφή</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="job.prefecture" render={({ field }) => (<FormItem><FormLabel>Νομός</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                <div className="grid grid-cols-2 gap-4">
+                    <FormItem>
+                        <FormLabel>Υποκατάστημα / Μητρική</FormLabel>
+                        <FormControl>
+                            <Badge variant="outline" className="text-muted-foreground block w-fit mt-2">
+                            {typeof isBranch === 'boolean' ? (isBranch ? 'Υποκατάστημα' : 'Μητρική Εταιρεία') : '-'}
+                            </Badge>
+                        </FormControl>
+                        <FormDescription>Η πληροφορία αντλείται αυτόματα από το ΓΕΜΗ.</FormDescription>
+                    </FormItem>
+                    <FormItem>
+                        <FormLabel>Τρόπος Εγγραφής</FormLabel>
+                        <FormControl>
+                            <Badge variant="outline" className="text-muted-foreground block w-fit mt-2">
+                            {getAutoRegisteredText()}
+                            </Badge>
+                        </FormControl>
+                        <FormDescription>Η πληροφορία αντλείται αυτόματα από το ΓΕΜΗ.</FormDescription>
+                    </FormItem>
                 </div>
-            </AccordionContent>
-        </AccordionItem>
+                <FormField control={form.control} name="job.companyName" render={({ field }) => (<FormItem><FormLabel>Επωνυμία</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="job.commercialTitle" render={({ field }) => (<FormItem><FormLabel>Διακριτικός Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="job.companyTitle" render={({ field }) => (<FormItem><FormLabel>Τίτλος</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="job.gemhActivity" render={({ field }) => (<FormItem className="md:col-span-2"><FormLabel>Δραστηριότητα</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="job.gemhStatus" render={({ field }) => (<FormItem><FormLabel>Κατάσταση ΓΕΜΗ</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="job.gemhDate" render={({ field }) => (<FormItem><FormLabel>Ημ/νία Κατάστασης</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>)} />
+            </div>
+            <Separator/>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={form.control} name="job.role" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ρόλος</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+                <FormField control={form.control} name="job.specialty" render={({ field }) => (<FormItem className="flex items-center gap-4"><FormLabel className="w-40 text-right">Ειδικότητα</FormLabel><div className="flex-1"><FormControl><Input {...field} /></FormControl><FormMessage /></div></FormItem>)} />
+            </div>
+        </div>
     );
 }
 
@@ -241,5 +228,3 @@ export function JobSection({ form }: ContactFormProps) {
     
 
     
-
-
