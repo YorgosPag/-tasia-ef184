@@ -69,7 +69,7 @@ export function CreateListForm() {
         <Card>
             <CardHeader>
                 <CardTitle>Δημιουργία Νέας Λίστας</CardTitle>
-                <CardDescription>Δημιουργήστε μια νέα λίστα επιλογών για χρήση σε όλη την εφαρμογή.</CardDescription>
+                <CardDescription>Δημιουργήστε μια νέα λίστα επιλογών για χρήση σε όλη την εφαρμογή. Το ID της λίστας θα παραχθεί αυτόματα.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
