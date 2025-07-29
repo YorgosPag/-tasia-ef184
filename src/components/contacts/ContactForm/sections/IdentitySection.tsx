@@ -30,7 +30,7 @@ export function IdentitySection({ form }: Pick<ContactFormProps, 'form'>) {
     
     const issuingAuthoritiesList = lists.find(l => l.id === 'iGOjn86fcktREwMeDFPz');
     const issuingAuthorityOptions = issuingAuthoritiesList?.items.map(item => ({
-        value: item.value, // Use value for both value and label for CreatableCombobox compatibility
+        value: item.id, // Use the item's unique ID as the value
         label: item.value,
     })) || [];
     
