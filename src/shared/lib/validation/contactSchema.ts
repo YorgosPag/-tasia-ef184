@@ -162,8 +162,26 @@ export const contactSchema = personalInfoSchema
   .merge(socialsSchema)
   .merge(addressSchema)
   .merge(jobInfoSchema)
-  .merge(notesSchema);
+  .merge(notesSchema)
+  .superRefine((data, ctx) => {
+    if (data.entityType === 'Φυσικό Πρόσωπο' && !data.firstName) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['firstName'],
+            message: 'Το όνομα είναι υποχρεωτικό για φυσικά πρόσωπα.',
+        });
+    }
+     if (data.entityType === 'Φυσικό Πρόσωπο' && !data.lastName) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['lastName'],
+            message: 'Το επώνυμο είναι υποχρεωτικό για φυσικά πρόσωπα.',
+        });
+    }
+  });
+
 
 export type ContactFormValues = z.infer<typeof contactSchema>;
 
+export type EntityType = 'individual' | 'legal' | 'public';
     

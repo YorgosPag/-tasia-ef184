@@ -1,8 +1,9 @@
 
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
@@ -14,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/sha
 import { Form } from '@/shared/components/ui/form';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import { ContactForm } from '@/components/contacts/ContactForm';
-import { contactSchema, ContactFormValues, ALL_ACCORDION_SECTIONS } from '@/shared/lib/validation/contactSchema';
+import { contactSchema, ContactFormValues, ALL_ACCORDION_SECTIONS, EntityType } from '@/shared/lib/validation/contactSchema';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
 
@@ -32,10 +33,10 @@ function deepClean(obj: any) {
   return obj;
 }
 
-
-export default function EditContactPage() {
+function EditContactPageContent() {
     const router = useRouter();
     const params = useParams();
+    const searchParams = useSearchParams();
     const contactId = params.id as string;
     const { toast } = useToast();
     const { user } = useAuth();
@@ -52,9 +53,50 @@ export default function EditContactPage() {
     });
     
     const entityType = form.watch('entityType');
+    const tabParam = searchParams.get('tab') as EntityType | null;
+
     useEffect(() => {
         setIsLegalEntity(entityType === 'Νομικό Πρόσωπο');
     }, [entityType]);
+    
+    const mapEntityTypeToTab = (type: ContactFormValues['entityType']): EntityType => {
+        switch(type) {
+            case 'Φυσικό Πρόσωπο': return 'individual';
+            case 'Νομικό Πρόσωπο': return 'legal';
+            case 'Δημ. Υπηρεσία': return 'public';
+            default: return 'individual';
+        }
+    }
+
+    const mapTabToEntityType = (tab: EntityType | null): ContactFormValues['entityType'] => {
+        switch(tab) {
+            case 'individual': return 'Φυσικό Πρόσωπο';
+            case 'legal': return 'Νομικό Πρόσωπο';
+            case 'public': return 'Δημ. Υπηρεσία';
+            default: return 'Φυσικό Πρόσωπο';
+        }
+    }
+    
+    // Sync URL with form state
+    useEffect(() => {
+        const newTab = mapEntityTypeToTab(entityType);
+        if (newTab !== tabParam) {
+            const current = new URLSearchParams(Array.from(searchParams.entries()));
+            current.set('tab', newTab);
+            const search = current.toString();
+            const query = search ? `?${search}` : "";
+            router.replace(`${pathname}${query}`);
+        }
+    }, [entityType, tabParam, router, searchParams]);
+
+    // Sync form state with URL
+    useEffect(() => {
+        if (tabParam && mapTabToEntityType(tabParam) !== entityType) {
+            form.setValue('entityType', mapTabToEntityType(tabParam), { shouldDirty: true });
+        }
+    }, [tabParam, entityType, form]);
+
+    const pathname = usePathname();
 
     useEffect(() => {
         if (!contactId) return;
@@ -79,6 +121,11 @@ export default function EditContactPage() {
                         addresses: data.addresses || [],
                     };
                     form.reset(formData);
+                    // Set initial tab from fetched data
+                    const initialTab = mapEntityTypeToTab(data.entityType);
+                    if (initialTab !== tabParam) {
+                       router.replace(`${pathname}?tab=${initialTab}`);
+                    }
                 } else {
                     toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η επαφή δεν βρέθηκε.' });
                     router.push('/contacts');
@@ -92,6 +139,7 @@ export default function EditContactPage() {
         };
 
         fetchContact();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [contactId, router, toast, form]);
 
 
@@ -197,4 +245,12 @@ export default function EditContactPage() {
             </form>
         </Form>
     );
+}
+
+export default function EditContactPage() {
+    return (
+        <Suspense fallback={<div className="flex h-full w-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin" /></div>}>
+            <EditContactPageContent />
+        </Suspense>
+    )
 }
