@@ -100,3 +100,5 @@ export function WorkStagePhotoGallery({ stage, onPhotoUpload }: WorkStagePhotoGa
         </Card>
     )
 }
+
+    

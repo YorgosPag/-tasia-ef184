@@ -5,20 +5,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { collection, query, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 import { getStatusVariant } from '@/components/projects/work-stages/utils';
+import type { WorkStage } from '@/shared/types/project-types';
 
 // --- Types ---
 interface Project {
     id: string;
     title: string;
-}
-
-interface WorkStage {
-    id: string;
-    name: string;
-    status: 'Εκκρεμεί' | 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Καθυστερεί';
-    startDate?: Timestamp;
-    endDate?: Timestamp;
-    deadline?: Timestamp;
 }
 
 interface CalendarEvent {
@@ -125,3 +117,5 @@ export function useWorkStageCalendar() {
         setMonth,
     };
 }
+
+    

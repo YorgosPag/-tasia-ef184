@@ -84,3 +84,5 @@ export function Checklist({ stage, onToggle, onAdd, onNotesChange }: ChecklistPr
         </div>
     )
 }
+
+    

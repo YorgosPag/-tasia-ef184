@@ -2,7 +2,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ComplexEntity } from '@/hooks/useComplexEntities';
+import { ComplexEntity } from '@/shared/hooks/useComplexEntities';
 import { Button } from '@/shared/components/ui/button';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import {
@@ -71,3 +71,5 @@ export const columns: ColumnDef<ComplexEntity>[] = [
     },
   },
 ];
+
+    
