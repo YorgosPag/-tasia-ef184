@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -17,13 +18,13 @@ import {
 
 
 export function SimpleListsTab() {
-  const { lists, isLoading } = useCustomLists();
+  const { lists, isLoading, fetchAllLists } = useCustomLists();
   const [searchQuery, setSearchQuery] = useState('');
   const [openItems, setOpenItems] = useState<string[]>([]);
 
   const filteredLists = lists.filter(list =>
     list.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    list.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    (list.description && list.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const toggleAccordionItem = (id: string) => {
@@ -48,7 +49,7 @@ export function SimpleListsTab() {
 
   return (
     <div className="space-y-8">
-      <CreateListForm />
+      <CreateListForm fetchAllLists={fetchAllLists} />
       
       <div className="space-y-4">
         <h2 className="text-2xl font-bold tracking-tight">Υπάρχουσες Λίστες</h2>

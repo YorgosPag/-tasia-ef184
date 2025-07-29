@@ -18,7 +18,6 @@ import { Input } from '@/shared/components/ui/input';
 import { Switch } from '@/shared/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useCustomLists } from '@/hooks/useCustomLists';
 import { useCustomListActions } from '@/hooks/useCustomListActions';
 import type { CreateListData } from '@/lib/customListService';
 
@@ -33,8 +32,11 @@ const createListSchema = z.object({
 
 type CreateListFormValues = z.infer<typeof createListSchema>;
 
-export function CreateListForm() {
-    const { fetchAllLists } = useCustomLists();
+interface CreateListFormProps {
+    fetchAllLists: () => Promise<void>;
+}
+
+export function CreateListForm({ fetchAllLists }: CreateListFormProps) {
     const { createList, isSubmitting } = useCustomListActions(fetchAllLists);
 
     const form = useForm<CreateListFormValues>({

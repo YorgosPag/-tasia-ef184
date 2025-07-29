@@ -2,50 +2,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  collection,
-  onSnapshot,
-  writeBatch,
-  doc,
-  serverTimestamp,
-  query,
-  orderBy,
-  deleteDoc,
-  updateDoc,
-  getDocs,
-  where,
-  limit,
-  setDoc,
-} from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
 import { useToast } from '@/shared/hooks/use-toast';
-import { useAuth } from '@/shared/hooks/use-auth';
-import { logActivity } from '@/shared/lib/logger';
-
-// --- Interfaces ---
-
-export interface ListItem {
-  id: string;
-  value: string;
-  code?: string;
-  createdAt: any;
-}
-
-export interface CustomList {
-  id: string;
-  title: string;
-  description?: string;
-  hasCode?: boolean;
-  isProtected?: boolean;
-  createdAt: any;
-  items: ListItem[];
-}
-
-export type CreateListData = Omit<CustomList, 'id' | 'createdAt' | 'items'>;
+import { getAllCustomLists } from '@/lib/customListService';
+import type { CustomList } from '@/lib/customListService';
 
 
-// --- Custom Hook ---
-
+/**
+ * A custom hook to fetch and manage the state of all custom lists.
+ * It provides the lists, loading state, and a function to manually refetch the data.
+ */
 export function useCustomLists() {
   const { toast } = useToast();
   const [lists, setLists] = useState<CustomList[]>([]);
@@ -54,18 +19,7 @@ export function useCustomLists() {
   const fetchAllLists = useCallback(async () => {
     setIsLoading(true);
     try {
-      const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
-      const listsSnapshot = await getDocs(listsQuery);
-
-      const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
-        const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
-        const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
-        const itemsSnapshot = await getDocs(itemsQuery);
-        list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
-        return list;
-      });
-      
-      const listsData = await Promise.all(listsDataPromises);
+      const listsData = await getAllCustomLists();
       setLists(listsData);
     } catch (error) {
        console.error("Error fetching lists manually:", error);

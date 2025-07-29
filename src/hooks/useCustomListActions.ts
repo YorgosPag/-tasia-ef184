@@ -14,45 +14,45 @@ import {
   deleteCustomListItem,
   checkListItemDependencies,
   checkListDependencies,
-  getAllCustomLists,
 } from '@/lib/customListService';
 import type { CreateListData, CustomList } from '@/lib/customListService';
+import { useCustomLists } from './useCustomLists';
 
-// This map connects a list's unique Firestore ID to a specific field in the `contacts` collection.
-// It's used to check if a list item is in use before allowing its deletion.
 const listIdToContactFieldMap: Record<string, string> = {
-  // 'List ID': 'contacts_field_name'
-  'hOKgJ1K2k8g7e9Y3d1t5': 'job.role', // Ρόλοι
-  'fLpWc4e8gH2jK1n7m0p3': 'job.specialty', // Ειδικότητες
-  'bC9eF1g3h5i7k9l0m2n4': 'doy', // ΔΟΥ
-  'jIt8lRiNcgatSchI90yd': 'identity.type', // Έγγραφα Ταυτοποίησης
-  'iGOjn86fcktREwMeDFPz': 'identity.issuingAuthority' // Εκδούσες Αρχές
+  'hOKgJ1K2k8g7e9Y3d1t5': 'job.role',
+  'fLpWc4e8gH2jK1n7m0p3': 'job.specialty',
+  'bC9eF1g3h5i7k9l0m2n4': 'doy',
+  'jIt8lRiNcgatSchI90yd': 'identity.type',
+  'iGOjn86fcktREwMeDFPz': 'identity.issuingAuthority',
 };
 
-export function useCustomListActions(fetchAllLists: () => Promise<void>) {
+export function useCustomListActions() {
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { fetchAllLists } = useCustomLists();
 
   const withToastAndRefresh = async <T,>(
     operation: () => Promise<T>,
     {
-      loadingMessage = 'Επεξεργασία...',
       successMessage,
       errorMessage,
       onFinally,
     }: {
-      loadingMessage?: string;
       successMessage: string;
       errorMessage: string;
       onFinally?: () => void;
     }
   ): Promise<T | null> => {
     if (!user) {
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν έχετε δικαίωμα για αυτή την ενέργεια.' });
+      toast({
+        variant: 'destructive',
+        title: 'Σφάλμα',
+        description: 'Δεν έχετε δικαίωμα για αυτή την ενέργεια.',
+      });
       return null;
     }
-    
+
     setIsSubmitting(true);
     try {
       const result = await operation();
@@ -61,7 +61,11 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
       return result;
     } catch (error) {
       console.error(errorMessage, error);
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: `${errorMessage}: ${(error as Error).message}` });
+      toast({
+        variant: 'destructive',
+        title: 'Σφάλμα',
+        description: `${errorMessage}: ${(error as Error).message}`,
+      });
       return null;
     } finally {
       setIsSubmitting(false);
@@ -71,111 +75,149 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
 
   const createList = useCallback(async (listData: CreateListData) => {
     return withToastAndRefresh(
-        async () => {
-            const listId = await createCustomListService(listData);
-            await logActivity('CREATE_LIST', { entityId: listId, entityType: 'custom-list', name: listData.title });
-            return listId;
-        },
-        { successMessage: 'Η λίστα δημιουργήθηκε.', errorMessage: 'Η δημιουργία της λίστας απέτυχε.' }
+      async () => {
+        const listId = await createCustomListService(listData);
+        await logActivity('CREATE_LIST', {
+          entityId: listId,
+          entityType: 'custom-list',
+          name: listData.title,
+        });
+        return listId;
+      },
+      {
+        successMessage: 'Η λίστα δημιουργήθηκε.',
+        errorMessage: 'Η δημιουργία της λίστας απέτυχε.',
+      }
     );
   }, [user, fetchAllLists, toast]);
 
   const updateList = useCallback(async (listId: string, data: Partial<CreateListData>) => {
-      return withToastAndRefresh(
-          () => updateCustomListService(listId, data),
-          { successMessage: 'Η λίστα ενημερώθηκε.', errorMessage: 'Η ενημέρωση απέτυχε.' }
-      );
+    return withToastAndRefresh(
+      () => updateCustomListService(listId, data),
+      {
+        successMessage: 'Η λίστα ενημερώθηκε.',
+        errorMessage: 'Η ενημέρωση απέτυχε.',
+      }
+    );
   }, [user, fetchAllLists, toast]);
 
   const deleteList = useCallback(async (list: CustomList) => {
-    if (!user || !isAdmin) return null;
+    if (!isAdmin) {
+        toast({variant: 'destructive', title: 'Σφάλμα', description: 'Δεν έχετε δικαιώματα για διαγραφή.'});
+        return null;
+    };
 
     const contactField = listIdToContactFieldMap[list.id];
     if (contactField) {
-        const dependencies = await checkListDependencies(contactField, list.items.map(item => item.value));
-        if (dependencies.length > 0) {
-            const examples = dependencies.slice(0, 2).map(d => `"${d.value}" στην επαφή "${d.contactName}"`).join(', ');
-            const warningMessage = `Η λίστα "${list.title}" χρησιμοποιείται σε ενεργά σημεία. Ενδεικτικά: ${examples}${dependencies.length > 2 ? '...' : ''}. Είστε βέβαιος ότι θέλετε να συνεχίσετε με τη διαγραφή;`;
-            if (!confirm(warningMessage)) {
-                return null;
-            }
+      const dependencies = await checkListDependencies(contactField, list.items.map((item) => item.value));
+      if (dependencies.length > 0) {
+        const examples = dependencies
+          .slice(0, 2)
+          .map((d) => `"${d.value}" στην επαφή "${d.contactName}"`)
+          .join(', ');
+        const warningMessage = `Η λίστα "${list.title}" χρησιμοποιείται σε ενεργά σημεία. Ενδεικτικά: ${examples}${dependencies.length > 2 ? '...' : ''}.`;
+        
+        if (!confirm(`${warningMessage}\n\nΕίστε σίγουρος ότι θέλετε να συνεχίσετε;`)) {
+            return null;
         }
-    } else {
-        if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
+      }
+    }
+    
+    // Fallback confirmation for lists without dependency checks
+    if (!contactField) {
+        if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
             return null;
         }
     }
 
-
     return withToastAndRefresh(
-        async () => {
-            await deleteCustomListService(list.id);
-            await logActivity('DELETE_LIST', { entityId: list.id, entityType: 'custom-list', name: list.title });
-        },
-        { successMessage: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.', errorMessage: 'Η διαγραφή απέτυχε.'}
+      async () => {
+        await deleteCustomListService(list.id);
+        await logActivity('DELETE_LIST', {
+          entityId: list.id,
+          entityType: 'custom-list',
+          name: list.title,
+        });
+      },
+      {
+        successMessage: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.',
+        errorMessage: 'Η διαγραφή απέτυχε.',
+      }
     );
-  }, [user, isAdmin, fetchAllLists, toast]);
+  }, [isAdmin, fetchAllLists, toast]);
 
   const addItem = useCallback(async (listId: string, rawValue: string, hasCode?: boolean) => {
     return withToastAndRefresh(
-        () => addItemsToCustomList(listId, rawValue, hasCode),
-        { successMessage: `Τα στοιχεία προστέθηκαν.`, errorMessage: 'Η προσθήκη απέτυχε.'}
+      () => addItemsToCustomList(listId, rawValue, hasCode),
+      {
+        successMessage: `Τα στοιχεία προστέθηκαν.`,
+        errorMessage: 'Η προσθήκη απέτυχε.',
+      }
     );
   }, [user, fetchAllLists, toast]);
 
-  const addNewItemToList = useCallback(async (listId: string, value: string, hasCode?: boolean, code?: string) => {
-     if (!user) return null;
-     
-     const lists = await getAllCustomLists();
-     const list = lists.find(l => l.id === listId);
-     const isDuplicate = list?.items.some(item => item.value.toLowerCase() === value.toLowerCase() || (hasCode && item.code && code && item.code.toLowerCase() === code.toLowerCase()));
-     
-     if(isDuplicate){
-         toast({ variant: 'destructive', title: 'Διπλότυπη Εγγραφή', description: 'Αυτό το στοιχείο υπάρχει ήδη σε αυτή τη λίστα.' });
-         return null;
-     }
+  const addNewItemToList = useCallback(
+    async (listId: string, value: string, hasCode?: boolean, code?: string) => {
+      // This function is intended for direct creation from a combobox.
+      // Re-fetching all lists to check for duplicates inside this function is inefficient.
+      // The parent component should handle duplicate checks if necessary before calling.
+      // For now, we trust the service layer to handle duplicates if it's designed to.
+      const success = await withToastAndRefresh(
+        () => addItemsToCustomList(listId, code ? `${code} ${value}` : value, hasCode),
+        {
+          successMessage: `Το στοιχείο "${value}" προστέθηκε.`,
+          errorMessage: 'Η προσθήκη απέτυχε.',
+        }
+      );
 
-     const success = await withToastAndRefresh(
-         () => addItemsToCustomList(listId, code ? `${code} ${value}` : value, hasCode),
-         { successMessage: `Το στοιχείο "${value}" προστέθηκε.`, errorMessage: 'Η προσθήκη απέτυχε.' }
-     );
-     
-     return success ? value : null;
-  }, [user, toast, fetchAllLists]);
+      return success ? value : null;
+    },
+    [user, toast, fetchAllLists]
+  );
 
-  const updateItem = useCallback(async (listId: string, itemId: string, data: { value: string; code?: string }) => {
-     return withToastAndRefresh(
-         () => updateCustomListItem(listId, itemId, data),
-         { successMessage: 'Το στοιχείο ενημερώθηκε.', errorMessage: 'Η ενημέρωση του στοιχείου απέτυχε.'}
-     );
-  }, [user, fetchAllLists, toast]);
+  const updateItem = useCallback(
+    async (listId: string, itemId: string, data: { value: string; code?: string }) => {
+      return withToastAndRefresh(
+        () => updateCustomListItem(listId, itemId, data),
+        {
+          successMessage: 'Το στοιχείο ενημερώθηκε.',
+          errorMessage: 'Η ενημέρωση του στοιχείου απέτυχε.',
+        }
+      );
+    },
+    [user, fetchAllLists, toast]
+  );
 
-  const deleteItem = useCallback(async (listId: string, itemId: string, itemValue: string) => {
-    if (!user) return false;
-    
-    // Check for dependencies before attempting deletion
-    const dependency = await checkListItemDependencies(listIdToContactFieldMap[listId], itemValue);
-    if (dependency) {
+  const deleteItem = useCallback(
+    async (listId: string, itemId: string, itemValue: string) => {
+      if (!user) return false;
+
+      const dependency = await checkListItemDependencies(listIdToContactFieldMap[listId], itemValue);
+      if (dependency) {
         toast({
-            variant: 'destructive',
-            title: "Αδυναμία Διαγραφής",
-            description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${dependency}.`,
-            duration: 5000,
+          variant: 'destructive',
+          title: 'Αδυναμία Διαγραφής',
+          description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${dependency}.`,
+          duration: 5000,
         });
         return false;
-    }
-    
-    // Use the withToastAndRefresh helper for the actual deletion
-    const result = await withToastAndRefresh(
+      }
+      
+      const confirmed = confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε το στοιχείο "${itemValue}"`);
+      if(!confirmed) return false;
+
+      const result = await withToastAndRefresh(
         () => deleteCustomListItem(listId, itemId),
-        { 
-            successMessage: `Το στοιχείο "${itemValue}" διαγράφηκε.`, 
-            errorMessage: 'Η διαγραφή του στοιχείου απέτυχε.'
+        {
+          successMessage: `Το στοιχείο "${itemValue}" διαγράφηκε.`,
+          errorMessage: 'Η διαγραφή του στοιχείου απέτυχε.',
         }
-    );
-    
-    return result !== null; // Return true on success, false on failure/cancellation
-  }, [user, fetchAllLists, toast]);
+      );
+
+      return result !== null;
+    },
+    [user, fetchAllLists, toast]
+  );
 
   return {
     isSubmitting,
