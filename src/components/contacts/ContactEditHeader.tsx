@@ -29,26 +29,34 @@ export function ContactEditHeader({
   const contactId = form.getValues('id');
   
   const viewParam = entityType === 'Φυσικό Πρόσωπο' ? 'individual' : (entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public');
-  const currentPhotoUrl = form.watch('photoUrls')?.[viewParam] || '';
-  const isLegalEntity = entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία';
+  const photoUrls = form.watch('photoUrls');
+  const currentPhotoUrl = photoUrls?.[viewParam] || '';
 
   return (
-    <div className="sticky top-0 bg-background py-2 z-10 border-b mb-4">
-      <div className="flex items-center justify-between mb-2 px-1">
-        <Button type="button" variant="outline" size="sm" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Πίσω στις Επαφές
-        </Button>
-        <h2 className="text-xl font-bold text-foreground text-center flex-1 mx-4 truncate" title={contactName}>
-            {contactName}
-        </h2>
-        <Button type="submit" form="contact-form" disabled={isSubmitting || !isDirty}>
-          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Αποθήκευση Αλλαγών
-        </Button>
-      </div>
+    <div className="sticky top-0 bg-background py-2 z-10 border-b mb-4 space-y-4">
+        {/* Top Bar: Back, Title, Save */}
+        <div className="flex items-center justify-between px-1">
+            <div className="w-1/3">
+                 <Button type="button" variant="outline" size="sm" onClick={onBack}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Πίσω στις Επαφές
+                </Button>
+            </div>
+            <div className="w-1/3 text-center">
+                 <h2 className="text-xl font-bold text-foreground truncate" title={contactName}>
+                    {contactName}
+                </h2>
+            </div>
+            <div className="w-1/3 flex justify-end">
+                <Button type="submit" form="contact-form" disabled={isSubmitting || !isDirty}>
+                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    Αποθήκευση Αλλαγών
+                </Button>
+            </div>
+        </div>
       
-      <div className="flex items-start justify-start px-1 mt-4">
+      {/* Bottom Bar: Image Uploader */}
+      <div className="flex items-start justify-start px-1">
         <ImageUploader
           entityType={entityType}
           entityId={contactId}
