@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -6,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Button } from '@/shared/components/ui/button';
 import { Company } from '@/shared/hooks/use-data-store';
 import { useWorkStages } from '@/hooks/use-work-stages';
-import { WorkStageFormDialog } from './work-stages/WorkStageFormDialog';
+import { WorkStageFormDialog } from './PhaseFormDialog';
 import { WorkStageAccordion } from './work-stages/WorkStageAccordion';
 import type { Project, WorkStage } from '@/shared/types/project-types';
 import { WorkStagesEmptyState } from './work-stages/WorkStagesEmptyState';

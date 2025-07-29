@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui
 import { BuildingsSection } from '@/components/projects/BuildingsSection';
 import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
 import { ProjectActivityTimeline } from '@/tasia/components/projects/ProjectActivityTimeline';
-import { MeetingsSection } from '@/tasia/components/projects/MeetingsSection';
+import { MeetingsSection } from '@/components/projects/MeetingsSection';
 import { ContractsSection } from '@/components/projects/ContractsSection';
 import { MaterialsSection } from '@/components/projects/MaterialsSection';
 import type { ProjectWithWorkStageSummary as Project } from '@/shared/types/project-types';
