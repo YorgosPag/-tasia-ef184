@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -129,7 +130,7 @@ function useWorkStageForm(projectId: string) {
             const existingChecklist = editingWorkStage && 'checklist' in editingWorkStage ? (editingWorkStage.checklist || []) : [];
             const existingDocumentTasks = existingChecklist.filter(item => finalData.documents.includes(item.task));
             const newDocumentTasks = documentTasks.filter(item => !existingChecklist.some(ex => ex.task === item.task));
-            const otherTasks = existingChecklist.filter(item => !finalData.documents.includes(item.task));
+            const otherTasks = existingChecklist.filter(item => !finalData.documents.includes(item.task) && !item.task.startsWith('Doc:'));
             finalData.checklist = [...otherTasks, ...existingDocumentTasks, ...newDocumentTasks];
         }
 
