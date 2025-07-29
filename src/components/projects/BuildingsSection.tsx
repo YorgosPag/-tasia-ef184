@@ -42,7 +42,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { logActivity } from '@/shared/lib/logger';
-import { BuildingFormDialog, buildingSchema, BuildingFormValues } from '../../../components/projects/BuildingFormDialog';
+import { BuildingFormDialog, buildingSchema, BuildingFormValues } from './BuildingFormDialog';
 import type { Project, Building } from '@/app/projects/[id]/page';
 import { useAuth } from '@/shared/hooks/use-auth';
 
