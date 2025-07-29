@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -59,6 +58,15 @@ export function AddressCard({ form, index, onRemove }: AddressCardProps) {
                 <FormField control={form.control} name={`addresses.${index}.country`} render={({ field }) => (
                     <FormItem className="flex items-center gap-4">
                         <FormLabel className="w-40 text-right">Χώρα</FormLabel>
+                        <div className="flex-1">
+                            <FormControl><Input {...field} /></FormControl>
+                            <FormMessage />
+                        </div>
+                    </FormItem>
+                )} />
+                 <FormField control={form.control} name={`addresses.${index}.poBox`} render={({ field }) => (
+                    <FormItem className="flex items-center gap-4">
+                        <FormLabel className="w-40 text-right">Ταχυδρομική Θυρίδα</FormLabel>
                         <div className="flex-1">
                             <FormControl><Input {...field} /></FormControl>
                             <FormMessage />
