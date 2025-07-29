@@ -13,11 +13,11 @@ import { EntityType } from '@/shared/lib/validation/contactSchema';
 export function ContactForm({ form, onFileSelect, openSections, onOpenChange }: ContactFormProps) {
   const { entityType } = useWatchedFields(form);
 
-  if (entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία') {
+  if (entityType === 'Νομικό Πρόσωπο') {
     return <LegalPersonLayout form={form} onFileSelect={onFileSelect} />;
   }
 
-  // Default to NaturalPersonLayout for 'Φυσικό Πρόσωπο' and as a fallback
+  // Default to NaturalPersonLayout for 'Φυσικό Πρόσωπο', 'Δημ. Υπηρεσία' and as a fallback
   return (
     <NaturalPersonLayout
       form={form}
