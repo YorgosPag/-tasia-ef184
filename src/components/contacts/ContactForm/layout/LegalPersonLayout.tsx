@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -16,7 +17,7 @@ export function LegalPersonLayout({ form, onFileSelect }: Pick<ContactFormProps,
       </Accordion>
 
       <Tabs defaultValue="gemh-data" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-2 gap-2">
           <TabsTrigger value="gemh-data">Στοιχεία από ΓΕΜΗ</TabsTrigger>
           <TabsTrigger value="user-data">Στοιχεία από Χρήστη</TabsTrigger>
         </TabsList>

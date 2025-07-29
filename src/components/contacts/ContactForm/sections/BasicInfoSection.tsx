@@ -17,7 +17,7 @@ import { Label } from '@/shared/components/ui/label';
 import { ImageUploader } from '../../ImageUploader';
 import { type ContactFormProps } from '../types';
 
-export function BasicInfoSection({ form, onFileSelect }: ContactFormProps) {
+export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 'form'|'onFileSelect'>) {
     const entityType = useWatch({ control: form.control, name: 'entityType' });
     const contactId = form.getValues('id'); 
 
@@ -87,7 +87,7 @@ export function BasicInfoSection({ form, onFileSelect }: ContactFormProps) {
                             <Label
                             htmlFor="Φυσικό Πρόσωπο"
                             className={cn(
-                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer',
+                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-hover-accent/10 hover:text-hover-accent hover:border-hover-accent/30 cursor-pointer transition-colors',
                                 field.value === 'Φυσικό Πρόσωπο' && 'border-primary'
                             )}
                             >
@@ -101,8 +101,8 @@ export function BasicInfoSection({ form, onFileSelect }: ContactFormProps) {
                             </FormControl>
                             <Label
                             htmlFor="Νομικό Πρόσωπο"
-                            className={cn(
-                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer',
+                             className={cn(
+                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-hover-accent/10 hover:text-hover-accent hover:border-hover-accent/30 cursor-pointer transition-colors',
                                 field.value === 'Νομικό Πρόσωπο' && 'border-primary'
                             )}
                             >
@@ -116,8 +116,8 @@ export function BasicInfoSection({ form, onFileSelect }: ContactFormProps) {
                             </FormControl>
                             <Label
                             htmlFor="Δημ. Υπηρεσία"
-                            className={cn(
-                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer',
+                             className={cn(
+                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-hover-accent/10 hover:text-hover-accent hover:border-hover-accent/30 cursor-pointer transition-colors',
                                 field.value === 'Δημ. Υπηρεσία' && 'border-primary'
                             )}
                             >

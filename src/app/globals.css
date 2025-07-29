@@ -31,6 +31,9 @@
     --accent: 215 28% 93%; /* Very light slate for hover */
     --accent-foreground: 215 35% 21%;
     
+    /* Custom Hover Color */
+    --hover-accent: 0 76% 64%; /* #e46767 */
+
     /* Destructive Color */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -77,6 +80,9 @@
     /* Accent (Hover) */
     --accent: 215 28% 28%;
     --accent-foreground: 60 30% 96%;
+
+    /* Custom Hover Color */
+    --hover-accent: 0 76% 64%; /* #e46767 */
 
     /* Destructive Color */
     --destructive: 0 72% 51%; /* Slightly adjusted for dark bg */
