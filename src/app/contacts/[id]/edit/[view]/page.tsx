@@ -54,7 +54,6 @@ function EditContactPageContent() {
     });
     
     const entityType = form.watch('entityType');
-    const pathname = usePathname();
     const isLegalEntity = entityType === 'Νομικό Πρόσωπο';
 
     const mapEntityTypeToTab = (type: ContactFormValues['entityType']): EntityType => {
@@ -99,11 +98,11 @@ function EditContactPageContent() {
                     const data = docSnap.data();
                     setContactName(data.name || '');
                     
-                    const initialEntityType = mapTabToEntityType(viewParam) || data.entityType || 'Φυσικό Πρόσωπο';
+                    const initialEntityType = mapTabToEntityType(viewParam); // Prioritize URL param
                    
                     const formData: ContactFormValues = {
                         ...data,
-                        entityType: initialEntityType,
+                        entityType: initialEntityType, // Set it from URL
                         id: docSnap.id,
                         birthDate: data.birthDate instanceof Timestamp ? data.birthDate.toDate() : null,
                         identity: {
