@@ -154,7 +154,7 @@ function EditContactPageContent() {
             
             if (data.birthDate) {
                 dataToUpdate.birthDate = Timestamp.fromDate(new Date(data.birthDate));
-            } else {
+            } else if (dataToUpdate.hasOwnProperty('birthDate')) { // Check if the property exists at all
                 dataToUpdate.birthDate = null;
             }
 
