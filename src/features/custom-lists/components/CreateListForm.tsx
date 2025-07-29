@@ -18,8 +18,9 @@ import { Input } from '@/shared/components/ui/input';
 import { Switch } from '@/shared/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useCustomLists, CreateListData } from '@/hooks/useCustomLists';
+import { useCustomLists } from '@/hooks/useCustomLists';
 import { useCustomListActions } from '@/hooks/useCustomListActions';
+import type { CreateListData } from '@/lib/customListService';
 
 const createListSchema = z.object({
   title: z.string().min(2, {
@@ -33,8 +34,8 @@ const createListSchema = z.object({
 type CreateListFormValues = z.infer<typeof createListSchema>;
 
 export function CreateListForm() {
-    const { lists, fetchAllLists } = useCustomLists();
-    const { createList, isSubmitting } = useCustomListActions(lists, fetchAllLists);
+    const { fetchAllLists } = useCustomLists();
+    const { createList, isSubmitting } = useCustomListActions(fetchAllLists);
 
     const form = useForm<CreateListFormValues>({
         resolver: zodResolver(createListSchema),
@@ -54,7 +55,7 @@ export function CreateListForm() {
             isProtected: values.isProtected,
         }
         const result = await createList(listData);
-        if (result.success) {
+        if (result) {
             form.reset({
                 title: '',
                 description: '',

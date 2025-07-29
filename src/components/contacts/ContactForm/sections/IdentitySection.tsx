@@ -17,10 +17,10 @@ import { useCustomLists } from '@/hooks/useCustomLists';
 import { useCustomListActions } from '@/hooks/useCustomListActions';
 import { useDocumentNumberMask } from '../utils/documentMasks';
 
-export function IdentitySection({ form }: ContactFormProps) {
+export function IdentitySection({ form }: Pick<ContactFormProps, 'form'>) {
     const entityType = useWatch({ control: form.control, name: 'entityType' });
     const { lists, fetchAllLists } = useCustomLists();
-    const { addNewItemToList } = useCustomListActions(lists, fetchAllLists);
+    const { addNewItemToList } = useCustomListActions(fetchAllLists);
 
     const identityTypesList = lists.find(l => l.id === 'jIt8lRiNcgatSchI90yd');
     const identityTypeOptions = identityTypesList?.items.map(item => ({

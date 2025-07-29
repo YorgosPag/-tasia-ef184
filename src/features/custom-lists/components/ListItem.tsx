@@ -5,8 +5,9 @@ import { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Edit, Trash2 } from 'lucide-react';
-import { useCustomLists, type ListItem as ListItemType } from '@/hooks/useCustomLists';
+import { useCustomLists } from '@/hooks/useCustomLists';
 import { useCustomListActions } from '@/hooks/useCustomListActions';
+import type { ListItem as ListItemType } from '@/lib/customListService';
 
 interface ListItemViewProps {
   item: ListItemType;
@@ -15,8 +16,8 @@ interface ListItemViewProps {
 }
 
 export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
-  const { lists, fetchAllLists } = useCustomLists();
-  const { updateItem, deleteItem } = useCustomListActions(lists, fetchAllLists);
+  const { fetchAllLists } = useCustomLists();
+  const { updateItem, deleteItem } = useCustomListActions(fetchAllLists);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.value);
   const [editCode, setEditCode] = useState(item.code || '');
@@ -46,11 +47,8 @@ export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
   };
   
   const handleDelete = async () => {
-    const list = lists.find(l => l.id === listId);
-    if (list) {
-      // Pass the list ID as the key for the dependency check map
-      await deleteItem(listId, list.id, item.id, item.value);
-    }
+    // The listKey is the list's document ID in this context
+    await deleteItem(listId, listId, item.id, item.value);
   }
 
   return (
