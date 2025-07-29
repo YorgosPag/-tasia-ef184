@@ -24,8 +24,9 @@ export function IdentityTypeField({ form }: IdentityTypeFieldProps) {
       label: item.value,
     })) || [];
 
+  // This is a placeholder as adding to the list is not required from this combobox
+  // It just allows the user to enter a custom value in the form state.
   const handleCreateIdentityType = async (newValue: string) => {
-    // This is a placeholder as adding to the list is not required from the combobox
     return newValue;
   };
   

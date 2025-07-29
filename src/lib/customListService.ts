@@ -42,6 +42,7 @@ export type CreateListData = Omit<CustomList, 'id' | 'createdAt' | 'items'>;
 // --- Mapping for dependency checks ---
 const listKeyToContactFieldMap: Record<string, string> = {
   'jIt8lRiNcgatSchI90yd': 'identity.type',
+  'iGOjn86fcktREwMeDFPz': 'identity.issuingAuthority',
   // ... other mappings
 };
 

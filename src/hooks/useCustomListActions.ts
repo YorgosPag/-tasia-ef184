@@ -65,14 +65,14 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
         },
         { successMessage: 'Η λίστα δημιουργήθηκε.', errorMessage: 'Η δημιουργία της λίστας απέτυχε.' }
     );
-  }, [user, fetchAllLists]);
+  }, [user, fetchAllLists, toast]);
 
   const updateList = useCallback(async (listId: string, data: Partial<CreateListData>) => {
       return withToastAndRefresh(
           () => updateCustomList(listId, data),
           { successMessage: 'Η λίστα ενημερώθηκε.', errorMessage: 'Η ενημέρωση απέτυχε.' }
       );
-  }, [user, fetchAllLists]);
+  }, [user, fetchAllLists, toast]);
 
   const deleteList = useCallback(async (listId: string, listTitle: string) => {
     if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${listTitle}" και όλα τα περιεχόμενά της;`)) {
@@ -85,32 +85,41 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
         },
         { successMessage: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.', errorMessage: 'Η διαγραφή απέτυχε.'}
     );
-  }, [user, fetchAllLists]);
+  }, [user, fetchAllLists, toast]);
 
   const addItem = useCallback(async (listId: string, rawValue: string, hasCode?: boolean) => {
     return withToastAndRefresh(
         () => addItemsToCustomList(listId, rawValue, hasCode),
         { successMessage: `Τα στοιχεία προστέθηκαν.`, errorMessage: 'Η προσθήκη απέτυχε.'}
     );
-  }, [user, fetchAllLists]);
+  }, [user, fetchAllLists, toast]);
 
   const addNewItemToList = useCallback(async (listId: string, value: string, hasCode?: boolean, code?: string) => {
-     // This is a special case since it combines a check and an action
      if (!user) return null;
-     const dependency = await checkListItemDependencies(listId, value);
-     if (dependency) {
+     
+     // Check for duplicates before attempting to add.
+     const list = (await getAllCustomLists()).find(l => l.id === listId);
+     const isDuplicate = list?.items.some(item => item.value.toLowerCase() === value.toLowerCase() || (hasCode && item.code && code && item.code.toLowerCase() === code.toLowerCase()));
+     
+     if(isDuplicate){
          toast({ variant: 'destructive', title: 'Διπλότυπη Εγγραφή', description: 'Αυτό το στοιχείο υπάρχει ήδη σε αυτή τη λίστα.' });
          return null;
      }
-     return addItem(listId, code ? `${code} ${value}` : value, hasCode);
-  }, [user, toast, addItem]);
+
+     const success = await withToastAndRefresh(
+         () => addItemsToCustomList(listId, code ? `${code} ${value}` : value, hasCode),
+         { successMessage: `Το στοιχείο "${value}" προστέθηκε.`, errorMessage: 'Η προσθήκη απέτυχε.' }
+     );
+     
+     return success ? value : null;
+  }, [user, toast, fetchAllLists]);
 
   const updateItem = useCallback(async (listId: string, itemId: string, data: { value: string; code?: string }) => {
      return withToastAndRefresh(
          () => updateCustomListItem(listId, itemId, data),
          { successMessage: 'Το στοιχείο ενημερώθηκε.', errorMessage: 'Η ενημέρωση του στοιχείου απέτυχε.'}
      );
-  }, [user, fetchAllLists]);
+  }, [user, fetchAllLists, toast]);
 
   const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string) => {
     if (!user) return null;
