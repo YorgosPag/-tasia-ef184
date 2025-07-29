@@ -7,15 +7,14 @@ import { UploadCloud, Loader2, Trash2, Pencil } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/shared/components/ui/button';
 import { useToast } from '@/shared/hooks/use-toast';
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, deleteObject } from 'firebase/storage';
 import { storage } from '@/shared/lib/firebase';
 import { Progress } from '@/shared/components/ui/progress';
-import { Label } from '@/shared/components/ui/label';
-import { useFormContext } from 'react-hook-form';
-import { EntityType } from '@/shared/lib/validation/contactSchema';
+import { useFormContext, useWatch } from 'react-hook-form';
+import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
 
 interface ImageUploaderProps {
-  entityType: 'Φυσικό Πρόσωπο' | 'Νομικό Πρόσωπο' | 'Δημ. Υπηρεσία' | undefined;
+  entityType: ContactFormValues['entityType'];
   entityId?: string;
   initialImageUrl?: string | null;
   onFileSelect: (file: File | null) => void;
@@ -24,18 +23,20 @@ interface ImageUploaderProps {
 export function ImageUploader({
   entityType,
   entityId,
-  initialImageUrl,
   onFileSelect,
 }: ImageUploaderProps) {
-  const [preview, setPreview] = useState<string | null>(initialImageUrl || null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [isUploading] = useState(false); // Placeholder state
+  const [uploadProgress] = useState(0); // Placeholder state
   const { toast } = useToast();
-  const form = useFormContext(); // Get form context
+  const form = useFormContext<ContactFormValues>();
+
+  const viewParam = entityType === 'Φυσικό Πρόσωπο' ? 'individual' : entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public';
+  const photoUrlFromForm = useWatch({ control: form.control, name: `photoUrls.${viewParam}` });
 
   useEffect(() => {
-    setPreview(initialImageUrl || null);
-  }, [initialImageUrl]);
+    setPreview(photoUrlFromForm || null);
+  }, [photoUrlFromForm]);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -52,22 +53,19 @@ export function ImageUploader({
       }
       
       const filePreviewUrl = URL.createObjectURL(file);
-      setPreview(filePreviewUrl);
       onFileSelect(file);
-      const viewParam = entityType === 'Φυσικό Πρόσωπο' ? 'individual' : entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public';
       form.setValue(`photoUrls.${viewParam}`, filePreviewUrl, { shouldDirty: true });
     },
-    [entityType, toast, onFileSelect, form]
+    [entityType, toast, onFileSelect, form, viewParam]
   );
   
   const handleDelete = async () => {
-    if (!preview) return;
-    if(!entityType) return;
+    if (!preview || !entityType) return;
     
     // Logic to delete from Firebase Storage if it's a firebase URL
-    if (entityId && initialImageUrl && initialImageUrl.startsWith('https://firebasestorage.googleapis.com')) {
+    if (entityId && preview.startsWith('https://firebasestorage.googleapis.com')) {
         try {
-            const storageRef = ref(storage, initialImageUrl);
+            const storageRef = ref(storage, preview);
             await deleteObject(storageRef);
         } catch (error: any) {
             if (error.code !== 'storage/object-not-found') {
@@ -78,9 +76,7 @@ export function ImageUploader({
         }
     }
     
-    setPreview(null);
     onFileSelect(null);
-    const viewParam = entityType === 'Φυσικό Πρόσωπο' ? 'individual' : entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public';
     form.setValue(`photoUrls.${viewParam}`, '', { shouldDirty: true });
     toast({ title: 'Επιτυχία', description: 'Η εικόνα αφαιρέθηκε.' });
   }
