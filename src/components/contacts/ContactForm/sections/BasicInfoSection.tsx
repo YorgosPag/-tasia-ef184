@@ -87,7 +87,7 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                             <Label
                             htmlFor="Φυσικό Πρόσωπο"
                             className={cn(
-                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:border-primary/20 hover:text-[#e46767] cursor-pointer transition-colors',
+                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-[#e46767]/10 cursor-pointer transition-colors',
                                 field.value === 'Φυσικό Πρόσωπο' && 'border-primary'
                             )}
                             >
@@ -102,7 +102,7 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                             <Label
                             htmlFor="Νομικό Πρόσωπο"
                              className={cn(
-                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:border-primary/20 hover:text-[#e46767] cursor-pointer transition-colors',
+                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-[#e46767]/10 cursor-pointer transition-colors',
                                 field.value === 'Νομικό Πρόσωπο' && 'border-primary'
                             )}
                             >
@@ -117,7 +117,7 @@ export function BasicInfoSection({ form, onFileSelect }: Pick<ContactFormProps, 
                             <Label
                             htmlFor="Δημ. Υπηρεσία"
                              className={cn(
-                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:border-primary/20 hover:text-[#e46767] cursor-pointer transition-colors',
+                                'flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-[#e46767]/10 cursor-pointer transition-colors',
                                 field.value === 'Δημ. Υπηρεσία' && 'border-primary'
                             )}
                             >
