@@ -11,8 +11,9 @@ import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Input } from '@/shared/components/ui/input';
 import { Plus, Loader2, Edit, Trash2, ChevronDown } from 'lucide-react';
-import { useCustomLists, type CustomList } from '@/hooks/useCustomLists';
+import { useCustomLists } from '@/hooks/useCustomLists';
 import { useCustomListActions } from '@/hooks/useCustomListActions';
+import type { CustomList } from '@/lib/customListService';
 import { ListItem } from './ListItem';
 import { Card } from '@/shared/components/ui/card';
 import { cn } from '@/shared/lib/utils';
@@ -29,8 +30,12 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
   const { addItem, updateList, deleteList, isSubmitting } = useCustomListActions(fetchAllLists);
   const { isAdmin } = useAuth();
   const [itemValue, setItemValue] = useState('');
+  
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [newTitle, setNewTitle] = useState(list.title);
+
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [newDescription, setNewDescription] = useState(list.description || '');
 
   const handleAddItem = async () => {
     if (!itemValue.trim()) return;
@@ -40,24 +45,34 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
     }
   };
 
-  const handleTitleBlur = async () => {
-    setIsEditingTitle(false);
-    if (newTitle.trim() && newTitle !== list.title) {
-      await updateList(list.id, { title: newTitle });
-    } else {
-      setNewTitle(list.title);
-    }
-  };
+  const handleUpdate = async (field: 'title' | 'description', value: string) => {
+      let dataToUpdate: Partial<CustomList> = {};
+      if (field === 'title' && value.trim() && value !== list.title) {
+        dataToUpdate = { title: value };
+      } else if (field === 'description' && value !== (list.description || '')) {
+        dataToUpdate = { description: value };
+      } else {
+        // No actual change, revert state and do nothing
+        if (field === 'title') setNewTitle(list.title);
+        if (field === 'description') setNewDescription(list.description || '');
+        return;
+      }
+      
+      if (Object.keys(dataToUpdate).length > 0) {
+        await updateList(list.id, dataToUpdate);
+      }
+  }
 
   const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent toggling the accordion
+    e.stopPropagation(); 
     deleteList(list);
   };
-
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent toggling the accordion
-    setIsEditingTitle(true);
-  };
+  
+  const handleEditClick = (e: React.MouseEvent, field: 'title' | 'description') => {
+      e.stopPropagation();
+      if(field === 'title') setIsEditingTitle(true);
+      if(field === 'description') setIsEditingDescription(true);
+  }
 
   return (
     <Card>
@@ -66,37 +81,47 @@ export function EditableList({ list, isOpen, onToggle }: EditableListProps) {
           className="flex-1 text-left py-4 cursor-pointer"
           onClick={() => onToggle(list.id)}
         >
-          {isEditingTitle ? (
+         {isEditingTitle ? (
             <Input
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              onBlur={handleTitleBlur}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleTitleBlur();
-                if (e.key === 'Escape') setIsEditingTitle(false);
-              }}
+              onBlur={() => { setIsEditingTitle(false); handleUpdate('title', newTitle); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur(); }}
               autoFocus
-              className="h-8"
+              className="h-8 font-bold text-base"
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
-            <div>
-              <p className="font-bold text-base">{list.title}</p>
-              {list.description && <p className="text-sm text-muted-foreground">{list.description}</p>}
-              <p className="text-xs text-muted-foreground font-mono mt-1">ID: {list.id}</p>
+             <div className="flex items-center gap-2">
+                <p className="font-bold text-base">{list.title}</p>
+                {isAdmin && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => handleEditClick(e, 'title')}><Edit className="h-3 w-3"/></Button>}
             </div>
           )}
+
+          {isEditingDescription ? (
+             <Input
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+              onBlur={() => { setIsEditingDescription(false); handleUpdate('description', newDescription); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') e.currentTarget.blur(); }}
+              autoFocus
+              className="h-8 text-sm text-muted-foreground mt-1"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">{list.description || 'Δεν υπάρχει περιγραφή'}</p>
+                {isAdmin && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => handleEditClick(e, 'description')}><Edit className="h-3 w-3"/></Button>}
+            </div>
+          )}
+          
+          <p className="text-xs text-muted-foreground font-mono mt-1">ID: {list.id}</p>
         </div>
         <div className="flex items-center gap-2 ml-4">
-          {(isAdmin || !list.isProtected) && (
-            <>
-              <Button variant="ghost" size="icon" onClick={handleEditClick} title="Επεξεργασία Λίστας">
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={handleDelete} title="Διαγραφή Λίστας">
+          {isAdmin && (
+            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={handleDelete} title="Διαγραφή Λίστας">
                 <Trash2 className="h-4 w-4" />
-              </Button>
-            </>
+            </Button>
           )}
           <ChevronDown className={cn("h-4 w-4 shrink-0 transition-transform duration-200 cursor-pointer", isOpen && "rotate-180")} onClick={() => onToggle(list.id)} />
         </div>

@@ -94,17 +94,18 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
     if (contactField) {
         const dependencies = await checkListDependencies(contactField, list.items.map(item => item.value));
         if (dependencies.length > 0) {
-            const examples = dependencies.slice(0, 2).join(', ');
-            const warningMessage = `Η λίστα "${list.title}" χρησιμοποιείται από επαφές (${examples}${dependencies.length > 2 ? '...' : ''}). Είστε σίγουροι ότι θέλετε να συνεχίσετε με τη διαγραφή;`;
+            const examples = dependencies.slice(0, 2).map(d => `"${d.value}" στην επαφή "${d.contactName}"`).join(', ');
+            const warningMessage = `Η λίστα "${list.title}" χρησιμοποιείται σε ενεργά σημεία. Ενδεικτικά: ${examples}${dependencies.length > 2 ? '...' : ''}. Είστε βέβαιος ότι θέλετε να συνεχίσετε με τη διαγραφή;`;
             if (!confirm(warningMessage)) {
                 return null;
             }
         }
+    } else {
+        if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
+            return null;
+        }
     }
-    
-    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
-        return null;
-    }
+
 
     return withToastAndRefresh(
         async () => {

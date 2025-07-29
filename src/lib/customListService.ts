@@ -132,14 +132,32 @@ export async function checkListItemDependencies(contactField: string, itemValue:
 }
 
 
-export async function checkListDependencies(contactField: string, itemValues: string[]): Promise<string[]> {
+export async function checkListDependencies(contactField: string, itemValues: string[]): Promise<{value: string, contactName: string}[]> {
     if (!contactField || itemValues.length === 0) return [];
   
-    // Firestore 'in' queries are limited to 30 values. We might need to batch this in the future.
-    const queryableValues = itemValues.slice(0, 30);
+    // Firestore 'in' queries are limited to 30 values at a time.
+    const CHUNK_SIZE = 30;
+    const dependencies: {value: string, contactName: string}[] = [];
   
-    const q = query(collection(db, 'contacts'), where(contactField, 'in', queryableValues), limit(2));
-    const snapshot = await getDocs(q);
+    for (let i = 0; i < itemValues.length; i += CHUNK_SIZE) {
+      const chunk = itemValues.slice(i, i + CHUNK_SIZE);
+      if (chunk.length === 0) continue;
+  
+      const q = query(collection(db, 'contacts'), where(contactField, 'in', chunk));
+      const snapshot = await getDocs(q);
+  
+      snapshot.forEach(doc => {
+        dependencies.push({
+          value: doc.data()[contactField],
+          contactName: doc.data().name
+        });
+      });
+
+      // Stop checking if we already have enough examples
+      if(dependencies.length >= 2) {
+          return dependencies;
+      }
+    }
     
-    return snapshot.docs.map(doc => doc.data().name as string);
+    return dependencies;
 }
