@@ -39,7 +39,6 @@ function EditContactPageContent() {
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
-    const pathname = usePathname();
     const contactId = params.id as string;
     const { toast } = useToast();
     const { user } = useAuth();
@@ -48,7 +47,6 @@ function EditContactPageContent() {
     const [fileToUpload, setFileToUpload] = useState<File | null>(null);
     const [openSections, setOpenSections] = useState<string[]>(ALL_ACCORDION_SECTIONS);
     const [contactName, setContactName] = useState('');
-    const [isLegalEntity, setIsLegalEntity] = useState(false);
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactSchema),
@@ -56,12 +54,10 @@ function EditContactPageContent() {
     });
     
     const entityType = form.watch('entityType');
-    const tabParam = searchParams.get('tab') as EntityType | null;
+    const pathname = usePathname();
+    const tabParam = pathname.split('/').pop() as EntityType;
+    const isLegalEntity = entityType === 'Νομικό Πρόσωπο';
 
-    useEffect(() => {
-        setIsLegalEntity(entityType === 'Νομικό Πρόσωπο');
-    }, [entityType]);
-    
     const mapEntityTypeToTab = (type: ContactFormValues['entityType']): EntityType => {
         switch(type) {
             case 'Φυσικό Πρόσωπο': return 'individual';
@@ -84,14 +80,20 @@ function EditContactPageContent() {
     useEffect(() => {
         const newTab = mapEntityTypeToTab(entityType);
         if (newTab !== tabParam) {
-            // Replace the last segment of the path with the new tab name
-            const pathParts = pathname.split('/');
-            pathParts.pop(); // remove current tab segment or 'edit'
-            const newPath = `${pathParts.join('/')}/${newTab}`;
+            const newPath = pathname.substring(0, pathname.lastIndexOf('/') + 1) + newTab;
             router.replace(newPath);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [entityType]);
+    }, [entityType, tabParam, router]);
+    
+    // Sync form with URL state
+    useEffect(() => {
+        const newEntityType = mapTabToEntityType(tabParam);
+        if (newEntityType !== entityType) {
+            form.setValue('entityType', newEntityType, { shouldDirty: true });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tabParam]);
 
 
     useEffect(() => {
@@ -107,9 +109,7 @@ function EditContactPageContent() {
                     const data = docSnap.data();
                     setContactName(data.name || '');
                     
-                    const pathSegments = pathname.split('/');
-                    const tabFromUrl = pathSegments[pathSegments.length - 1] as EntityType;
-                    const initialEntityType = mapTabToEntityType(tabFromUrl) || data.entityType;
+                    const initialEntityType = mapTabToEntityType(tabParam) || data.entityType || 'Φυσικό Πρόσωπο';
                    
                     const formData: ContactFormValues = {
                         ...data,
@@ -138,7 +138,7 @@ function EditContactPageContent() {
 
         fetchContact();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [contactId, router, toast, form]);
+    }, [contactId, router, toast]);
 
 
     const onSubmit = async (data: ContactFormValues) => {

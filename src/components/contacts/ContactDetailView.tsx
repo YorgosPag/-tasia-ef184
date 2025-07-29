@@ -107,6 +107,8 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
   const hasJobInfo = contact.job?.role || contact.job?.specialty;
   const hasNotes = !!contact.notes;
 
+  const entityTypeTab = contact.entityType === 'Φυσικό Πρόσωπο' ? 'individual' : (contact.entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public');
+  const editUrl = `/contacts/${contact.id}/edit/${entityTypeTab}`;
 
   return (
     <Card className="h-full sticky top-20">
@@ -125,7 +127,7 @@ export function ContactDetailView({ contact }: ContactDetailViewProps) {
           </div>
         </div>
         <Button asChild variant="outline" size="sm">
-            <Link href={`/contacts/${contact.id}/edit`}>
+            <Link href={editUrl}>
                 <Edit className="mr-2 h-4 w-4" />
                 Επεξεργασία
             </Link>
