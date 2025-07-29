@@ -9,6 +9,7 @@ import {
   Timestamp,
   writeBatch,
   getDoc,
+  updateDoc,
   query,
   collection,
   where,
@@ -114,19 +115,7 @@ export function FloorDetailsContainer() {
     try {
       await uploadBytes(storageRef, selectedFile);
       const downloadURL = await getDownloadURL(storageRef);
-      const batch = writeBatch(db);
-      batch.update(doc(db, 'floors', floorId), { floorPlanUrl: downloadURL });
-      if (floor?.originalId && floor.buildingId) {
-        const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
-        const buildingData = buildingDoc.data();
-        if (buildingData?.projectId && buildingData?.originalId) {
-          const subDocRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId);
-          if ((await getDoc(subDocRef)).exists()) {
-            batch.update(subDocRef, { floorPlanUrl: downloadURL });
-          }
-        }
-      }
-      await batch.commit();
+      await updateDoc(doc(db, 'floors', floorId), { floorPlanUrl: downloadURL });
       toast({ title: 'Επιτυχία', description: 'Η κάτοψη ανέβηκε.' });
       await logActivity('UPLOAD_FLOORPLAN', {
         entityId: floorId,
@@ -141,6 +130,7 @@ export function FloorDetailsContainer() {
       setIsUploading(false);
     }
   };
+
 
   const handleUnitSelect = (unitId: string) => {
     router.push(`/units/${unitId}`);

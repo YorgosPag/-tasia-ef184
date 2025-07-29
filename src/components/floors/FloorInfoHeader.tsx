@@ -4,7 +4,7 @@
 import React from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { ArrowLeft, Upload, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, Loader2, Paperclip } from 'lucide-react';
 
 interface Floor {
   level: string;
@@ -47,13 +47,24 @@ export function FloorInfoHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
+        {selectedFile && !isUploading && (
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Paperclip className="h-4 w-4" />
+                <span>{selectedFile.name}</span>
+            </div>
+        )}
         <Input
           id="pdf-upload"
           type="file"
           accept="application/pdf"
           onChange={onFileChange}
-          className="max-w-xs text-xs h-9"
+          className="hidden"
         />
+        <label htmlFor="pdf-upload">
+            <Button asChild variant="outline" size="sm" disabled={isUploading}>
+                <span>Επιλογή PDF</span>
+            </Button>
+        </label>
         <Button onClick={onFileUpload} disabled={!selectedFile || isUploading} size="sm">
           {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <Upload className="mr-2" />}
           {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα'}
