@@ -6,9 +6,9 @@ import { useToast } from '@/shared/hooks/use-toast';
 import { useAuth } from '@/shared/hooks/use-auth';
 import { logActivity } from '@/shared/lib/logger';
 import {
-  createCustomList,
-  updateCustomList,
-  deleteCustomList,
+  createCustomList as createCustomListService,
+  updateCustomList as updateCustomListService,
+  deleteCustomList as deleteCustomListService,
   addItemsToCustomList,
   updateCustomListItem,
   deleteCustomListItem,
@@ -18,7 +18,7 @@ import {
 } from '@/lib/customListService';
 import type { CreateListData, CustomList } from '@/lib/customListService';
 
-// This map connects a list's *unique Firestore ID* to a specific field in the `contacts` collection.
+// This map connects a list's unique Firestore ID to a specific field in the `contacts` collection.
 // It's used to check if a list item is in use before allowing its deletion.
 const listIdToContactFieldMap: Record<string, string> = {
   // 'List ID': 'contacts_field_name'
@@ -72,7 +72,7 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
   const createList = useCallback(async (listData: CreateListData) => {
     return withToastAndRefresh(
         async () => {
-            const listId = await createCustomList(listData);
+            const listId = await createCustomListService(listData);
             await logActivity('CREATE_LIST', { entityId: listId, entityType: 'custom-list', name: listData.title });
             return listId;
         },
@@ -82,7 +82,7 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
 
   const updateList = useCallback(async (listId: string, data: Partial<CreateListData>) => {
       return withToastAndRefresh(
-          () => updateCustomList(listId, data),
+          () => updateCustomListService(listId, data),
           { successMessage: 'Η λίστα ενημερώθηκε.', errorMessage: 'Η ενημέρωση απέτυχε.' }
       );
   }, [user, fetchAllLists, toast]);
@@ -109,7 +109,7 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
 
     return withToastAndRefresh(
         async () => {
-            await deleteCustomList(list.id);
+            await deleteCustomListService(list.id);
             await logActivity('DELETE_LIST', { entityId: list.id, entityType: 'custom-list', name: list.title });
         },
         { successMessage: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.', errorMessage: 'Η διαγραφή απέτυχε.'}
@@ -151,21 +151,30 @@ export function useCustomListActions(fetchAllLists: () => Promise<void>) {
   }, [user, fetchAllLists, toast]);
 
   const deleteItem = useCallback(async (listId: string, itemId: string, itemValue: string) => {
-    if (!user) return null;
+    if (!user) return false;
+    
+    // Check for dependencies before attempting deletion
     const dependency = await checkListItemDependencies(listIdToContactFieldMap[listId], itemValue);
     if (dependency) {
         toast({
             variant: 'destructive',
             title: "Αδυναμία Διαγραφής",
-            description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${dependency}.`
+            description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${dependency}.`,
+            duration: 5000,
         });
-        return null;
+        return false;
     }
     
-    return withToastAndRefresh(
+    // Use the withToastAndRefresh helper for the actual deletion
+    const result = await withToastAndRefresh(
         () => deleteCustomListItem(listId, itemId),
-        { successMessage: `Το στοιχείο "${itemValue}" διαγράφηκε.`, errorMessage: 'Η διαγραφή του στοιχείου απέτυχε.'}
+        { 
+            successMessage: `Το στοιχείο "${itemValue}" διαγράφηκε.`, 
+            errorMessage: 'Η διαγραφή του στοιχείου απέτυχε.'
+        }
     );
+    
+    return result !== null; // Return true on success, false on failure/cancellation
   }, [user, fetchAllLists, toast]);
 
   return {
