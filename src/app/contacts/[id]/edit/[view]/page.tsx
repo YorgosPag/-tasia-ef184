@@ -48,13 +48,14 @@ function EditContactPageContent() {
     const [openSections, setOpenSections] = useState<string[]>(ALL_ACCORDION_SECTIONS);
     const [contactName, setContactName] = useState('');
     const hasReset = useRef(false);
+    const prevEntityTypeRef = useRef<string | undefined>();
 
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactSchema),
         defaultValues: {},
     });
     
-    const { entityType, isDirty } = form.watch();
+    const entityType = form.watch('entityType');
 
     const isLegalEntity = entityType === 'Νομικό Πρόσωπο' || entityType === 'Δημ. Υπηρεσία';
 
@@ -80,12 +81,16 @@ function EditContactPageContent() {
     // Sync URL with form state
     useEffect(() => {
         const newTab = mapEntityTypeToTab(entityType);
-        if (newTab && newTab !== viewParam && !isDirty) { // Only sync URL if form is NOT dirty
+
+        if (prevEntityTypeRef.current === entityType) return;
+        prevEntityTypeRef.current = entityType;
+
+        if (newTab && newTab !== viewParam && !form.formState.isDirty) {
             const newPath = `/contacts/${contactId}/edit/${newTab}`;
             router.replace(newPath, { scroll: false });
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [entityType, viewParam, router, contactId]);
+    }, [entityType, viewParam, router, contactId, form.formState.isDirty]);
     
 
     useEffect(() => {
