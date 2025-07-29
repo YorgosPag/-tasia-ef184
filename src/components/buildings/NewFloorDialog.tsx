@@ -27,7 +27,7 @@ import { Loader2 } from 'lucide-react';
 export const floorSchema = z.object({
   level: z.string().min(1, { message: 'Το επίπεδο είναι υποχρεωτικό.' }),
   description: z.string().optional(),
-  floorPlanUrl: z.string().url({ message: "Το URL της κάτοψης δεν είναι έγκυρο." }).or(z.literal('')),
+  floorPlanUrl: z.string().url({ message: "Το URL της κάτοψης δεν είναι έγκυρο." }).or(z.literal('')).optional(),
 });
 
 export type FloorFormValues = z.infer<typeof floorSchema>;

@@ -14,7 +14,7 @@ import { Form } from '@/shared/components/ui/form';
 import { Button } from '@/shared/components/ui/button';
 import { buildingSchema, BuildingFormValues } from '@/components/projects/BuildingFormDialog';
 import { BuildingDetailsForm } from '@/components/buildings/BuildingDetailsForm';
-import { FloorsList } from '@/components/buildings/FloorsList';
+import { BuildingFloorsList } from '@/components/buildings/BuildingFloorsList';
 import { logActivity } from '@/shared/lib/logger';
 import { useAuth } from '@/shared/hooks/use-auth';
 
@@ -126,7 +126,7 @@ export default function BuildingDetailsPage() {
           </Card>
         </form>
       </Form>
-      <FloorsList building={building} />
+      <BuildingFloorsList building={building} />
     </div>
   );
 }
