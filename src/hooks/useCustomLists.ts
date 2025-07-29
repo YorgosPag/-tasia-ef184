@@ -50,11 +50,11 @@ interface CreateListResult {
 }
 
 const listKeyToContactFieldMap: Record<string, string> = {
-    'roles': 'job.role',
-    'specialties': 'job.specialty',
-    'doy': 'doy',
-    'Yz439YFkR4U4eRAwDNy5': 'addresses.type', // address_types
-}
+    'jIt8lRiNcgatSchI90yd': 'identity.type', // Έγγραφα Ταυτοποίησης
+    'roles_placeholder_id': 'job.role', // Replace with actual ID
+    'specialties_placeholder_id': 'job.specialty', // Replace with actual ID
+    'doy_placeholder_id': 'doy', // Replace with actual ID
+};
 
 // --- Custom Hook ---
 
@@ -274,37 +274,33 @@ export function useCustomLists() {
      }
   }, [toast]);
 
-  const deleteItem = useCallback(async (listId: string, itemId: string, itemValue: string): Promise<boolean> => {
-    const list = lists.find(l => l.id === listId);
-    if (!list) return false;
+  const deleteItem = useCallback(async (listId: string, listKey: string, itemId: string, itemValue: string): Promise<boolean> => {
+     if(!user) return false;
+     
+     const contactField = listKeyToContactFieldMap[listKey];
+     if (contactField) {
+        const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            const contactInUse = snapshot.docs[0].data();
+            toast({
+                variant: 'destructive',
+                title: "Αδυναμία Διαγραφής",
+                description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${contactInUse.name}.`
+            });
+            return false;
+        }
+     }
 
-    // The mapping from a user-friendly title to a db field is fragile.
-    // A better approach would be to have a 'key' field on the list document.
-    const contactField = listKeyToContactFieldMap[listId];
-
-    if (contactField) {
-       const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
-       const snapshot = await getDocs(q);
-       if (!snapshot.empty) {
-           const contactInUse = snapshot.docs[0].data();
-           toast({
-               variant: 'destructive',
-               title: "Αδυναμία Διαγραφής",
-               description: `Το στοιχείο "${itemValue}" χρησιμοποιείται από την επαφή: ${contactInUse.name}.`
-           });
-           return false;
-       }
-    }
-
-    try {
-       await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
-       toast({ title: 'Επιτυχία', description: `Το στοιχείο "${itemValue}" διαγράφηκε.` });
-       return true;
-    } catch (error) {
-       toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή του στοιχείου απέτυχε.' });
-       return false;
-    }
-  }, [toast, lists]);
+     try {
+        await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', itemId));
+        toast({ title: 'Επιτυχία', description: `Το στοιχείο "${itemValue}" διαγράφηκε.` });
+        return true;
+     } catch (error) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή του στοιχείου απέτυχε.' });
+        return false;
+     }
+  }, [toast, user]);
   
 
   return { lists, isLoading, isSubmitting, createList, updateList, deleteList, addItem, addNewItemToList, updateItem, deleteItem };

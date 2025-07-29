@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -45,10 +46,7 @@ export function ListItem({ item, listId, hasCode }: ListItemViewProps) {
   const handleDelete = async () => {
     const list = lists.find(l => l.id === listId);
     if (list) {
-      // Assuming a direct mapping or a more robust lookup if needed.
-      // For now, we pass a placeholder or a derived key. A real implementation
-      // might need a more stable way to link list UI to backend logic if based on a mutable title.
-      // Here, we use the list's ID which is stable.
+      // Pass the list ID as the key for the dependency check map
       await deleteItem(listId, list.id, item.id, item.value);
     }
   }
