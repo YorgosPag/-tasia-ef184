@@ -15,6 +15,7 @@ import {
   addDoc,
   query,
   orderBy,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from '@/shared/lib/firebase';
 
