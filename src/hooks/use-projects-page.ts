@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { Timestamp, doc, updateDoc, deleteDoc, getDoc, collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,10 +14,22 @@ import { exportToJson } from '@/lib/exporter';
 import { projectSchema } from '@/components/projects/ProjectDialogForm';
 import { formatDate } from '@/lib/project-helpers.tsx';
 import { useAuth } from './use-auth';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/lib/types/project-types';
 
 
 // --- Internal Hooks for Logic Separation ---
+
+// Function to fetch project details, can be used for prefetching
+async function fetchProjectDetails(projectId: string): Promise<ProjectWithWorkStageSummary> {
+    if (!projectId) throw new Error("Project ID is required");
+    const projectDoc = await getDoc(doc(db, 'projects', projectId));
+    if (!projectDoc.exists()) throw new Error("Project not found");
+    const projectData = { id: projectDoc.id, ...projectDoc.data() } as ProjectWithWorkStageSummary;
+    // In a real scenario, you might also fetch related work stages here
+    return projectData;
+}
+
 
 function useProjectActions(
   allProjects: Project[],
@@ -26,6 +38,16 @@ function useProjectActions(
   filteredProjects: ProjectWithWorkStageSummary[]
 ) {
     const { toast } = useToast();
+    const queryClient = useQueryClient();
+
+    const handlePrefetchProject = useCallback((projectId: string) => {
+        queryClient.prefetchQuery({
+            queryKey: ['projectDetails', projectId],
+            queryFn: () => fetchProjectDetails(projectId),
+            staleTime: 1000 * 60 * 5, // Prefetched data is fresh for 5 minutes
+        });
+    }, [queryClient]);
+
 
     const handleDuplicateProject = useCallback(async (projectId: string) => {
         const projectToClone = allProjects.find((p) => p.id === projectId);
@@ -83,7 +105,7 @@ function useProjectActions(
         exportToJson(dataToExport, 'projects');
     }, [filteredProjects, getCompanyName]);
 
-    return { handleDuplicateProject, handleDeleteProject, handleExport };
+    return { handleDuplicateProject, handleDeleteProject, handleExport, handlePrefetchProject };
 }
 
 function useFilteredProjects(allProjects: Project[], companies: Company[]) {
@@ -137,7 +159,7 @@ export function useProjectsPage() {
 
   const { filteredProjects, searchQuery, setSearchQuery, getCompanyName } = useFilteredProjects(allProjects, companies);
   
-  const { handleDuplicateProject, handleDeleteProject, handleExport } = useProjectActions(allProjects, addProject, getCompanyName, filteredProjects);
+  const { handleDuplicateProject, handleDeleteProject, handleExport, handlePrefetchProject } = useProjectActions(allProjects, addProject, getCompanyName, filteredProjects);
 
   const handleDialogOpenChange = useCallback((open: boolean) => {
     setIsDialogOpen(open);
@@ -216,5 +238,6 @@ export function useProjectsPage() {
     handleEditClick,
     handleDuplicateProject,
     handleDeleteProject,
+    handlePrefetchProject,
   };
 }

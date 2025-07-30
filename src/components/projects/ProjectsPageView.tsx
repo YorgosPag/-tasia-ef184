@@ -36,6 +36,7 @@ interface ProjectsPageViewProps {
   handleEditClick: (project: ProjectWithWorkStageSummary) => void;
   handleDuplicateProject: (projectId: string) => void;
   handleDeleteProject: (projectId: string) => void;
+  handlePrefetchProject: (projectId: string) => void;
 }
 
 export function ProjectsPageView({
@@ -57,6 +58,7 @@ export function ProjectsPageView({
   handleEditClick,
   handleDuplicateProject,
   handleDeleteProject,
+  handlePrefetchProject,
 }: ProjectsPageViewProps) {
 
   const searchParams = useSearchParams();
@@ -120,6 +122,7 @@ export function ProjectsPageView({
                 onEdit={handleEditClick}
                 onDuplicate={handleDuplicateProject}
                 onDelete={handleDeleteProject}
+                onPrefetch={handlePrefetchProject}
                 />
             ) : (
                 <p className="text-center text-muted-foreground py-8">

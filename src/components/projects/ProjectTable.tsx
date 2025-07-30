@@ -82,6 +82,7 @@ interface ProjectTableProps {
   onEdit: (project: ProjectWithWorkStageSummary) => void;
   onDuplicate: (projectId: string) => void;
   onDelete: (projectId: string) => void;
+  onPrefetch: (projectId: string) => void;
 }
 
 export function ProjectTable({
@@ -91,6 +92,7 @@ export function ProjectTable({
   onEdit,
   onDuplicate,
   onDelete,
+  onPrefetch,
 }: ProjectTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -122,6 +124,7 @@ export function ProjectTable({
                 <TableRow
                 key={project.id}
                 onClick={(e) => handleRowClick(e, project.id)}
+                onMouseEnter={() => onPrefetch(project.id)}
                 className="group cursor-pointer"
                 >
                 <TableCell className="font-medium">{project.title}</TableCell>
