@@ -3,13 +3,13 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { PlusCircle, Loader2, Download, Search } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
-import { exportToJson } from '@/shared/lib/exporter';
-import { useAuth } from '@/shared/hooks/use-auth';
-import { useContacts } from '@/shared/hooks/use-contacts';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { exportToJson } from '@/lib/exporter';
+import { useAuth } from '@/hooks/use-auth';
+import { useContacts } from '@/hooks/use-contacts';
 import { ContactDetailView } from './ContactDetailView';
 import { ContactList } from './ContactList';
 
