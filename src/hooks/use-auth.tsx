@@ -3,7 +3,7 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, getDoc, serverTimestamp, collection, getDocs, query, limit } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, getDoc, serverTimestamp, collection, getDocs, query } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 // --- Developer Configuration ---
@@ -41,7 +41,7 @@ async function findOrCreateUserDocument(user: User): Promise<UserRole> {
         return userDoc.data().role as UserRole;
     } else {
         const usersRef = collection(db, 'users');
-        const querySnapshot = await getDocs(query(usersRef, limit(1)));
+        const querySnapshot = await getDocs(query(usersRef));
         const isFirstUser = querySnapshot.empty;
         const role: UserRole = isFirstUser ? 'admin' : 'viewer';
 
