@@ -6,15 +6,20 @@ import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 
 // Firebase configuration is loaded from environment variables
-const firebaseConfig = {
+const firebaseConfig: { [key: string]: string | undefined } = {
   apiKey: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process***REMOVED***.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || undefined,
 };
+
+// Conditionally add measurementId only if it exists
+if (process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID) {
+  firebaseConfig.measurementId = process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID;
+}
+
 
 // Basic check to ensure Firebase config is loaded
 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
