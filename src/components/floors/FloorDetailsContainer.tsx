@@ -10,14 +10,14 @@ import {
   writeBatch,
   getDoc,
 } from 'firebase/firestore';
-import { db, storage } from '@/shared/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { FloorInfoHeader } from '@/components/floors/FloorInfoHeader';
 import { FloorPlanCard } from '@/components/floors/FloorPlanCard';
-import { logActivity } from '@/shared/lib/logger';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { logActivity } from '@/lib/logger';
+import { useAuth } from '@/hooks/use-auth';
 import { FloorPlanUploadCard } from './FloorPlanUploadCard';
 
 // --- Interfaces & Schemas ---
