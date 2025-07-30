@@ -1,8 +1,9 @@
 
+
 'use client';
 
-import { FormField, FormItem, FormLabel, FormDescription, FormControl } from '@/shared/components/ui/form';
-import { Switch } from '@/shared/components/ui/switch';
+import { FormField, FormItem, FormLabel, FormDescription, FormControl } from '@/components/ui/form';
+import { Switch } from '@/components/ui/switch';
 
 export function BooleanSwitchField({ control, name, label, description }: {
   control: any;

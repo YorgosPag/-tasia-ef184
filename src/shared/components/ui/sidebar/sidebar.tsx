@@ -2,9 +2,9 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "@/shared/lib/utils"
+import { cn } from "@/lib/utils"
 import { useSidebar } from "./sidebar-context"
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/shared/components/ui/sheet"
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
 import { SIDEBAR_WIDTH_MOBILE } from "./sidebar-utils"
 
 export const Sidebar = React.forwardRef<

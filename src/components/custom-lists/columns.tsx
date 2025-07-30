@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ComplexEntity } from '@/shared/hooks/useComplexEntities';
-import { Button } from '@/shared/components/ui/button';
+import { ComplexEntity } from '@/hooks/useComplexEntities';
+import { Button } from '@/components/ui/button';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import {
   DropdownMenu,
@@ -11,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 
 // This file is no longer the primary source for columns.
 // The columns are now generated dynamically in ComplexEntitiesTab.tsx.

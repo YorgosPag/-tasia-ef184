@@ -4,8 +4,8 @@
 import * as React from "react"
 import Link from "next/link"
 import { useSidebar } from "./sidebar-context"
-import { cn } from "@/shared/lib/utils"
-import { buttonVariants } from "@/shared/components/ui/button"
+import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
 import { ChevronRight } from "lucide-react"
 
 export const SidebarMenuSub = React.forwardRef<

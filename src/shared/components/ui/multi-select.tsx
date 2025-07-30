@@ -3,8 +3,8 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { XIcon, CheckIcon, ChevronsUpDownIcon, Loader2 } from 'lucide-react';
-import { cn } from '@/shared/lib/utils';
-import { Button } from '@/shared/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -12,13 +12,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/shared/components/ui/command';
+} from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/shared/components/ui/popover';
-import { Badge } from '@/shared/components/ui/badge';
+} from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
 
 const multiSelectVariants = cva(
   'm-1 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300',

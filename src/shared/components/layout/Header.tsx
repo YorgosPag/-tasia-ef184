@@ -4,11 +4,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/shared/lib/firebase';
-import { SidebarTrigger } from '@/shared/components/ui/sidebar';
-import { useSidebar } from '@/shared/components/ui/sidebar/sidebar-context';
-import { Button } from '@/shared/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
+import { auth } from '@/lib/firebase';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { useSidebar } from '@/components/ui/sidebar/sidebar-context';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,15 +16,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 import { LogIn, LogOut } from 'lucide-react';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { Breadcrumbs } from './breadcrumbs';
-import { useBreadcrumbs } from '@/shared/hooks/use-breadcrumbs';
-import { Skeleton } from '@/shared/components/ui/skeleton';
+import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
+import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
 
-const ModeToggle = dynamic(() => import('@/shared/components/layout/mode-toggle').then(mod => mod.ModeToggle), {
+const ModeToggle = dynamic(() => import('@/components/layout/mode-toggle').then(mod => mod.ModeToggle), {
   loading: () => <Skeleton className="h-8 w-8 rounded-full" />,
   ssr: false,
 });

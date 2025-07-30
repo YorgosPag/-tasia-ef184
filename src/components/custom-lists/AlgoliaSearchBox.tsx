@@ -8,12 +8,12 @@ import {
   useInfiniteHits,
   Configure,
 } from 'react-instantsearch-hooks-web';
-import { Input } from '@/shared/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { DataTable } from './DataTable'; // Re-use your DataTable for display
 import { ColumnDef } from '@tanstack/react-table';
-import { ComplexEntity } from '@/shared/hooks/useComplexEntities';
-import { Button } from '@/shared/components/ui/button';
+import { ComplexEntity } from '@/hooks/useComplexEntities';
+import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
 

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -16,8 +17,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Button } from '@/shared/components/ui/button';
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 

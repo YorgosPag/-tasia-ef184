@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/components/ui/dialog"
+} from "@/components/ui/dialog"
 
 export function InstructionsDialog({
   children,

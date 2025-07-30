@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * A helper hook that wraps an async operation with common feedback patterns:

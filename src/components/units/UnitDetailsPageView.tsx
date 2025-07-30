@@ -3,17 +3,17 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { Form } from '@/shared/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
 import { ArrowLeft, Loader2, PlusCircle } from 'lucide-react';
 import { UnitDetailsForm } from './UnitDetailsForm';
-import type { NewUnitFormValues as UnitFormValues } from '@/shared/lib/unit-helpers';
+import type { NewUnitFormValues as UnitFormValues } from '@/lib/unit-helpers';
 import { AttachmentDialog, AttachmentFormValues } from '@/components/units/AttachmentDialog';
 import { UnitsListTable } from '@/components/units/UnitsListTable';
-import { Unit } from '@/shared/hooks/use-unit-details';
+import { Unit } from '@/hooks/use-unit-details';
 import { UnitContactForm } from './UnitContactForm';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UnitFloorPlansTab } from './tabs/UnitFloorPlansTab';
 import { UnitPhotosTab } from './tabs/UnitPhotosTab';
 import { UnitContractsTab } from './tabs/UnitContractsTab';

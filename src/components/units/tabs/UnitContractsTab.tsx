@@ -6,33 +6,33 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { doc, updateDoc, arrayUnion, arrayRemove, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db, storage } from '@/shared/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
+} from '@/components/ui/card';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/shared/components/ui/accordion';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
-import { Button } from '@/shared/components/ui/button';
-import { Calendar } from '@/shared/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { cn } from '@/shared/lib/utils';
+} from '@/components/ui/accordion';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Loader2, PlusCircle, Trash2, Upload, Eye } from 'lucide-react';
-import { Unit } from '@/shared/hooks/use-unit-details';
-import { Contact } from '@/shared/hooks/use-contacts';
+import { Unit } from '@/hooks/use-unit-details';
+import { Contact } from '@/hooks/use-contacts';
 
 
 const contractStageSchema = z.object({

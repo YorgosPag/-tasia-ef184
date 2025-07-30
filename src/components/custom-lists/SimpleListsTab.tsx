@@ -3,19 +3,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useCustomLists } from '@/shared/hooks/useCustomLists';
+import { useCustomLists } from '@/hooks/useCustomLists';
 import { CreateListForm } from './CreateListForm';
 import { EditableList } from './EditableList';
-import { Input } from '@/shared/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { Search, Loader2, FileUp, FileDown } from 'lucide-react';
-import { Button } from '@/shared/components/ui/button';
-import { exportToCsv, exportToTxt } from '@/shared/lib/exporter';
+import { Button } from '@/components/ui/button';
+import { exportToCsv, exportToTxt } from '@/lib/exporter';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 
 export function SimpleListsTab() {
   const { lists, isLoading, fetchAllLists } = useCustomLists();

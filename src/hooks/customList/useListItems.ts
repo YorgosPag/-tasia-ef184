@@ -1,15 +1,16 @@
 
+
 'use client';
 
 import { useCallback } from 'react';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { useListWithFeedback } from './useListWithFeedback';
 import {
   addItemsToCustomList,
   updateCustomListItem,
   deleteCustomListItem,
   checkListItemDependencies,
-} from '@/shared/lib/customListService';
+} from '@/lib/customListService';
 import { listIdToContactFieldMap } from './utils/listFieldMap';
 import { hasAdminPermission } from './utils/checkPermissions';
 import { useToast } from '../use-toast';

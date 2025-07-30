@@ -5,7 +5,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -13,12 +13,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useCustomListActions } from '@/shared/hooks/useCustomListActions';
-import type { CreateListData } from '@/shared/lib/customListService';
+import { useCustomListActions } from '@/hooks/useCustomListActions';
+import type { CreateListData } from '@/lib/customListService';
 import { BooleanSwitchField } from './form/BooleanSwitchField';
 
 const createListSchema = z.object({

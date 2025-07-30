@@ -3,26 +3,26 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Loader2, UploadCloud, ChevronsUpDown, Check } from 'lucide-react';
-import { useComplexEntities, type ComplexEntity, PAGE_SIZE } from '@/shared/hooks/useComplexEntities';
-import { processImportFile } from '@/shared/lib/importer';
-import { useToast } from '@/shared/hooks/use-toast';
-import { exportToCsv } from '@/shared/lib/exporter';
+import { useComplexEntities, type ComplexEntity, PAGE_SIZE } from '@/hooks/useComplexEntities';
+import { processImportFile } from '@/lib/importer';
+import { useToast } from '@/hooks/use-toast';
+import { exportToCsv } from '@/lib/exporter';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { Input } from '@/shared/components/ui/input';
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { DataTable } from './DataTable';
 import { ColumnDef } from '@tanstack/react-table';
-import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from '@/shared/components/ui/command';
-import { cn } from '@/shared/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 // --- Column Definitions ---
 const PREFERRED_COLUMN_ORDER = [
