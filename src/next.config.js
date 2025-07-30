@@ -1,9 +1,6 @@
-
-import path from 'path';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true, // Forcing a rebuild by explicitly setting a config value.
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       {
