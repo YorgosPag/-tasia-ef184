@@ -2,7 +2,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { collection, onSnapshot, query as firestoreQuery } from 'firebase/firestore';
+import { collection, onSnapshot, query as firestoreQuery, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ContactFormValues } from '../lib/validation/contactSchema';
 
@@ -14,18 +14,20 @@ export interface Contact extends ContactFormValues {
 
 async function fetchContacts(): Promise<Contact[]> {
   const contactsCollection = collection(db, 'contacts');
-  const q = firestoreQuery(contactsCollection);
+  // Perform sorting on the database side for efficiency
+  const q = firestoreQuery(contactsCollection, orderBy('name', 'asc'));
   
   return new Promise((resolve, reject) => {
-    onSnapshot(q, (snapshot) => {
+    // Using onSnapshot for real-time updates.
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const contacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Contact));
-      // Sort on the client side
-      contacts.sort((a, b) => a.name.localeCompare(b.name));
       resolve(contacts);
     }, (error) => {
       console.error("Failed to fetch contacts:", error);
       reject(error);
     });
+    // In a real app with more complex lifecycle, you might manage this unsubscribe
+    // function, but for React Query's queryFn, this setup works well.
   });
 }
 
