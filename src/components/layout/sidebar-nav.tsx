@@ -89,8 +89,8 @@ export function SidebarNav() {
     return cn(
       'text-lg font-medium text-left px-4 py-2 whitespace-nowrap',
       active
-        ? 'bg-gray-200/60 dark:bg-gray-700 text-gray-900 dark:text-white' // Active state styles
-        : 'text-gray-600 dark:text-gray-400' // Inactive state styles
+        ? 'text-gray-900 dark:text-white' // Active state styles as per spec
+        : 'text-gray-600 dark:text-gray-400' // Inactive state styles as per spec
     );
   };
 
