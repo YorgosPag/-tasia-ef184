@@ -1,43 +1,49 @@
+
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import type { UseFormReturn } from 'react-hook-form';
 import type { ContactFormValues } from '@/lib/validation/contactSchema';
 import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { useCustomLists } from '@/hooks/useCustomLists';
 
 interface IssuingAuthorityFieldProps {
   form: UseFormReturn<ContactFormValues>;
 }
 
 export function IssuingAuthorityField({ form }: IssuingAuthorityFieldProps) {
-  const { lists, fetchAllLists } = useCustomLists();
+  const { toast } = useToast();
+  const [issuingAuthorityOptions, setIssuingAuthorityOptions] = useState<{ value: string; label: string; }[]>([]);
+  const [listId, setListId] = useState<string | null>('iGOjn86fcktREwMeDFPz'); // Hardcode the ID
 
-  const issuingAuthoritiesList = lists.find(
-    (l) => l.id === 'iGOjn86fcktREwMeDFPz'
-  );
+  useEffect(() => {
+    if (!listId) return;
+    
+    const itemsQuery = query(collection(db, 'tsia-custom-lists', listId, 'tsia-items'), orderBy('value'));
+    const unsubscribe = onSnapshot(itemsQuery, (snapshot) => {
+        const options = snapshot.docs.map(doc => ({
+            value: doc.data().value,
+            label: doc.data().value,
+        }));
+        setIssuingAuthorityOptions(options);
+    });
 
-  const issuingAuthorityOptions =
-    issuingAuthoritiesList?.items.map((item) => ({
-      value: item.value,
-      label: item.value,
-    })) || [];
-  
+    return () => unsubscribe();
+  }, [listId]);
+
   const handleCreateIssuingAuthority = async (newValue: string) => {
-    if (!issuingAuthoritiesList) return null;
+    if (!listId) return null;
     if (!newValue.trim()) return null;
 
     try {
-        await addDoc(collection(db, 'tsia-custom-lists', issuingAuthoritiesList.id, 'tsia-items'), {
+        await addDoc(collection(db, 'tsia-custom-lists', listId, 'tsia-items'), {
             value: newValue,
             createdAt: serverTimestamp(),
         });
         toast({ title: 'Επιτυχία', description: `Η αρχή "${newValue}" προστέθηκε.` });
-        fetchAllLists();
         return newValue;
     } catch (error) {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη της νέας αρχής.'});
