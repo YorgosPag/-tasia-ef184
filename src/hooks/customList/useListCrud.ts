@@ -104,7 +104,7 @@ export function useListCrud(fetchAllLists: () => Promise<void>) {
         }
       );
     },
-    [isAdmin, user, toast, withToastAndRefresh]
+    [isAdmin, toast, withToastAndRefresh]
   );
 
   return {
