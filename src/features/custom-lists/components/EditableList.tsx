@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem } from '@/shared/components/ui/accordion';
-import { useCustomListActions } from '@/hooks/useCustomListActions';
-import type { CustomList } from '@/lib/customListService';
+import { useCustomListActions } from '@/shared/hooks/useCustomListActions';
+import type { CustomList } from '@/shared/lib/customListService';
 import { useAuth } from '@/shared/hooks/use-auth';
 import { EditableListHeader } from './EditableListHeader';
 import { EditableListForm } from './EditableListForm';

@@ -6,7 +6,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescripti
 import type { UseFormReturn } from 'react-hook-form';
 import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
 import { useCustomLists } from '@/hooks/useCustomLists';
-import { useCustomListActions } from '@/hooks/useCustomListActions';
+import { useCustomListActions } from '@/shared/hooks/useCustomListActions';
 import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
 
 interface IssuingAuthorityFieldProps {

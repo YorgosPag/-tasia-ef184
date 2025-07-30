@@ -1,12 +1,13 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Loader2, UploadCloud, ChevronsUpDown, Check } from 'lucide-react';
-import { useComplexEntities, type ComplexEntity, PAGE_SIZE } from '@/hooks/useComplexEntities';
+import { useComplexEntities, type ComplexEntity, PAGE_SIZE } from '@/shared/hooks/useComplexEntities';
 import { processImportFile } from '@/shared/lib/importer';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/shared/hooks/use-toast';
 import { exportToCsv } from '@/shared/lib/exporter';
 import {
   Select,
