@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, UseFormReturn } from 'react-hook-form';
@@ -31,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-import { Unit } from '@/tasia/components/floor-plan/Unit';
+import { Unit } from '@/hooks/use-unit-details';
 
 export const unitSchema = z.object({
   identifier: z.string().min(1, 'Το αναγνωριστικό είναι υποχρεωτικό.'),

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -19,7 +18,7 @@ import { db } from '@/shared/lib/firebase';
 import { useToast } from '@/shared/hooks/use-toast';
 import { logActivity } from '@/shared/lib/logger';
 import { UnitFormValues, unitSchema } from '@/components/units/UnitDialogForm';
-import { Unit } from '@/tasia/components/floor-plan/Unit';
+import { Unit } from '@/hooks/use-unit-details';
 
 interface UseFloorPlanDataManagerProps {
   floorId: string;
