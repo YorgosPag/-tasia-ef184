@@ -56,7 +56,7 @@
  
   .dark {
     /* Base Colors */
-    --background: 215 28% 17%; /* Dark Slate Blue */
+    --background: 215 28% 21%;        /* Slightly lighter than background */
     --foreground: 60 30% 96%;   /* Light Gray */
 
     /* Primary / Accent Colors */
