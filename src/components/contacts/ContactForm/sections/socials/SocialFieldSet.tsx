@@ -3,13 +3,13 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
-import { Button } from '@/shared/components/ui/button';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SOCIAL_TYPES, socialIcons } from '../../utils/socialIcons';
-import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import { ContactFormValues } from '@/lib/validation/contactSchema';
 
 interface SocialFieldSetProps {
   form: UseFormReturn<ContactFormValues>;

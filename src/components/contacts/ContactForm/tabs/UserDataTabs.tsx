@@ -1,8 +1,9 @@
+
 'use client';
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/shared/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Phone, Map as MapIcon, Info } from 'lucide-react';
 import { ContactSection } from '../sections/ContactSection';
 import { SocialsSection } from '../sections/SocialsSection';

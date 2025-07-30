@@ -3,9 +3,9 @@
 
 import React from 'react';
 import { Control, useController } from 'react-hook-form';
-import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Checkbox } from '@/shared/components/ui/checkbox';
+import type { ContactFormValues } from '@/lib/validation/contactSchema';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
 import { PhoneIndicatorIcons, PHONE_INDICATORS } from '../../utils/phoneIndicators';
 
 interface PhoneIndicatorsProps {

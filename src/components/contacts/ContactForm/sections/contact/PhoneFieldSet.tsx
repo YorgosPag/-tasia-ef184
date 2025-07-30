@@ -4,9 +4,9 @@
 import React from 'react';
 import { useFieldArray } from 'react-hook-form';
 import type { ContactFormProps } from '../../types';
-import { Button } from '@/shared/components/ui/button';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { CountryCodeSelect } from './CountryCodeSelect';
 import { PhoneIndicators } from './PhoneIndicators';
