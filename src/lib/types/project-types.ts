@@ -1,4 +1,3 @@
-
 import type { Timestamp } from 'firebase/firestore';
 
 export interface Building {
@@ -25,12 +24,8 @@ export interface Project {
     photoUrl?: string;
     tags?: string[];
     createdAt: any;
-    workStageSummary?: {
-        currentWorkStageName?: string;
-        progress: number;
-        overallStatus: WorkStage['status'];
-    };
 }
+
 export interface ProjectWithWorkStageSummary extends Project {
     workStageSummary?: {
       currentWorkStageName?: string;
@@ -59,6 +54,7 @@ export interface Photo {
     url: string;
     uploadedAt: Timestamp;
     uploadedBy: string;
+    name: string;
 }
   
 export interface WorkStage {

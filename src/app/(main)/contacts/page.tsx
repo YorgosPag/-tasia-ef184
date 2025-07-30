@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,8 +16,19 @@ export default function ContactsPage() {
   const { isEditor } = useAuth();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [isPending, startTransition] = useTransition();
+
   const { contacts, isLoading } = useContacts();
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    startTransition(() => {
+      setSearchQuery(value);
+    });
+  };
 
   const filteredContacts = useMemo(() => {
     if (!contacts) return [];
@@ -77,11 +88,11 @@ export default function ContactsPage() {
             <CardHeader>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input type="search" placeholder="Αναζήτηση επαφής..." className="pl-10 w-full" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}/>
+                    <Input type="search" placeholder="Αναζήτηση επαφής..." className="pl-10 w-full" value={inputValue} onChange={handleSearchChange}/>
                 </div>
             </CardHeader>
             <CardContent className="p-0">
-            {isLoading ? (
+            {isLoading || isPending ? (
                 <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
             ) : (
                 <ContactList contacts={filteredContacts} onSelectContact={setSelectedContactId} selectedContactId={selectedContactId} />
