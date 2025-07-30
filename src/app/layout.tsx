@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Inter } from 'next/font/google';
+import { Roboto } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/hooks/use-auth';
@@ -14,9 +14,10 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 
 import '@/app/globals.css';
 
-const fontSans = Inter({
+const fontSans = Roboto({
   subsets: ['latin'],
   variable: '--font-sans',
+  weight: ['400', '500', '700']
 });
 
 export default function RootLayout({
