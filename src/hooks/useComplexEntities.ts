@@ -163,7 +163,7 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   
   useEffect(() => {
       refetch();
-  }, [listType, filterKey, refetch]);
+  }, [listType, filterKey]); // Refetch when listType or filters change
 
 
   const nextPage = () => {
