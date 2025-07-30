@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -122,6 +123,7 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   const filterKey = JSON.stringify(filters); // Create a stable key for the filter object
 
   const fetchPage = useCallback(async (lastDoc: QueryDocumentSnapshot<DocumentData> | null, pageNum: number) => {
+    if (!listType) return; // Don't fetch if no list type is selected
     setIsLoading(true);
     try {
       const { entities: newEntities, lastDoc: newLastDoc } = await fetchEntitiesPage(listType, filters, lastDoc);
@@ -141,7 +143,8 @@ export function useComplexEntities(listType: string, filters: Record<string, str
     } finally {
       setIsLoading(false);
     }
-  }, [listType, filterKey, initialDataLoaded]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listType, filterKey]);
 
   useEffect(() => {
     // Fetch distinct values for the first 5 columns when listType changes
