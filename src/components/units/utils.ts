@@ -1,6 +1,7 @@
+
 'use client';
 
-import type { Unit } from '@/hooks/use-unit-details';
+import type { Unit } from '@/shared/hooks/use-unit-details';
 
 export const ALL_STATUSES: Unit['status'][] = [
   'Διαθέσιμο',

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -10,7 +11,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Loader2, Upload, Trash2, CameraOff, ZoomIn } from 'lucide-react';
 import Image from 'next/image';
-import { Unit } from '@/hooks/use-unit-details';
+import { Unit } from '@/shared/hooks/use-unit-details';
 import { Dialog, DialogContent, DialogTrigger } from '@/shared/components/ui/dialog';
 
 interface UnitPhotosTabProps {

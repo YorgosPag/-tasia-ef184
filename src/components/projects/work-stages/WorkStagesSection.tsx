@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState } from 'react';
@@ -89,10 +90,10 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                         onAddWorkSubstage={handleAddSubstage}
                         onEditWorkStage={handleEdit}
                         onDeleteWorkStage={handleDeleteWorkStage}
-                        onChecklistItemToggle={handleChecklistItemToggle}
+                        onChecklistItemToggle={onChecklistItemToggle}
                         onAddChecklistItem={handleAddChecklistItem}
                         onInspectionNotesChange={handleInspectionNotesChange}
-                        onPhotoUpload={handlePhotoUpload}
+                        onPhotoUpload={onPhotoUpload}
                         onCommentSubmit={handleCommentSubmit}
                     />
                 ) : (
