@@ -69,12 +69,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log('Current user in DataProvider:', user);
-
   useEffect(() => {
     // Wait until the user is authenticated before fetching data
     if (!user) {
-      setIsLoading(false); // Stop loading if there's no user, or wait
+      // If there's no user yet, we shouldn't attempt to fetch.
+      // We also check if the auth process is still loading.
+      // If auth is no longer loading and user is null, we can stop loading data.
+      if (!auth.currentUser && !isLoading) {
+         setIsLoading(false);
+      }
       return;
     }
     
@@ -109,7 +112,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         unsubscribeBuildings();
     };
 
-  }, [user]); // Add user as a dependency
+  }, [user, isLoading]); // Add user and isLoading as dependencies
   
   const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
     try {
