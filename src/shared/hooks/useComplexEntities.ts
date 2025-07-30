@@ -74,11 +74,18 @@ async function fetchEntitiesPage(
 }
 
 /**
- * Fetches all available list types from the 'tsia-list-types' collection.
+ * Fetches all unique list types by scanning the 'tsia-complex-entities' collection.
  */
 async function fetchListTypes(): Promise<string[]> {
-  const snapshot = await getDocs(query(collection(db, 'tsia-list-types'), orderBy('name')));
-  return snapshot.docs.map((doc) => doc.data().name as string);
+    const snapshot = await getDocs(query(collection(db, 'tsia-complex-entities')));
+    const types = new Set<string>();
+    snapshot.forEach(doc => {
+        const type = doc.data().type;
+        if (type && typeof type === 'string') {
+            types.add(type);
+        }
+    });
+    return Array.from(types).sort();
 }
 
 /**
