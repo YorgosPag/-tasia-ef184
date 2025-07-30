@@ -33,6 +33,7 @@ export const functions = getFunctions(app);
 // Enable offline persistence
 if (typeof window !== 'undefined') {
     enableIndexedDbPersistence(db)
+      .then(() => console.log('Firestore offline persistence enabled.'))
       .catch((err) => {
         if (err.code == 'failed-precondition') {
           // Multiple tabs open, persistence can only be enabled in one tab at a time.

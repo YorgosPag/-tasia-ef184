@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Roboto } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -11,6 +11,7 @@ import { QueryProvider } from '@/hooks/use-query-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ProtectedRoute } from '@/components/auth/protected-route';
+import { type Viewport } from 'next';
 
 import '@/app/globals.css';
 
@@ -20,13 +21,30 @@ const fontSans = Roboto({
   weight: ['400', '500', '700']
 });
 
+export const viewport: Viewport = {
+  themeColor: '#F5F5DC',
+}
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((registration) => console.log('Service Worker registered with scope:', registration.scope))
+        .catch((error) => console.error('Service Worker registration failed:', error));
+    }
+  }, []);
+
   return (
     <html lang="en" suppressHydrationWarning>
+       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+      </head>
       <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <ThemeProvider
           attribute="class"
