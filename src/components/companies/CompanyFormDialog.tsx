@@ -1,3 +1,4 @@
+
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
@@ -10,7 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogClose,
-} from '@/shared/components/ui/dialog';
+} from '@/components/ui/dialog';
 import {
     Form,
     FormControl,
@@ -18,11 +19,11 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
-import { Button } from '@/shared/components/ui/button';
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { Company } from '@/shared/hooks/use-data-store';
+import { Company } from '@/hooks/use-data-store';
 
 
 export const companySchema = z.object({
