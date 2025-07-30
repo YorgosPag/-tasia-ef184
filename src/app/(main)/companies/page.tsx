@@ -3,26 +3,12 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PlusCircle, Loader2, Link as LinkIcon, Download, Search, Edit, Trash2 } from 'lucide-react';
@@ -32,30 +18,109 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { exportToJson } from '@/lib/exporter';
 import { useAuth } from '@/hooks/use-auth';
-import { useDataStore, Company } from '@/hooks/use-data-store';
 import { logActivity } from '@/lib/logger';
 import { CompanyFormDialog, companySchema, CompanyFormValues } from '@/components/companies/CompanyFormDialog';
-import { updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Input } from '@/components/ui/input';
 
+// Define the Company type according to Firestore structure
+export interface Company {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  website?: string;
+  contactInfo: {
+    email: string;
+    phone?: string;
+    address?: string;
+    afm?: string;
+  };
+  createdAt: any;
+}
+
+// --- Data Fetching Function ---
+async function fetchCompanies(): Promise<Company[]> {
+  const companiesCollection = collection(db, 'companies');
+  const q = query(companiesCollection, orderBy('name', 'asc'));
+
+  return new Promise((resolve, reject) => {
+    const unsubscribe = onSnapshot(q,
+      (snapshot) => {
+        const companiesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company));
+        resolve(companiesData);
+      },
+      (error) => {
+        console.error("Failed to fetch companies in real-time:", error);
+        reject(new Error("Could not fetch companies."));
+      }
+    );
+    // Note: In a real app, you might want to manage this unsubscribe function
+    // to clean up the listener when the component unmounts.
+    // For this useQuery setup, it will keep listening.
+  });
+}
+
 export default function CompaniesPage() {
-  const { companies, isLoading, addCompany } = useDataStore();
   const { isEditor } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // --- Data Fetching with React Query ---
+  const { data: companies = [], isLoading } = useQuery<Company[]>({
+    queryKey: ['companies'],
+    queryFn: fetchCompanies,
+  });
+
+  // --- Mutations for CUD operations ---
+  const addCompanyMutation = useMutation({
+    mutationFn: async (companyData: CompanyFormValues) => {
+        const docRef = await addDoc(collection(db, 'companies'), { ...companyData, createdAt: serverTimestamp() });
+        await logActivity('CREATE_COMPANY', { entityId: docRef.id, entityType: 'company', name: companyData.name });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      toast({ title: 'Επιτυχία', description: 'Η εταιρεία προστέθηκε.' });
+      setIsDialogOpen(false);
+    },
+    onError: (error) => {
+       toast({ variant: "destructive", title: "Σφάλμα", description: `Δεν ήταν δυνατή η αποθήκευση: ${error.message}` });
+    }
+  });
+
+  const updateCompanyMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string, data: CompanyFormValues }) => {
+        await updateDoc(doc(db, 'companies', id), data as any);
+        await logActivity('UPDATE_COMPANY', { entityId: id, entityType: 'company', changes: data });
+    },
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['companies'] });
+        toast({ title: 'Επιτυχία', description: 'Η εταιρεία ενημερώθηκε.' });
+        setIsDialogOpen(false);
+    },
+    onError: (error) => {
+         toast({ variant: "destructive", title: "Σφάλμα", description: `Η ενημέρωση απέτυχε: ${error.message}` });
+    }
+  });
+
+  const deleteCompanyMutation = useMutation({
+      mutationFn: async (companyId: string) => {
+          await deleteDoc(doc(db, 'companies', companyId));
+          await logActivity('DELETE_COMPANY', { entityId: companyId, entityType: 'company' });
+      },
+      onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['companies'] });
+          toast({ title: 'Επιτυχία', description: 'Η εταιρεία διαγράφηκε.' });
+      },
+      onError: (error) => {
+          toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η διαγραφή απέτυχε: ${error.message}` });
+      }
+  });
 
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companySchema),
-    defaultValues: {
-      name: '',
-      logoUrl: '',
-      website: '',
-      contactInfo: { email: '', phone: '', address: '', afm: '' }
-    },
+    defaultValues: { name: '', logoUrl: '', website: '', contactInfo: { email: '', phone: '', address: '', afm: '' } },
   });
 
   const handleOpenDialog = (company: Company | null = null) => {
@@ -66,58 +131,30 @@ export default function CompaniesPage() {
         form.reset({ name: '', logoUrl: '', website: '', contactInfo: { email: '', phone: '', address: '', afm: '' } });
     }
     setIsDialogOpen(true);
-  }
+  };
 
-  const onSubmit = async (data: CompanyFormValues) => {
-    setIsSubmitting(true);
-    try {
-        if(editingCompany) {
-            await updateDoc(doc(db, 'companies', editingCompany.id), data);
-            toast({ title: 'Επιτυχία', description: 'Η εταιρεία ενημερώθηκε.' });
-            await logActivity('UPDATE_COMPANY', { entityId: editingCompany.id, entityType: 'company', changes: data });
-        } else {
-            const newId = await addCompany(data);
-            if(newId) toast({ title: 'Επιτυχία', description: 'Η εταιρεία προστέθηκε.' });
-        }
-        setIsDialogOpen(false);
-    } catch (error) {
-      console.error("Error submitting company: ", error);
-      toast({ variant: "destructive", title: "Σφάλμα", description: "Δεν ήταν δυνατή η αποθήκευση της εταιρείας." });
-    } finally {
-      setIsSubmitting(false);
+  const onSubmit = (data: CompanyFormValues) => {
+    if(editingCompany) {
+        updateCompanyMutation.mutate({ id: editingCompany.id, data });
+    } else {
+        addCompanyMutation.mutate(data);
     }
   };
 
-  const handleDelete = async (companyId: string) => {
-      try {
-          await deleteDoc(doc(db, 'companies', companyId));
-          toast({title: 'Επιτυχία', description: 'Η εταιρεία διαγράφηκε.'});
-          await logActivity('DELETE_COMPANY', { entityId: companyId, entityType: 'company' });
-      } catch (error) {
-          console.error('Error deleting company:', error);
-          toast({variant: 'destructive', title: 'Σφάλμα', description: 'Η διαγραφή απέτυχε.'});
-      }
-  }
+  const isSubmitting = addCompanyMutation.isPending || updateCompanyMutation.isPending;
 
-  const filteredCompanies = useMemo(() => {
-    if (!companies) return [];
-    return companies.filter(company =>
+  const filteredCompanies = useMemo(() => companies.filter(company =>
       company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (company.contactInfo?.email && company.contactInfo.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (company.website && company.website.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  }, [companies, searchQuery]);
-
-  const handleExport = () => {
-    exportToJson(filteredCompanies, 'companies');
-  };
+    ), [companies, searchQuery]);
 
   return (
     <div className="flex flex-col gap-8">
        <div className="flex items-center justify-between">
          <h1 className="text-3xl font-bold tracking-tight text-foreground">Εταιρείες</h1>
         <div className="flex items-center gap-2">
-            <Button onClick={handleExport} variant="outline" disabled={isLoading || filteredCompanies.length === 0}>
+            <Button onClick={() => exportToJson(filteredCompanies, 'companies')} variant="outline" disabled={isLoading || filteredCompanies.length === 0}>
                 <Download className="mr-2"/>Εξαγωγή σε JSON
             </Button>
             {isEditor && (<Button onClick={() => handleOpenDialog()}><PlusCircle className="mr-2" />Νέα Εταιρεία</Button>)}
@@ -151,7 +188,7 @@ export default function CompaniesPage() {
                             <AlertDialog><AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει την εταιρεία. Δεν μπορεί να αναιρεθεί.</AlertDialogDescription></AlertDialogHeader>
-                                    <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(company.id)}>Διαγραφή</AlertDialogAction></AlertDialogFooter>
+                                    <AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => deleteCompanyMutation.mutate(company.id)}>Διαγραφή</AlertDialogAction></AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
                          </div>

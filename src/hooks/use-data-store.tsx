@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { logActivity } from '@/lib/logger';
 
@@ -69,11 +70,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Wait until the user is authenticated before fetching data
-    if (!user) {
-      // If auth is no longer loading and user is null, we can stop loading data.
-      if (!isAuthLoading) {
-         setIsLoading(false);
+    // Wait until the auth state is resolved and we have a user.
+    if (isAuthLoading || !user) {
+      // If auth is not loading anymore and there's no user, it means the user is logged out.
+      // We can stop our own loading indicator.
+      if (!isAuthLoading && !user) {
+        setIsLoading(false);
       }
       return;
     }
