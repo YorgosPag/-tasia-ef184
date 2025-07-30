@@ -10,6 +10,7 @@ import { DataProvider } from '@/hooks/use-data-store';
 import { QueryProvider } from '@/hooks/use-query-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { ProtectedRoute } from '@/components/auth/protected-route';
 
 import '@/app/globals.css';
 
@@ -36,7 +37,9 @@ export default function RootLayout({
                 <AuthProvider>
                     <DataProvider>
                       <SidebarProvider>
-                        {children}
+                        <ProtectedRoute>
+                            {children}
+                        </ProtectedRoute>
                       </SidebarProvider>
                       <Toaster />
                     </DataProvider>

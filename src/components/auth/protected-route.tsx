@@ -33,7 +33,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       router.push('/login');
     } else if (user && pathIsPublic) {
       // If user is logged in and trying to access a public route (like login)
-      router.push('/');
+      router.push('/dashboard');
     }
 
   }, [user, isLoading, pathname, router, pathIsPublic]);
@@ -46,7 +46,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   
-  if (user || pathIsPublic) {
+  // If the path is public, we can show it immediately
+  // Otherwise, we wait for the user object to be resolved
+  if (pathIsPublic || user) {
       return <>{children}</>;
   }
 
