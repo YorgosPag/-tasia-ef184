@@ -39,6 +39,8 @@ export default function AttachmentsPage() {
   });
 
    useEffect(() => {
+        console.log("Project ID from env:", process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+
         const unsubscribeAttachments = onSnapshot(query(collection(db, 'attachments')), (snapshot) => {
             setAttachments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Attachment)));
             setIsLoading(false);
