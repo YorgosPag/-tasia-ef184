@@ -70,6 +70,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Wait until the user is authenticated before fetching data
+    if (!user) {
+      setIsLoading(false); // Stop loading if there's no user, or wait
+      return;
+    }
+    
     setIsLoading(true);
 
     const companiesQuery = query(collection(db, 'companies'));
@@ -101,7 +107,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         unsubscribeBuildings();
     };
 
-  }, []);
+  }, [user]); // Add user as a dependency
   
   const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
     try {
