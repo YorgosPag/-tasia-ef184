@@ -87,10 +87,10 @@ export function SidebarNav() {
   const getButtonClass = (href: string) => {
     const active = isActive(href);
     return cn(
-      'text-lg font-medium text-left px-4 py-2 whitespace-nowrap',
+      'text-lg font-medium text-left px-4 py-2 whitespace-nowrap tracking-tight leading-loose',
       active
-        ? 'text-gray-900 dark:text-white' // Active state styles as per spec
-        : 'text-gray-600 dark:text-gray-400' // Inactive state styles as per spec
+        ? 'bg-gray-700 text-white' // Active state styles as per spec
+        : 'text-gray-400' // Inactive state styles as per spec
     );
   };
 
