@@ -1,8 +1,9 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useCustomLists } from '@/hooks/useCustomLists';
+import React, { useState, useEffect, useCallback } from 'react';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { CreateListForm } from './CreateListForm';
 import { EditableList } from './EditableList';
 import { Input } from '@/components/ui/input';
@@ -15,11 +16,60 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import type { CustomList, ListItem } from '@/lib/customListService';
+
+async function fetchAllCustomLists(): Promise<CustomList[]> {
+    const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
+    const listsSnapshot = await getDocs(listsQuery);
+
+    const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
+        const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
+        const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
+        const itemsSnapshot = await getDocs(itemsQuery);
+        list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
+        return list;
+    });
+
+    return Promise.all(listsDataPromises);
+}
+
 
 export function SimpleListsTab() {
-  const { lists, isLoading, fetchAllLists } = useCustomLists();
+  const [lists, setLists] = useState<CustomList[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [openItems, setOpenItems] = useState<string[]>([]);
+  
+  const fetchAllLists = useCallback(async () => {
+      setIsLoading(true);
+      const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
+      
+      const unsubscribe = onSnapshot(listsQuery, async (listsSnapshot) => {
+          const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
+              const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
+              const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
+              const itemsSnapshot = await getDocs(itemsQuery);
+              list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
+              return list;
+          });
+          const fetchedLists = await Promise.all(listsDataPromises);
+          setLists(fetchedLists);
+          setIsLoading(false);
+      }, (error) => {
+          console.error("Error fetching custom lists:", error);
+          setIsLoading(false);
+      });
+
+      return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+      const unsubscribePromise = fetchAllLists();
+      return () => {
+          unsubscribePromise.then(unsub => unsub());
+      };
+  }, [fetchAllLists]);
+
 
   const filteredLists = lists.filter(
     (list) =>

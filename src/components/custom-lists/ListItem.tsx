@@ -3,16 +3,19 @@
 
 import { useState } from 'react';
 import type { ListItem as ListItemType } from '@/lib/customListService';
-import { useCustomListActions } from '@/hooks/useCustomListActions';
+import { useToast } from '@/hooks/use-toast';
+import { updateCustomListItem, deleteCustomListItem, checkListItemDependencies } from '@/lib/customListService';
+import { listIdToContactFieldMap } from '@/lib/customListService';
 import { ListItemDisplay } from './ListItemDisplay';
 import { ListItemEdit } from './ListItemEdit';
+
 
 interface ListItemProps {
   item: ListItemType;
   listId: string;
   hasCode?: boolean;
   canBeModified: boolean;
-  fetchAllLists: () => Promise<void>;
+  fetchAllLists: () => void;
 }
 
 export function ListItem({
@@ -22,7 +25,7 @@ export function ListItem({
   canBeModified,
   fetchAllLists,
 }: ListItemProps) {
-  const { updateItem, deleteItem } = useCustomListActions(fetchAllLists);
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.value);
   const [editCode, setEditCode] = useState(item.code || '');
@@ -39,9 +42,13 @@ export function ListItem({
       if (hasCode) {
         dataToUpdate.code = trimmedCode;
       }
-      const result = await updateItem(listId, item.id, dataToUpdate);
-      if (result !== null) {
+      try {
+        await updateCustomListItem(listId, item.id, dataToUpdate);
+        toast({ title: 'Επιτυχία', description: 'Το στοιχείο ενημερώθηκε.' });
+        fetchAllLists();
         setIsEditing(false);
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η ενημέρωση απέτυχε: ${error.message}`});
       }
     } else {
       setIsEditing(false);
@@ -55,9 +62,30 @@ export function ListItem({
   };
 
   const handleDelete = async () => {
-    const confirmed = await deleteItem(listId, item.id, item.value);
-    if (confirmed) {
-      setIsEditing(false);
+    const contactField = listIdToContactFieldMap[listId];
+    const dependency = await checkListItemDependencies(contactField, item.value);
+
+    if (dependency) {
+      toast({
+        variant: 'destructive',
+        title: 'Αδυναμία Διαγραφής',
+        description: `Το στοιχείο "${item.value}" χρησιμοποιείται από την επαφή: ${dependency}.`,
+        duration: 5000,
+      });
+      return false;
+    }
+
+    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε το στοιχείο "${item.value}"`)) {
+      return false;
+    }
+
+    try {
+        await deleteCustomListItem(listId, item.id);
+        toast({ title: 'Επιτυχία', description: `Το στοιχείο "${item.value}" διαγράφηκε.`});
+        fetchAllLists();
+        setIsEditing(false);
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η διαγραφή απέτυχε: ${error.message}`});
     }
   };
 

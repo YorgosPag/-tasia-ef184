@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,7 +17,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import { useCustomListActions } from '@/hooks/useCustomListActions';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { logActivity } from '@/lib/logger';
+import { createCustomList as createCustomListService } from '@/lib/customListService';
 import type { CreateListData } from '@/lib/customListService';
 import { BooleanSwitchField } from './form/BooleanSwitchField';
 
@@ -31,9 +35,11 @@ const createListSchema = z.object({
 
 type CreateListFormValues = z.infer<typeof createListSchema>;
 
-export function CreateListForm({ fetchAllLists }: { fetchAllLists: () => Promise<void>}) {
-    const { createList, isSubmitting } = useCustomListActions(fetchAllLists);
-
+export function CreateListForm({ fetchAllLists }: { fetchAllLists: () => void }) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { toast } = useToast();
+    const { user } = useAuth();
+    
     const form = useForm<CreateListFormValues>({
         resolver: zodResolver(createListSchema),
         defaultValues: {
@@ -45,20 +51,27 @@ export function CreateListForm({ fetchAllLists }: { fetchAllLists: () => Promise
     });
 
     const onSubmit = async (values: CreateListFormValues) => {
-        const listData: CreateListData = {
-            title: values.title,
-            description: values.description,
-            hasCode: values.hasCode,
-            isProtected: values.isProtected,
+        if (!user) {
+             toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν έχετε δικαίωμα για αυτή την ενέργεια.'});
+             return;
         }
-        const result = await createList(listData);
-        if (result) {
-            form.reset({
-                title: '',
-                description: '',
-                hasCode: false,
-                isProtected: false
-            });
+        setIsSubmitting(true);
+        try {
+            const listData: CreateListData = {
+                title: values.title,
+                description: values.description,
+                hasCode: values.hasCode,
+                isProtected: values.isProtected,
+            };
+            const listId = await createCustomListService(listData);
+            await logActivity('CREATE_LIST', { entityId: listId, entityType: 'custom-list', name: listData.title });
+            toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.'});
+            form.reset();
+            fetchAllLists();
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η δημιουργία απέτυχε: ${error.message}`});
+        } finally {
+            setIsSubmitting(false);
         }
     };
 

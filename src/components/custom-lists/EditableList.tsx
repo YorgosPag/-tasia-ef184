@@ -3,36 +3,31 @@
 
 import { useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem } from '@/components/ui/accordion';
-import { useCustomListActions } from '@/hooks/useCustomListActions';
-import type { CustomList } from '@/lib/customListService';
+import type { CustomList, CreateListData } from '@/lib/customListService';
 import { useAuth } from '@/hooks/use-auth';
 import { EditableListHeader } from './EditableListHeader';
 import { EditableListForm } from './EditableListForm';
 import { EditableListItems } from './EditableListItems';
 import { Card } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { logActivity } from '@/lib/logger';
+import { updateCustomList as updateCustomListService, deleteCustomList as deleteCustomListService, checkListDependencies } from '@/lib/customListService';
+import { listIdToContactFieldMap } from '@/lib/customListService';
+
 
 interface EditableListProps {
   list: CustomList;
   isOpen: boolean;
   onToggle: (id: string) => void;
-  fetchAllLists: () => Promise<void>;
+  fetchAllLists: () => void;
 }
 
 export function EditableList({ list, isOpen, onToggle, fetchAllLists }: EditableListProps) {
-  const { isSubmitting, addItem, updateList, deleteList } = useCustomListActions(fetchAllLists);
   const { isAdmin } = useAuth();
-  const [itemValue, setItemValue] = useState('');
-
-  const handleAddItem = async () => {
-    if (!itemValue.trim()) return;
-    const result = await addItem(list.id, itemValue, list.hasCode);
-    if (result) {
-      setItemValue('');
-    }
-  };
+  const { toast } = useToast();
 
   const handleUpdate = async (field: 'title' | 'description', value: string) => {
-    let dataToUpdate: Partial<CustomList> = {};
+    let dataToUpdate: Partial<CreateListData> = {};
     if (field === 'title' && value.trim() && value !== list.title) {
       dataToUpdate = { title: value };
     } else if (field === 'description' && value !== (list.description || '')) {
@@ -42,12 +37,46 @@ export function EditableList({ list, isOpen, onToggle, fetchAllLists }: Editable
     }
 
     if (Object.keys(dataToUpdate).length > 0) {
-      await updateList(list.id, dataToUpdate);
+      try {
+        await updateCustomListService(list.id, dataToUpdate);
+        toast({ title: 'Επιτυχία', description: 'Η λίστα ενημερώθηκε.'});
+        fetchAllLists();
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η ενημέρωση απέτυχε: ${error.message}`});
+      }
     }
   };
 
   const handleDelete = async () => {
-    await deleteList(list);
+     if (!isAdmin) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν έχετε δικαιώματα για διαγραφή.' });
+        return null;
+      }
+
+      const contactField = listIdToContactFieldMap[list.id];
+      if (contactField) {
+        const dependencies = await checkListDependencies(contactField, list.items.map((item) => item.value));
+        if (dependencies.length > 0) {
+          const examples = dependencies.slice(0, 2).map((d) => `"${d.value}" στην επαφή "${d.contactName}"`).join(', ');
+          const warningMessage = `Η λίστα "${list.title}" χρησιμοποιείται σε ενεργά σημεία. Ενδεικτικά: ${examples}${dependencies.length > 2 ? '...' : ''}.`;
+          if (!confirm(`${warningMessage}\n\nΕίστε σίγουρος ότι θέλετε να συνεχίσετε;`)) {
+            return null;
+          }
+        }
+      } else {
+        if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
+          return null;
+        }
+      }
+      
+      try {
+        await deleteCustomListService(list.id);
+        await logActivity('DELETE_LIST', { entityId: list.id, entityType: 'custom-list', name: list.title });
+        toast({ title: 'Επιτυχία', description: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.'});
+        fetchAllLists();
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η διαγραφή απέτυχε: ${error.message}`});
+      }
   };
   
   const canBeModified = isAdmin || !list.isProtected;
@@ -71,10 +100,7 @@ export function EditableList({ list, isOpen, onToggle, fetchAllLists }: Editable
                     <EditableListForm
                         listId={list.id}
                         hasCode={list.hasCode}
-                        itemValue={itemValue}
-                        setItemValue={setItemValue}
-                        onAdd={handleAddItem}
-                        isSubmitting={isSubmitting}
+                        fetchAllLists={fetchAllLists}
                     />
                 )}
               <EditableListItems
