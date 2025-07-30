@@ -16,17 +16,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { getAttachmentDataFromForm } from '@/lib/unit-helpers';
 import { logActivity } from '@/lib/logger';
 import { AttachmentsListTable } from '@/components/attachments/AttachmentsListTable';
+import type { Attachment, Unit } from '@/lib/types/attachments';
 
-export interface Attachment extends AttachmentFormValues {
-    id: string;
-    unitId?: string;
-}
-
-export interface Unit {
-    id: string;
-    name: string;
-    identifier: string;
-}
 
 export default function AttachmentsPage() {
   const { isEditor } = useAuth();

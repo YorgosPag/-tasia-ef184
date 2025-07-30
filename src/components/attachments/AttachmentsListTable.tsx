@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -13,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { Attachment, Unit } from '@/app/attachments/page';
+import type { Attachment, Unit } from '@/lib/types/attachments';
 
 interface AttachmentsListTableProps {
   attachments: Attachment[];
