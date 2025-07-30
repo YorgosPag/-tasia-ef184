@@ -70,14 +70,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-        setCompanies([]);
-        setProjects([]);
-        setBuildings([]);
-        setIsLoading(false);
-        return;
-    }
-
     setIsLoading(true);
 
     const companiesQuery = query(collection(db, 'companies'));
@@ -109,7 +101,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         unsubscribeBuildings();
     };
 
-  }, [user]);
+  }, []);
   
   const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
     try {
