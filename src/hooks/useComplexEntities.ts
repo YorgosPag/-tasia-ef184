@@ -62,7 +62,7 @@ async function fetchEntitiesPage(
   const entitiesQuery = query(
     collection(db, 'tsia-complex-entities'),
     ...constraints,
-    orderBy('createdAt', 'desc'), // Use a consistent field for ordering
+    // orderBy('createdAt', 'desc'), // Use a consistent field for ordering
     ...(lastDoc ? [startAfter(lastDoc)] : []),
     limit(PAGE_SIZE)
   );
