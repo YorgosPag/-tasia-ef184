@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/use-auth';
 import { logActivity } from '@/lib/logger';
@@ -16,32 +16,23 @@ export interface UserWithRole {
   role: 'admin' | 'editor' | 'viewer';
 }
 
-function fetchUsers(isAdmin: boolean): Promise<UserWithRole[]> {
-  return new Promise((resolve, reject) => {
+async function fetchUsers(isAdmin: boolean): Promise<UserWithRole[]> {
     if (!isAdmin) {
-      resolve([]);
-      return;
+      return [];
     }
 
     const q = collection(db, 'users');
-    const unsubscribe = onSnapshot(q, 
-      (snapshot) => {
+    try {
+        const snapshot = await getDocs(q);
         const usersData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
+            id: doc.id,
+            ...doc.data(),
         } as UserWithRole));
-        // We let react-query manage caching, so we don't unsubscribe here.
-        resolve(usersData);
-      },
-      (error) => {
+        return usersData;
+    } catch (error) {
         console.error("Failed to fetch users:", error);
-        reject(error);
-      }
-    );
-    
-    // Note: In a real-world app, you might want to return the unsubscribe function
-    // and manage it, but for useQuery's managed lifecycle, this is okay.
-  });
+        throw new Error("Could not fetch users.");
+    }
 }
 
 export function useUsers() {
