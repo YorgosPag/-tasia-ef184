@@ -2,12 +2,12 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
-import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { Edit, User, Info, Phone, Link as LinkIcon, Map as MapIcon, Briefcase } from 'lucide-react';
 import Link from 'next/link';
-import type { Contact } from '@/shared/hooks/use-contacts';
+import type { Contact } from '@/hooks/use-contacts';
 import { DetailSection } from './detail-view/DetailSection';
 import { DetailRow } from './detail-view/DetailRow';
 import { formatDate } from './utils/contactFormatters';

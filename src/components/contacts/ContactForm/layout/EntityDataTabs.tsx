@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GemhDataTabs } from '../tabs/GemhDataTabs';
 import { UserDataTabs } from '../tabs/UserDataTabs';
 import type { ContactFormProps } from '../types';
