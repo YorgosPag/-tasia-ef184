@@ -44,7 +44,7 @@ export default function NewContactPage() {
         defaultValues: {
             name: '',
             entityType: 'Φυσικό Πρόσωπο',
-            photoUrl: '',
+            photoUrls: {},
             identity: { type: 'Ταυτότητα', number: '', issuingAuthority: '' },
             emails: [],
             phones: [],
