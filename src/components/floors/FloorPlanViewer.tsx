@@ -14,21 +14,27 @@ interface FloorPlanViewerProps {
 function getPathFromUrl(url: string): string | null {
     try {
         const urlObject = new URL(url);
-        if (urlObject.hostname === 'firebasestorage.googleapis.com') {
-            // Pathname is in the format /v0/b/your-bucket.appspot.com/o/path%2Fto%2Fyour%2Ffile.pdf
-            // We need to decode it and extract the path after the '/o/'
-            const path = decodeURIComponent(urlObject.pathname.split('/o/')[1].split('?')[0]);
-            return path;
+        // Ensure it's a Firebase Storage URL
+        if (urlObject.hostname.endsWith('firebasestorage.googleapis.com')) {
+            // The path is encoded in the pathname after /o/
+            const pathName = urlObject.pathname;
+            const startIndex = pathName.indexOf('/o/') + 3;
+            if (startIndex > 2) {
+                // Remove query parameters like ?alt=media&token=...
+                const endIndex = pathName.indexOf('?');
+                const encodedPath = endIndex === -1 ? pathName.substring(startIndex) : pathName.substring(startIndex, endIndex);
+                return decodeURIComponent(encodedPath);
+            }
         }
     } catch (error) {
-        console.error("Invalid URL for storage path extraction:", error);
+        console.error("Invalid URL or failed to parse Firebase Storage URL:", url, error);
     }
     return null;
 }
 
 
 export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [displayUrl, setDisplayUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -36,7 +42,7 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
   useEffect(() => {
     if (!pdfUrl) {
       setError(null);
-      setDownloadUrl(null);
+      setDisplayUrl(null);
       setIsLoading(false);
       return;
     }
@@ -47,7 +53,7 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
 
       const storagePath = getPathFromUrl(pdfUrl);
       if (!storagePath) {
-          setError("Μη έγκυρο URL κάτοψης.");
+          setError("Μη έγκυρο URL κάτοψης. Δεν ήταν δυνατή η εξαγωγή της διαδρομής.");
           setIsLoading(false);
           return;
       }
@@ -56,7 +62,7 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
         const storage = getStorage();
         const storageRef = ref(storage, storagePath);
         const url = await getDownloadURL(storageRef);
-        setDownloadUrl(url);
+        setDisplayUrl(url);
       } catch (err: any) {
         console.error("Error getting download URL:", err);
         setError("Η φόρτωση της κάτοψης απέτυχε.");
@@ -91,7 +97,7 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
     );
   }
 
-  if (!pdfUrl || !downloadUrl) {
+  if (!pdfUrl || !displayUrl) {
     return (
       <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
         <p className="text-muted-foreground">Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.</p>
@@ -103,14 +109,14 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
   return (
     <div style={{ height: '75vh', border: '1px solid rgba(0, 0, 0, 0.1)', borderRadius: '0.5rem', overflow: 'hidden' }}>
       <object
-          data={downloadUrl}
+          data={displayUrl}
           type="application/pdf"
           width="100%"
           height="100%"
       >
         <p>
           Ο browser σας δεν υποστηρίζει την ενσωματωμένη προβολή PDF. Μπορείτε να το κατεβάσετε από
-          <a href={downloadUrl} className="text-primary hover:underline" download> εδώ</a>.
+          <a href={displayUrl} className="text-primary hover:underline" download> εδώ</a>.
         </p>
       </object>
     </div>
