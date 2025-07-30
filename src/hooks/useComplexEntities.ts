@@ -107,7 +107,6 @@ async function fetchDistinctValues(listType: string, field: string): Promise<str
 export function useComplexEntities(listType: string, filters: Record<string, string>) {
   const [entities, setEntities] = useState<ComplexEntity[]>([]);
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [firstVisible, setFirstVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
@@ -143,8 +142,7 @@ export function useComplexEntities(listType: string, filters: Record<string, str
     } finally {
       setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listType, filterKey]);
+  }, [listType, filterKey, initialDataLoaded, filters]);
 
   useEffect(() => {
     // Fetch distinct values for the first 5 columns when listType changes
@@ -175,7 +173,7 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   
   useEffect(() => {
       refetch();
-  }, [listType, filterKey, refetch]);
+  }, [listType, filterKey]); // Removed refetch from dependency array
 
 
   const nextPage = () => {
