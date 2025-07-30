@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -18,42 +19,6 @@ interface EditableListProps {
   isOpen: boolean;
   onToggle: (id: string) => void;
   fetchAllLists: () => void;
-}
-
-const listIdToContactFieldMap: { [key: string]: string } = {
-  "Jz1pB5tZSC8d41w8uKlA": "job.role",
-  "k8zyKz2mC0d7j4x3R5bH": "job.specialty",
-  "iGOjn86fcktREwMeDFPz": "identity.issuingAuthority",
-  "jIt8lRiNcgatSchI90yd": "identity.type",
-  "pL5fV6w8X9y7zE1bN3cO": "doy",
-};
-
-async function checkListDependencies(contactField: string, itemValues: string[]): Promise<{value: string, contactName: string}[]> {
-    if (!contactField || itemValues.length === 0) return [];
-  
-    const CHUNK_SIZE = 30;
-    const dependencies: {value: string, contactName: string}[] = [];
-  
-    for (let i = 0; i < itemValues.length; i += CHUNK_SIZE) {
-      const chunk = itemValues.slice(i, i + CHUNK_SIZE);
-      if (chunk.length === 0) continue;
-  
-      const q = query(collection(db, 'contacts'), where(contactField, 'in', chunk));
-      const snapshot = await getDocs(q);
-  
-      snapshot.forEach(doc => {
-        dependencies.push({
-          value: doc.data()[contactField],
-          contactName: doc.data().name
-        });
-      });
-
-      if(dependencies.length >= 2) {
-          return dependencies;
-      }
-    }
-    
-    return dependencies;
 }
 
 export function EditableList({ list, isOpen, onToggle, fetchAllLists }: EditableListProps) {
@@ -87,21 +52,9 @@ export function EditableList({ list, isOpen, onToggle, fetchAllLists }: Editable
         return null;
       }
 
-      const contactField = listIdToContactFieldMap[list.id];
-      if (contactField) {
-        const dependencies = await checkListDependencies(contactField, list.items.map((item) => item.value));
-        if (dependencies.length > 0) {
-          const examples = dependencies.slice(0, 2).map((d) => `"${d.value}" στην επαφή "${d.contactName}"`).join(', ');
-          const warningMessage = `Η λίστα "${list.title}" χρησιμοποιείται σε ενεργά σημεία. Ενδεικτικά: ${examples}${dependencies.length > 2 ? '...' : ''}.`;
-          if (!confirm(`${warningMessage}\n\nΕίστε σίγουρος ότι θέλετε να συνεχίσετε;`)) {
-            return null;
-          }
-        }
-      } else {
-        if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${list.title}" και όλα τα περιεχόμενά της;`)) {
-          return null;
-        }
-      }
+    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε τη λίστα "${list.title}" και όλα τα περιεχόμενά της; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.`)) {
+      return null;
+    }
       
       try {
         const batch = writeBatch(db);
