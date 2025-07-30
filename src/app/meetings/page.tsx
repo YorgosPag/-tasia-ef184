@@ -1,8 +1,8 @@
 
 'use client';
 
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { PlusCircle } from 'lucide-react';
 
 export default function MeetingsPage() {

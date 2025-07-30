@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface FloorPlanViewerProps {
   pdfUrl?: string; // This prop now expects a storage path, not a full URL

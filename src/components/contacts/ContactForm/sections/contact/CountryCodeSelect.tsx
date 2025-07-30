@@ -1,15 +1,14 @@
-
 'use client';
 
 import React from 'react';
 import { Control, useController } from 'react-hook-form';
-import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
-import { Button } from '@/shared/components/ui/button';
-import { FormControl } from '@/shared/components/ui/form';
-import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from '@/shared/components/ui/command';
+import type { ContactFormValues } from '@/lib/validation/contactSchema';
+import { Button } from '@/components/ui/button';
+import { FormControl } from '@/components/ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { ChevronsUpDown, Check } from 'lucide-react';
-import { cn } from '@/shared/lib/utils';
+import { cn } from '@/lib/utils';
 import { countryCodes } from '../../utils/countryCodes';
 
 interface CountryCodeSelectProps {

@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -6,7 +7,7 @@ import {
   serverTimestamp,
   doc,
 } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 import * as XLSX from 'xlsx';
 
 // --- Interfaces ---
@@ -79,6 +80,7 @@ export async function processImportFile(formData: FormData): Promise<ImportResul
       // Commit batch if it's getting full to avoid hitting limits
       if (writeCount >= BATCH_LIMIT) {
         await batch.commit();
+        console.log(`Committed a batch of ${writeCount} documents.`);
         batch = writeBatch(db); // Start a new batch
         writeCount = 0;
       }
@@ -90,6 +92,7 @@ export async function processImportFile(formData: FormData): Promise<ImportResul
   // Commit any remaining writes in the last batch
   if (writeCount > 0) {
     await batch.commit();
+    console.log(`Committed final batch of ${writeCount} documents.`);
   }
 
   return result;

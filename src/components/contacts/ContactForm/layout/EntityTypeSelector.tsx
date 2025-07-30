@@ -1,14 +1,13 @@
-
 'use client';
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl } from '@/shared/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
-import { Label } from '@/shared/components/ui/label';
-import { cn } from '@/shared/lib/utils';
+import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { User, Building2, Landmark } from 'lucide-react';
 import type { UseFormReturn } from 'react-hook-form';
-import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import type { ContactFormValues } from '@/lib/validation/contactSchema';
 
 interface EntityTypeSelectorProps {
   form: UseFormReturn<ContactFormValues>;

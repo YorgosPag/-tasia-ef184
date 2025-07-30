@@ -1,8 +1,7 @@
-
 'use client';
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BasicInfoSection } from '../sections/BasicInfoSection';
 import { IdentitySection } from '../sections/IdentitySection';
 import { ContactSection } from '../sections/ContactSection';
@@ -10,10 +9,10 @@ import { SocialsSection } from '../sections/SocialsSection';
 import { AddressSection } from '../sections/AddressSection';
 import { NotesSection } from '../sections/NotesSection';
 import type { ContactFormProps } from '../types';
-import { FormField, FormItem, FormLabel, FormControl } from '@/shared/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group';
-import { Label } from '@/shared/components/ui/label';
-import { cn } from '@/shared/lib/utils';
+import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { User, Building2, Landmark } from 'lucide-react';
 
 export function NaturalPersonLayout({ form, onFileSelect }: ContactFormProps) {

@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/shared/components/ui/button';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
 import { AddressAutocompleteInput } from '@/components/common/autocomplete/AddressAutocompleteInput';
 import { getFullAddress, handleAddressSelect, addressFieldsMap } from '../../utils/addressHelpers';

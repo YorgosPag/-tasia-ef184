@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useWatch, type UseFormReturn } from 'react-hook-form';
 import { useDebounce } from 'use-debounce';
 import { parseGemiAddress } from '../utils/addressHelpers';
-import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import type { ContactFormValues } from '@/lib/validation/contactSchema';
 
 const GEMI_API_URL = 'https://opendata-api.businessportal.gr/api/opendata/v1/companies/';
 const GEMI_API_KEY = 'b98MlVJ7vDF8gQIWN6d79cgStU8QJp9o';

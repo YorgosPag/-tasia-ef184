@@ -1,10 +1,10 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
-import type { ProjectWithWorkStageSummary as Project } from '@/shared/types/project-types';
+import type { ProjectWithWorkStageSummary as Project } from '@/lib/types/project-types';
 
 interface MaterialsSectionProps {
     project: Project;

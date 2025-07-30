@@ -2,12 +2,12 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Badge } from '@/shared/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
-import type { ProjectWithWorkStageSummary as Project } from '@/shared/types/project-types';
+import type { ProjectWithWorkStageSummary as Project } from '@/lib/types/project-types';
 
 interface ProjectHeaderProps {
     project: Project;

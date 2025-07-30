@@ -1,13 +1,14 @@
+
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { BedDouble, Bath, Square, ArrowRight, ZoomIn } from 'lucide-react';
-import { getStatusClass } from '@/shared/lib/unit-helpers';
-import { Dialog, DialogContent, DialogTrigger } from '@/shared/components/ui/dialog';
+import { getStatusClass } from '@/lib/unit-helpers';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import React from 'react';
 
 interface Unit {

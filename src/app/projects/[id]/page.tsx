@@ -1,22 +1,23 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { ProjectHeader } from '@/components/projects/ProjectHeader';
-import { useDataStore, Company } from '@/shared/hooks/use-data-store';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { useDataStore, Company } from '@/hooks/use-data-store';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BuildingsSection } from '@/components/projects/BuildingsSection';
 import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
 import { ProjectActivityTimeline } from '@/components/projects/ProjectActivityTimeline';
 import { MeetingsSection } from '@/components/projects/MeetingsSection';
 import { ContractsSection } from '@/components/projects/ContractsSection';
 import { MaterialsSection } from '@/components/projects/MaterialsSection';
-import type { ProjectWithWorkStageSummary as Project } from '@/shared/types/project-types';
+import type { ProjectWithWorkStageSummary as Project } from '@/lib/types/project-types';
 
 export default function ProjectDetailsPage() {
   const params = useParams();

@@ -1,12 +1,11 @@
-
 'use client';
 
 import React from 'react';
 import { Control } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ADDRESS_TYPES } from '../../utils/addressHelpers';
-import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import type { ContactFormValues } from '@/lib/validation/contactSchema';
 
 interface AddressTypeSelectProps {
     control: Control<ContactFormValues>;

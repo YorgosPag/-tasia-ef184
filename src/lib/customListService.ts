@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -16,7 +17,7 @@ import {
   orderBy,
   getDoc,
 } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 
 // --- Interfaces ---
 export interface ListItem {

@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 import {
   Table,
   TableBody,
@@ -11,15 +11,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Input } from '@/shared/components/ui/input';
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import { Loader2, Search } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
-import { Badge } from '@/shared/components/ui/badge';
-import { useToast } from '@/shared/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 interface LogEntry {
   id: string;

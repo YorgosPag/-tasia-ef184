@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
+} from '@/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -20,16 +20,16 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/shared/components/ui/alert-dialog";
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
+} from "@/components/ui/alert-dialog";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Loader2, PlusCircle, Edit, Trash2, Copy } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
-import { getStatusClass } from '@/shared/lib/unit-helpers';
+import { getStatusClass } from '@/lib/unit-helpers';
 import type { AttachmentFormValues } from '@/components/units/AttachmentDialog';
-import { cn } from '@/shared/lib/utils';
-import type { Unit } from '@/shared/hooks/use-unit-details';
+import { cn } from '@/lib/utils';
+import type { Unit } from '@/hooks/use-unit-details';
 
 
 interface UnitListItem {

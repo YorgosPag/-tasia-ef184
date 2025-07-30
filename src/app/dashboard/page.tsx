@@ -1,8 +1,8 @@
 
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function DashboardPage() {
   const { user } = useAuth();

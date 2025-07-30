@@ -14,7 +14,7 @@ import {
   DocumentData,
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 import { useQuery } from '@tanstack/react-query';
 
 // --- Interfaces & Constants ---

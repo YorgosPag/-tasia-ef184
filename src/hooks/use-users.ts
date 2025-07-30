@@ -4,9 +4,9 @@
 
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
-import { useAuth } from '@/shared/hooks/use-auth';
-import { logActivity } from '@/shared/lib/logger';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/hooks/use-auth';
+import { logActivity } from '@/lib/logger';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export interface UserWithRole {

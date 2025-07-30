@@ -1,16 +1,17 @@
+
 'use client';
 
 import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -18,8 +19,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Loader2, Wand2 } from 'lucide-react';
 import {
     Select,
@@ -27,10 +28,10 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/shared/components/ui/select';
-import { Switch } from '@/shared/components/ui/switch';
-import { generateNextAttachmentIdentifier } from '@/shared/lib/identifier-generator';
-import { useToast } from '@/shared/hooks/use-toast';
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { generateNextAttachmentIdentifier } from '@/lib/identifier-generator';
+import { useToast } from '@/hooks/use-toast';
 import { useParams } from 'next/navigation';
 
 export const attachmentSchema = z.object({

@@ -1,8 +1,8 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SimpleListsTab } from '@/components/custom-lists/SimpleListsTab';
 import { ComplexEntitiesTab } from '@/components/custom-lists/ComplexEntitiesTab';
 

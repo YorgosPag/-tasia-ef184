@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useProjectsPage } from '@/shared/hooks/use-projects-page';
+import { useProjectsPage } from '@/hooks/use-projects-page';
 import { ProjectsPageView } from '@/components/projects/ProjectsPageView';
 
 export default function ProjectsPage() {

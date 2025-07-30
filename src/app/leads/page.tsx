@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, updateDoc, doc, orderBy } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
-import { useToast } from '@/shared/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 import {
   Table,
   TableBody,
@@ -12,11 +12,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui/card';
-import { Input } from '@/shared/components/ui/input';
-import { Badge } from '@/shared/components/ui/badge';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/components/ui/select';
+} from '@/components/ui/table';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Loader2, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';

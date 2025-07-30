@@ -8,7 +8,7 @@ import {
   onSnapshot,
   query,
 } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 import {
   Table,
   TableBody,
@@ -16,12 +16,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
+} from '@/components/ui/table';
 import { Loader2, Search } from 'lucide-react';
-import { useToast } from '@/shared/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
-import { Input } from '@/shared/components/ui/input';
+import { Input } from '@/components/ui/input';
 
 interface Floor {
     id: string;

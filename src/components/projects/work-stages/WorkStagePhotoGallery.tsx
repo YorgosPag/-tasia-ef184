@@ -2,16 +2,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/shared/components/ui/carousel';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Upload, CameraOff } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
 import { Timestamp } from 'firebase/firestore';
-import type { WorkStage } from '@/shared/types/project-types';
+import type { WorkStage } from '@/lib/types/project-types';
 
 interface WorkStagePhotoGalleryProps {
     stage: WorkStage;
@@ -100,5 +100,3 @@ export function WorkStagePhotoGallery({ stage, onPhotoUpload }: WorkStagePhotoGa
         </Card>
     )
 }
-
-    
