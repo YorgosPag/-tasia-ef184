@@ -9,7 +9,7 @@ import { auth, db } from '@/lib/firebase';
 // --- Developer Configuration ---
 // Set to true to bypass Firebase Auth and log in as a mock admin user.
 // Set to false for standard Firebase authentication.
-const BYPASS_AUTH = true;
+const BYPASS_AUTH = false;
 
 // --- Interfaces ---
 type UserRole = 'admin' | 'editor' | 'viewer';

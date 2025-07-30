@@ -1,4 +1,4 @@
-
+// src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
@@ -13,14 +13,13 @@ const firebaseConfig = {
   storageBucket: process***REMOVED***.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || undefined,
 };
 
 // Basic check to ensure Firebase config is loaded
 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
   console.error("Firebase configuration is missing. Make sure your ***REMOVED***.local file is set up correctly.");
 }
-
 
 // Initialize Firebase for client-side rendering, ensuring it's done only once.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
