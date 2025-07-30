@@ -4,9 +4,9 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 // Firebase config (βάλε τα δικά σου ή import)
 const firebaseConfig = {
   apiKey: "***REMOVED***",
-  authDomain: "tasia-6f771.firebaseapp.com",
-  projectId: "tasia-6f771",
-  storageBucket: "tasia-6f771.appspot.com",
+  authDomain: "tasia-6f77i.firebaseapp.com",
+  projectId: "tasia-6f77i",
+  storageBucket: "tasia-6f77i.appspot.com",
   messagingSenderId: "204877276202",
   appId: "1:204877276202:web:31db4eb5b1c1b7c4078f53"
 };
