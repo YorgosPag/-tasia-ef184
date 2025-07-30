@@ -3,8 +3,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { SimpleListsTab } from '@/features/custom-lists/components/SimpleListsTab';
-import { ComplexEntitiesTab } from '@/features/custom-lists/components/ComplexEntitiesTab';
+import { SimpleListsTab } from '@/components/custom-lists/SimpleListsTab';
+import { ComplexEntitiesTab } from '@/components/custom-lists/ComplexEntitiesTab';
 
 export default function CustomListsPage() {
   return (
