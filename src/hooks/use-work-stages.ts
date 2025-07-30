@@ -26,7 +26,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { logActivity } from '@/lib/logger';
 import { WorkStageFormValues, workStageSchema } from '@/components/projects/work-stages/workStageSchema';
-import type { WorkStage, WorkStageWithSubstages } from '@/lib/types/project-types';
+import type { WorkStage, WorkStageWithSubstages, ChecklistItem } from '@/lib/types/project-types';
 import { exportToJson } from '@/lib/exporter';
 import { formatDate } from '@/components/projects/work-stages/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -227,7 +227,7 @@ function useWorkStageActions(projectId: string, projectTitle: string, workStages
     return { handleDeleteWorkStage, handleExport };
 }
 
-function useWorkStageChecklist(projectId: string, workStages: WorkStageWithSubstages[]) {
+function useWorkStageChecklist(projectId: string, workStages: WorkStageWithSubstages[], setWorkStages: React.Dispatch<React.SetStateAction<WorkStageWithSubstages[]>>) {
     const { user } = useAuth();
     const { toast } = useToast();
 
@@ -235,18 +235,52 @@ function useWorkStageChecklist(projectId: string, workStages: WorkStageWithSubst
         if (!projectId || !user) return;
         const parentId = isSubstage ? workStages.find(ws => ws.workSubstages.some(ss => ss.id === stage.id))?.id : undefined;
         if (isSubstage && !parentId) return;
-        const docRef = parentId ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id) : doc(db, 'projects', projectId, 'workStages', stage.id);
-        const newChecklist = [...(stage.checklist || [])];
-        const updatedItem = { ...newChecklist[itemIndex], completed, completionDate: completed ? serverTimestamp() : undefined, completedBy: completed ? user.email : undefined };
-        newChecklist[itemIndex] = updatedItem;
-        const batch = writeBatch(db);
-        batch.update(docRef, { checklist: newChecklist });
-        const topLevelId = (stage as any).topLevelId;
-        if (topLevelId) {
-            const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
-            batch.update(topLevelRef, { checklist: newChecklist });
+
+        // Optimistic UI Update
+        const originalStages = [...workStages];
+        const newStages = originalStages.map(ws => {
+            if (!isSubstage && ws.id === stage.id) {
+                const newChecklist = [...(ws.checklist || [])];
+                newChecklist[itemIndex] = { ...newChecklist[itemIndex], completed };
+                return { ...ws, checklist: newChecklist };
+            }
+            if (isSubstage && ws.id === parentId) {
+                return {
+                    ...ws,
+                    workSubstages: ws.workSubstages.map(ss => {
+                        if (ss.id === stage.id) {
+                            const newChecklist = [...(ss.checklist || [])];
+                            newChecklist[itemIndex] = { ...newChecklist[itemIndex], completed };
+                            return { ...ss, checklist: newChecklist };
+                        }
+                        return ss;
+                    })
+                };
+            }
+            return ws;
+        });
+        setWorkStages(newStages);
+
+        // Perform database update in the background
+        try {
+            const docRef = parentId ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id) : doc(db, 'projects', projectId, 'workStages', stage.id);
+            const newChecklist = [...(stage.checklist || [])];
+            const updatedItem = { ...newChecklist[itemIndex], completed, completionDate: completed ? serverTimestamp() : undefined, completedBy: completed ? user.email : undefined };
+            newChecklist[itemIndex] = updatedItem;
+            const batch = writeBatch(db);
+            batch.update(docRef, { checklist: newChecklist });
+            const topLevelId = (stage as any).topLevelId;
+            if (topLevelId) {
+                const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
+                batch.update(topLevelRef, { checklist: newChecklist });
+            }
+            await batch.commit();
+        } catch (error) {
+            console.error("Failed to update checklist item:", error);
+            // Rollback UI on failure
+            setWorkStages(originalStages);
+            toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η αλλαγή απέτυχε. Επαναφορά.' });
         }
-        await batch.commit();
     };
 
     const handleAddChecklistItem = async (stage: WorkStage, task: string, isSubstage: boolean) => {
@@ -342,10 +376,10 @@ function useWorkStageExtras(projectId: string, workStages: WorkStageWithSubstage
 // --- Main Hook (Orchestrator) ---
 
 export function useWorkStages(projectId: string, projectTitle: string) {
-    const { workStages, isLoadingWorkStages } = useWorkStageData(projectId);
+    const { workStages, setWorkStages, isLoadingWorkStages } = useWorkStageData(projectId);
     const { form, isSubmitting, editingWorkStage, setEditingWorkStage, handleEditWorkStage, handleAddWorkSubstage, onSubmitWorkStage } = useWorkStageForm(projectId);
     const { handleDeleteWorkStage, handleExport } = useWorkStageActions(projectId, projectTitle, workStages);
-    const { handleChecklistItemToggle, handleAddChecklistItem, handleInspectionNotesChange } = useWorkStageChecklist(projectId, workStages);
+    const { handleChecklistItemToggle, handleAddChecklistItem, handleInspectionNotesChange } = useWorkStageChecklist(projectId, workStages, setWorkStages);
     const { handlePhotoUpload, handleCommentSubmit } = useWorkStageExtras(projectId, workStages);
 
     return {
