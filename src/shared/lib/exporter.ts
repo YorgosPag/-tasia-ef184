@@ -1,4 +1,3 @@
-
 'use client';
 
 /**
@@ -10,7 +9,7 @@
 function convertToCsv<T extends object>(data: T[]): string {
   if (!data || data.length === 0) return '';
   const headers = Object.keys(data[0]);
-  const rows = data.map(obj => 
+  const rows = data.map(obj =>
     headers.map(header => {
       const value = (obj as any)[header];
       // Handle null/undefined, escape quotes, and wrap in quotes if necessary
@@ -27,6 +26,30 @@ function convertToCsv<T extends object>(data: T[]): string {
   );
   return [headers.join(';'), ...rows].join('\n');
 };
+
+/**
+ * Converts custom lists data to a formatted TXT string.
+ */
+function convertListsToTxt(data: any[]): string {
+  let txtContent = '';
+  data.forEach(list => {
+    txtContent += `--- ${list.title.toUpperCase()} ---\n`;
+    if (list.description) {
+        txtContent += `${list.description}\n`;
+    }
+    txtContent += '\n';
+    list.items.forEach((item: any) => {
+      if (item.code) {
+        txtContent += `${item.code}\t${item.value}\n`;
+      } else {
+        txtContent += `${item.value}\n`;
+      }
+    });
+    txtContent += '\n';
+  });
+  return txtContent;
+}
+
 
 /**
  * Triggers a file download in the browser.
@@ -86,4 +109,18 @@ export function exportToCsv<T extends object>(data: T[], fileName: string): void
     // Add BOM for Excel to recognize UTF-8 encoding correctly
     const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
     triggerDownload(blob, `${fileName}.csv`);
+}
+
+
+/**
+ * Exports custom lists to a TXT file.
+ */
+export function exportToTxt(data: any[], fileName: string): void {
+    if (!data || data.length === 0) {
+        console.warn('Export to TXT aborted: No data provided.');
+        return;
+    }
+    const txtString = convertListsToTxt(data);
+    const blob = new Blob([txtString], { type: 'text/plain;charset=utf-8;' });
+    triggerDownload(blob, `${fileName}.txt`);
 }

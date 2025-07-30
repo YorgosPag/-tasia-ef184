@@ -8,10 +8,10 @@ import {
   updateCustomList as updateCustomListService,
   deleteCustomList as deleteCustomListService,
   checkListDependencies,
-} from '@/lib/customListService';
+} from '@/shared/lib/customListService';
 import { useListWithFeedback } from './useListWithFeedback';
 import { listIdToContactFieldMap } from './utils/listFieldMap';
-import type { CreateListData, CustomList } from '@/lib/customListService';
+import type { CreateListData, CustomList } from '@/shared/lib/customListService';
 import { hasAdminPermission } from './utils/checkPermissions';
 import { useToast } from '@/shared/hooks/use-toast';
 

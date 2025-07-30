@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -8,7 +7,7 @@ import { EditableList } from './EditableList';
 import { Input } from '@/shared/components/ui/input';
 import { Search, Loader2, FileUp, FileDown } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
-import { exportToCsv, exportToTxt } from '@/lib/exportUtils';
+import { exportToCsv, exportToTxt } from '@/shared/lib/exporter';
 import {
   DropdownMenu,
   DropdownMenuContent,

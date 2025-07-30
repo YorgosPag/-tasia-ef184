@@ -8,7 +8,7 @@ import {
   updateCustomListItem,
   deleteCustomListItem,
   checkListItemDependencies,
-} from '@/lib/customListService';
+} from '@/shared/lib/customListService';
 import { listIdToContactFieldMap } from './utils/listFieldMap';
 import { hasAdminPermission } from './utils/checkPermissions';
 import { useToast } from '@/shared/hooks/use-toast';

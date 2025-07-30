@@ -10,7 +10,6 @@ const config = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './features/**/*.{js,ts,jsx,tsx,mdx}',
     './shared/**/*.{js,ts,jsx,tsx,mdx}',
-    './tasia/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   prefix: '',
   theme: {
