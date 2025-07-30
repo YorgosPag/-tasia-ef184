@@ -1,3 +1,4 @@
+
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { Company } from '@/hooks/use-data-store';
