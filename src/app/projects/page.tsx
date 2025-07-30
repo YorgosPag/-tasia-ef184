@@ -8,4 +8,3 @@ export default function ProjectsPage() {
   const projectsPageProps = useProjectsPage();
   return <ProjectsPageView {...projectsPageProps} />;
 }
-

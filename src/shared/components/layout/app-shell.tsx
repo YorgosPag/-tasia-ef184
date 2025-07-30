@@ -4,8 +4,8 @@
 import React from 'react';
 import { AppSidebar } from './sidebar';
 import { AppHeader } from './Header';
-import { useCurrentDomain } from '@/hooks/useCurrentDomain';
-import { cn } from '@/lib/utils';
+import { useCurrentDomain } from '@/shared/hooks/useCurrentDomain';
+import { cn } from '@/shared/lib/utils';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const domain = useCurrentDomain();

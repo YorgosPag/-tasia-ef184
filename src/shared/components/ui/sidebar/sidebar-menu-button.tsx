@@ -4,9 +4,9 @@
 import * as React from "react"
 import Link from "next/link"
 import { useSidebar } from "./sidebar-context"
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "@/shared/lib/utils"
+import { buttonVariants } from "@/shared/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/components/ui/tooltip"
 
 export const SidebarMenuButton = React.forwardRef<
   HTMLAnchorElement,
