@@ -10,17 +10,22 @@ interface FloorPlanViewerProps {
   pdfUrl?: string;
 }
 
-// Function to extract the path from a Firebase Storage URL
+/**
+ * Extracts the storage path from a Firebase Storage URL (gs:// or https://).
+ * @param url The full URL of the file.
+ * @returns The path inside the storage bucket.
+ */
 function getPathFromUrl(url: string): string | null {
+    if (url.startsWith('gs://')) {
+        return url.substring(5);
+    }
     try {
         const urlObject = new URL(url);
-        // Ensure it's a Firebase Storage URL
         if (urlObject.hostname.endsWith('firebasestorage.googleapis.com')) {
-            // The path is encoded in the pathname after /o/
             const pathName = urlObject.pathname;
+            // Path is in the format /v0/b/bucket-name/o/path%2Fto%2Ffile
             const startIndex = pathName.indexOf('/o/') + 3;
             if (startIndex > 2) {
-                // Remove query parameters like ?alt=media&token=...
                 const endIndex = pathName.indexOf('?');
                 const encodedPath = endIndex === -1 ? pathName.substring(startIndex) : pathName.substring(startIndex, endIndex);
                 return decodeURIComponent(encodedPath);
@@ -31,7 +36,6 @@ function getPathFromUrl(url: string): string | null {
     }
     return null;
 }
-
 
 export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
   const [displayUrl, setDisplayUrl] = useState<string | null>(null);
@@ -60,8 +64,8 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
 
       try {
         const storage = getStorage();
-        const storageRef = ref(storage, storagePath);
-        const url = await getDownloadURL(storageRef);
+        const fileRef = ref(storage, storagePath); // Correctly create the reference from the path
+        const url = await getDownloadURL(fileRef); // Get the temporary, authed URL
         setDisplayUrl(url);
       } catch (err: any) {
         console.error("Error getting download URL:", err);
