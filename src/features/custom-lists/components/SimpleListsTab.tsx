@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCustomLists } from '@/hooks/useCustomLists';
+import { useCustomLists } from '@/shared/hooks/useCustomLists';
 import { CreateListForm } from './CreateListForm';
 import { EditableList } from './EditableList';
 import { Input } from '@/shared/components/ui/input';

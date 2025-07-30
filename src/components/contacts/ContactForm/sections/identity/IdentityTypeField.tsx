@@ -4,7 +4,7 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
 import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
-import { useCustomLists } from '@/hooks/useCustomLists';
+import { useCustomLists } from '@/shared/hooks/useCustomLists';
 import type { UseFormReturn } from 'react-hook-form';
 import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
 

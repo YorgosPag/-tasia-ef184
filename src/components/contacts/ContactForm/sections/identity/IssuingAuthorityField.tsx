@@ -5,8 +5,8 @@ import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/shared/components/ui/form';
 import type { UseFormReturn } from 'react-hook-form';
 import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
-import { useCustomLists } from '@/hooks/useCustomLists';
-import { useCustomListActions } from '@/hooks/useCustomListActions';
+import { useCustomLists } from '@/shared/hooks/useCustomLists';
+import { useCustomListActions } from '@/shared/hooks/useCustomListActions';
 import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
 
 interface IssuingAuthorityFieldProps {
