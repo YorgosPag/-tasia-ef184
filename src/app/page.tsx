@@ -1,7 +1,7 @@
 
 'use client';
 
-import DashboardPage from './dashboard/page';
+import DashboardPage from './(main)/dashboard/page';
 
 export default function RootPage() {
   return <DashboardPage />;

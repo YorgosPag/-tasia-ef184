@@ -5,16 +5,22 @@ import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 
-// "Source of Truth" for Firebase Config
+// Firebase configuration is loaded from environment variables
 const firebaseConfig = {
-  apiKey: "***REMOVED***4",
-  authDomain: "tasia-6f77i.firebaseapp.com",
-  projectId: "tasia-6f77i",
-  storageBucket: "tasia-6f77i.appspot.com",
-  messagingSenderId: "204877276202",
-  appId: "1:204877276202:web:31db4eb5b1c1b7c4078f53",
-  measurementId: "G-9XG5NE9TTD"
+  apiKey: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process***REMOVED***.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+// Basic check to ensure Firebase config is loaded
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error("Firebase configuration is missing. Make sure your ***REMOVED***.local file is set up correctly.");
+}
+
 
 // Initialize Firebase for client-side rendering, ensuring it's done only once.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();

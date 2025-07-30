@@ -9,7 +9,6 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { DataProvider } from '@/hooks/use-data-store';
 import { QueryProvider } from '@/hooks/use-query-provider';
 import { Toaster } from '@/components/ui/toaster';
-import { AppShell } from '@/components/layout/app-shell';
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 import '@/app/globals.css';
@@ -37,7 +36,7 @@ export default function RootLayout({
                 <AuthProvider>
                     <DataProvider>
                       <SidebarProvider>
-                        <AppShell>{children}</AppShell>
+                        {children}
                       </SidebarProvider>
                       <Toaster />
                     </DataProvider>
