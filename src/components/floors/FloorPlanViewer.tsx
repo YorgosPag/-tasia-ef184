@@ -7,44 +7,18 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/shared/hooks/use-toast';
 
 interface FloorPlanViewerProps {
-  pdfUrl?: string;
+  pdfUrl?: string; // This prop now expects a storage path, not a full URL
 }
 
-/**
- * Extracts the storage path from a Firebase Storage URL (gs:// or https://).
- * @param url The full URL of the file.
- * @returns The path inside the storage bucket.
- */
-function getPathFromUrl(url: string): string | null {
-    if (url.startsWith('gs://')) {
-        return url.substring(5);
-    }
-    try {
-        const urlObject = new URL(url);
-        if (urlObject.hostname.endsWith('firebasestorage.googleapis.com')) {
-            const pathName = urlObject.pathname;
-            // Path is in the format /v0/b/bucket-name/o/path%2Fto%2Ffile
-            const startIndex = pathName.indexOf('/o/') + 3;
-            if (startIndex > 2) {
-                const endIndex = pathName.indexOf('?');
-                const encodedPath = endIndex === -1 ? pathName.substring(startIndex) : pathName.substring(startIndex, endIndex);
-                return decodeURIComponent(encodedPath);
-            }
-        }
-    } catch (error) {
-        console.error("Invalid URL or failed to parse Firebase Storage URL:", url, error);
-    }
-    return null;
-}
 
-export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
+export function FloorPlanViewer({ pdfUrl: storagePath }: FloorPlanViewerProps) {
   const [displayUrl, setDisplayUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!pdfUrl) {
+    if (!storagePath) {
       setError(null);
       setDisplayUrl(null);
       setIsLoading(false);
@@ -55,17 +29,10 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
       setIsLoading(true);
       setError(null);
 
-      const storagePath = getPathFromUrl(pdfUrl);
-      if (!storagePath) {
-          setError("Μη έγκυρο URL κάτοψης. Δεν ήταν δυνατή η εξαγωγή της διαδρομής.");
-          setIsLoading(false);
-          return;
-      }
-
       try {
         const storage = getStorage();
-        const fileRef = ref(storage, storagePath); // Correctly create the reference from the path
-        const url = await getDownloadURL(fileRef); // Get the temporary, authed URL
+        const fileRef = ref(storage, storagePath);
+        const url = await getDownloadURL(fileRef);
         setDisplayUrl(url);
       } catch (err: any) {
         console.error("Error getting download URL:", err);
@@ -81,7 +48,7 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
     };
 
     fetchDownloadUrl();
-  }, [pdfUrl, toast]);
+  }, [storagePath, toast]);
 
 
   if (isLoading) {
@@ -101,7 +68,7 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
     );
   }
 
-  if (!pdfUrl || !displayUrl) {
+  if (!storagePath || !displayUrl) {
     return (
       <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
         <p className="text-muted-foreground">Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.</p>

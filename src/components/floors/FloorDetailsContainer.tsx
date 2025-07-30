@@ -28,7 +28,7 @@ interface Floor {
   buildingId: string;
   originalId: string;
   createdAt: Timestamp;
-  floorPlanUrl?: string;
+  floorPlanUrl?: string; // This will now store the storage PATH, not the full URL
 }
 
 interface Building {
@@ -90,13 +90,13 @@ export function FloorDetailsContainer() {
     const storageRef = ref(storage, `floor_plans/${floor.id}/${file.name}`);
     try {
         await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(storageRef);
+        const storagePath = storageRef.fullPath; // Get the path instead of the URL
 
         const batch = writeBatch(db);
 
         // Update top-level document
         const topLevelFloorRef = doc(db, 'floors', floor.id);
-        batch.update(topLevelFloorRef, { floorPlanUrl: downloadURL });
+        batch.update(topLevelFloorRef, { floorPlanUrl: storagePath }); // Store the path
 
         // Update subcollection document
         const buildingDoc = await getDoc(doc(db, 'buildings', floor.buildingId));
@@ -106,7 +106,7 @@ export function FloorDetailsContainer() {
                 const subCollectionFloorRef = doc(db, 'projects', buildingData.projectId, 'buildings', buildingData.originalId, 'floors', floor.originalId);
                 const subDocSnap = await getDoc(subCollectionFloorRef);
                 if (subDocSnap.exists()) {
-                   batch.update(subCollectionFloorRef, { floorPlanUrl: downloadURL });
+                   batch.update(subCollectionFloorRef, { floorPlanUrl: storagePath }); // Store the path
                 } else {
                    console.warn(`Subcollection floor document not found at: projects/${buildingData.projectId}/buildings/${buildingData.originalId}/floors/${floor.originalId}`);
                 }
