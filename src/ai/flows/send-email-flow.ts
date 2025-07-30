@@ -12,7 +12,7 @@ import {
   type SendEmailInput,
   type SendEmailOutput,
 } from '@/ai/schemas/email';
-
+import getConfig from 'next/config';
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailOutput> {
   return sendEmailFlow(input);
@@ -25,12 +25,14 @@ const sendEmailFlow = ai.defineFlow(
     outputSchema: SendEmailOutputSchema,
   },
   async (input) => {
-    const apiKey = process***REMOVED***.SENDGRID_API_KEY;
-    const fromEmail = process***REMOVED***.NEXT_PUBLIC_SENDGRID_FROM_EMAIL;
-    const replyToEmail = process***REMOVED***.NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL;
+    const { serverRuntimeConfig, publicRuntimeConfig } = getConfig();
+    
+    const apiKey = serverRuntimeConfig.sendgridApiKey;
+    const fromEmail = publicRuntimeConfig.sendgridFromEmail;
+    const replyToEmail = publicRuntimeConfig.leadNotificationEmail;
 
     if (!apiKey || !fromEmail) {
-      console.error('SendGrid environment variables not configured. Please set SENDGRID_API_KEY and NEXT_PUBLIC_SENDGRID_FROM_EMAIL.');
+      console.error('SendGrid environment variables not configured. Please check next.config.js and ***REMOVED***.local');
       return { success: false, message: 'Email service is not configured.' };
     }
 

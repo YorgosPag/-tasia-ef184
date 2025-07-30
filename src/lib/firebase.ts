@@ -6,7 +6,7 @@ import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 
-// Firebase configuration is loaded from environment variables
+// Firebase configuration is now loaded via environment variables defined in next.config.js
 const firebaseConfig = {
   apiKey: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -17,9 +17,10 @@ const firebaseConfig = {
   measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+
 // Basic check to ensure Firebase config is loaded
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-  console.error("Firebase configuration is missing. Make sure your ***REMOVED***.local file is set up correctly and next.config.js is configured to pass them.");
+if (!firebaseConfig || !firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error("Firebase configuration is missing. Make sure your environment variables are set up correctly and passed through next.config.js.");
 }
 
 // Initialize Firebase for client-side rendering, ensuring it's done only once.
