@@ -35,9 +35,7 @@ import {
   FolderKanban,
   FilePen,
   Library,
-  ChevronDown,
 } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 
 const tasiaProjectToolsNav = [
@@ -74,29 +72,16 @@ const managementNav = [
   { href: '/custom-lists', label: 'Προσ. Λίστες', icon: List },
 ]
 
-const AccordionTriggerNoChevron = React.forwardRef<
-  React.ElementRef<typeof AccordionTrigger>,
-  React.ComponentPropsWithoutRef<typeof AccordionTrigger>
->(({ className, children, ...props }, ref) => (
-  <AccordionTrigger
-    ref={ref}
-    className={cn(
-      "p-0 hover:no-underline",
-      className
-    )}
-    {...props}
-  >
-    <div className="flex-1">{children}</div>
-  </AccordionTrigger>
-));
-AccordionTriggerNoChevron.displayName = "AccordionTriggerNoChevron"
-
-
 export function SidebarNav() {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
-    return pathname === href || pathname.startsWith(`${href}/`);
+    // Handle exact match for dashboard or other root-level links
+    if (href === '/dashboard') {
+        return pathname === href;
+    }
+    // Handle nested routes
+    return pathname.startsWith(href);
   };
 
   const getButtonClass = (href: string) => {
@@ -104,8 +89,8 @@ export function SidebarNav() {
     return cn(
       'text-lg font-medium text-left px-4 py-2 whitespace-nowrap',
       active
-        ? 'text-gray-900 dark:text-white'
-        : 'text-gray-600 dark:text-gray-400'
+        ? 'bg-gray-200/60 dark:bg-gray-700 text-gray-900 dark:text-white' // Active state styles
+        : 'text-gray-600 dark:text-gray-400' // Inactive state styles
     );
   };
 
