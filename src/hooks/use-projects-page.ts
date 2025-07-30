@@ -19,92 +19,6 @@ import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/lib/types
 
 // --- Internal Hooks for Logic Separation ---
 
-function useProjectForm(
-  allProjects: Project[],
-  addProject: (projectData: any) => Promise<string | null>,
-  setEditingProject: React.Dispatch<React.SetStateAction<ProjectWithWorkStageSummary | null>>,
-  editingProject: ProjectWithWorkStageSummary | null
-) {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: {
-      id: undefined, title: '', companyId: '', location: '',
-      description: '', status: 'Ενεργό', photoUrl: '', tags: '',
-    },
-  });
-
-  const handleDialogOpenChange = useCallback((open: boolean) => {
-    setIsDialogOpen(open);
-    if (!open) {
-      form.reset();
-      setEditingProject(null);
-    }
-  }, [form, setEditingProject]);
-
-  const handleEditClick = useCallback((project: ProjectWithWorkStageSummary) => {
-    setEditingProject(project);
-    form.reset({
-      ...project,
-      tags: project.tags?.join(', ') || '',
-      deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : project.deadline,
-    });
-    setIsDialogOpen(true);
-  }, [form, setEditingProject]);
-
-  const onSubmit = useCallback(async (data: ProjectFormValues) => {
-    setIsSubmitting(true);
-    try {
-      if (editingProject) {
-        const projectRef = doc(db, 'projects', editingProject.id);
-        const { id, ...formData } = data;
-        const updateData = {
-          ...formData,
-          photoUrl: formData.photoUrl?.trim() || undefined,
-          tags: formData.tags ? formData.tags.split(',').map((tag) => tag.trim()).filter(Boolean) : [],
-          deadline: Timestamp.fromDate(formData.deadline),
-        };
-        await updateDoc(projectRef, updateData);
-        toast({ title: 'Επιτυχία', description: 'Το έργο ενημερώθηκε.' });
-        await logActivity('UPDATE_PROJECT', {
-            entityId: editingProject.id, entityType: 'project',
-            name: updateData.title, changes: updateData,
-        });
-      } else {
-        const newProjectId = await addProject(data);
-        toast({ title: 'Επιτυχία', description: 'Το έργο προστέθηκε.' });
-        if (newProjectId) {
-            await logActivity('CREATE_PROJECT', {
-                entityId: newProjectId, entityType: 'project', name: data.title,
-            });
-        }
-      }
-      handleDialogOpenChange(false);
-    } catch (error: any) {
-      console.error('Error submitting project: ', error);
-      toast({
-        variant: 'destructive', title: 'Σφάλμα',
-        description: `Δεν ήταν δυνατή η υποβολή: ${error.message}`,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [editingProject, toast, addProject, handleDialogOpenChange]);
-
-  return {
-    form,
-    isDialogOpen,
-    isSubmitting,
-    editingProject,
-    handleDialogOpenChange,
-    handleEditClick,
-    onSubmit: form.handleSubmit(onSubmit),
-  };
-}
-
 function useProjectActions(
   allProjects: Project[],
   addProject: (projectData: any) => Promise<string | null>,
@@ -209,12 +123,79 @@ export function useProjectsPage() {
   const view = searchParams.get('view') || 'index';
   
   const [editingProject, setEditingProject] = useState<ProjectWithWorkStageSummary | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: {
+      id: undefined, title: '', companyId: '', location: '',
+      description: '', status: 'Ενεργό', photoUrl: '', tags: '',
+    },
+  });
 
   const { filteredProjects, searchQuery, setSearchQuery, getCompanyName } = useFilteredProjects(allProjects, companies);
-
-  const { form, isDialogOpen, isSubmitting, handleDialogOpenChange, handleEditClick, onSubmit } = useProjectForm(allProjects, addProject, setEditingProject, editingProject);
   
   const { handleDuplicateProject, handleDeleteProject, handleExport } = useProjectActions(allProjects, addProject, getCompanyName, filteredProjects);
+
+  const handleDialogOpenChange = useCallback((open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      form.reset();
+      setEditingProject(null);
+    }
+  }, [form, setEditingProject]);
+
+  const handleEditClick = useCallback((project: ProjectWithWorkStageSummary) => {
+    setEditingProject(project);
+    form.reset({
+      ...project,
+      tags: project.tags?.join(', ') || '',
+      deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : project.deadline,
+    });
+    setIsDialogOpen(true);
+  }, [form, setEditingProject]);
+
+   const onSubmit = useCallback(async (data: ProjectFormValues) => {
+    setIsSubmitting(true);
+    try {
+      if (editingProject) {
+        const projectRef = doc(db, 'projects', editingProject.id);
+        const { id, ...formData } = data;
+        const updateData = {
+          ...formData,
+          photoUrl: formData.photoUrl?.trim() || undefined,
+          tags: formData.tags ? formData.tags.split(',').map((tag) => tag.trim()).filter(Boolean) : [],
+          deadline: Timestamp.fromDate(formData.deadline),
+        };
+        await updateDoc(projectRef, updateData);
+        toast({ title: 'Επιτυχία', description: 'Το έργο ενημερώθηκε.' });
+        await logActivity('UPDATE_PROJECT', {
+            entityId: editingProject.id, entityType: 'project',
+            name: updateData.title, changes: updateData,
+        });
+      } else {
+        const newProjectId = await addProject(data);
+        toast({ title: 'Επιτυχία', description: 'Το έργο προστέθηκε.' });
+        if (newProjectId) {
+            await logActivity('CREATE_PROJECT', {
+                entityId: newProjectId, entityType: 'project', name: data.title,
+            });
+        }
+      }
+      handleDialogOpenChange(false);
+    } catch (error: any) {
+      console.error('Error submitting project: ', error);
+      toast({
+        variant: 'destructive', title: 'Σφάλμα',
+        description: `Δεν ήταν δυνατή η υποβολή: ${error.message}`,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [editingProject, toast, addProject, handleDialogOpenChange]);
+
 
   return {
     filteredProjects,
@@ -231,7 +212,7 @@ export function useProjectsPage() {
     router,
     handleExport,
     handleDialogOpenChange,
-    onSubmit,
+    onSubmit: form.handleSubmit(onSubmit),
     handleEditClick,
     handleDuplicateProject,
     handleDeleteProject,
