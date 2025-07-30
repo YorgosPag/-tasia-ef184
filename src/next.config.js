@@ -1,6 +1,7 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true, // Forcing a rebuild by explicitly setting a config value.
   images: {
     remotePatterns: [
       {
@@ -17,7 +18,7 @@ const nextConfig = {
       },
     ],
   },
-  // Cache invalidation comment to trigger rebuild. v3
+  // Cache invalidation comment to trigger rebuild. v4
 };
 
 export default nextConfig;
