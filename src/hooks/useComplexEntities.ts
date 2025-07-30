@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -108,7 +107,7 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   const [entities, setEntities] = useState<ComplexEntity[]>([]);
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [distinctValues, setDistinctValues] = useState<Record<string, string[]>>({});
@@ -122,11 +121,16 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   const filterKey = JSON.stringify(filters); // Create a stable key for the filter object
 
   const fetchPage = useCallback(async (lastDoc: QueryDocumentSnapshot<DocumentData> | null, pageNum: number) => {
-    if (!listType) return; // Don't fetch if no list type is selected
+    if (!listType) {
+        setEntities([]);
+        setInitialDataLoaded(true);
+        setIsLoading(false);
+        return;
+    };
     setIsLoading(true);
     try {
       const { entities: newEntities, lastDoc: newLastDoc } = await fetchEntitiesPage(listType, filters, lastDoc);
-      setEntities(newEntities);
+      setEntities(lastDoc ? [...entities, ...newEntities] : newEntities);
       setLastVisible(newLastDoc);
       // This is a simplified pagination state; for true prev/next, you'd need to store a history of lastDocs
       setPage(pageNum);
@@ -142,7 +146,7 @@ export function useComplexEntities(listType: string, filters: Record<string, str
     } finally {
       setIsLoading(false);
     }
-  }, [listType, filterKey, initialDataLoaded, filters]);
+  }, [listType, filterKey, initialDataLoaded, filters, entities]);
 
   useEffect(() => {
     // Fetch distinct values for the first 5 columns when listType changes
@@ -164,12 +168,12 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   }, [listType]);
 
   const refetch = useCallback(() => {
+      setEntities([]);
       setInitialDataLoaded(false);
       setPage(1);
       setLastVisible(null);
       fetchPage(null, 1);
-      refetchListTypes();
-  }, [fetchPage, refetchListTypes]);
+  }, [fetchPage]);
   
   useEffect(() => {
       refetch();
@@ -189,7 +193,7 @@ export function useComplexEntities(listType: string, filters: Record<string, str
     refetch();
   };
   
-  const canGoNext = entities.length === PAGE_SIZE;
+  const canGoNext = entities.length < (totalCount || 0);
   const canGoPrev = page > 1;
 
   return {
