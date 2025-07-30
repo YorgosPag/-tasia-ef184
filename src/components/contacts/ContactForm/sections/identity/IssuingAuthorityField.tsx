@@ -1,15 +1,14 @@
-
 'use client';
 
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
 import type { UseFormReturn } from 'react-hook-form';
 import type { ContactFormValues } from '@/lib/validation/contactSchema';
-import { useCustomLists } from '@/hooks/useCustomLists';
 import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { useCustomLists } from '@/hooks/useCustomLists';
 
 interface IssuingAuthorityFieldProps {
   form: UseFormReturn<ContactFormValues>;
