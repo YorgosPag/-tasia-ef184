@@ -1,11 +1,10 @@
-
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
-import { logActivity } from '@/shared/lib/logger';
+import { logActivity } from '@/lib/logger';
 
 // --- Interfaces ---
 export interface Company {

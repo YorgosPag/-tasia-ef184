@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { ListItem as ListItemType } from '@/shared/lib/customListService';
+import type { ListItem as ListItemType } from '@/lib/customListService';
 import { ListItem } from './ListItem';
 
 interface EditableListItemsProps {

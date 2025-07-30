@@ -1,8 +1,9 @@
+
 'use client';
 
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
-import type { ListItem as ListItemType } from '@/shared/lib/customListService';
+import type { ListItem as ListItemType } from '@/lib/customListService';
 
 interface ListItemDisplayProps {
   item: ListItemType;

@@ -2,11 +2,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Edit, Trash2, ChevronDown } from 'lucide-react';
-import type { CustomList } from '@/shared/lib/customListService';
-import { cn } from '@/shared/lib/utils';
+import type { CustomList } from '@/lib/customListService';
+import { cn } from '@/lib/utils';
 
 interface EditableListHeaderProps {
   list: CustomList;

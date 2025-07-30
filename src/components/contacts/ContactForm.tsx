@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import React from 'react';
 import type { ContactFormProps } from './ContactForm/types';
-import { useWatchedFields } from '@/hooks/customList/useWatchedFields';
+import { useWatchedFields } from '@/hooks/useWatchedFields';
 import { LegalPersonLayout } from './ContactForm/layout/LegalPersonLayout';
 import { NaturalPersonLayout } from './ContactForm/layout/NaturalPersonLayout';
 import { ImageUploader } from './ImageUploader';

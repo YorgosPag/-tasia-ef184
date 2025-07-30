@@ -1,9 +1,8 @@
 
-
 'use client';
 
 import { useState } from 'react';
-import type { ListItem as ListItemType } from '@/shared/lib/customListService';
+import type { ListItem as ListItemType } from '@/lib/customListService';
 import { useCustomListActions } from '@/hooks/useCustomListActions';
 import { ListItemDisplay } from './ListItemDisplay';
 import { ListItemEdit } from './ListItemEdit';

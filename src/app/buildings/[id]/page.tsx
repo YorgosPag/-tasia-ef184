@@ -4,19 +4,19 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { Card } from '@/shared/components/ui/card';
-import { Form } from '@/shared/components/ui/form';
-import { Button } from '@/shared/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
 import { buildingSchema, BuildingFormValues } from '@/components/projects/BuildingFormDialog';
 import { BuildingDetailsForm } from '@/components/buildings/BuildingDetailsForm';
 import { BuildingFloorsList } from '@/components/buildings/BuildingFloorsList';
-import { logActivity } from '@/shared/lib/logger';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { logActivity } from '@/lib/logger';
+import { useAuth } from '@/hooks/use-auth';
 
 export interface Building {
   id: string;

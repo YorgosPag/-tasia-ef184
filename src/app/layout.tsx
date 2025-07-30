@@ -3,14 +3,14 @@
 
 import React from 'react';
 import { Inter } from 'next/font/google';
-import { cn } from '@/shared/lib/utils';
-import { ThemeProvider } from '@/shared/components/theme-provider';
-import { AuthProvider } from '@/shared/hooks/use-auth';
-import { DataProvider } from '@/shared/hooks/use-data-store';
-import { QueryProvider } from '@/shared/hooks/use-query-provider';
-import { Toaster } from '@/shared/components/ui/toaster';
-import { AppShell } from '@/shared/components/layout/app-shell';
-import { SidebarProvider } from "@/shared/components/ui/sidebar";
+import { cn } from '@/lib/utils';
+import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/hooks/use-auth';
+import { DataProvider } from '@/hooks/use-data-store';
+import { QueryProvider } from '@/hooks/use-query-provider';
+import { Toaster } from '@/components/ui/toaster';
+import { AppShell } from '@/components/layout/app-shell';
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 import '@/app/globals.css';
 

@@ -1,18 +1,18 @@
 
 'use client';
 
-import { useWorkStageCalendar } from '@/shared/hooks/use-work-stage-calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Calendar } from '@/shared/components/ui/calendar';
-import { Badge } from '@/shared/components/ui/badge';
+import { useWorkStageCalendar } from '@/hooks/use-work-stage-calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/shared/components/ui/popover';
-import { cn } from '@/shared/lib/utils';
-import { Button } from '@/shared/components/ui/button';
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export default function CalendarPage() {
   const { events, isLoading, month, setMonth } = useWorkStageCalendar();

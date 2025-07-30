@@ -2,12 +2,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button } from '@/shared/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/shared/components/ui/command';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { ChevronsUpDown, Check, PlusCircle, Loader2 } from 'lucide-react';
-import { cn } from '@/shared/lib/utils';
-import { Input } from '@/shared/components/ui/input';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 interface CreatableComboboxProps {
   options: { value: string; label: string }[];

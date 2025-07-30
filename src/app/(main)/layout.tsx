@@ -2,8 +2,8 @@
 'use client';
 
 import React from 'react';
-import { AppShell } from '@/shared/components/layout/app-shell';
-import { SidebarProvider } from "@/shared/components/ui/sidebar";
+import { AppShell } from '@/components/layout/app-shell';
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function MainAppLayout({
   children,

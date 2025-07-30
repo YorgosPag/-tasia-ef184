@@ -1,19 +1,20 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, updateDoc, doc, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
-import { useToast } from '@/shared/hooks/use-toast';
-import { useAuth } from '@/shared/hooks/use-auth';
-import { Button } from '@/shared/components/ui/button';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
 import { Loader2, PlusCircle, Search } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui/card';
-import { Input } from '@/shared/components/ui/input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { AttachmentFormValues, AttachmentDialog, attachmentSchema } from '@/components/units/AttachmentDialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getAttachmentDataFromForm } from '@/lib/unit-helpers';
-import { logActivity } from '@/shared/lib/logger';
+import { logActivity } from '@/lib/logger';
 import { AttachmentsListTable } from '@/components/attachments/AttachmentsListTable';
 
 export interface Attachment extends AttachmentFormValues {

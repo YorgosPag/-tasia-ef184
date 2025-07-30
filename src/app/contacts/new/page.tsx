@@ -7,16 +7,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { collection, addDoc, serverTimestamp, Timestamp, updateDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/shared/lib/firebase';
-import { useToast } from '@/shared/hooks/use-toast';
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
-import { Form } from '@/shared/components/ui/form';
+import { db, storage } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import { ContactForm } from '@/components/contacts/ContactForm';
-import { contactSchema, ContactFormValues } from '@/shared/lib/validation/contactSchema';
-import { logActivity } from '@/shared/lib/logger';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { contactSchema, ContactFormValues } from '@/lib/validation/contactSchema';
+import { logActivity } from '@/lib/logger';
+import { useAuth } from '@/hooks/use-auth';
 
 function deepClean(obj: any) {
   for (const key in obj) {

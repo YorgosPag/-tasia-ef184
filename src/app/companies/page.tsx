@@ -3,7 +3,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
+} from '@/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -22,22 +22,22 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/shared/components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PlusCircle, Loader2, Link as LinkIcon, Download, Search, Edit, Trash2 } from 'lucide-react';
-import { useToast } from '@/shared/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { exportToJson } from '@/shared/lib/exporter';
-import { useAuth } from '@/shared/hooks/use-auth';
-import { useDataStore, Company } from '@/shared/hooks/use-data-store';
-import { logActivity } from '@/shared/lib/logger';
+import { exportToJson } from '@/lib/exporter';
+import { useAuth } from '@/hooks/use-auth';
+import { useDataStore, Company } from '@/hooks/use-data-store';
+import { logActivity } from '@/lib/logger';
 import { CompanyFormDialog, companySchema, CompanyFormValues } from '@/components/companies/CompanyFormDialog';
 import { updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
-import { Input } from '@/shared/components/ui/input';
+import { db } from '@/lib/firebase';
+import { Input } from '@/components/ui/input';
 
 export default function CompaniesPage() {
   const { companies, isLoading, addCompany } = useDataStore();

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { useState, useEffect, useCallback, Suspense, useRef } from 'react';
@@ -7,16 +6,16 @@ import { useRouter, useParams } from 'next/navigation';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
-import { db, storage } from '@/shared/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useToast } from '@/shared/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
-import { Form } from '@/shared/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 import { ContactForm } from '@/components/contacts/ContactForm';
-import { contactSchema, ContactFormValues, ALL_ACCORDION_SECTIONS, EntityType } from '@/shared/lib/validation/contactSchema';
-import { logActivity } from '@/shared/lib/logger';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { contactSchema, ContactFormValues, ALL_ACCORDION_SECTIONS, EntityType } from '@/lib/validation/contactSchema';
+import { logActivity } from '@/lib/logger';
+import { useAuth } from '@/hooks/use-auth';
 import { ContactEditHeader } from '@/components/contacts/ContactEditHeader';
 
 

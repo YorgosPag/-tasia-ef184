@@ -1,13 +1,14 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useSearchBox, useHits } from 'react-instantsearch-hooks-web';
 import type { UseFormReturn } from 'react-hook-form';
 import { useDebounce } from 'use-debounce';
-import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/shared/components/ui/command';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
 interface AutocompleteProps {
   form: UseFormReturn<any>;
