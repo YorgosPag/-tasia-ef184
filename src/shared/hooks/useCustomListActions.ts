@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useListCrud } from './customList/useListCrud';
-import { useListItems } from './customList/useListItems';
+import { useListCrud } from '@/hooks/customList/useListCrud';
+import { useListItems } from '@/hooks/customList/useListItems';
 
 /**
  * A composite hook that orchestrates all actions related to custom lists and their items.
