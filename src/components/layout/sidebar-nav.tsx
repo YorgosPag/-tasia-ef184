@@ -99,14 +99,24 @@ export function SidebarNav() {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const getButtonClass = (href: string) => {
+    const active = isActive(href);
+    return cn(
+      'text-lg font-medium text-left px-4 py-2 whitespace-nowrap',
+      active
+        ? 'text-gray-900 dark:text-white'
+        : 'text-gray-600 dark:text-gray-400'
+    );
+  };
+
   return (
     <SidebarMenu>
       <SidebarGroup>
-        <SidebarGroupLabel>Ευρετήριο Ακινήτων</SidebarGroupLabel>
+        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-gray-500 uppercase px-4 whitespace-nowrap">Ευρετήριο Ακινήτων</SidebarGroupLabel>
         {entitiesNav.map((item) => (
           <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
-              {item.label}
+            <SidebarMenuButton href={item.href} className={getButtonClass(item.href)} icon={item.icon} tooltip={item.label}>
+              <span className="ml-3">{item.label}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
@@ -115,11 +125,11 @@ export function SidebarNav() {
        <SidebarSeparator />
 
       <SidebarGroup>
-        <SidebarGroupLabel>Εργαλεία</SidebarGroupLabel>
+        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-gray-500 uppercase px-4 whitespace-nowrap">Εργαλεία</SidebarGroupLabel>
         {tasiaProjectToolsNav.map((item) => (
           <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
-              {item.label}
+            <SidebarMenuButton href={item.href} className={getButtonClass(item.href)} icon={item.icon} tooltip={item.label}>
+              <span className="ml-3">{item.label}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
@@ -128,11 +138,11 @@ export function SidebarNav() {
       <SidebarSeparator />
       
        <SidebarGroup>
-        <SidebarGroupLabel>Διαχείριση</SidebarGroupLabel>
+        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-gray-500 uppercase px-4 whitespace-nowrap">Διαχείριση</SidebarGroupLabel>
         {managementNav.map((item) => (
           <SidebarMenuItem key={item.href}>
-            <SidebarMenuButton href={item.href} isActive={isActive(item.href)} icon={item.icon} tooltip={item.label}>
-              {item.label}
+            <SidebarMenuButton href={item.href} className={getButtonClass(item.href)} icon={item.icon} tooltip={item.label}>
+              <span className="ml-3">{item.label}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
@@ -140,8 +150,8 @@ export function SidebarNav() {
 
 
       <SidebarMenuItem className="mt-auto">
-        <SidebarMenuButton href="/settings" isActive={pathname === '/settings'} icon={Settings} tooltip="Ρυθμίσεις">
-          Ρυθμίσεις
+        <SidebarMenuButton href="/settings" className={getButtonClass('/settings')} icon={Settings} tooltip="Ρυθμίσεις">
+          <span className="ml-3">Ρυθμίσεις</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>

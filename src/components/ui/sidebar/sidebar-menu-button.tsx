@@ -14,8 +14,9 @@ export const SidebarMenuButton = React.forwardRef<
     isActive?: boolean
     hasSubmenu?: boolean
     tooltip?: string
+    icon?: React.ElementType;
   }
->(({ className, href = "#", isActive, hasSubmenu, tooltip, children, ...props }, ref) => {
+>(({ className, href = "#", isActive, hasSubmenu, tooltip, children, icon: Icon, ...props }, ref) => {
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
 
@@ -36,7 +37,7 @@ export const SidebarMenuButton = React.forwardRef<
             )}
             {...props}
           >
-            {children}
+            {Icon && <Icon className="h-4 w-4" />}
           </Link>
         </TooltipTrigger>
         <TooltipContent side="right">
@@ -54,13 +55,14 @@ export const SidebarMenuButton = React.forwardRef<
       href={href}
       className={cn(
         buttonVariants({ variant: "ghost" }),
-        "relative h-auto justify-start p-2",
+        "relative h-auto justify-start p-2 text-left",
         hasSubmenu && "pr-8",
         "data-[active=true]:bg-sidebar-active data-[active=true]:text-sidebar-active-foreground",
         className
       )}
       {...props}
     >
+      {Icon && <Icon className="h-4 w-4" />}
       {children}
     </Link>
   )
