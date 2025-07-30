@@ -12,6 +12,7 @@ import {
   QueryConstraint,
   DocumentData,
   QueryDocumentSnapshot,
+  getCountFromServer,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useQuery } from '@tanstack/react-query';
@@ -62,7 +63,7 @@ async function fetchEntitiesPage(
   const entitiesQuery = query(
     collection(db, 'tsia-complex-entities'),
     ...constraints,
-    // orderBy('createdAt', 'desc'), // Use a consistent field for ordering
+    orderBy('__name__'), // Order by document ID for consistent pagination
     ...(lastDoc ? [startAfter(lastDoc)] : []),
     limit(PAGE_SIZE)
   );
@@ -98,9 +99,8 @@ async function fetchDistinctValues(listType: string, field: string): Promise<str
 // --- Main Hook ---
 
 export function useComplexEntities(listType: string, filters: Record<string, string>) {
-  const [entities, setEntities] = useState<ComplexEntity[]>([]);
-  const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [page, setPage] = useState(1);
+  const [lastDocs, setLastDocs] = useState<(QueryDocumentSnapshot<DocumentData> | null)[]>([null]);
   const [isLoading, setIsLoading] = useState(true);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [totalCount, setTotalCount] = useState<number | null>(null);
@@ -108,41 +108,50 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   
   const filterKey = JSON.stringify(filters); // Create a stable key for the filter object
 
-  const fetchPage = useCallback(async (lastDoc: QueryDocumentSnapshot<DocumentData> | null, pageNum: number) => {
-    if (!listType || listType.trim() === '') {
-        setEntities([]);
-        setInitialDataLoaded(true);
-        setIsLoading(false);
-        setTotalCount(0);
-        return;
-    };
-    setIsLoading(true);
-    try {
-      const { entities: newEntities, lastDoc: newLastDoc } = await fetchEntitiesPage(listType, filters, lastDoc);
-      setEntities(lastDoc ? [...entities, ...newEntities] : newEntities);
-      setLastVisible(newLastDoc);
-      // This is a simplified pagination state; for true prev/next, you'd need to store a history of lastDocs
-      setPage(pageNum);
-      
-      if (!initialDataLoaded) {
-          const countQuery = query(collection(db, 'tsia-complex-entities'), ...createFilterConstraints(listType, filters));
-          const countSnapshot = await getDocs(countQuery);
-          setTotalCount(countSnapshot.size);
-          setInitialDataLoaded(true);
-      }
-    } catch (error) {
-      console.error("Failed to fetch entities:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [listType, filterKey, initialDataLoaded, filters, entities]);
+  const { data: pageData, isFetching, refetch } = useQuery({
+    queryKey: ['complexEntities', listType, filterKey, page],
+    queryFn: async () => {
+        if (!listType || listType.trim() === '') {
+            return { entities: [], lastDoc: null };
+        };
+        const lastDocForPage = lastDocs[page - 1] || null;
+        const result = await fetchEntitiesPage(listType, filters, lastDocForPage);
+        
+        if (page === 1 && !initialDataLoaded) {
+            const countQuery = query(collection(db, 'tsia-complex-entities'), ...createFilterConstraints(listType, filters));
+            const countSnapshot = await getCountFromServer(countQuery);
+            setTotalCount(countSnapshot.data().count);
+            setInitialDataLoaded(true);
+        }
+
+        if (result.lastDoc && page === lastDocs.length - 1) {
+            setLastDocs(prev => [...prev, result.lastDoc]);
+        }
+        return result;
+    },
+    enabled: !!listType,
+    keepPreviousData: true,
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
-    // Fetch distinct values for the first 5 columns when listType changes
+    // Reset pagination and data when listType or filters change
+    setPage(1);
+    setLastDocs([null]);
+    setInitialDataLoaded(false);
+    setTotalCount(null);
+    refetch();
+  }, [listType, filterKey, refetch]);
+
+  useEffect(() => {
+      // Fetch distinct values for the first 5 columns when listType changes
     if (listType) {
         const fetchInitialDistinctValues = async () => {
             const tempEntitiesSnapshot = await getDocs(query(collection(db, 'tsia-complex-entities'), where('type', '==', listType), limit(1)));
-            if (tempEntitiesSnapshot.empty) return;
+            if (tempEntitiesSnapshot.empty) {
+                setDistinctValues({});
+                return;
+            };
             const firstItem = tempEntitiesSnapshot.docs[0].data();
             const keys = Object.keys(firstItem).filter(key => !['id', 'type', 'createdAt', 'uniqueKey'].includes(key)).slice(0, 10);
             
@@ -156,38 +165,24 @@ export function useComplexEntities(listType: string, filters: Record<string, str
     }
   }, [listType]);
 
-  const refetch = useCallback(() => {
-      setEntities([]);
-      setInitialDataLoaded(false);
-      setPage(1);
-      setLastVisible(null);
-      fetchPage(null, 1);
-  }, [fetchPage]);
-  
-  useEffect(() => {
-      refetch();
-  }, [listType, filterKey]); // Refetch when listType or filters change
-
-
   const nextPage = () => {
-    if (lastVisible) {
-      fetchPage(lastVisible, page + 1);
+    if (!isFetching && pageData?.lastDoc) {
+        setPage(p => p + 1);
     }
   };
 
   const prevPage = () => {
-    // A full implementation of previous page would require storing the last document of each page
-    // For simplicity, we'll just refetch the first page.
-    console.warn("Prev-page functionality is simplified and refetches from the start.");
-    refetch();
+    if (page > 1) {
+      setPage(p => p - 1);
+    }
   };
   
-  const canGoNext = entities.length < (totalCount || 0);
+  const canGoNext = pageData?.lastDoc !== null && (totalCount !== null ? (page * PAGE_SIZE < totalCount) : true);
   const canGoPrev = page > 1;
 
   return {
-    entities,
-    isLoading,
+    entities: pageData?.entities ?? [],
+    isLoading: isFetching,
     refetch,
     nextPage,
     prevPage,

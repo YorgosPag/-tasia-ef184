@@ -110,13 +110,13 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isLoading && !initialDataLoaded ? (
                  <TableRow>
                     <TableCell colSpan={columns.length} className="h-24 text-center">
                         <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
                 </TableRow>
-            ) : initialDataLoaded && table.getRowModel().rows?.length > 0 ? (
+            ) : table.getRowModel().rows?.length > 0 ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -147,14 +147,14 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-between py-4">
          <div className="text-sm text-muted-foreground">
-            Σελίδα {page} από {totalCount !== null ? Math.ceil(totalCount / pageSize) : '-'}
+             {totalCount !== null ? `Σελίδα ${page} από ${Math.ceil(totalCount / pageSize)}` : `Σελίδα ${page}`}
         </div>
         <div className="flex items-center space-x-2">
             <Button
             variant="outline"
             size="sm"
             onClick={prevPage}
-            disabled={!canGoPrev}
+            disabled={!canGoPrev || isLoading}
             >
             Προηγούμενη
             </Button>
@@ -162,7 +162,7 @@ export function DataTable<TData, TValue>({
             variant="outline"
             size="sm"
             onClick={nextPage}
-            disabled={!canGoNext}
+            disabled={!canGoNext || isLoading}
             >
             Επόμενη
             </Button>
