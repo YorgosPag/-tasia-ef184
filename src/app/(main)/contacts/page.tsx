@@ -35,7 +35,7 @@ export default function ContactsPage() {
     return contacts.filter(contact => {
       const query = searchQuery.toLowerCase();
       return (
-        contact.name.toLowerCase().includes(query) ||
+        (contact.name && contact.name.toLowerCase().includes(query)) ||
         (contact.entityType && contact.entityType.toLowerCase().includes(query)) ||
         (contact.afm && contact.afm.toLowerCase().includes(query))
       );
