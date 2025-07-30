@@ -16,7 +16,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const pathIsPublic = publicPaths.includes(pathname);
   
   // --- START TEMPORARY AUTH BYPASS ---
-  const bypassAuth = true; 
+  const bypassAuth = false; 
   if (bypassAuth) {
     return <>{children}</>;
   }
