@@ -1,28 +1,28 @@
 'use client';
 
 import { UnitLocationSelector } from '@/components/units/new/UnitLocationSelector';
-import { useUnitLocationState } from '@/shared/hooks/useUnitLocationState';
-import { useDataStore } from '@/shared/hooks/use-data-store';
+import { useUnitLocationState } from '@/hooks/useUnitLocationState';
+import { useDataStore } from '@/hooks/use-data-store';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { newUnitSchema, MULTI_FLOOR_TYPES, getUnitDataFromForm } from '@/shared/lib/unit-helpers';
-import type { NewUnitFormValues } from '@/shared/lib/unit-helpers';
+import { newUnitSchema, MULTI_FLOOR_TYPES, getUnitDataFromForm } from '@/lib/unit-helpers';
+import type { NewUnitFormValues } from '@/lib/unit-helpers';
 import { AreaInputs } from '@/components/units/new/AreaInputs';
 import { AmenitiesChecklist } from '@/components/units/new/AmenitiesChecklist';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Loader2, ArrowLeft, Save, Wand2 } from 'lucide-react';
-import { useToast } from '@/shared/hooks/use-toast';
-import { Separator } from '@/shared/components/ui/separator';
-import { useAuth } from '@/shared/hooks/use-auth';
-import { generateNextUnitIdentifier } from '@/shared/lib/identifier-generator';
+import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/use-auth';
+import { generateNextUnitIdentifier } from '@/lib/identifier-generator';
 import { addDoc, collection, doc, serverTimestamp, writeBatch, getDoc } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
-import { logActivity } from '@/shared/lib/logger';
+import { db } from '@/lib/firebase';
+import { logActivity } from '@/lib/logger';
 
 export default function NewUnitPage() {
     const { companies, projects, buildings } = useDataStore();
