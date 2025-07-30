@@ -9,7 +9,6 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { ProjectHeader } from '@/components/projects/ProjectHeader';
-import { useDataStore, Company } from '@/hooks/use-data-store';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BuildingsSection } from '@/components/projects/BuildingsSection';
 import { WorkStagesSection } from '@/components/projects/WorkStagesSection';
@@ -28,7 +27,6 @@ export default function ProjectDetailsPage() {
   
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { companies, isLoading: isLoadingCompanies } = useDataStore();
 
   useEffect(() => {
     if (!projectId) return;
@@ -76,7 +74,7 @@ export default function ProjectDetailsPage() {
             <TabsTrigger value="activity">Ιστορικό</TabsTrigger>
         </TabsList>
         <TabsContent value="work-stages" className="mt-4">
-          <WorkStagesSection project={project} companies={companies} isLoadingCompanies={isLoadingCompanies}/>
+          <WorkStagesSection project={project} />
         </TabsContent>
         <TabsContent value="buildings" className="mt-4">
             <BuildingsSection project={project} />

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Loader2, Download, Search } from 'lucide-react';
 import { ProjectDialogForm } from '@/components/projects/ProjectDialogForm';
-import { Company } from '@/hooks/use-data-store';
+import { Company, useCompanies } from '@/hooks/use-data-store';
 import { UseFormReturn } from 'react-hook-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/lib/types/project-types';
@@ -23,7 +23,6 @@ const ProjectTable = dynamic(() => import('@/components/projects/ProjectTable').
 
 interface ProjectsPageViewProps {
   filteredProjects: ProjectWithWorkStageSummary[];
-  companies: Company[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   isLoading: boolean;
@@ -45,7 +44,6 @@ interface ProjectsPageViewProps {
 
 export function ProjectsPageView({
   filteredProjects,
-  companies,
   searchQuery,
   setSearchQuery,
   isLoading,
@@ -64,7 +62,8 @@ export function ProjectsPageView({
   handleDeleteProject,
   handlePrefetchProject,
 }: ProjectsPageViewProps) {
-
+    
+  const { companies, isLoading: isLoadingCompanies } = useCompanies();
   const searchParams = useSearchParams();
   const currentView = searchParams.get('view') || 'index';
 
@@ -145,7 +144,7 @@ export function ProjectsPageView({
           form={form}
           onSubmit={onSubmit}
           isSubmitting={isSubmitting}
-          isLoading={isLoading}
+          isLoading={isLoadingCompanies}
           editingProject={editingProject}
           companies={companies}
         />

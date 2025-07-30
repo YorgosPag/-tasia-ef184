@@ -9,6 +9,7 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { Loader2, PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useCompanies } from '@/hooks/use-data-store';
 
 export function UnitLocationSelector({ 
     form, 

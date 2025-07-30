@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { PlusCircle, Loader2, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Company } from '@/hooks/use-data-store';
+import { useCompanies } from '@/hooks/use-data-store';
 import { useWorkStages } from '@/hooks/use-work-stages';
 import { WorkStageFormDialog } from '@/components/projects/work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from '@/components/projects/work-stages/WorkStageAccordion';
@@ -15,12 +15,12 @@ import { useAuth } from '@/hooks/use-auth';
 
 interface WorkStagesSectionProps {
     project: Project;
-    companies: Company[];
-    isLoadingCompanies: boolean;
 }
 
-export function WorkStagesSection({ project, companies, isLoadingCompanies }: WorkStagesSectionProps) {
+export function WorkStagesSection({ project }: WorkStagesSectionProps) {
     const { isEditor } = useAuth();
+    const { companies, isLoading: isLoadingCompanies } = useCompanies();
+
     const {
         workStages,
         isLoadingWorkStages,
@@ -89,7 +89,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                         onAddWorkSubstage={handleAddSubstage}
                         onEditWorkStage={handleEdit}
                         onDeleteWorkStage={handleDeleteWorkStage}
-                        onChecklistItemToggle={handleChecklistItemToggle}
+                        onChecklistItemToggle={onChecklistItemToggle}
                         onAddChecklistItem={handleAddChecklistItem}
                         onInspectionNotesChange={handleInspectionNotesChange}
                         onPhotoUpload={handlePhotoUpload}

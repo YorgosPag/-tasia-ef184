@@ -2,10 +2,12 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
-import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query, getDocs, Query, where, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { logActivity } from '@/lib/logger';
+import { useQuery } from '@tanstack/react-query';
+
 
 // --- Interfaces ---
 export interface Company {
@@ -44,128 +46,99 @@ export interface Project {
 }
 
 interface DataStoreContextType {
-  companies: Company[];
-  projects: Project[];
-  buildings: Building[];
-  isLoading: boolean;
-  addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<string | null>;
-  addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }) => Promise<string | null>;
+    // This context is now primarily for actions, not data
+    addCompany: (companyData: Omit<Company, 'id' | 'createdAt'>) => Promise<string | null>;
+    addProject: (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }) => Promise<string | null>;
 }
 
-const DataStoreContext = createContext<DataStoreContextType>({
-  companies: [],
-  projects: [],
-  buildings: [],
-  isLoading: true,
-  addCompany: async () => null,
-  addProject: async () => null,
-});
+const DataStoreContext = createContext<DataStoreContextType | undefined>(undefined);
 
-
+// --- Provider ---
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [buildings, setBuildings] = useState<Building[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Wait until the auth state is resolved and we have a user.
-    if (isAuthLoading || !user) {
-      // If auth is not loading anymore and there's no user, it means the user is logged out.
-      // We can stop our own loading indicator.
-      if (!isAuthLoading && !user) {
-        setIsLoading(false);
-      }
-      return;
-    }
-    
-    setIsLoading(true);
-
-    const companiesQuery = query(collection(db, 'companies'));
-    const projectsQuery = query(collection(db, 'projects'));
-    const buildingsQuery = query(collection(db, 'buildings'));
-
-    const unsubscribeCompanies = onSnapshot(companiesQuery, 
-        (snapshot) => setCompanies(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Company))),
-        (err) => console.error("Error fetching companies:", err)
-    );
-    const unsubscribeProjects = onSnapshot(projectsQuery, 
-        (snapshot) => {
-            setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project)));
-            setIsLoading(false); // Consider loading done when main data arrives
-        },
-        (err) => {
-            console.error("Error fetching projects:", err);
-            setIsLoading(false);
+    const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
+        try {
+            const docRef = await addDoc(collection(db, 'companies'), {
+                ...companyData,
+                createdAt: serverTimestamp(),
+            });
+            await logActivity('CREATE_COMPANY', {
+                entityId: docRef.id,
+                entityType: 'company',
+                name: companyData.name
+            });
+            return docRef.id;
+        } catch(e) {
+            console.error("Error adding company:", e);
+            return null;
         }
+    }, []);
+
+    const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }): Promise<string | null> => {
+        try {
+            const { tags, ...restOfData } = projectData;
+            const finalData = {
+                ...restOfData,
+                tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+                deadline: Timestamp.fromDate(projectData.deadline),
+                createdAt: serverTimestamp(),
+            };
+            const docRef = await addDoc(collection(db, 'projects'), finalData);
+            await logActivity('CREATE_PROJECT', {
+                entityId: docRef.id,
+                entityType: 'project',
+                name: projectData.title,
+            });
+            return docRef.id;
+        } catch(e) {
+            console.error("Error adding project:", e);
+            return null;
+        }
+    }, []);
+
+    return (
+        <DataStoreContext.Provider value={{ addCompany, addProject }}>
+            {children}
+        </DataStoreContext.Provider>
     );
-    const unsubscribeBuildings = onSnapshot(buildingsQuery, 
-        (snapshot) => setBuildings(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Building))),
-        (err) => console.error("Error fetching buildings:", err)
-    );
-
-    return () => {
-        unsubscribeCompanies();
-        unsubscribeProjects();
-        unsubscribeBuildings();
-    };
-
-  }, [user, isAuthLoading]);
-  
-  const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
-    try {
-        const docRef = await addDoc(collection(db, 'companies'), {
-            ...companyData,
-            createdAt: serverTimestamp(),
-        });
-        await logActivity('CREATE_COMPANY', {
-            entityId: docRef.id,
-            entityType: 'company',
-            name: companyData.name
-        });
-        return docRef.id;
-    } catch(e) {
-        console.error("Error adding company:", e);
-        return null;
-    }
-  }, []);
-  
-  const addProject = useCallback(async (projectData: Omit<Project, 'id' | 'createdAt' | 'deadline' | 'tags'> & { deadline: Date, tags?: string }): Promise<string | null> => {
-    try {
-        const { tags, ...restOfData } = projectData;
-        const finalData = {
-            ...restOfData,
-            tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
-            deadline: Timestamp.fromDate(projectData.deadline),
-            createdAt: serverTimestamp(),
-        };
-
-        const docRef = await addDoc(collection(db, 'projects'), finalData);
-        await logActivity('CREATE_PROJECT', {
-            entityId: docRef.id,
-            entityType: 'project',
-            name: projectData.title,
-        });
-        return docRef.id;
-    } catch(e) {
-        console.error("Error adding project:", e);
-        return null;
-    }
-  }, []);
-
-
-  return (
-    <DataStoreContext.Provider value={{ companies, projects, buildings, isLoading, addCompany, addProject }}>
-      {children}
-    </DataStoreContext.Provider>
-  );
 }
 
-export const useDataStore = () => {
-  const context = useContext(DataStoreContext);
-  if (context === undefined) {
-    throw new Error('useDataStore must be used within a DataProvider');
-  }
-  return context;
+// --- Specialized Hooks (Selector Pattern) ---
+
+async function fetchCollection<T>(collectionName: string, queryConstraints: Query<DocumentData> = query(collection(db, collectionName))): Promise<T[]> {
+  const snapshot = await getDocs(queryConstraints);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
+}
+
+export function useCompanies() {
+    const { data: companies = [], isLoading, isError } = useQuery<Company[]>({
+        queryKey: ['companies'],
+        queryFn: () => fetchCollection<Company>('companies'),
+    });
+    return { companies, isLoading, isError };
+}
+
+export function useProjects() {
+    const { data: projects = [], isLoading, isError } = useQuery<Project[]>({
+        queryKey: ['projects'],
+        queryFn: () => fetchCollection<Project>('projects'),
+    });
+    return { projects, isLoading, isError };
+}
+
+export function useBuildings() {
+     const { data: buildings = [], isLoading, isError } = useQuery<Building[]>({
+        queryKey: ['buildings'],
+        queryFn: () => fetchCollection<Building>('buildings'),
+    });
+    return { buildings, isLoading, isError };
+}
+
+
+// --- Hook for Actions ---
+export const useDataActions = () => {
+    const context = useContext(DataStoreContext);
+    if (context === undefined) {
+        throw new Error('useDataActions must be used within a DataProvider');
+    }
+    return context;
 };

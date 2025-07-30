@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import { useDataStore, Project, Company } from '@/hooks/use-data-store';
+import { useProjects, useCompanies, useDataActions, Company, Project } from '@/hooks/use-data-store';
 import { logActivity } from '@/lib/logger';
 import { exportToJson } from '@/lib/exporter';
 import { projectSchema } from '@/components/projects/ProjectDialogForm';
@@ -138,7 +138,9 @@ function useFilteredProjects(allProjects: Project[], companies: Company[]) {
 // --- Main Hook (Orchestrator) ---
 
 export function useProjectsPage() {
-  const { projects: allProjects, companies, isLoading, addProject } = useDataStore();
+  const { projects: allProjects, isLoading: isLoadingProjects } = useProjects();
+  const { companies, isLoading: isLoadingCompanies } = useCompanies();
+  const { addProject } = useDataActions();
   const { isEditor } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -221,10 +223,9 @@ export function useProjectsPage() {
 
   return {
     filteredProjects,
-    companies,
     searchQuery,
     setSearchQuery,
-    isLoading,
+    isLoading: isLoadingProjects || isLoadingCompanies,
     isEditor,
     isDialogOpen,
     isSubmitting,
