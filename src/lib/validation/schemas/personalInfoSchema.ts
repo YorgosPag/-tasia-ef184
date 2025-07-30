@@ -9,7 +9,7 @@ const personSchema = z.object({
 
 export const personalInfoSchema = z.object({
   id: z.string().optional(), // Keep ID for editing context
-  name: z.string().min(1, 'Το όνομα/επωνυμία είναι υποχρεωτικό.'),
+  name: z.string().optional(),
   entityType: z.enum(['Φυσικό Πρόσωπο', 'Νομικό Πρόσωπο', 'Δημ. Υπηρεσία']),
   
   // Personal Info fields - conditionally applied
