@@ -216,7 +216,15 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
                     <TableBody>
                         {buildings.map((building) => (
                         <TableRow key={building.id} className="group">
-                            <TableCell><div className="cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>{building.photoUrl ? (<Image src={building.photoUrl} alt={building.address} width={40} height={40} className="rounded-md object-cover"/>) : (<div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>)}</div></TableCell>
+                            <TableCell>
+                                <div className="cursor-pointer w-10 h-10 relative" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>
+                                    {building.photoUrl ? (
+                                        <Image src={building.photoUrl} alt={building.address} fill className="rounded-md object-cover" sizes="40px" />
+                                    ) : (
+                                        <div className="w-10 h-10 bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">N/A</div>
+                                    )}
+                                </div>
+                            </TableCell>
                             <TableCell className="font-medium cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>{building.address}</TableCell>
                             <TableCell className="text-muted-foreground cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>{building.type}</TableCell>
                             <TableCell className="cursor-pointer" onClick={() => router.push(`/buildings/${building.topLevelId}`)}>{formatDate(building.createdAt)}</TableCell>
