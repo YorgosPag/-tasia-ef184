@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -140,8 +141,9 @@ export function useComplexEntities(listType: string, filters: Record<string, str
     setLastDocs([null]);
     setInitialDataLoaded(false);
     setTotalCount(null);
-    refetch();
-  }, [listType, filterKey, refetch]);
+    // No need to refetch here, the query key change will trigger it.
+  }, [listType, filterKey]);
+
 
   useEffect(() => {
       // Fetch distinct values for the first 5 columns when listType changes

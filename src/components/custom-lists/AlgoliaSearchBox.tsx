@@ -20,7 +20,7 @@ import { Loader2 } from 'lucide-react';
 
 const searchClient = algoliasearch(
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID!,
-  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY!,
+  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!,
 );
 
 const PREFERRED_COLUMN_ORDER = [
@@ -84,7 +84,7 @@ function Hits({ onHitsChange }: { onHitsChange: (hits: any[]) => void }) {
       accessorKey: key,
       header: key,
       cell: ({ row }) => {
-        const value = (row.original as any)[key];
+        const value = (row.original as any)._highlightResult?.[key]?.value || (row.original as any)[key];
         return <span dangerouslySetInnerHTML={{ __html: value || '' }} />;
       },
     }));
@@ -119,11 +119,11 @@ function Hits({ onHitsChange }: { onHitsChange: (hits: any[]) => void }) {
 
 
 export function AlgoliaSearchBox({ indexName, listType, onHitsChange }: { indexName: string, listType: string, onHitsChange: (hits: any[]) => void }) {
-  if (!indexName || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY) {
+  if (!indexName || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID || !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY) {
     return (
       <div className="text-destructive-foreground bg-destructive border border-destructive p-4 rounded-md">
         <strong>Σφάλμα Ρύθμισης Algolia:</strong> Οι μεταβλητές περιβάλλοντος για το Algolia δεν έχουν ρυθμιστεί σωστά.
-        Παρακαλώ, ελέγξτε τα `NEXT_PUBLIC_ALGOLIA_APP_ID` και `NEXT_PUBLIC_ALGOLIA_ADMIN_API_KEY` στο `***REMOVED***.local` αρχείο σας.
+        Παρακαλώ, ελέγξτε τα `NEXT_PUBLIC_ALGOLIA_APP_ID` και `NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY` στο `***REMOVED***.local` αρχείο σας.
       </div>
     );
   }
