@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -7,9 +6,9 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/shared/components/ui/accordion';
-import { Company } from '@/shared/hooks/use-data-store';
-import type { WorkStage, WorkStageWithSubstages } from '@/shared/types/project-types';
+} from '@/components/ui/accordion';
+import { Company } from '@/hooks/use-data-store';
+import type { WorkStage, WorkStageWithSubstages } from '@/lib/types/project-types';
 import { WorkStageItem } from './WorkStageItem';
 import { WorkStageDetails } from './WorkStageDetails';
 

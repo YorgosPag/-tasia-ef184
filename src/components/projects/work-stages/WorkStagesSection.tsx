@@ -1,18 +1,16 @@
-
-
 'use client';
 
 import React, { useState } from 'react';
 import { PlusCircle, Loader2, Download } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Company } from '@/shared/hooks/use-data-store';
-import { useWorkStages } from '@/shared/hooks/use-work-stages';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Company } from '@/hooks/use-data-store';
+import { useWorkStages } from '@/hooks/use-work-stages';
 import { WorkStageFormDialog } from '@/components/projects/work-stages/WorkStageFormDialog';
 import { WorkStageAccordion } from '@/components/projects/work-stages/WorkStageAccordion';
-import type { Project, WorkStage } from '@/shared/types/project-types';
+import type { Project, WorkStage } from '@/lib/types/project-types';
 import { WorkStagesEmptyState } from '@/components/projects/work-stages/WorkStagesEmptyState';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 
 interface WorkStagesSectionProps {
     project: Project;
@@ -93,7 +91,7 @@ export function WorkStagesSection({ project, companies, isLoadingCompanies }: Wo
                         onChecklistItemToggle={onChecklistItemToggle}
                         onAddChecklistItem={handleAddChecklistItem}
                         onInspectionNotesChange={handleInspectionNotesChange}
-                        onPhotoUpload={onPhotoUpload}
+                        onPhotoUpload={handlePhotoUpload}
                         onCommentSubmit={handleCommentSubmit}
                     />
                 ) : (

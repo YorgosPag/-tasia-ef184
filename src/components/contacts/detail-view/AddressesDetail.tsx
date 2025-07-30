@@ -1,11 +1,10 @@
-
 'use client';
 
 import React from 'react';
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Map as MapIcon } from 'lucide-react';
 import { DetailRow } from './DetailRow';
-import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import { ContactFormValues } from '@/lib/validation/contactSchema';
 
 interface AddressesDetailProps {
     addresses: ContactFormValues['addresses'];
@@ -64,4 +63,3 @@ export function AddressesDetail({ addresses }: AddressesDetailProps) {
         </>
     );
 }
-

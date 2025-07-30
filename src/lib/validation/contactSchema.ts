@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 import { getValidationRule } from './schemas/utils/documentValidation';
 import { personalInfoSchema } from './schemas/personalInfoSchema';
