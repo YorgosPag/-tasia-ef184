@@ -54,6 +54,7 @@ async function fetchEntitiesPage(
   filters: Record<string, string>,
   lastDoc: QueryDocumentSnapshot<DocumentData> | null
 ): Promise<{ entities: ComplexEntity[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
+  // Prevent query if listType is not selected
   if (!listType) return { entities: [], lastDoc: null };
 
   const constraints = createFilterConstraints(listType, filters);
@@ -111,6 +112,7 @@ export function useComplexEntities(listType: string, filters: Record<string, str
         setEntities([]);
         setInitialDataLoaded(true);
         setIsLoading(false);
+        setTotalCount(0);
         return;
     };
     setIsLoading(true);
