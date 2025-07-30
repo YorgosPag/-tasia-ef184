@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useUnits } from '@/shared/hooks/use-units';
+import { useUnits } from '@/hooks/use-units';
 import { Loader2, Search } from 'lucide-react';
-import { Input } from '@/shared/components/ui/input';
-import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { UnitCard } from '@/components/units/UnitCard';
 import { useRouter } from 'next/navigation';
