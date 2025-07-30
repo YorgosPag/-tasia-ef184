@@ -69,6 +69,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log('Current user in DataProvider:', user);
+
   useEffect(() => {
     // Wait until the user is authenticated before fetching data
     if (!user) {
