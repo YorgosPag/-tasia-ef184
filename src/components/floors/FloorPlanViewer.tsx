@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -79,17 +78,18 @@ export function FloorPlanViewer({ pdfUrl: storagePath }: FloorPlanViewerProps) {
   
   return (
     <div style={{ height: '75vh', border: '1px solid rgba(0, 0, 0, 0.1)', borderRadius: '0.5rem', overflow: 'hidden' }}>
-      <object
-          data={displayUrl}
-          type="application/pdf"
+      <iframe
+          src={displayUrl}
+          title="Προβολή Κάτοψης"
           width="100%"
           height="100%"
+          style={{ border: 'none' }}
       >
         <p>
           Ο browser σας δεν υποστηρίζει την ενσωματωμένη προβολή PDF. Μπορείτε να το κατεβάσετε από
           <a href={displayUrl} className="text-primary hover:underline" download> εδώ</a>.
         </p>
-      </object>
+      </iframe>
     </div>
   );
 }
