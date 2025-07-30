@@ -28,7 +28,7 @@ export function FloorPlanViewer({ pdfUrl }: FloorPlanViewerProps) {
 
       try {
         const storage = getStorage();
-        // Create a reference from the full URL
+        // Create a reference from the full gs:// or https:// URL
         const storageRef = ref(storage, pdfUrl);
         const blob = await getBlob(storageRef);
         
