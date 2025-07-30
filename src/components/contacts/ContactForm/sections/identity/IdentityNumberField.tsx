@@ -4,7 +4,7 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
-import { useDocumentNumberMask } from '@/hooks/useDocumentNumberMask';
+import { useDocumentNumberMask } from '@/shared/hooks/useDocumentNumberMask';
 import type { UseFormReturn } from 'react-hook-form';
 import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
 
