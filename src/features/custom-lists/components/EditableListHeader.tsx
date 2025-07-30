@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Edit, Trash2, ChevronDown } from 'lucide-react';
-import type { CustomList } from '@/lib/customListService';
+import type { CustomList } from '@/shared/lib/customListService';
 import { cn } from '@/shared/lib/utils';
 
 interface EditableListHeaderProps {
