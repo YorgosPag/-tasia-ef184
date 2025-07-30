@@ -9,10 +9,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { Button } from '@/shared/components/ui/button';
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
-import { Badge } from '@/shared/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import type { Attachment, Unit } from '@/app/attachments/page';
 
 interface AttachmentsListTableProps {
