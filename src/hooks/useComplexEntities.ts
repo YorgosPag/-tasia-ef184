@@ -74,14 +74,6 @@ async function fetchEntitiesPage(
 }
 
 /**
- * Fetches all available list types from the 'tsia-list-types' collection.
- */
-async function fetchListTypes(): Promise<string[]> {
-  const snapshot = await getDocs(query(collection(db, 'tsia-list-types'), orderBy('name')));
-  return snapshot.docs.map((doc) => doc.data().name as string);
-}
-
-/**
  * Fetches all distinct values for a given field within a specific list type.
  */
 async function fetchDistinctValues(listType: string, field: string): Promise<string[]> {
@@ -111,12 +103,6 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [distinctValues, setDistinctValues] = useState<Record<string, string[]>>({});
-
-
-  const { data: listTypes = [], isLoading: isLoadingListTypes, refetch: refetchListTypes } = useQuery({
-      queryKey: ['complexListTypes'],
-      queryFn: fetchListTypes
-  });
   
   const filterKey = JSON.stringify(filters); // Create a stable key for the filter object
 
@@ -177,7 +163,7 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   
   useEffect(() => {
       refetch();
-  }, [listType, filterKey]); // Removed refetch from dependency array
+  }, [listType, filterKey, refetch]);
 
 
   const nextPage = () => {
@@ -199,8 +185,6 @@ export function useComplexEntities(listType: string, filters: Record<string, str
   return {
     entities,
     isLoading,
-    listTypes,
-    isLoadingListTypes,
     refetch,
     nextPage,
     prevPage,

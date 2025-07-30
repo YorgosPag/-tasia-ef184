@@ -22,6 +22,8 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
+import { getDocs, collection, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // --- Column Definitions ---
 const PREFERRED_COLUMN_ORDER = [
@@ -154,16 +156,21 @@ const generateColumns = (
 };
 
 
+async function fetchListTypes(): Promise<string[]> {
+  const snapshot = await getDocs(query(collection(db, 'tsia-list-types'), orderBy('name')));
+  return snapshot.docs.map((doc) => doc.data().name as string);
+}
+
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
+  const [listTypes, setListTypes] = useState<string[]>([]);
+  const [isLoadingListTypes, setIsLoadingListTypes] = useState(true);
   const [selectedListType, setSelectedListType] = useState<string>('');
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
 
   const {
     entities,
     isLoading,
-    listTypes,
-    isLoadingListTypes,
     refetch,
     nextPage,
     prevPage,
@@ -180,6 +187,16 @@ export function ComplexEntitiesTab() {
   const [newListName, setNewListName] = useState('');
   
   const columns = useMemo(() => generateColumns(entities, columnFilters, setColumnFilters, distinctValues), [entities, columnFilters, distinctValues]);
+
+  useEffect(() => {
+    async function getListTypes() {
+        setIsLoadingListTypes(true);
+        const types = await fetchListTypes();
+        setListTypes(types);
+        setIsLoadingListTypes(false);
+    }
+    getListTypes();
+  }, []);
 
   useEffect(() => {
     if (!isLoadingListTypes && listTypes.length > 0 && !selectedListType) {
@@ -345,3 +362,5 @@ export function ComplexEntitiesTab() {
     </div>
   );
 }
+
+    

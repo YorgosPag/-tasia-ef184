@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { CreateListForm } from './CreateListForm';
 import { EditableList } from './EditableList';
@@ -40,13 +40,22 @@ export function SimpleListsTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [openItems, setOpenItems] = useState<string[]>([]);
   
-  const fetchAllLists = useCallback(async () => {
+  const fetchAndSetLists = useCallback(async () => {
       setIsLoading(true);
       const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
       
       const unsubscribe = onSnapshot(listsQuery, async (listsSnapshot) => {
           const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
-              const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
+              const listData = listDoc.data();
+              const list: CustomList = { 
+                id: listDoc.id, 
+                title: listData.title,
+                description: listData.description,
+                hasCode: listData.hasCode,
+                isProtected: listData.isProtected,
+                items: [],
+                createdAt: listData.createdAt,
+              };
               const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
               const itemsSnapshot = await getDocs(itemsQuery);
               list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
@@ -64,11 +73,15 @@ export function SimpleListsTab() {
   }, []);
 
   useEffect(() => {
-      const unsubscribePromise = fetchAllLists();
+      let unsubscribe: (() => void) | undefined;
+      const init = async () => {
+          unsubscribe = await fetchAndSetLists();
+      }
+      init();
       return () => {
-          unsubscribePromise.then(unsub => unsub());
+          if(unsubscribe) unsubscribe();
       };
-  }, [fetchAllLists]);
+  }, [fetchAndSetLists]);
 
 
   const filteredLists = lists.filter(
@@ -113,7 +126,7 @@ export function SimpleListsTab() {
 
   return (
     <div className="space-y-8">
-      <CreateListForm fetchAllLists={fetchAllLists} />
+      <CreateListForm fetchAllLists={fetchAndSetLists} />
 
       <div className="space-y-4">
         <h2 className="text-2xl font-bold tracking-tight">Υπάρχουσες Λίστες</h2>
@@ -176,7 +189,7 @@ export function SimpleListsTab() {
                   list={list}
                   isOpen={openItems.includes(list.id)}
                   onToggle={toggleAccordionItem}
-                  fetchAllLists={fetchAllLists}
+                  fetchAllLists={fetchAndSetLists}
                 />
               ))
             ) : (
@@ -190,3 +203,5 @@ export function SimpleListsTab() {
     </div>
   );
 }
+
+    
