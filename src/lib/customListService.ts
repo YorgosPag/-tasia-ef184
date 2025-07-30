@@ -79,6 +79,11 @@ export async function deleteCustomList(listId: string): Promise<void> {
 }
 
 export async function addItemsToCustomList(listId: string, rawValue: string, hasCode?: boolean): Promise<void> {
+  // Guard clause to ensure listId is valid
+  if (!listId || typeof listId !== 'string' || !listId.trim()) {
+    throw new Error('Invalid or empty listId provided.');
+  }
+
   const listRef = doc(db, 'tsia-custom-lists', listId);
   const listDoc = await getDoc(listRef);
   if (!listDoc.exists()) throw new Error("List not found.");
