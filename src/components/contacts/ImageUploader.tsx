@@ -5,13 +5,13 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadCloud, Loader2, Trash2, Pencil } from 'lucide-react';
 import Image from 'next/image';
-import { Button } from '@/shared/components/ui/button';
-import { useToast } from '@/shared/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { ref, deleteObject } from 'firebase/storage';
-import { storage } from '@/shared/lib/firebase';
-import { Progress } from '@/shared/components/ui/progress';
+import { storage } from '@/lib/firebase';
+import { Progress } from '@/components/ui/progress';
 import { useFormContext, useWatch } from 'react-hook-form';
-import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import type { ContactFormValues } from '@/lib/validation/contactSchema';
 
 interface ImageUploaderProps {
   entityType: ContactFormValues['entityType'];

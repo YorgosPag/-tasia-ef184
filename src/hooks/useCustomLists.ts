@@ -3,7 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAllCustomLists, type CustomList } from '@/shared/lib/customListService';
+import { getAllCustomLists, type CustomList } from '@/lib/customListService';
 
 
 async function fetchAllListsData(): Promise<CustomList[]> {

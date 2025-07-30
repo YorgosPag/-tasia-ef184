@@ -1,9 +1,9 @@
 
 'use client';
 import React from 'react';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { FormField, FormItem, FormLabel, FormControl } from '@/shared/components/ui/form';
-import { Textarea } from '@/shared/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
+import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
 import type { ContactFormProps } from '../types';
 
 export function ObjectiveSection({ form }: Pick<ContactFormProps, 'form'>) {

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Badge } from '@/shared/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 
 export const DetailRow = ({ label, value, href, type, children }: { label: string; value?: string | null; href?: string, type?: string, children?: React.ReactNode }) => {
   if (!value && !children) return null; // Don't render empty rows

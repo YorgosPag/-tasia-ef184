@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { useFieldArray } from 'react-hook-form';
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { type ContactFormProps } from '../types';
 import { AddressCard } from './address/AddressCard';

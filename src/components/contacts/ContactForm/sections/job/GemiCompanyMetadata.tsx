@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useWatch, type UseFormReturn } from 'react-hook-form';
-import { FormItem, FormLabel, FormControl, FormDescription } from '@/shared/components/ui/form';
-import { Badge } from '@/shared/components/ui/badge';
+import { FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
+import { Badge } from '@/components/ui/badge';
 
 interface GemiCompanyMetadataProps {
   form: UseFormReturn<any>;

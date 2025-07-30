@@ -1,10 +1,10 @@
 
 'use client';
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
-import { FormField, FormItem, FormLabel, FormControl } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
-import { Badge } from '@/shared/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useWatchedFields } from '../hooks/useWatchedFields';
 import type { ContactFormProps } from '../types';
 

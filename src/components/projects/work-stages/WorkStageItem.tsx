@@ -2,10 +2,10 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Badge } from '@/shared/components/ui/badge';
-import { Progress } from '@/shared/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { getStatusVariant, calculateStageProgress } from './utils';
-import type { WorkStageWithSubstages } from '@/shared/types/project-types';
+import type { WorkStageWithSubstages } from '@/lib/types/project-types';
 
 interface WorkStageItemProps {
     stage: WorkStageWithSubstages;

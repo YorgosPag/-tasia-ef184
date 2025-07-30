@@ -3,10 +3,10 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
-import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
-import { CardDescription, CardTitle } from '@/shared/components/ui/card';
+import type { ContactFormValues } from '@/lib/validation/contactSchema';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 
 interface ContactEditHeaderProps {
   contactName: string;

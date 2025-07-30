@@ -2,10 +2,10 @@
 'use client';
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import type { UseFormReturn } from 'react-hook-form';
-import type { ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import type { ContactFormValues } from '@/lib/validation/contactSchema';
 
 interface AfmFieldProps {
   form: UseFormReturn<ContactFormValues>;

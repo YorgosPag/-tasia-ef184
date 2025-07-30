@@ -2,12 +2,12 @@
 'use client';
 
 import React from 'react';
-import { AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/components/ui/accordion';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { UserCircle } from 'lucide-react';
 import { type ContactFormProps } from '../types';
-import { Card, CardContent } from '@/shared/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function LegalRepresentativeSection({ form }: ContactFormProps) {
     return (

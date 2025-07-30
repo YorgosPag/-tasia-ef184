@@ -1,8 +1,9 @@
+
 'use client';
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
-import { Separator } from '@/shared/components/ui/separator';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { type UseFormReturn } from 'react-hook-form';
 
 interface JobRoleSectionProps {

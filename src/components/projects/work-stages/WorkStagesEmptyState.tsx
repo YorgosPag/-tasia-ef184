@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Construction } from 'lucide-react';
 
 interface WorkStagesEmptyStateProps {

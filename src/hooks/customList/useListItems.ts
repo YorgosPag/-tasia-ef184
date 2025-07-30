@@ -9,7 +9,7 @@ import {
   updateCustomListItem,
   deleteCustomListItem,
   checkListItemDependencies,
-} from '@/shared/lib/customListService';
+} from '@/lib/customListService';
 import { listIdToContactFieldMap } from './utils/listFieldMap';
 import { hasAdminPermission } from './utils/checkPermissions';
 import { useToast } from '../use-toast';

@@ -15,13 +15,13 @@ import {
   addDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/shared/hooks/use-toast';
-import { logActivity } from '@/shared/lib/logger';
-import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/shared/lib/unit-helpers';
-import type { NewUnitFormValues as UnitFormValues } from '@/shared/lib/unit-helpers';
+import { useToast } from '@/hooks/use-toast';
+import { logActivity } from '@/lib/logger';
+import { newUnitSchema as unitSchema, getUnitDataFromForm, getAttachmentDataFromForm, getStatusClass } from '@/lib/unit-helpers';
+import type { NewUnitFormValues as UnitFormValues } from '@/lib/unit-helpers';
 import { AttachmentFormValues, attachmentSchema } from '@/components/units/AttachmentDialog';
 import type { UnitContract } from '@/components/units/tabs/UnitContractsTab';
 

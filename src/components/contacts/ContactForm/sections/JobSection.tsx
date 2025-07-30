@@ -1,9 +1,10 @@
+
 'use client';
 
 import React from 'react';
 import { useWatch } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { type ContactFormProps } from '../types';
 import { useGemiData } from '../hooks/useGemiData';

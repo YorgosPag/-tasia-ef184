@@ -11,7 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogClose,
-} from '@/shared/components/ui/dialog';
+} from '@/components/ui/dialog';
 import {
     Form,
     FormControl,
@@ -19,10 +19,10 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { Button } from '@/shared/components/ui/button';
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import type { Building } from '@/app/projects/[id]/page';
 

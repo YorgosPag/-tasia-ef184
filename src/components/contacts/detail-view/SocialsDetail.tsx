@@ -2,9 +2,9 @@
 'use client';
 
 import React from 'react';
-import { Badge } from '@/shared/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { socialIcons } from '../ContactForm/utils/socialIcons';
-import { ContactFormValues } from '@/shared/lib/validation/contactSchema';
+import { ContactFormValues } from '@/lib/validation/contactSchema';
 
 interface SocialsDetailProps {
     socials: ContactFormValues['socials'];

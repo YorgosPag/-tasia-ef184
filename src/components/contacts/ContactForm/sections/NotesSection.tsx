@@ -2,8 +2,8 @@
 'use client';
 
 import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
-import { Textarea } from '@/shared/components/ui/textarea';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
 import { Info } from 'lucide-react';
 import { type ContactFormProps } from '../types';
 

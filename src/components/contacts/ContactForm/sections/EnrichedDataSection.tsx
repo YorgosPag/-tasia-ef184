@@ -1,9 +1,9 @@
 
 'use client';
 import React from 'react';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { FormItem, FormLabel, FormControl } from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
 export function EnrichedDataSection({ form }: { form: any }) {
     return (
