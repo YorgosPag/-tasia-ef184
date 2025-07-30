@@ -14,7 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/lib/types/project-types';
 import dynamic from 'next/dynamic';
 import { ProjectTableSkeleton } from './ProjectTableSkeleton';
-import { ProjectTable } from './ProjectTable';
+
+const ProjectTable = dynamic(() => import('@/components/projects/ProjectTable').then(mod => mod.ProjectTable), {
+  loading: () => <ProjectTableSkeleton />,
+  ssr: false,
+});
 
 
 interface ProjectsPageViewProps {
