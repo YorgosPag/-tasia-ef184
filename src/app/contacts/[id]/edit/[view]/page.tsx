@@ -105,6 +105,7 @@ function EditContactPageContent() {
                    
                     const formData: ContactFormValues = {
                         ...data,
+                        name: data.name ?? '',
                         entityType: initialEntityType,
                         id: docSnap.id,
                         birthDate: data.birthDate instanceof Timestamp ? data.birthDate.toDate() : null,
