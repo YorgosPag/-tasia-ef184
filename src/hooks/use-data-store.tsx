@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { collection, onSnapshot, addDoc, serverTimestamp, Timestamp, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { logActivity } from '@/lib/logger';
 
@@ -63,7 +62,7 @@ const DataStoreContext = createContext<DataStoreContextType>({
 
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -72,10 +71,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Wait until the user is authenticated before fetching data
     if (!user) {
-      // If there's no user yet, we shouldn't attempt to fetch.
-      // We also check if the auth process is still loading.
       // If auth is no longer loading and user is null, we can stop loading data.
-      if (!auth.currentUser && !isLoading) {
+      if (!isAuthLoading) {
          setIsLoading(false);
       }
       return;
@@ -112,7 +109,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         unsubscribeBuildings();
     };
 
-  }, [user, isLoading]); // Add user and isLoading as dependencies
+  }, [user, isAuthLoading]);
   
   const addCompany = useCallback(async (companyData: Omit<Company, 'id' | 'createdAt'>): Promise<string | null> => {
     try {
