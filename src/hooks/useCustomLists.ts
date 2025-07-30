@@ -20,7 +20,7 @@ async function fetchAllListsData(): Promise<CustomList[]> {
 
 
 export function useCustomLists() {
-    const { data: lists = [], isLoading, refetch } = useQuery<CustomList[]>({
+    const { data: lists = [], isLoading, refetch, isError } = useQuery<CustomList[]>({
       queryKey: ['customLists'],
       queryFn: fetchAllListsData,
       staleTime: 1000 * 60 * 5, // 5 minutes
@@ -29,6 +29,13 @@ export function useCustomLists() {
     const fetchAllLists = useCallback(async () => {
         await refetch();
     }, [refetch]);
+
+    // This useEffect hook is for logging purposes and can be useful for debugging.
+    useEffect(() => {
+        if(isError) {
+            console.error("Error fetching custom lists via useQuery.");
+        }
+    }, [isError]);
 
     return { lists, isLoading, fetchAllLists };
 }
