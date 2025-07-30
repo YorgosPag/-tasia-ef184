@@ -6,8 +6,10 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescripti
 import type { UseFormReturn } from 'react-hook-form';
 import type { ContactFormValues } from '@/lib/validation/contactSchema';
 import { useCustomLists } from '@/hooks/useCustomLists';
-import { useCustomListActions } from '@/hooks/useCustomListActions';
 import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { toast } from '@/hooks/use-toast';
 
 interface IssuingAuthorityFieldProps {
   form: UseFormReturn<ContactFormValues>;
@@ -15,7 +17,6 @@ interface IssuingAuthorityFieldProps {
 
 export function IssuingAuthorityField({ form }: IssuingAuthorityFieldProps) {
   const { lists, fetchAllLists } = useCustomLists();
-  const { addNewItemToList } = useCustomListActions(fetchAllLists);
 
   const issuingAuthoritiesList = lists.find(
     (l) => l.id === 'iGOjn86fcktREwMeDFPz'
@@ -29,7 +30,20 @@ export function IssuingAuthorityField({ form }: IssuingAuthorityFieldProps) {
   
   const handleCreateIssuingAuthority = async (newValue: string) => {
     if (!issuingAuthoritiesList) return null;
-    return await addNewItemToList(issuingAuthoritiesList.id, newValue, issuingAuthoritiesList.hasCode);
+    if (!newValue.trim()) return null;
+
+    try {
+        await addDoc(collection(db, 'tsia-custom-lists', issuingAuthoritiesList.id, 'tsia-items'), {
+            value: newValue,
+            createdAt: serverTimestamp(),
+        });
+        toast({ title: 'Επιτυχία', description: `Η αρχή "${newValue}" προστέθηκε.` });
+        fetchAllLists();
+        return newValue;
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη της νέας αρχής.'});
+        return null;
+    }
   }
 
   return (
@@ -57,5 +71,3 @@ export function IssuingAuthorityField({ form }: IssuingAuthorityFieldProps) {
     />
   );
 }
-
-    

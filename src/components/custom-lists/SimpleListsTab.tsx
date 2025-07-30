@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { collection, onSnapshot, query, orderBy, getDocs, writeBatch, doc, serverTimestamp, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { CreateListForm } from './CreateListForm';
 import { EditableList } from './EditableList';
@@ -17,7 +17,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { logActivity } from '@/lib/logger';
 import type { CustomList, ListItem } from '@/lib/types/definitions';
 
 export function SimpleListsTab() {
@@ -28,7 +27,10 @@ export function SimpleListsTab() {
   const { toast } = useToast();
 
   const fetchAllLists = useCallback(async () => {
+    setIsLoading(true);
     const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
+    
+    // Using onSnapshot to listen for real-time updates
     const unsubscribe = onSnapshot(listsQuery, async (listsSnapshot) => {
         const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
             const listData = listDoc.data();
