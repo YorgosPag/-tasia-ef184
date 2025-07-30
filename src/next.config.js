@@ -20,13 +20,6 @@ const nextConfig = {
       },
     ],
   },
-  webpack(config) {
-    config.resolve.alias['@'] = path.resolve(__dirname, 'src');
-    config.resolve.alias['@/components'] = path.resolve(__dirname, 'src/components');
-    config.resolve.alias['@/hooks'] = path.resolve(__dirname, 'src/hooks');
-    config.resolve.alias['@/lib'] = path.resolve(__dirname, 'src/lib');
-    return config;
-  },
   env: {
     NEXT_PUBLIC_FIREBASE_API_KEY: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,

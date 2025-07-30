@@ -12,7 +12,7 @@ import { useDataStore, Project, Company } from '@/hooks/use-data-store';
 import { logActivity } from '@/lib/logger';
 import { exportToJson } from '@/lib/exporter';
 import { projectSchema } from '@/components/projects/ProjectDialogForm';
-import { formatDate } from '@/lib/project-helpers';
+import { formatDate } from '@/lib/project-helpers.tsx';
 import { useAuth } from './use-auth';
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/lib/types/project-types';
 
