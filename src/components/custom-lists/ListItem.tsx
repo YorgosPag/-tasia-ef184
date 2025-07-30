@@ -1,11 +1,10 @@
-
 'use client';
 
 import { useState } from 'react';
-import type { ListItem as ListItemType } from '@/lib/customListService';
+import type { ListItem as ListItemType } from '@/lib/types/definitions';
 import { useToast } from '@/hooks/use-toast';
-import { updateCustomListItem, deleteCustomListItem, checkListItemDependencies } from '@/lib/customListService';
-import { listIdToContactFieldMap } from '@/lib/customListService';
+import { doc, updateDoc, deleteDoc, query, collection, where, limit, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { ListItemDisplay } from './ListItemDisplay';
 import { ListItemEdit } from './ListItemEdit';
 
@@ -16,6 +15,24 @@ interface ListItemProps {
   hasCode?: boolean;
   canBeModified: boolean;
   fetchAllLists: () => void;
+}
+
+const listIdToContactFieldMap: { [key: string]: string } = {
+  "Jz1pB5tZSC8d41w8uKlA": "job.role",
+  "k8zyKz2mC0d7j4x3R5bH": "job.specialty",
+  "iGOjn86fcktREwMeDFPz": "identity.issuingAuthority",
+  "jIt8lRiNcgatSchI90yd": "identity.type",
+  "pL5fV6w8X9y7zE1bN3cO": "doy",
+};
+
+async function checkListItemDependencies(contactField: string, itemValue: string): Promise<string | null> {
+  if (!contactField) return null;
+  const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    return snapshot.docs[0].data().name as string;
+  }
+  return null;
 }
 
 export function ListItem({
@@ -43,7 +60,7 @@ export function ListItem({
         dataToUpdate.code = trimmedCode;
       }
       try {
-        await updateCustomListItem(listId, item.id, dataToUpdate);
+        await updateDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', item.id), dataToUpdate);
         toast({ title: 'Επιτυχία', description: 'Το στοιχείο ενημερώθηκε.' });
         fetchAllLists();
         setIsEditing(false);
@@ -80,7 +97,7 @@ export function ListItem({
     }
 
     try {
-        await deleteCustomListItem(listId, item.id);
+        await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', item.id));
         toast({ title: 'Επιτυχία', description: `Το στοιχείο "${item.value}" διαγράφηκε.`});
         fetchAllLists();
         setIsEditing(false);

@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem } from '@/components/ui/accordion';
-import type { CustomList, CreateListData } from '@/lib/customListService';
+import type { CustomList, CreateListData } from '@/lib/types/definitions';
 import { useAuth } from '@/hooks/use-auth';
 import { EditableListHeader } from './EditableListHeader';
 import { EditableListForm } from './EditableListForm';
@@ -11,15 +10,50 @@ import { EditableListItems } from './EditableListItems';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { logActivity } from '@/lib/logger';
-import { updateCustomList as updateCustomListService, deleteCustomList as deleteCustomListService, checkListDependencies } from '@/lib/customListService';
-import { listIdToContactFieldMap } from '@/lib/customListService';
-
+import { writeBatch, doc, getDocs, collection, query, where, deleteDoc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface EditableListProps {
   list: CustomList;
   isOpen: boolean;
   onToggle: (id: string) => void;
   fetchAllLists: () => void;
+}
+
+const listIdToContactFieldMap: { [key: string]: string } = {
+  "Jz1pB5tZSC8d41w8uKlA": "job.role",
+  "k8zyKz2mC0d7j4x3R5bH": "job.specialty",
+  "iGOjn86fcktREwMeDFPz": "identity.issuingAuthority",
+  "jIt8lRiNcgatSchI90yd": "identity.type",
+  "pL5fV6w8X9y7zE1bN3cO": "doy",
+};
+
+async function checkListDependencies(contactField: string, itemValues: string[]): Promise<{value: string, contactName: string}[]> {
+    if (!contactField || itemValues.length === 0) return [];
+  
+    const CHUNK_SIZE = 30;
+    const dependencies: {value: string, contactName: string}[] = [];
+  
+    for (let i = 0; i < itemValues.length; i += CHUNK_SIZE) {
+      const chunk = itemValues.slice(i, i + CHUNK_SIZE);
+      if (chunk.length === 0) continue;
+  
+      const q = query(collection(db, 'contacts'), where(contactField, 'in', chunk));
+      const snapshot = await getDocs(q);
+  
+      snapshot.forEach(doc => {
+        dependencies.push({
+          value: doc.data()[contactField],
+          contactName: doc.data().name
+        });
+      });
+
+      if(dependencies.length >= 2) {
+          return dependencies;
+      }
+    }
+    
+    return dependencies;
 }
 
 export function EditableList({ list, isOpen, onToggle, fetchAllLists }: EditableListProps) {
@@ -38,7 +72,7 @@ export function EditableList({ list, isOpen, onToggle, fetchAllLists }: Editable
 
     if (Object.keys(dataToUpdate).length > 0) {
       try {
-        await updateCustomListService(list.id, dataToUpdate);
+        await updateDoc(doc(db, 'tsia-custom-lists', list.id), dataToUpdate);
         toast({ title: 'Επιτυχία', description: 'Η λίστα ενημερώθηκε.'});
         fetchAllLists();
       } catch (error: any) {
@@ -70,7 +104,14 @@ export function EditableList({ list, isOpen, onToggle, fetchAllLists }: Editable
       }
       
       try {
-        await deleteCustomListService(list.id);
+        const batch = writeBatch(db);
+        const listRef = doc(db, 'tsia-custom-lists', list.id);
+        const itemsQuery = query(collection(listRef, 'tsia-items'));
+        const itemsSnapshot = await getDocs(itemsQuery);
+        itemsSnapshot.docs.forEach(itemDoc => batch.delete(itemDoc.ref));
+        batch.delete(listRef);
+        await batch.commit();
+
         await logActivity('DELETE_LIST', { entityId: list.id, entityType: 'custom-list', name: list.title });
         toast({ title: 'Επιτυχία', description: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.'});
         fetchAllLists();

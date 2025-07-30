@@ -1,8 +1,7 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { collection, onSnapshot, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, getDocs, writeBatch, doc, serverTimestamp, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { CreateListForm } from './CreateListForm';
 import { EditableList } from './EditableList';
@@ -16,72 +15,58 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { CustomList, ListItem } from '@/lib/customListService';
-
-async function fetchAllCustomLists(): Promise<CustomList[]> {
-    const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
-    const listsSnapshot = await getDocs(listsQuery);
-
-    const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
-        const list = { id: listDoc.id, ...listDoc.data() } as CustomList;
-        const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
-        const itemsSnapshot = await getDocs(itemsQuery);
-        list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
-        return list;
-    });
-
-    return Promise.all(listsDataPromises);
-}
-
+import { useToast } from '@/hooks/use-toast';
+import { logActivity } from '@/lib/logger';
+import type { CustomList, ListItem } from '@/lib/types/definitions';
 
 export function SimpleListsTab() {
   const [lists, setLists] = useState<CustomList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [openItems, setOpenItems] = useState<string[]>([]);
-  
-  const fetchAndSetLists = useCallback(async () => {
-      setIsLoading(true);
-      const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
-      
-      const unsubscribe = onSnapshot(listsQuery, async (listsSnapshot) => {
-          const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
-              const listData = listDoc.data();
-              const list: CustomList = { 
-                id: listDoc.id, 
-                title: listData.title,
-                description: listData.description,
-                hasCode: listData.hasCode,
-                isProtected: listData.isProtected,
-                items: [],
-                createdAt: listData.createdAt,
-              };
-              const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
-              const itemsSnapshot = await getDocs(itemsQuery);
-              list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
-              return list;
-          });
-          const fetchedLists = await Promise.all(listsDataPromises);
-          setLists(fetchedLists);
-          setIsLoading(false);
-      }, (error) => {
-          console.error("Error fetching custom lists:", error);
-          setIsLoading(false);
-      });
+  const { toast } = useToast();
 
-      return unsubscribe;
-  }, []);
+  const fetchAllLists = useCallback(async () => {
+    const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
+    const unsubscribe = onSnapshot(listsQuery, async (listsSnapshot) => {
+        const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
+            const listData = listDoc.data();
+            const list: CustomList = { 
+              id: listDoc.id, 
+              title: listData.title,
+              description: listData.description,
+              hasCode: listData.hasCode,
+              isProtected: listData.isProtected,
+              items: [],
+              createdAt: listData.createdAt,
+            };
+            const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
+            const itemsSnapshot = await getDocs(itemsQuery);
+            list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
+            return list;
+        });
+        const fetchedLists = await Promise.all(listsDataPromises);
+        setLists(fetchedLists);
+        setIsLoading(false);
+    }, (error) => {
+        console.error("Error fetching custom lists:", error);
+        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η φόρτωση των λιστών απέτυχε.' });
+        setIsLoading(false);
+    });
+
+    return unsubscribe;
+  }, [toast]);
 
   useEffect(() => {
-      let unsubscribe: (() => void) | undefined;
-      const init = async () => {
-          unsubscribe = await fetchAndSetLists();
-      }
-      init();
-      return () => {
-          if(unsubscribe) unsubscribe();
-      };
-  }, [fetchAndSetLists]);
+    let unsubscribe: (() => void) | undefined;
+    const init = async () => {
+        unsubscribe = await fetchAllLists();
+    }
+    init();
+    return () => {
+        if(unsubscribe) unsubscribe();
+    };
+  }, [fetchAllLists]);
 
 
   const filteredLists = lists.filter(
@@ -126,7 +111,7 @@ export function SimpleListsTab() {
 
   return (
     <div className="space-y-8">
-      <CreateListForm fetchAllLists={fetchAndSetLists} />
+      <CreateListForm fetchAllLists={fetchAllLists} />
 
       <div className="space-y-4">
         <h2 className="text-2xl font-bold tracking-tight">Υπάρχουσες Λίστες</h2>
@@ -189,7 +174,7 @@ export function SimpleListsTab() {
                   list={list}
                   isOpen={openItems.includes(list.id)}
                   onToggle={toggleAccordionItem}
-                  fetchAllLists={fetchAndSetLists}
+                  fetchAllLists={fetchAllLists}
                 />
               ))
             ) : (
@@ -203,5 +188,3 @@ export function SimpleListsTab() {
     </div>
   );
 }
-
-    

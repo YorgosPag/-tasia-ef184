@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -20,8 +19,9 @@ import { PlusCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { logActivity } from '@/lib/logger';
-import { createCustomList as createCustomListService } from '@/lib/customListService';
-import type { CreateListData } from '@/lib/customListService';
+import { doc, setDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { CreateListData } from '@/lib/types/definitions';
 import { BooleanSwitchField } from './form/BooleanSwitchField';
 
 const createListSchema = z.object({
@@ -63,8 +63,11 @@ export function CreateListForm({ fetchAllLists }: { fetchAllLists: () => void })
                 hasCode: values.hasCode,
                 isProtected: values.isProtected,
             };
-            const listId = await createCustomListService(listData);
-            await logActivity('CREATE_LIST', { entityId: listId, entityType: 'custom-list', name: listData.title });
+            
+            const listRef = doc(collection(db, 'tsia-custom-lists'));
+            await setDoc(listRef, { ...listData, createdAt: serverTimestamp() });
+            
+            await logActivity('CREATE_LIST', { entityId: listRef.id, entityType: 'custom-list', name: listData.title });
             toast({ title: 'Επιτυχία', description: 'Η λίστα δημιουργήθηκε.'});
             form.reset();
             fetchAllLists();
@@ -137,5 +140,3 @@ export function CreateListForm({ fetchAllLists }: { fetchAllLists: () => void })
         </Card>
     );
 }
-
-    
