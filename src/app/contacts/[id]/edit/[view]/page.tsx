@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback, Suspense, useRef } from 'react';
@@ -168,7 +167,7 @@ function EditContactPageContent() {
             const docRef = doc(db, 'contacts', contactId);
             await updateDoc(docRef, cleanedData);
             
-            setContactName(data.name); // Update displayed name
+            setContactName(data.name || ''); // Update displayed name
             form.reset({ ...data, photoUrls }, { keepDirty: false });
             setFileToUpload(null);
 
