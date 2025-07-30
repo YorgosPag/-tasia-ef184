@@ -46,7 +46,9 @@ export type ActionType =
   | 'UPDATE_WORK_SUBSTAGE'
   | 'DELETE_WORK_SUBSTAGE'
   | 'SEED_DATA'
-  | 'CLEAR_DATA';
+  | 'CLEAR_DATA'
+  | 'CREATE_CONTACT'
+  | 'UPDATE_CONTACT';
 
 export interface LogDetails {
   entityId?: string;
@@ -62,7 +64,8 @@ export interface LogDetails {
     | 'user'
     | 'workStage'
     | 'workSubstage'
-    | 'database';
+    | 'database'
+    | 'contact';
   changes?: Record<string, any>;
   projectId?: string; // Added to filter activity by project
   [key: string]: any; // for additional context
