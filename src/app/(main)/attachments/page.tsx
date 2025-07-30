@@ -39,21 +39,25 @@ export default function AttachmentsPage() {
   });
 
    useEffect(() => {
-        console.log("Project ID from env:", process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+        console.log("Loaded project ID:", process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
 
         const unsubscribeAttachments = onSnapshot(query(collection(db, 'attachments')), (snapshot) => {
-            setAttachments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Attachment)));
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Attachment));
+            console.log("Attachments data:", data);
+            setAttachments(data);
             setIsLoading(false);
         }, (error) => {
-            console.error("Error fetching attachments:", error);
+            console.error("Attachments Error:", error.message);
             toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Failed to load attachments.' });
             setIsLoading(false);
         });
 
         const unsubscribeUnits = onSnapshot(query(collection(db, 'units')), (snapshot) => {
-            setUnits(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit)));
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Unit));
+            console.log("Units data:", data);
+            setUnits(data);
         }, (error) => {
-            console.error("Error fetching units:", error);
+            console.error("Units Error:", error.message);
         });
 
         return () => {
