@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -10,8 +9,8 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { exportToJson } from '@/lib/exporter';
 import { useAuth } from '@/hooks/use-auth';
 import { useContacts } from '@/hooks/use-contacts';
-import { ContactDetailView } from './ContactDetailView';
-import { ContactList } from './ContactList';
+import { ContactDetailView } from '@/components/contacts/ContactDetailView';
+import { ContactList } from '@/components/contacts/ContactList';
 
 export default function ContactsPage() {
   const { isEditor } = useAuth();

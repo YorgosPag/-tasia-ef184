@@ -1,4 +1,3 @@
-
 'use client';
-import ContactsPage from '@/components/contacts/page';
+import ContactsPage from '@/app/contacts/page';
 export default ContactsPage;
