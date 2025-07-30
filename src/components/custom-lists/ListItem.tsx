@@ -17,24 +17,6 @@ interface ListItemProps {
   fetchAllLists: () => void;
 }
 
-const listIdToContactFieldMap: { [key: string]: string } = {
-  "Jz1pB5tZSC8d41w8uKlA": "job.role",
-  "k8zyKz2mC0d7j4x3R5bH": "job.specialty",
-  "iGOjn86fcktREwMeDFPz": "identity.issuingAuthority",
-  "jIt8lRiNcgatSchI90yd": "identity.type",
-  "pL5fV6w8X9y7zE1bN3cO": "doy",
-};
-
-async function checkListItemDependencies(contactField: string, itemValue: string): Promise<string | null> {
-  if (!contactField) return null;
-  const q = query(collection(db, 'contacts'), where(contactField, '==', itemValue), limit(1));
-  const snapshot = await getDocs(q);
-  if (!snapshot.empty) {
-    return snapshot.docs[0].data().name as string;
-  }
-  return null;
-}
-
 export function ListItem({
   item,
   listId,
@@ -79,19 +61,7 @@ export function ListItem({
   };
 
   const handleDelete = async () => {
-    const contactField = listIdToContactFieldMap[listId];
-    const dependency = await checkListItemDependencies(contactField, item.value);
-
-    if (dependency) {
-      toast({
-        variant: 'destructive',
-        title: 'Αδυναμία Διαγραφής',
-        description: `Το στοιχείο "${item.value}" χρησιμοποιείται από την επαφή: ${dependency}.`,
-        duration: 5000,
-      });
-      return false;
-    }
-
+    // Simplified confirmation dialog
     if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε το στοιχείο "${item.value}"`)) {
       return false;
     }
