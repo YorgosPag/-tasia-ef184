@@ -167,7 +167,7 @@ export function useProjectsPage() {
       form.reset();
       setEditingProject(null);
     }
-  }, [form, setEditingProject]);
+  }, [form]);
 
   const handleEditClick = useCallback((project: ProjectWithWorkStageSummary) => {
     setEditingProject(project);
@@ -177,7 +177,7 @@ export function useProjectsPage() {
       deadline: project.deadline instanceof Timestamp ? project.deadline.toDate() : project.deadline,
     });
     setIsDialogOpen(true);
-  }, [form, setEditingProject]);
+  }, [form]);
 
    const onSubmit = useCallback(async (data: ProjectFormValues) => {
     setIsSubmitting(true);
