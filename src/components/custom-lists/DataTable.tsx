@@ -71,9 +71,9 @@ export function DataTable<TData, TValue>({
     const totalPages = totalCount !== null ? Math.ceil(totalCount / pageSize) : 0;
     const activeFilterEntries = Object.entries(activeFilters).filter(([, value]) => value);
 
-    if (activeFilterEntries.length > 0) {
+    if (activeFilterEntries.length > 0 && data.length === 0) {
       const [firstFilterKey, firstFilterValue] = activeFilterEntries[0];
-       let message = `Δεν βρέθηκαν αποτελέσματα στο φίλτρο "${firstFilterKey}" για την τιμή "${firstFilterValue}" σε αυτή τη σελίδα (${page}/${totalPages}).`;
+       let message = `Δεν βρέθηκαν αποτελέσματα για το φίλτρο "${firstFilterKey}" με τιμή "${firstFilterValue}" σε αυτή τη σελίδα (${page}/${totalPages}).`;
        if (canGoNext) {
            message += ' Παρακαλώ, πατήστε "Επόμενη" για να ελέγξετε τις υπόλοιπες σελίδες.'
        }
