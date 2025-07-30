@@ -5,48 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { writeBatch, doc, collection, serverTimestamp, getDoc, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { addItemsToCustomList } from '@/lib/customListService';
 
 interface EditableListFormProps {
   listId: string;
   hasCode?: boolean;
   fetchAllLists: () => void;
-}
-
-async function addItemsToCustomList(listId: string, rawValue: string, hasCode?: boolean): Promise<void> {
-  const listRef = doc(db, 'tsia-custom-lists', listId);
-  const listDoc = await getDoc(listRef);
-  if (!listDoc.exists()) throw new Error("List not found.");
-
-  const itemsCollectionRef = collection(listRef, 'tsia-items');
-  const existingItemsSnapshot = await getDocs(itemsCollectionRef);
-  const existingItems = existingItemsSnapshot.docs.map(d => d.data());
-
-  let itemsToAdd: { value: string; code?: string }[] = [];
-
-  if (hasCode) {
-    const lines = rawValue.split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
-    itemsToAdd = lines.map(line => {
-      const firstSpaceIndex = line.indexOf(' ');
-      if (firstSpaceIndex === -1) return { code: line, value: line };
-      return { code: line.substring(0, firstSpaceIndex).trim(), value: line.substring(firstSpaceIndex + 1).trim() };
-    }).filter(item => item.code && !existingItems.some(ex => ex.code?.toLowerCase() === item.code?.toLowerCase()));
-  } else {
-    const values = rawValue.split(/[;\n\r\t]+/).map(v => v.trim()).filter(Boolean);
-    itemsToAdd = values.filter(value => !existingItems.some(ex => ex.value.toLowerCase() === value.toLowerCase())).map(value => ({ value }));
-  }
-
-  if (itemsToAdd.length === 0) {
-    throw new Error('Όλα τα στοιχεία που εισάγατε υπάρχουν ήδη.');
-  }
-
-  const batch = writeBatch(db);
-  itemsToAdd.forEach(item => {
-    const newItemRef = doc(itemsCollectionRef);
-    batch.set(newItemRef, { ...item, createdAt: serverTimestamp() });
-  });
-  await batch.commit();
 }
 
 export function EditableListForm({
