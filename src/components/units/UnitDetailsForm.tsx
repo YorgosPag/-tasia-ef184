@@ -7,7 +7,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shar
 import { Input } from '@/shared/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Unit } from '@/hooks/use-unit-details';
+import { Unit } from '@/shared/hooks/use-unit-details';
 import { Switch } from '@/shared/components/ui/switch';
 import { Separator } from '@/shared/components/ui/separator';
 import { AMENITIES_LIST, KITCHEN_LAYOUTS, ORIENTATIONS } from '@/shared/lib/unit-helpers';

@@ -17,7 +17,7 @@ const nextConfig = {
       },
     ],
   },
-  // Cache invalidation comment to trigger rebuild.
+  // Cache invalidation comment to trigger rebuild. v2
 };
 
 export default nextConfig;

@@ -11,7 +11,7 @@ import { UnitDetailsForm } from './UnitDetailsForm';
 import type { NewUnitFormValues as UnitFormValues } from '@/shared/lib/unit-helpers';
 import { AttachmentDialog, AttachmentFormValues } from '@/components/units/AttachmentDialog';
 import { UnitsListTable } from '@/components/units/UnitsListTable';
-import { Unit } from '@/hooks/use-unit-details';
+import { Unit } from '@/shared/hooks/use-unit-details';
 import { UnitContactForm } from './UnitContactForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { UnitFloorPlansTab } from './tabs/UnitFloorPlansTab';

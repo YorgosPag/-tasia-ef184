@@ -1,7 +1,7 @@
 'use client';
 
 import { UnitLocationSelector } from '@/components/units/new/UnitLocationSelector';
-import { useUnitLocationState } from '@/hooks/useUnitLocationState';
+import { useUnitLocationState } from '@/shared/hooks/useUnitLocationState';
 import { useDataStore } from '@/shared/hooks/use-data-store';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
