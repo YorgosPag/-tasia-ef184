@@ -3,51 +3,39 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
-
-interface BaseEntity {
-    id: string;
-    [key: string]: any;
-}
-
-interface Project extends BaseEntity {
-    companyId: string;
-}
-
-interface Building extends BaseEntity {
-    projectId: string;
-}
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { Company, Project, Building } from '@/hooks/use-data-store';
 
 interface Floor {
     value: string;
     label: string;
-    buildingId: string;
 }
 
-interface DataStore {
-    companies: BaseEntity[];
-    projects: Project[];
-    buildings: Building[];
-}
-
-
-export function useUnitLocationState(data: DataStore, form: UseFormReturn<any>) {
+export function useUnitLocationState(data: { companies: Company[], projects: Project[], buildings: Building[] }, form: UseFormReturn<any>) {
     const { companies, projects, buildings } = data;
     const [isLoadingFloors, setIsLoadingFloors] = useState(false);
     const [floors, setFloors] = useState<Floor[]>([]);
 
     const [selectedCompany, setSelectedCompany] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
-    const [selectedBuilding, setSelectedBuilding] = useState('');
+    const [selectedBuilding, setSelectedBuilding] = useState(form.getValues('buildingId') || '');
 
     useEffect(() => {
-        setSelectedProject('');
-        form.setValue('projectId', '');
-    }, [selectedCompany, form]);
+        if (selectedCompany) {
+            form.setValue('projectId', '');
+            setSelectedProject('');
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedCompany]);
 
     useEffect(() => {
-        setSelectedBuilding('');
-        form.setValue('buildingId', '');
-    }, [selectedProject, form]);
+        if (selectedProject) {
+            form.setValue('buildingId', '');
+            setSelectedBuilding('');
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedProject]);
 
     useEffect(() => {
         form.setValue('floorIds', []);
@@ -57,16 +45,23 @@ export function useUnitLocationState(data: DataStore, form: UseFormReturn<any>) 
                 return;
             }
             setIsLoadingFloors(true);
-            // In a real app, this would be a fetch call to an API
-            // e.g., const floorsData = await fetchFloorsForBuilding(selectedBuilding);
-            // For now, we simulate with static data if available or leave it empty.
-            // This part needs to be connected to the actual data source.
-            // For now, it will be empty as we don't have a direct way to query floors here.
-            setFloors([]);
-            setIsLoadingFloors(false);
+            try {
+                const floorsQuery = query(collection(db, 'floors'), where('buildingId', '==', selectedBuilding));
+                const snapshot = await getDocs(floorsQuery);
+                const floorsData = snapshot.docs
+                    .map(doc => ({ value: doc.id, label: doc.data().level as string }))
+                    .sort((a,b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
+                setFloors(floorsData);
+            } catch (e) {
+                console.error("Failed to fetch floors for building:", e);
+                setFloors([]);
+            } finally {
+                setIsLoadingFloors(false);
+            }
         };
         fetchFloors();
-    }, [selectedBuilding, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedBuilding]);
     
     const floorIds = form.watch('floorIds');
     useEffect(() => {
@@ -79,7 +74,6 @@ export function useUnitLocationState(data: DataStore, form: UseFormReturn<any>) 
     const filteredBuildings = useMemo(() => buildings.filter(b => b.projectId === selectedProject), [buildings, selectedProject]);
     
      const floorOptions = useMemo(() => {
-        // This is a placeholder. In a real scenario, you'd fetch floors based on selectedBuilding
         return floors.map(f => ({ value: f.value, label: f.label }));
     }, [floors]);
 
