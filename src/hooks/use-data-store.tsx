@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
@@ -14,9 +15,9 @@ export interface Company {
   website?: string;
   contactInfo: {
     email: string;
-    phone: string;
-    address: string;
-    afm: string;
+    phone?: string;
+    address?: string;
+    afm?: string;
   };
   createdAt: any;
 }
