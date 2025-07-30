@@ -44,6 +44,17 @@ export default function RootLayout({
        <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        {/* Preconnect to Algolia servers */}
+        <link
+          rel="preconnect"
+          href={`https://${process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID}-dsn.algolia.net`}
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preconnect"
+          href={`https://${process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID}-3.algolianet.com`}
+          crossOrigin="anonymous"
+        />
       </head>
       <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <ThemeProvider
