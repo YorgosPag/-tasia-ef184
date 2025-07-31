@@ -24,7 +24,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
 
 const ModeToggle = dynamic(
-  () => import("@/components/layout/mode-toggle").then((mod) => mod.ModeToggle),
+  () =>
+    import("@/components/layout/mode-toggle.tsx").then(
+      (mod) => mod.ModeToggle,
+    ),
   {
     loading: () => <Skeleton className="h-8 w-8 rounded-full" />,
     ssr: false,
