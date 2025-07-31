@@ -4,7 +4,7 @@ import type { ContactFormValues } from '@/lib/validation/contactSchema';
 
 export const ADDRESS_TYPES = ['Κύρια', 'Κατοικίας', 'Επαγγελματική', 'Έδρα', 'Υποκατάστημα', 'Αποθήκη', 'Εξοχικό', 'Άλλο'];
 
-export const addressFieldsMap: { formKey: keyof ContactFormValues['addresses'][0], label: string, algoliaKey: string }[] = [
+export const addressFieldsMap: { formKey: keyof ContactFormValues['addresses'][number], label: string, algoliaKey: string }[] = [
   { formKey: 'settlements', label: 'Οικισμός', algoliaKey: 'Οικισμοί' },
   { formKey: 'municipalLocalCommunities', label: 'Δημοτική/Τοπική Κοινότητα', algoliaKey: 'Δημοτικές/Τοπικές Κοινότητες' },
   { formKey: 'municipalUnities', label: 'Δημοτική Ενότητα', algoliaKey: 'Δημοτικές Ενότητες' },
@@ -40,7 +40,7 @@ export const handleAddressSelect = (
     }
 
     if (value) {
-      form.setValue(`addresses.${idx}.${formKey}` as const, value, { shouldDirty: true });
+      form.setValue(`addresses.${idx}.${formKey}`, value, { shouldDirty: true });
     }
   });
 };

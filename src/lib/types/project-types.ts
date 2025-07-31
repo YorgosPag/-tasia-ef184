@@ -1,4 +1,7 @@
+
 import type { Timestamp } from 'firebase/firestore';
+import { z } from 'zod';
+import { buildingSchema } from '@/components/projects/BuildingFormDialog';
 
 export interface Building {
     id: string;
@@ -91,3 +94,5 @@ export interface ProjectFormValues {
   photoUrl?: string;
   tags?: string;
 }
+
+export type BuildingFormValues = z.infer<typeof buildingSchema>;

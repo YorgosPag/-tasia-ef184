@@ -12,7 +12,7 @@ import { useProjects, useCompanies, useDataActions, Company, Project } from '@/h
 import { logActivity } from '@/lib/logger';
 import { exportToJson } from '@/lib/exporter';
 import { projectSchema } from '@/components/projects/ProjectDialogForm';
-import { formatDate } from '@/lib/project-helpers.tsx';
+import { formatDate } from '@/lib/project-helpers';
 import { useAuth } from './use-auth';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/lib/types/project-types';

@@ -87,7 +87,7 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε αριθμό..."/></SelectTrigger></FormControl>
                       <SelectContent>
-                          {[...Array(8).keys()].map(i => (
+                          {Array.from({length: 8}).map((_, i) => (
                               <SelectItem key={i} value={i.toString()}>{i === 0 ? 'Χωρίς υπνοδωμάτιο' : `${i} υπνοδωμάτιο(α)`}</SelectItem>
                           ))}
                       </SelectContent>

@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -21,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import React from 'react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -66,7 +66,7 @@ export function DataTable<TData, TValue>({
   });
 
   const NoResultsMessage = () => {
-    if (!initialDataLoaded && isLoading) return "Φόρτωση...";
+    if (!initialDataLoaded && isLoading) return <span>Φόρτωση...</span>;
 
     const totalPages = totalCount !== null ? Math.ceil(totalCount / pageSize) : 0;
     const activeFilterEntries = Object.entries(activeFilters).filter(([, value]) => value);
@@ -77,14 +77,14 @@ export function DataTable<TData, TValue>({
        if (canGoNext) {
            message += ' Παρακαλώ, πατήστε "Επόμενη" για να ελέγξετε τις υπόλοιπες σελίδες.'
        }
-       return message;
+       return <span>{message}</span>;
     }
 
     if (totalCount === 0) {
-        return "Δεν υπάρχουν εγγραφές σε αυτή τη λίστα."
+        return <span>Δεν υπάρχουν εγγραφές σε αυτή τη λίστα.</span>
     }
 
-    return 'Δεν βρέθηκαν αποτελέσματα.';
+    return <span>Δεν βρέθηκαν αποτελέσματα.</span>;
   };
 
   return (

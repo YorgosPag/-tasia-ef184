@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -18,6 +17,7 @@ import {
   serverTimestamp,
   arrayUnion,
   setDoc,
+  FieldValue
 } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -47,7 +47,7 @@ function useWorkStageData(projectId: string) {
         
         const unsubscribe = onSnapshot(workStagesQuery, async (workStagesSnapshot) => {
             const workStagesDataPromises = workStagesSnapshot.docs.map(async (doc) => {
-                const workStage = { id: doc.id, ...doc.data(), workSubstages: [] } as WorkStageWithSubstages;
+                const workStage: WorkStageWithSubstages = { id: doc.id, ...doc.data(), workSubstages: [] } as WorkStageWithSubstages;
                 const workSubstagesQuery = query(collection(db, 'projects', projectId, 'workStages', workStage.id, 'workSubstages'), orderBy('createdAt', 'asc'));
                 const workSubstagesSnapshot = await getDocs(workSubstagesQuery);
                 workStage.workSubstages = workSubstagesSnapshot.docs.map(subDoc => ({ id: subDoc.id, ...subDoc.data() } as WorkStage));
@@ -119,7 +119,7 @@ function useWorkStageForm(projectId: string) {
             actualCost: data.actualCost ? parseFloat(data.actualCost) : undefined,
         };
         
-        const finalData = Object.fromEntries(Object.entries(rawData).filter(([_, v]) => v !== undefined && v !== null && v !== ''));
+        const finalData: {[k: string]: any} = Object.fromEntries(Object.entries(rawData).filter(([_, v]) => v !== undefined && v !== null && v !== ''));
         
         if (finalData.startDate) finalData.startDate = Timestamp.fromDate(finalData.startDate as Date);
         if (finalData.endDate) finalData.endDate = Timestamp.fromDate(finalData.endDate as Date);
@@ -144,7 +144,7 @@ function useWorkStageForm(projectId: string) {
                 const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
                 const subRef = parentId ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', workStageId) : doc(db, 'projects', projectId, 'workStages', workStageId);
                 batch.update(topLevelRef, { ...finalData, assignedToId: finalData.assignedTo?.[0] || null });
-                batch.update(subRef, finalData);
+                batch.update(subRef, finalData as any);
                 toast({ title: 'Επιτυχία', description: 'Το Στάδιο Εργασίας ενημερώθηκε.' });
             } else {
                  const parentId = isSubstage ? (editingWorkStage as { parentId: string }).parentId : null;
@@ -265,7 +265,7 @@ function useWorkStageChecklist(projectId: string, workStages: WorkStageWithSubst
         try {
             const docRef = parentId ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id) : doc(db, 'projects', projectId, 'workStages', stage.id);
             const newChecklist = [...(stage.checklist || [])];
-            const updatedItem = { ...newChecklist[itemIndex], completed, completionDate: completed ? serverTimestamp() : undefined, completedBy: completed ? user.email : undefined };
+            const updatedItem: ChecklistItem = { ...newChecklist[itemIndex], completed, completionDate: completed ? Timestamp.now() : undefined, completedBy: completed ? user.email : undefined };
             newChecklist[itemIndex] = updatedItem;
             const batch = writeBatch(db);
             batch.update(docRef, { checklist: newChecklist });
@@ -335,7 +335,7 @@ function useWorkStageExtras(projectId: string, workStages: WorkStageWithSubstage
                 const photoRef = ref(storage, `work_stages_photos/${projectId}/${stage.id}/${file.name}`);
                 await uploadBytes(photoRef, file);
                 const url = await getDownloadURL(photoRef);
-                return { url, uploadedAt: Timestamp.now(), uploadedBy: user.email || user.uid };
+                return { url, uploadedAt: Timestamp.now(), uploadedBy: user.email || user.uid, name: file.name };
             });
             const newPhotos = await Promise.all(photoUploadPromises);
             const batch = writeBatch(db);

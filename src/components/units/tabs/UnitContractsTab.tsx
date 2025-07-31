@@ -86,8 +86,8 @@ const ContractStageForm = ({ control, name, title, contacts, onFileUpload }: { c
                 <FormField control={control} name={`${name}.contractNumber`} render={({ field }) => (<FormItem><FormLabel>Αριθμός Συμβολαίου</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={control} name={`${name}.contractDate`} render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Ημερ. Συμβολαίου</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant="outline" className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP') : <span>Επιλογή ημερομηνίας</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                 
-                <FormField control={control} name={`${name}.notary`} render={({ field }) => (<FormItem><FormLabel>Συμβολαιογράφος</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε επαφή..."/></SelectTrigger></FormControl><SelectContent>{contacts.filter(c => c.job?.role === 'Notary').map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                <FormField control={control} name={`${name}.lawyer`} render={({ field }) => (<FormItem><FormLabel>Δικηγόρος</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε επαφή..."/></SelectTrigger></FormControl><SelectContent>{contacts.filter(c => c.job?.role === 'Lawyer').map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                <FormField control={control} name={`${name}.notary`} render={({ field }) => (<FormItem><FormLabel>Συμβολαιογράφος</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε επαφή..."/></SelectTrigger></FormControl><SelectContent>{contacts.filter(c => c.job?.role === 'Notary').map(c => <SelectItem key={c.id} value={c.name || ''}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                <FormField control={control} name={`${name}.lawyer`} render={({ field }) => (<FormItem><FormLabel>Δικηγόρος</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε επαφή..."/></SelectTrigger></FormControl><SelectContent>{contacts.filter(c => c.job?.role === 'Lawyer').map(c => <SelectItem key={c.id} value={c.name || ''}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                 
                 <FormItem className="col-span-full">
                     <FormLabel>Αρχείο Συμβολαίου (PDF)</FormLabel>
@@ -103,7 +103,7 @@ const ContractStageForm = ({ control, name, title, contacts, onFileUpload }: { c
 };
 
 
-export function UnitContractsTab({ unit }: UnitContractsTabProps) {
+export default function UnitContractsTab({ unit }: UnitContractsTabProps) {
   const { toast } = useToast();
   const [contacts, setContacts] = useState<Contact[]>([]);
 

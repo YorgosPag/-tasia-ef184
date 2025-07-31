@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils"
 import {
   TooltipProvider,
 } from "@/components/ui/tooltip"
-import { SidebarContext } from "./sidebar-context"
-import { getCookie, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_COOKIE_NAME, SIDEBAR_KEYBOARD_SHORTCUT, SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON } from "./sidebar-utils"
+import { SidebarContext } from "@/components/ui/sidebar/sidebar-context"
+import { getCookie, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_COOKIE_NAME, SIDEBAR_KEYBOARD_SHORTCUT, SIDEBAR_WIDTH, SIDEBAR_WIDTH_ICON } from "@/components/ui/sidebar/sidebar-utils"
 
 
 export const SidebarProvider = React.forwardRef<

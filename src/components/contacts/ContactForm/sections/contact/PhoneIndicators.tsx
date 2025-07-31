@@ -6,7 +6,7 @@ import { Control, useController } from 'react-hook-form';
 import type { ContactFormValues } from '@/lib/validation/contactSchema';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PhoneIndicatorIcons, PHONE_INDICATORS } from '../../utils/phoneIndicators';
+import { PhoneIndicatorIcons, PHONE_INDICATORS, PhoneIndicatorType } from '../../utils/phoneIndicators';
 
 interface PhoneIndicatorsProps {
   control: Control<ContactFormValues>;
@@ -34,9 +34,10 @@ export function PhoneIndicators({ control, name }: PhoneIndicatorsProps) {
                         <Checkbox
                           checked={field.value?.includes(indicator)}
                           onCheckedChange={(checked) => {
+                            const currentValue = field.value || [];
                             return checked
-                              ? field.onChange([...(field.value || []), indicator])
-                              : field.onChange(field.value?.filter((v) => v !== indicator));
+                              ? field.onChange([...currentValue, indicator])
+                              : field.onChange(currentValue?.filter((v: PhoneIndicatorType) => v !== indicator));
                           }}
                         />
                       </FormControl>

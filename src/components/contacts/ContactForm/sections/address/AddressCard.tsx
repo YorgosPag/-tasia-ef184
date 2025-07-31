@@ -87,9 +87,9 @@ export function AddressCard({ form, index, onRemove }: AddressCardProps) {
                 )} />
                 {addressFieldsMap.map(f => (
                     <AddressAutocompleteInput
-                        key={f.formKey}
+                        key={String(f.formKey)}
                         form={form}
-                        name={`addresses.${index}.${f.formKey}`}
+                        name={`addresses.${index}.${String(f.formKey)}`}
                         label={f.label}
                         algoliaKey={f.algoliaKey}
                         onSelect={(hit: any) => handleAddressSelect(form, index, hit)}

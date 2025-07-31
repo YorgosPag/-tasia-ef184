@@ -104,9 +104,9 @@ export function WorkStageDetails({
                     <h4 className="font-semibold mb-2">Υποστάδια:</h4>
                     {stage.workSubstages.map(substage => (
                         <div key={substage.id} className="mb-4 p-2 rounded-md hover:bg-muted/30">
-                           <WorkStageItem stage={substage} isSubstage={true} />
+                           <WorkStageItem stage={{...substage, workSubstages: []}} isSubstage={true} />
                            <WorkStageDetails
-                                stage={substage}
+                                stage={{...substage, workSubstages: []}}
                                 companies={companies}
                                 onChecklistItemToggle={onChecklistItemToggle}
                                 onAddChecklistItem={onAddChecklistItem}

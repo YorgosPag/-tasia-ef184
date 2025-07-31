@@ -23,13 +23,14 @@ export function ContactDetailView({ contact }: { contact: Contact | null }) {
 
   const entityTypeTab = contact.entityType === 'Φυσικό Πρόσωπο' ? 'individual' : (contact.entityType === 'Νομικό Πρόσωπο' ? 'legal' : 'public');
   const editUrl = `/contacts/${contact.id}/edit/${entityTypeTab}`;
+  const photoUrl = contact.photoUrls?.[entityTypeTab] || undefined;
 
   return (
     <Card className="h-full sticky top-20">
       <CardHeader className="flex flex-row items-start justify-between">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={contact.photoUrl || undefined} alt={contact.name} />
+            <AvatarImage src={photoUrl} alt={contact.name} />
             <AvatarFallback>{contact.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>

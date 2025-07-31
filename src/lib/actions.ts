@@ -1,7 +1,7 @@
 
 'use server';
 
-import { clearTasiaData as clearTasia } from '@/shared/lib/clear';
+import { clearTasiaData as clearTasia } from './clear';
 import { db } from './firebase';
 import { doc, getDoc, collection, query, limit, getDocs } from 'firebase/firestore';
 import { logActivity } from './logger';

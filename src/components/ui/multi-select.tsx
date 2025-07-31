@@ -20,6 +20,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
+import { FormEventHandler } from 'react';
 
 const multiSelectVariants = cva(
   'm-1 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300',
@@ -42,7 +43,7 @@ const multiSelectVariants = cva(
 );
 
 interface MultiSelectProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'>,
     VariantProps<typeof multiSelectVariants> {
   options: {
     label: string;

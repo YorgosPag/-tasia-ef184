@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import type { Building } from '@/app/projects/[id]/page';
+import type { Building, BuildingFormValues } from '@/lib/types/project-types';
 
 
 // Schema for the building form
@@ -40,7 +40,7 @@ export const buildingSchema = z.object({
   identifier: z.string().min(1, 'Ο κωδικός κτιρίου είναι υποχρεωτικός.'),
 });
 
-export type BuildingFormValues = z.infer<typeof buildingSchema>;
+
 
 interface BuildingFormDialogProps {
     open: boolean;

@@ -16,7 +16,7 @@ import {
   getCountFromServer,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 
 // --- Interfaces & Constants ---
 export interface ComplexEntity {
@@ -130,9 +130,8 @@ export function useComplexEntities(listType: string, filters: Record<string, str
         }
         return result;
     },
-    keepPreviousData: true,
     staleTime: 5 * 60 * 1000,
-  });
+  } as UseQueryOptions<{ entities: ComplexEntity[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null }, Error>);
 
   useEffect(() => {
     // Reset pagination and data when listType or filters change

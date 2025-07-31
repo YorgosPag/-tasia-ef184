@@ -18,7 +18,7 @@ interface EditableListProps {
   list: CustomList;
   isOpen: boolean;
   onToggle: (id: string) => void;
-  fetchAllLists: () => void;
+  fetchAllLists: () => Promise<void>;
 }
 
 export function EditableList({ list, isOpen, onToggle, fetchAllLists }: EditableListProps) {

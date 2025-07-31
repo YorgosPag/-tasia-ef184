@@ -110,7 +110,7 @@ export function UnitDetailsPageView({
                   Διαχειριστείτε τις θέσεις στάθμευσης, αποθήκες κ.λπ. που συνδέονται με αυτό το ακίνητο.
                 </p>
                 <UnitsListTable
-                  units={attachments}
+                  units={attachments.map(a => ({...a, id: a.id!}))}
                   onEditUnit={handleEditAttachment}
                   onDeleteUnit={handleDeleteAttachment}
                 />

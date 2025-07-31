@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 export const SidebarMenuButton = React.forwardRef<
   HTMLAnchorElement,
-  React.ComponentProps<"a"> & {
+  React.ComponentProps<typeof Link> & {
     isActive?: boolean
     hasSubmenu?: boolean
     tooltip?: string

@@ -19,7 +19,6 @@ import { DocSummarySection } from '../sections/DocSummarySection';
 import { ActivitiesSection } from '../sections/ActivitiesSection';
 import { DecisionsSection } from '../sections/DecisionsSection';
 import { EstablishmentSection } from '../sections/EstablishmentSection';
-import { LegalRepresentativeSection } from '../sections/LegalRepresentativeSection';
 import { VersionsSection } from '../sections/VersionsSection';
 import { ExternalLinksSection } from '../sections/ExternalLinksSection';
 
@@ -41,7 +40,6 @@ export function GemhDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
         <TabsTrigger value="activities" className="flex-1 min-w-[160px] text-center">Δραστηριότητες (ΚΑΔ)</TabsTrigger>
         <TabsTrigger value="decisions" className="flex-1 min-w-[160px] text-center">Αποφάσεις Οργάνων</TabsTrigger>
         <TabsTrigger value="establishment" className="flex-1 min-w-[160px] text-center">Στοιχεία Σύστασης (ΥΜΣ)</TabsTrigger>
-        <TabsTrigger value="representatives" className="flex-1 min-w-[160px] text-center">Εκπρόσωποι από ΓΕΜΗ</TabsTrigger>
         <TabsTrigger value="versions" className="flex-1 min-w-[160px] text-center">Ιστορικό Εκδόσεων Εταιρείας</TabsTrigger>
         <TabsTrigger value="externalLinks" className="flex-1 min-w-[160px] text-center">Σύνδεσμοι Τρίτων Φορέων</TabsTrigger>
       </TabsList>
@@ -104,10 +102,6 @@ export function GemhDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
       
       <TabsContent value="versions" className="mt-4">
         <VersionsSection form={form} />
-      </TabsContent>
-
-      <TabsContent value="representatives" className="mt-4">
-        <LegalRepresentativeSection form={form} onFileSelect={() => {}} />
       </TabsContent>
 
       <TabsContent value="externalLinks" className="mt-4">

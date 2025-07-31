@@ -89,7 +89,7 @@ export function WorkStagesSection({ project }: WorkStagesSectionProps) {
                         onAddWorkSubstage={handleAddSubstage}
                         onEditWorkStage={handleEdit}
                         onDeleteWorkStage={handleDeleteWorkStage}
-                        onChecklistItemToggle={onChecklistItemToggle}
+                        onChecklistItemToggle={handleChecklistItemToggle}
                         onAddChecklistItem={handleAddChecklistItem}
                         onInspectionNotesChange={handleInspectionNotesChange}
                         onPhotoUpload={handlePhotoUpload}

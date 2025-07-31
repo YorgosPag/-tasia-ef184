@@ -25,7 +25,7 @@ export function AddressSection({ form }: AddressSectionProps) {
     return (
         <div className="space-y-4 p-1">
           <div className="flex justify-end">
-            <Button type="button" variant="ghost" size="sm" onClick={() => append({ type: 'Κύρια', country: 'Ελλάδα', fromGEMI: false })}>
+            <Button type="button" variant="ghost" size="sm" onClick={() => append({ type: 'Κύρια', country: 'Ελλάδα', fromGEMI: false, isActive: true })}>
               <PlusCircle className="mr-2 h-4 w-4"/>Προσθήκη Διεύθυνσης
             </Button>
           </div>

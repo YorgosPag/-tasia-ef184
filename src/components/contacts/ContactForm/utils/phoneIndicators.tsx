@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
@@ -12,4 +13,5 @@ export const PhoneIndicatorIcons: { [key: string]: React.FC<React.SVGProps<SVGSV
     ),
 };
 
-export const PHONE_INDICATORS = ['Viber', 'WhatsApp', 'Telegram'];
+export type PhoneIndicatorType = 'Viber' | 'WhatsApp' | 'Telegram';
+export const PHONE_INDICATORS: PhoneIndicatorType[] = ['Viber', 'WhatsApp', 'Telegram'];

@@ -7,12 +7,13 @@ import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/for
 import { Input } from '@/components/ui/input';
 import { useWatchedFields } from '../hooks/useWatchedFields';
 import type { ContactFormProps } from '../types';
+import { ContactFormValues } from '@/lib/validation/contactSchema';
 
 export function HeadquartersSection({ form }: Pick<ContactFormProps, 'form'>) {
   const { addresses } = useWatchedFields(form);
   const { fields } = useFieldArray({ control: form.control, name: 'addresses' });
 
-  const gemhAddressIndex = addresses.findIndex(addr => addr.fromGEMI);
+  const gemhAddressIndex = addresses.findIndex((addr: any) => addr.fromGEMI);
 
   if (gemhAddressIndex === -1) {
     return (
