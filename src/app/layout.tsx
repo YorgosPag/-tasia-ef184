@@ -11,7 +11,6 @@ import { QueryProvider } from '@/hooks/use-query-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ProtectedRoute } from '@/components/auth/protected-route';
-import { type Viewport } from 'next';
 
 import '@/app/globals.css';
 
@@ -20,10 +19,6 @@ const fontSans = Roboto({
   variable: '--font-sans',
   weight: ['400', '500', '700']
 });
-
-export const viewport: Viewport = {
-  themeColor: '#F5F5DC',
-}
 
 export default function RootLayout({
   children,
