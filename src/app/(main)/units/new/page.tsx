@@ -40,7 +40,7 @@ import { Loader2, ArrowLeft, Save, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
-import { generateNextUnitIdentifier } from "@/lib/identifier-generator";
+import { generateNextUnitIdentifierAction } from "@/lib/actions";
 import {
   addDoc,
   collection,
@@ -111,7 +111,7 @@ export default function NewUnitPage() {
 
     setIsGeneratingId(true);
     try {
-      const nextId = await generateNextUnitIdentifier(
+      const nextId = await generateNextUnitIdentifierAction(
         floorIds[0],
         unitType,
         floorIds.length,

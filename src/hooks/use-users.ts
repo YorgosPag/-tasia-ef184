@@ -10,7 +10,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "./use-auth";
 import { logActivity } from "@/lib/logger";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 

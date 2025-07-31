@@ -160,7 +160,7 @@ export function AlgoliaSearchBox({
   return (
     <div className="w-full">
       <InstantSearch searchClient={searchClient} indexName={indexName}>
-        <Configure filters={`type:'${listType}'`} />
+        <Configure searchParameters={{ filters: `type:'${listType}'` }} />
         <div className="grid grid-cols-1 gap-4">
           <SearchBox />
           <Hits onHitsChange={onHitsChange} />
