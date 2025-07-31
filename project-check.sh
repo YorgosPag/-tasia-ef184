@@ -108,14 +108,14 @@ fi
 echo "✅ .gitignore and sensitive files check passed." | tee -a project-check.log
 
 
-echo "🚦 9 Linting code (npm run lint)..." | tee -a project-check.log
+echo "🚦 7 Linting code (npm run lint)..." | tee -a project-check.log
 if ! npm run lint; then
   echo "❌ Linting failed. Διόρθωσε τα lint errors πριν συνεχίσεις!" | tee -a project-check.log
   exit 1
 fi
 echo "✅ Linting passed." | tee -a project-check.log
 
-echo "🚦 10 Checking code formatting (prettier --check)..." | tee -a project-check.log
+echo "🚦 8 Checking code formatting (prettier --check)..." | tee -a project-check.log
 if [ -f package.json ] && grep -q "\"format\":" package.json; then
   if ! npm run format:check; then
     echo "⚠️  Formatting issues found. Auto-fixing..." | tee -a project-check.log
@@ -132,14 +132,14 @@ else
   echo "✅ Formatting fixed automatically." | tee -a project-check.log
 fi
 
-echo "🚦 11 Type checking (tsc --noEmit)..." | tee -a project-check.log
+echo "🚦 9 Type checking (tsc --noEmit)..." | tee -a project-check.log
 if ! npx tsc --noEmit; then
   echo "❌ TypeScript type check failed. Διόρθωσε τα type errors πριν συνεχίσεις!" | tee -a project-check.log
   exit 1
 fi
 echo "✅ TypeScript types are valid." | tee -a project-check.log
 
-echo "🚦 12 Checking Firebase Emulator Suite..." | tee -a project-check.log
+echo "🚦 10 Checking Firebase Emulator Suite..." | tee -a project-check.log
 if firebase emulators:start --only firestore,functions --inspect-functions &>/tmp/emulator.log & then
   EMULATOR_PID=$!
   sleep 15
@@ -167,7 +167,7 @@ else
   exit 1
 fi
 
-echo "🚦 13 Validating Firebase Security Rules..." | tee -a project-check.log
+echo "🚦 11 Validating Firebase Security Rules..." | tee -a project-check.log
 if [ -f firestore.rules ]; then
   if ! firebase emulators:exec --only firestore 'echo "Firestore emulator is running"'; then
     echo "❌ Firestore rules validation failed!" | tee -a project-check.log
@@ -178,7 +178,7 @@ else
   echo "ℹ️  No firestore.rules file found, skipping validation." | tee -a project-check.log
 fi
 
-echo "🚦 14 Checking Firestore indexes..." | tee -a project-check.log
+echo "🚦 12 Checking Firestore indexes..." | tee -a project-check.log
 if [ -f firestore.indexes.json ]; then
   echo "ℹ️  Found firestore.indexes.json - make sure indexes are deployed in production." | tee -a project-check.log
   echo "✅ Firestore indexes file found." | tee -a project-check.log
@@ -186,7 +186,7 @@ else
   echo "ℹ️  No firestore.indexes.json found." | tee -a project-check.log
 fi
 
-echo "🚦 15 Checking Firebase Functions..." | tee -a project-check.log
+echo "🚦 13 Checking Firebase Functions..." | tee -a project-check.log
 if [ -d "functions" ]; then
   cd functions
   if ! npm run build 2>/dev/null; then
@@ -200,7 +200,7 @@ else
   echo "ℹ️  No functions directory found, skipping." | tee -a project-check.log
 fi
 
-echo "🚦 16 Testing Firestore connection..." | tee -a project-check.log
+echo "🚦 14 Testing Firestore connection..." | tee -a project-check.log
 # Start emulator for testing
 firebase emulators:start --only firestore --project demo-test &>/tmp/firestore-test.log &
 FIRESTORE_TEST_PID=$!
@@ -255,7 +255,7 @@ kill $FIRESTORE_TEST_PID || true
 sleep 3
 echo "✅ Firestore connection tests completed." | tee -a project-check.log
 
-echo "🚦 17 Running development server (npm run dev)..." | tee -a project-check.log
+echo "🚦 15 Running development server (npm run dev)..." | tee -a project-check.log
 # Find a free port for the development server
 START_PORT=9003
 END_PORT=9010
@@ -286,7 +286,7 @@ else
   kill $DEV_PID || true
   exit 1
 fi
-echo "🚦 3.1 Running E2E tests (npm run e2e)..." | tee -a project-check.log
+echo "🚦 16 Running E2E tests (npm run e2e)..." | tee -a project-check.log
 if [ -f package.json ] && grep -q "\"e2e\":" package.json; then
   if ! npm run e2e; then
     echo "❌ E2E tests failed. Διόρθωσε τα σφάλματα!" | tee -a project-check.log
@@ -298,7 +298,7 @@ else
   echo "ℹ️  Δεν βρέθηκαν E2E tests, προχωράμε." | tee -a project-check.log
 fi
 
-echo "🚦 18 Testing critical API endpoints..." | tee -a project-check.log
+echo "🚦 17 Testing critical API endpoints..." | tee -a project-check.log
 CRITICAL_ENDPOINTS=("/api/health" "/api/auth/status")
 for endpoint in "${CRITICAL_ENDPOINTS[@]}"; do
   if timeout 10 curl --silent --fail "http://localhost:$PORT$endpoint" >/dev/null; then
@@ -308,7 +308,7 @@ for endpoint in "${CRITICAL_ENDPOINTS[@]}"; do
   fi
 done
 
-echo "🚦 19 Manual testing required..." | tee -a project-check.log
+echo "🚦 18 Manual testing required..." | tee -a project-check.log
 echo "ℹ️  Ελεγξε MANUAL στον browser σου αν φορτώνει σωστά στο http://localhost:$PORT" | tee -a project-check.log
 echo "ℹ️  Άνοιξε τα Developer Tools και δες αν υπάρχουν errors στο console" | tee -a project-check.log
 echo "ℹ️  Κόκκινα errors = πρόβλημα, κίτρινα warnings = προσοχή" | tee -a project-check.log
@@ -318,14 +318,14 @@ read -p "↩️ "
 kill $DEV_PID || true
 sleep 2
 
-echo "🚦 20 Building production build (npm run build)..." | tee -a project-check.log
+echo "🚦 19 Building production build (npm run build)..." | tee -a project-check.log
 if ! npm run build; then
   echo "❌ Production build failed. Διόρθωσε τα build errors!" | tee -a project-check.log
   exit 1
 fi
 echo "✅ Build passed." | tee -a project-check.log
 
-echo "🚦 21 Checking production build size..." | tee -a project-check.log
+echo "🚦 20 Checking production build size..." | tee -a project-check.log
 MAX_SIZE=$((2 * 1024 * 1024)) # 2MB in bytes
 BUILD_SIZE=$(find dist -type f -exec du -b {} + 2>/dev/null | awk '{sum += $1} END {print sum}' || echo "0")
 if [ "$BUILD_SIZE" -gt "$MAX_SIZE" ]; then
@@ -334,17 +334,17 @@ else
   echo "✅ Build size is within limits ($BUILD_SIZE bytes)." | tee -a project-check.log
 fi
 
-echo "🚦 22 Analyzing bundle for potential issues..." | tee -a project-check.log
+echo "🚦 21 Analyzing bundle for potential issues..." | tee -a project-check.log
 if command -v npx >/dev/null 2>&1 && [ -d "dist/static/js" ]; then
   echo "ℹ️  Bundle analysis available - consider running bundle analyzer manually if needed." | tee -a project-check.log
 else
   echo "ℹ️  Bundle analysis skipped." | tee -a project-check.log
 fi
 
-echo "🚦 23 Starting production preview (npm start)..." | tee -a project-check.log
+echo "🚦 22 Starting production preview (npm start)..." | tee -a project-check.log
 # Find a free port for the production preview
-START_PORT=9003
-END_PORT=9010
+START_PORT=9010
+END_PORT=9020
 PORT=$(find_free_port $START_PORT $END_PORT)
 if [ -z "$PORT" ]; then
   echo "❌ Δεν βρέθηκε ελεύθερο port μεταξύ $START_PORT-$END_PORT!" | tee -a project-check.log
@@ -360,7 +360,7 @@ if timeout 30 curl --silent --fail http://localhost:$PORT >/dev/null; then
   echo "✅ Production server responds!" | tee -a project-check.log
 
   # Έλεγχος για Firestore errors στο production build
-  echo "🚦 24 Checking Firestore connection in production mode..." | tee -a project-check.log
+  echo "🚦 23 Checking Firestore connection in production mode..." | tee -a project-check.log
   sleep 5
 
   # Test αν υπάρχουν console errors σχετικά με Firebase/Firestore
@@ -379,7 +379,7 @@ read -p "↩️ "
 kill $PREVIEW_PID || true
 sleep 2
 
-echo "🚦 25 Running Firebase deploy dry-run..." | tee -a project-check.log
+echo "🚦 24 Running Firebase deploy dry-run..." | tee -a project-check.log
 if ! firebase deploy --dry-run; then
   echo "❌ Firebase deploy dry-run failed. Διόρθωσε τα σφάλματα!" | tee -a project-check.log
   exit 1
@@ -387,7 +387,7 @@ fi
 echo "✅ Firebase deploy dry-run passed." | tee -a project-check.log
 
 if [ -f package.json ] && grep -q "\"test\":" package.json; then
-  echo "🚦 26 Running tests (npm test)..." | tee -a project-check.log
+  echo "🚦 25 Running tests (npm test)..." | tee -a project-check.log
   if ! npm test; then
     echo "❌ Tests failed. Κάτι δεν πάει καλά!" | tee -a project-check.log
     exit 1
@@ -402,14 +402,14 @@ echo "Τελείωσε: $(date)" | tee -a project-check.log
 
 ## --- ΤΕΛΙΚΟ BLOCK ΑΥΤΟΜΑΤΟΠΟΙΗΣΗΣ ---
 
-echo "🚦 27 [AUTO] Τελικό production build (npm run build)..." | tee -a project-check.log
+echo "🚦 26 [AUTO] Τελικό production build (npm run build)..." | tee -a project-check.log
 if ! npm run build; then
   echo "❌ Production build failed. Διόρθωσε τα build errors και ξανατρέξε το script!" | tee -a project-check.log
   exit 1
 fi
 echo "✅ Build ΟΚ." | tee -a project-check.log
 
-echo "🚦 28 [AUTO] Προεπισκόπηση (npm start)..." | tee -a project-check.log
+echo "🚦 27 [AUTO] Προεπισκόπηση (npm start)..." | tee -a project-check.log
 # Find a free port for the final production preview
 START_PORT=9003
 END_PORT=9010
@@ -435,14 +435,14 @@ fi
 kill $FINAL_PREVIEW_PID || true
 sleep 2
 
-echo "🚦 29 [AUTO] Τελικό deploy στο Firebase..." | tee -a project-check.log
+echo "🚦 28 [AUTO] Τελικό deploy στο Firebase..." | tee -a project-check.log
 if ! firebase deploy; then
   echo "❌ Deploy failed! Διόρθωσε και ξαναπροσπάθησε." | tee -a project-check.log
   exit 1
 fi
 echo "✅ Deploy ΟΚ." | tee -a project-check.log
 
-echo "🚦 30 [MANUAL STEP] Πήγαινε τώρα στο Firebase Studio και πάτα το ΜΠΛΕ κουμπί **PUBLISH** για να βγουν live οι αλλαγές σου!" | tee -a project-check.log
+echo "🚦 29 [MANUAL STEP] Πήγαινε τώρα στο Firebase Studio και πάτα το ΜΠΛΕ κουμπί **PUBLISH** για να βγουν live οι αλλαγές σου!" | tee -a project-check.log
 echo "👉 https://console.firebase.google.com/project/ΤΟ_ΟΝΟΜΑ_ΤΟΥ_PROJECT_SOU/studio (αντικατέστησε το με το δικό σου link αν θες)" | tee -a project-check.log
 
 echo "" | tee -a project-check.log

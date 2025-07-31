@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "chmod +x find-port.sh && next dev --port $(./find-port.sh)",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,11 +13,11 @@
     "analyze": "ANALYZE=true next build"
   },
   "engines": {
-    "node": "20"
+    "node": ">=18.0.0"
   },
   "dependencies": {
-    "@genkit-ai/firebase": "1.1.0",
-    "@genkit-ai/googleai": "1.1.0",
+    "@genkit-ai/firebase": "^1.1.0",
+    "@genkit-ai/googleai": "^1.1.0",
     "@hookform/resolvers": "^3.3.4",
     "@opentelemetry/exporter-jaeger": "^2.0.1",
     "@opentelemetry/winston-transport": "^0.14.0",
@@ -54,13 +54,13 @@
     "embla-carousel-react": "^8.1.1",
     "firebase": "^12.0.0",
     "firebase-admin": "^12.1.0",
-    "genkit": "1.1.0",
+    "genkit": "^1.1.0",
     "lucide-react": "^0.395.0",
     "next": "14.2.4",
     "next-themes": "^0.3.0",
-    "react": "18.2.0",
+    "react": "18.3.1",
     "react-day-picker": "^8.10.1",
-    "react-dom": "18.2.0",
+    "react-dom": "18.3.1",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.51.5",
     "react-instantsearch-hooks-web": "^6.47.3",
