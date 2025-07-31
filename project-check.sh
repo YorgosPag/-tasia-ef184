@@ -19,7 +19,7 @@ set -e
 # Cleanup function
 cleanup() {
   echo "🧹 Cleaning up processes..." | tee -a project-check.log
-  kill $DEV_PID $PREVIEW_PID $EMULATOR_PID 2>/dev/null || true
+  kill $DEV_PID $PREVIEW_PID $EMULATOR_PID $FIRESTORE_TEST_PID 2>/dev/null || true
 }
 trap cleanup EXIT
 
@@ -197,54 +197,60 @@ else
 fi
 
 echo "🚦 2.5 Testing Firestore connection..." | tee -a project-check.log
-# Ξεκινάμε το emulator για testing
+# Start emulator for testing
 firebase emulators:start --only firestore --project demo-test &>/tmp/firestore-test.log &
 FIRESTORE_TEST_PID=$!
-sleep 10
 
-# Έλεγχος σύνδεσης στο Firestore
-if timeout 30 curl --silent --fail http://localhost:8080 >/dev/null; then
-  echo "✅ Firestore emulator started for connection testing." | tee -a project-check.log
+# Wait for emulator to be ready with a reliable retry loop
+echo "⏳ Waiting for Firestore emulator to start..." | tee -a project-check.log
+timeout=30
+while ! curl --silent --fail http://127.0.0.1:8080 >/dev/null && [ $timeout -gt 0 ]; do
+  sleep 1
+  timeout=$((timeout - 1))
+done
 
-  # Test basic Firestore operations με το Firebase Admin SDK (αν υπάρχει)
-  if [ -f "firebase-admin-test.js" ]; then
-    echo "ℹ️  Running Firestore connection test..." | tee -a project-check.log
-    node firebase-admin-test.js && echo "✅ Firestore operations test passed." | tee -a project-check.log
-  else
-    echo "ℹ️  No Firestore connection test file found. Consider adding firebase-admin-test.js" | tee -a project-check.log
-  fi
-
-  # Έλεγχος Firebase config στην εφαρμογή
-  if grep -r "initializeApp\|getFirestore" src/ >/dev/null 2>&1; then
-    echo "✅ Firebase/Firestore initialization found in source code." | tee -a project-check.log
-  else
-    echo "⚠️  No Firebase/Firestore initialization found in src/. Make sure Firebase is properly configured." | tee -a project-check.log
-  fi
-
-  # Έλεγχος για Firebase environment variables
-  ENV_VARS_FOUND=0
-  for env_file in ***REMOVED*** ***REMOVED***.local ***REMOVED***.development ***REMOVED***.production; do
-    if [ -f "$env_file" ]; then
-      if grep -q "FIREBASE\|NEXT_PUBLIC_FIREBASE" "$env_file"; then
-        echo "✅ Firebase config found in $env_file" | tee -a project-check.log
-        ENV_VARS_FOUND=1
-      fi
-    fi
-  done
-
-  if [ $ENV_VARS_FOUND -eq 0 ]; then
-    echo "⚠️  No Firebase environment variables found. Make sure Firebase config is set." | tee -a project-check.log
-  fi
-
-else
+if [ $timeout -eq 0 ]; then
   echo "❌ Could not start Firestore emulator for testing!" | tee -a project-check.log
   kill $FIRESTORE_TEST_PID || true
   exit 1
 fi
 
+echo "✅ Firestore emulator started for connection testing." | tee -a project-check.log
+
+# Test basic Firestore operations with Firebase Admin SDK (if exists)
+if [ -f "firebase-admin-test.js" ]; then
+  echo "ℹ️  Running Firestore connection test..." | tee -a project-check.log
+  node firebase-admin-test.js && echo "✅ Firestore operations test passed." | tee -a project-check.log
+else
+  echo "ℹ️  No Firestore connection test file found. Consider adding firebase-admin-test.js" | tee -a project-check.log
+fi
+
+# Check for Firebase config in the app
+if grep -r "initializeApp\|getFirestore" src/ >/dev/null 2>&1; then
+  echo "✅ Firebase/Firestore initialization found in source code." | tee -a project-check.log
+else
+  echo "⚠️  No Firebase/Firestore initialization found in src/. Make sure Firebase is properly configured." | tee -a project-check.log
+fi
+
+# Check for Firebase environment variables
+ENV_VARS_FOUND=0
+for env_file in ***REMOVED*** ***REMOVED***.local ***REMOVED***.development ***REMOVED***.production; do
+  if [ -f "$env_file" ]; then
+    if grep -q "FIREBASE\|NEXT_PUBLIC_FIREBASE" "$env_file"; then
+      echo "✅ Firebase config found in $env_file" | tee -a project-check.log
+      ENV_VARS_FOUND=1
+    fi
+  fi
+done
+
+if [ $ENV_VARS_FOUND -eq 0 ]; then
+  echo "⚠️  No Firebase environment variables found. Make sure Firebase config is set." | tee -a project-check.log
+fi
+
 kill $FIRESTORE_TEST_PID || true
 sleep 3
 echo "✅ Firestore connection tests completed." | tee -a project-check.log
+
 
 echo "🚦 3. Running development server (npm run dev)..." | tee -a project-check.log
 npm run dev &
