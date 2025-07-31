@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, UploadCloud } from 'lucide-react';
@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { getDocs, collection, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AlgoliaSearchBox } from './AlgoliaSearchBox';
+import { useComplexEntities } from '@/hooks/useComplexEntities';
 
 async function fetchListTypes(): Promise<string[]> {
   const snapshot = await getDocs(query(collection(db, 'tsia-list-types'), orderBy('name')));
@@ -27,16 +28,16 @@ async function fetchListTypes(): Promise<string[]> {
 
 export function ComplexEntitiesTab() {
   const { toast } = useToast();
-  const [listTypes, setListTypes] = useState<string[]>([]);
-  const [isLoadingListTypes, setIsLoadingListTypes] = useState(true);
-  const [selectedListType, setSelectedListType] = useState<string>('');
+  const [listTypes, setListTypes] = React.useState<string[]>([]);
+  const [isLoadingListTypes, setIsLoadingListTypes] = React.useState(true);
+  const [selectedListType, setSelectedListType] = React.useState<string>('');
   
-  const [isImporting, setIsImporting] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [newListName, setNewListName] = useState('');
-  const [algoliaHits, setAlgoliaHits] = useState<any[]>([]);
+  const [isImporting, setIsImporting] = React.useState(false);
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
+  const [newListName, setNewListName] = React.useState('');
+  const [algoliaHits, setAlgoliaHits] = React.useState<any[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     async function getListTypes() {
         setIsLoadingListTypes(true);
         const types = await fetchListTypes();
@@ -46,7 +47,7 @@ export function ComplexEntitiesTab() {
     getListTypes();
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isLoadingListTypes && listTypes.length > 0 && !selectedListType) {
       const preferredList = 'Διοικητική Διαίρεση Ελλάδας';
       if (listTypes.includes(preferredList)) {
