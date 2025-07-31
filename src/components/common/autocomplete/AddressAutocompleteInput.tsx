@@ -43,7 +43,7 @@ export function AddressAutocompleteInput({
 
   return (
     <InstantSearch searchClient={searchClient} indexName={indexName}>
-      <Configure hitsPerPage={10} />
+      <Configure />
       <Autocomplete
         form={form}
         name={name}

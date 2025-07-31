@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AppSidebar } from "./sidebar";
+import { AppSidebar } from "./Sidebar";
 import { AppHeader } from "./Header";
 import { useCurrentDomain } from "@/hooks/useCurrentDomain";
 import { cn } from "@/lib/utils";
