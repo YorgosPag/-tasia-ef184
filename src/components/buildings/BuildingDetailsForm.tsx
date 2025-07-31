@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import type { Building, BuildingFormValues } from '@/app/buildings/[id]/page';
+import type { Building, BuildingFormValues } from '@/lib/types/project-types';
 import { format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 

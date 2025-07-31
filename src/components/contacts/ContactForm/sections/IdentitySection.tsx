@@ -3,15 +3,20 @@
 
 import React from 'react';
 import { useWatch } from 'react-hook-form';
-import { type ContactFormProps } from '../types';
 import { AfmField } from './identity/AfmField';
 import { DoyField } from './identity/DoyField';
 import { IdentityTypeField } from './identity/IdentityTypeField';
 import { IdentityNumberField } from './identity/IdentityNumberField';
 import { IdentityIssueDateField } from './identity/IdentityIssueDateField';
 import { IssuingAuthorityField } from './identity/IssuingAuthorityField';
+import { UseFormReturn } from 'react-hook-form';
+import { ContactFormValues } from '@/lib/validation/contactSchema';
 
-export function IdentitySection({ form }: Pick<ContactFormProps, 'form'>) {
+interface IdentitySectionProps {
+    form: UseFormReturn<ContactFormValues>
+}
+
+export function IdentitySection({ form }: IdentitySectionProps) {
     const entityType = useWatch({ control: form.control, name: 'entityType' });
 
     return (

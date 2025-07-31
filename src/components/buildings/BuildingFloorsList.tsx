@@ -32,7 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { logActivity } from '@/lib/logger';
 import { useAuth } from '@/hooks/use-auth';
-import type { Building } from '@/app/buildings/[id]/page';
+import type { Building } from '@/lib/types/project-types';
 import { NewFloorDialog, floorSchema, type FloorFormValues } from './NewFloorDialog';
 
 interface Floor {

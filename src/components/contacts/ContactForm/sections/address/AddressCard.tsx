@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -9,9 +10,11 @@ import { AddressAutocompleteInput } from '@/components/common/autocomplete/Addre
 import { getFullAddress, handleAddressSelect, addressFieldsMap } from '../../utils/addressHelpers';
 import { AddressTypeSelect } from './AddressTypeSelect';
 import { MapPreviewButton } from './MapPreviewButton';
-import type { ContactFormProps } from '../../types';
+import type { ContactFormValues } from '@/lib/validation/contactSchema';
+import { UseFormReturn } from 'react-hook-form';
 
-interface AddressCardProps extends Pick<ContactFormProps, 'form'> {
+interface AddressCardProps {
+    form: UseFormReturn<ContactFormValues>;
     index: number;
     onRemove: () => void;
 }

@@ -6,10 +6,10 @@ import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { UserCircle } from 'lucide-react';
-import { type ContactFormProps } from '../types';
+import type { ContactFormProps } from '../types';
 import { Card, CardContent } from '@/components/ui/card';
 
-export function LegalRepresentativeSection({ form }: ContactFormProps) {
+export function LegalRepresentativeSection({ form }: Pick<ContactFormProps, 'form'>) {
     return (
         <AccordionItem value="representative">
             <AccordionTrigger>

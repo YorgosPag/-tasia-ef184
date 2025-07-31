@@ -107,7 +107,7 @@ export function GemhDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
       </TabsContent>
 
       <TabsContent value="representatives" className="mt-4">
-        <LegalRepresentativeSection form={form} />
+        <LegalRepresentativeSection form={form} onFileSelect={() => {}} />
       </TabsContent>
 
       <TabsContent value="externalLinks" className="mt-4">

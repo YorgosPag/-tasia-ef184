@@ -2,14 +2,18 @@
 'use client';
 
 import React from 'react';
-import { useFieldArray } from 'react-hook-form';
+import { useFieldArray, UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { type ContactFormProps } from '../types';
 import { SocialFieldSet } from './socials/SocialFieldSet';
+import { ContactFormValues } from '@/lib/validation/contactSchema';
+
+interface SocialsSectionProps {
+    form: UseFormReturn<ContactFormValues>
+}
 
 
-export function SocialsSection({ form }: ContactFormProps) {
+export function SocialsSection({ form }: SocialsSectionProps) {
     const { fields: socialFields, append: appendSocial, remove: removeSocial } = useFieldArray({ control: form.control, name: "socials" });
 
     return (

@@ -2,13 +2,17 @@
 'use client';
 
 import React from 'react';
-import { useFieldArray } from 'react-hook-form';
+import { useFieldArray, UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { type ContactFormProps } from '../types';
 import { AddressCard } from './address/AddressCard';
+import { ContactFormValues } from '@/lib/validation/contactSchema';
 
-export function AddressSection({ form }: ContactFormProps) {
+interface AddressSectionProps {
+    form: UseFormReturn<ContactFormValues>;
+}
+
+export function AddressSection({ form }: AddressSectionProps) {
     const { fields, append, remove } = useFieldArray({
       control: form.control,
       name: 'addresses',

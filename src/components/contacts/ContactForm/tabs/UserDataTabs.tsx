@@ -9,9 +9,14 @@ import { ContactSection } from '../sections/ContactSection';
 import { SocialsSection } from '../sections/SocialsSection';
 import { AddressSection } from '../sections/AddressSection';
 import { NotesSection } from '../sections/NotesSection';
-import type { ContactFormProps } from '../types';
+import { UseFormReturn } from 'react-hook-form';
+import { ContactFormValues } from '@/lib/validation/contactSchema';
 
-export function UserDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
+interface UserDataTabsProps {
+    form: UseFormReturn<ContactFormValues>
+}
+
+export function UserDataTabs({ form }: UserDataTabsProps) {
   return (
     <Tabs defaultValue="contact" className="w-full">
       <TabsList className="flex flex-wrap h-auto justify-start w-full gap-2">
