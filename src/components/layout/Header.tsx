@@ -21,18 +21,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { Breadcrumbs } from "./breadcrumbs";
 import { useBreadcrumbs } from "@/hooks/use-breadcrumbs";
 import { Skeleton } from "@/components/ui/skeleton";
-import dynamic from "next/dynamic";
-
-const ModeToggle = dynamic(
-  () =>
-    import("@/components/layout/mode-toggle.tsx").then(
-      (mod) => mod.ModeToggle,
-    ),
-  {
-    loading: () => <Skeleton className="h-8 w-8 rounded-full" />,
-    ssr: false,
-  },
-);
 
 export function AppHeader() {
   const { isMobile } = useSidebar();
@@ -68,7 +56,6 @@ export function AppHeader() {
         {showBreadcrumbs && <Breadcrumbs items={breadcrumbs} />}
       </div>
       <div className="flex items-center gap-4">
-        <ModeToggle />
         {isAuthLoading ? (
           <Skeleton className="h-8 w-8 rounded-full" />
         ) : user ? (
