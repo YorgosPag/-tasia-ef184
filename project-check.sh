@@ -365,3 +365,43 @@ fi
 
 echo "🎉 ΟΛΑ ΚΑΛΑ! Τώρα μπορείς να κάνεις deploy με ασφάλεια!" | tee -a project-check.log
 echo "Τελείωσε: $(date)" | tee -a project-check.log
+## --- ΤΕΛΙΚΟ BLOCK ΑΥΤΟΜΑΤΟΠΟΙΗΣΗΣ ---
+
+echo "🚦 7. [AUTO] Τελικό production build (npm run build)..."
+if ! npm run build; then
+  echo "❌ Production build failed. Διόρθωσε τα build errors και ξανατρέξε το script!" | tee -a project-check.log
+  exit 1
+fi
+echo "✅ Build ΟΚ." | tee -a project-check.log
+
+echo "🚦 8. [AUTO] Προεπισκόπηση (npm start)..."
+npm start &
+FINAL_PREVIEW_PID=$!
+sleep 10
+
+echo "🔍 Έλεγχος αν το production server ανταποκρίνεται (http://localhost:9003)..."
+if timeout 30 curl --silent --fail http://localhost:9003 >/dev/null; then
+  echo "✅ Production preview ΟΚ!" | tee -a project-check.log
+else
+  echo "❌ Production server ΔΕΝ ανταποκρίνεται! Κάτι πήγε λάθος." | tee -a project-check.log
+  kill $FINAL_PREVIEW_PID || true
+  exit 1
+fi
+
+kill $FINAL_PREVIEW_PID || true
+sleep 2
+
+echo "🚦 9. [AUTO] Τελικό deploy στο Firebase..."
+if ! firebase deploy; then
+  echo "❌ Deploy failed! Διόρθωσε και ξαναπροσπάθησε." | tee -a project-check.log
+  exit 1
+fi
+echo "✅ Deploy ΟΚ." | tee -a project-check.log
+
+echo "🚦 10. [MANUAL STEP] Πήγαινε τώρα στο Firebase Studio και πάτα το ΜΠΛΕ κουμπί **PUBLISH** για να βγουν live οι αλλαγές σου!"
+echo "👉 https://console.firebase.google.com/project/ΤΟ_ΟΝΟΜΑ_ΤΟΥ_PROJECT_SOU/studio (αντικατέστησε το με το δικό σου link αν θες)"
+
+echo ""
+echo "🏁 ΟΛΟΚΛΗΡΩΘΗΚΕ Η ΔΙΑΔΙΚΑΣΙΑ!"
+echo "🎯 Μόλις πατήσεις και το PUBLISH, είσαι στον αέρα!"
+echo "Τελείωσε: $(date)" | tee -a project-check.log

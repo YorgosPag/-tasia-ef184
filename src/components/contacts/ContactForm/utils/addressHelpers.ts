@@ -14,7 +14,9 @@ export const ADDRESS_TYPES = [
   "Άλλο",
 ];
 
-type AddressField = z.infer<typeof addressSchema.shape.addresses.element>;
+type AddressField = z.infer<
+  typeof addressSchema.shape.addresses._def.type.element
+>;
 type AddressFieldKey = keyof AddressField;
 
 export const addressFieldsMap: {
@@ -87,7 +89,7 @@ export const handleAddressSelect = (
     }
 
     if (value) {
-      form.setValue(`addresses.${idx}.${formKey}`, value, {
+      form.setValue(`addresses.${idx}.${String(formKey)}` as any, value, {
         shouldDirty: true,
       });
     }

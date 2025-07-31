@@ -13,7 +13,7 @@ import { useWatchedFields } from "../hooks/useWatchedFields";
 import type { ContactFormProps } from "../types";
 import { ContactFormValues } from "@/lib/validation/contactSchema";
 
-type Address = ContactFormValues["addresses"][number];
+type Address = NonNullable<ContactFormValues["addresses"]>[number];
 
 export function HeadquartersSection({ form }: Pick<ContactFormProps, "form">) {
   const { addresses } = useWatchedFields(form);

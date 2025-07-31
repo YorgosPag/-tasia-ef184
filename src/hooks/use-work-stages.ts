@@ -60,10 +60,8 @@ function useWorkStageData(projectId: string) {
         const workStagesDataPromises = workStagesSnapshot.docs.map(
           async (doc) => {
             const docData = doc.data();
-            const workStage: WorkStageWithSubstages = {
+            const workStage = {
               id: doc.id,
-              name: docData.name || "",
-              status: docData.status || "Εκκρεμεί",
               ...docData,
               workSubstages: [],
             } as WorkStageWithSubstages;
