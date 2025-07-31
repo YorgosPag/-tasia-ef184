@@ -19,7 +19,12 @@ set -e
 # Cleanup function
 cleanup() {
   echo "🧹 Cleaning up processes..." | tee -a project-check.log
-  kill $DEV_PID $PREVIEW_PID $EMULATOR_PID $FIRESTORE_TEST_PID 2>/dev/null || true
+  # Kill any process using port 9003
+  if lsof -i :9003 >/dev/null 2>&1; then
+    kill -9 $(lsof -t -i :9003) 2>/dev/null || true
+  fi
+  # Kill stored PIDs
+  kill $DEV_PID $PREVIEW_PID $EMULATOR_PID $FIRESTORE_TEST_PID $FINAL_PREVIEW_PID 2>/dev/null || true
 }
 trap cleanup EXIT
 
@@ -280,6 +285,12 @@ sleep 3
 echo "✅ Firestore connection tests completed." | tee -a project-check.log
 
 echo "🚦 17 Running development server (npm run dev)..." | tee -a project-check.log
+# Check and free port 9003 before starting dev server
+if lsof -i :9003 >/dev/null 2>&1; then
+  echo "⚠️  Port 9003 is in use, attempting to free it..." | tee -a project-check.log
+  kill -9 $(lsof -t -i :9003) 2>/dev/null || true
+  sleep 2
+fi
 npm run dev &
 DEV_PID=$!
 sleep 10
@@ -349,6 +360,12 @@ else
 fi
 
 echo "🚦 23 Starting production preview (npm start)..." | tee -a project-check.log
+# Check and free port 9003 before starting production server
+if lsof -i :9003 >/dev/null 2>&1; then
+  echo "⚠️  Port 9003 is in use, attempting to free it..." | tee -a project-check.log
+  kill -9 $(lsof -t -i :9003) 2>/dev/null || true
+  sleep 2
+fi
 npm start &
 PREVIEW_PID=$!
 sleep 10
@@ -364,7 +381,6 @@ if timeout 30 curl --silent --fail http://localhost:9003 >/dev/null; then
   # Test αν υπάρχουν console errors σχετικά με Firebase/Firestore
   echo "ℹ️  Ελέγχουμε για Firebase/Firestore errors στο production build..." | tee -a project-check.log
   echo "ℹ️  Άνοιξε το http://localhost:9003 και δες το console για Firebase errors." | tee -a project-check.log
-
 else
   echo "❌ Production server ΔΕΝ απαντάει! Κάτι τρέχει..." | tee -a project-check.log
   kill $PREVIEW_PID || true
@@ -409,6 +425,12 @@ fi
 echo "✅ Build ΟΚ." | tee -a project-check.log
 
 echo "🚦 28 [AUTO] Προεπισκόπηση (npm start)..." | tee -a project-check.log
+# Check and free port 9003 before starting final production server
+if lsof -i :9003 >/dev/null 2>&1; then
+  echo "⚠️  Port 9003 is in use, attempting to free it..." | tee -a project-check.log
+  kill -9 $(lsof -t -i :9003) 2>/dev/null || true
+  sleep 2
+fi
 npm start &
 FINAL_PREVIEW_PID=$!
 sleep 10
