@@ -16,6 +16,18 @@
 
 set -e
 
+echo "Ξεκίνησε: $(date)"
+
+echo "🚦 0.0 Checking required environment variables..."
+REQUIRED_VARS=() # Αφαιρέθηκε ο έλεγχος για NEXT_PUBLIC_API_URL
+for var in "${REQUIRED_VARS[@]}"; do
+  if [ -z "${!var}" ]; then
+    echo "❌ Missing env variable: $var"
+    exit 1
+  fi
+done
+echo "✅ Env variables look ok."
+
 echo "🚦 0. Checking for uncommitted changes..."
 if [ -n "$(git status --porcelain)" ]; then
   echo "⚠️  Υπάρχουν uncommitted changes! Καλό είναι να τα commitάρεις πριν συνεχίσεις."
@@ -23,7 +35,7 @@ fi
 
 echo "🚦 0.1 Checking for outdated dependencies..."
 if npm outdated | grep -q 'Package'; then
-  echo "⚠️  Υπάρχουν outdated dependencies! Δες τα παραπάνω και σκέψου αν πρέπει να τα ενημερώσεις."
+  echo "⚠️  Υπάρχουν outdated dependencies! (Προαιρετικό) Δες τα παραπάνω και σκέψου αν πρέπει να τα ενημερώσεις."
 else
   echo "✅ No outdated dependencies found."
 fi
