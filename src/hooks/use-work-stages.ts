@@ -35,7 +35,7 @@ import type {
 } from "@/lib/types/project-types";
 import { exportToJson } from "@/lib/exporter";
 import { formatDate } from "@/components/projects/work-stages/utils";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "./use-auth";
 
 // --- Internal Hooks for Logic Separation ---
 
@@ -60,8 +60,10 @@ function useWorkStageData(projectId: string) {
         const workStagesDataPromises = workStagesSnapshot.docs.map(
           async (doc) => {
             const docData = doc.data();
-            const workStage = {
+            const workStage: WorkStageWithSubstages = {
               id: doc.id,
+              name: docData.name || "",
+              status: docData.status || "Εκκρεμεί",
               ...docData,
               workSubstages: [],
             } as WorkStageWithSubstages;

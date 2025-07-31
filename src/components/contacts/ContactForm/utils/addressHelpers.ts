@@ -14,9 +14,9 @@ export const ADDRESS_TYPES = [
   "Άλλο",
 ];
 
-type AddressField = z.infer<
-  typeof addressSchema.shape.addresses._def.type.element
->;
+type AddressFieldArray = z.infer<typeof addressSchema.shape.addresses>;
+type AddressField = AddressFieldArray extends (infer U)[] ? U : never;
+
 type AddressFieldKey = keyof AddressField;
 
 export const addressFieldsMap: {
@@ -63,10 +63,17 @@ export const getFullAddress = (
   return [
     address.street,
     address.number,
+    address.toponym,
     address.settlements,
+    address.municipalLocalCommunities,
+    address.municipalUnities,
+    address.municipality,
+    address.regionalUnities,
+    address.regions,
+    address.decentralizedAdministrations,
+    address.largeGeographicUnits,
     address.postalCode,
     address.country,
-    address.poBox,
   ]
     .filter(Boolean)
     .join(" ");

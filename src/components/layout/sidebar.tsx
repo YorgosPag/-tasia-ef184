@@ -3,9 +3,9 @@
 import * as React from "react";
 import {
   Sidebar,
-  SidebarHeader,
   SidebarContent,
   SidebarFooter,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
 import { SidebarNav } from "./sidebar-nav";
 import { Logo } from "@/components/logo";
