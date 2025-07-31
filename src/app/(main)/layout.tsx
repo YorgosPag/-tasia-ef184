@@ -1,15 +1,12 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { AppShell } from '@/components/layout/app-shell';
+import React from "react";
+import { AppShell } from "@/components/layout/app-shell";
 
 export default function MainAppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AppShell>{children}</AppShell>
-  );
+  return <AppShell>{children}</AppShell>;
 }

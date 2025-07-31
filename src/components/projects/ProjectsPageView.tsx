@@ -1,25 +1,32 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Loader2, Download, Search } from 'lucide-react';
-import { ProjectDialogForm } from '@/components/projects/ProjectDialogForm';
-import { Company, useCompanies } from '@/hooks/use-data-store';
-import { UseFormReturn } from 'react-hook-form';
+import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, Loader2, Download, Search } from "lucide-react";
+import { ProjectDialogForm } from "@/components/projects/ProjectDialogForm";
+import { Company, useCompanies } from "@/hooks/use-data-store";
+import { UseFormReturn } from "react-hook-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/lib/types/project-types';
-import dynamic from 'next/dynamic';
-import { ProjectTableSkeleton } from './ProjectTableSkeleton';
+import type {
+  ProjectWithWorkStageSummary,
+  ProjectFormValues,
+} from "@/lib/types/project-types";
+import dynamic from "next/dynamic";
+import { ProjectTableSkeleton } from "./ProjectTableSkeleton";
 
-const ProjectTable = dynamic(() => import('@/components/projects/ProjectTable').then(mod => mod.ProjectTable), {
-  loading: () => <ProjectTableSkeleton />,
-  ssr: false,
-});
-
+const ProjectTable = dynamic(
+  () =>
+    import("@/components/projects/ProjectTable").then(
+      (mod) => mod.ProjectTable,
+    ),
+  {
+    loading: () => <ProjectTableSkeleton />,
+    ssr: false,
+  },
+);
 
 interface ProjectsPageViewProps {
   filteredProjects: ProjectWithWorkStageSummary[];
@@ -62,19 +69,20 @@ export function ProjectsPageView({
   handleDeleteProject,
   handlePrefetchProject,
 }: ProjectsPageViewProps) {
-    
   const { companies, isLoading: isLoadingCompanies } = useCompanies();
   const searchParams = useSearchParams();
-  const currentView = searchParams.get('view') || 'index';
+  const currentView = searchParams.get("view") || "index";
 
   const handleTabChange = (value: string) => {
     router.push(`/projects?view=${value}`);
-  }
+  };
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Έργα</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Έργα
+        </h1>
         <div className="flex items-center gap-2">
           <Button
             onClick={handleExport}
@@ -95,30 +103,30 @@ export function ProjectsPageView({
 
       <Tabs value={currentView} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-2 md:w-1/3">
-            <TabsTrigger value="index">Ευρετήριο</TabsTrigger>
-            <TabsTrigger value="construction">Κατασκευή</TabsTrigger>
+          <TabsTrigger value="index">Ευρετήριο</TabsTrigger>
+          <TabsTrigger value="construction">Κατασκευή</TabsTrigger>
         </TabsList>
 
         <div className="relative mt-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
             type="search"
             placeholder="Αναζήτηση σε τίτλο, τοποθεσία, εταιρεία..."
             className="pl-10 w-full md:w-1/3"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          />
         </div>
 
         <Card className="mt-4">
-            <CardHeader>
+          <CardHeader>
             <CardTitle>Λίστα Έργων ({filteredProjects.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
+          </CardHeader>
+          <CardContent>
             {isLoading ? (
-                <ProjectTableSkeleton />
+              <ProjectTableSkeleton />
             ) : filteredProjects.length > 0 ? (
-                <ProjectTable
+              <ProjectTable
                 projects={filteredProjects}
                 companies={companies}
                 isEditor={isEditor}
@@ -126,16 +134,17 @@ export function ProjectsPageView({
                 onDuplicate={handleDuplicateProject}
                 onDelete={handleDeleteProject}
                 onPrefetch={handlePrefetchProject}
-                />
+              />
             ) : (
-                <p className="text-center text-muted-foreground py-8">
-                {searchQuery ? 'Δεν βρέθηκαν έργα που να ταιριάζουν με την αναζήτηση.' : 'Δεν βρέθηκαν έργα.'}
-                </p>
+              <p className="text-center text-muted-foreground py-8">
+                {searchQuery
+                  ? "Δεν βρέθηκαν έργα που να ταιριάζουν με την αναζήτηση."
+                  : "Δεν βρέθηκαν έργα."}
+              </p>
             )}
-            </CardContent>
+          </CardContent>
         </Card>
       </Tabs>
-
 
       {isEditor && (
         <ProjectDialogForm

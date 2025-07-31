@@ -1,7 +1,6 @@
+"use client";
 
-'use client';
-
-import { Input } from '@/components/ui/input';
+import { Input } from "@/components/ui/input";
 
 interface ListItemEditProps {
   editValue: string;
@@ -23,9 +22,9 @@ export function ListItemEdit({
   hasCode,
 }: ListItemEditProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       onSave();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       onCancel();
     }
   };

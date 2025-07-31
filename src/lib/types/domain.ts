@@ -1,5 +1,4 @@
-
 /**
  * Defines the possible application domains.
  */
-export type Domain = 'tasia' | 'nestor';
+export type Domain = "tasia" | "nestor";

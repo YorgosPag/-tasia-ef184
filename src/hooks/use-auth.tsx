@@ -1,10 +1,24 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, onSnapshot, setDoc, getDoc, serverTimestamp, collection, getDocs, query } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  ReactNode,
+} from "react";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import {
+  doc,
+  onSnapshot,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+  collection,
+  getDocs,
+  query,
+} from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
 // --- Developer Configuration ---
 // Set to true to bypass Firebase Auth and log in as a mock admin user.
@@ -12,7 +26,7 @@ import { auth, db } from '@/lib/firebase';
 const BYPASS_AUTH = false;
 
 // --- Interfaces ---
-type UserRole = 'admin' | 'editor' | 'viewer';
+type UserRole = "admin" | "editor" | "viewer";
 
 interface AuthContextType {
   user: User | null | undefined; // undefined: initial loading, null: not logged in
@@ -31,30 +45,29 @@ const AuthContext = createContext<AuthContextType>({
   isEditor: false,
 });
 
-
 // --- Helper Functions ---
 async function findOrCreateUserDocument(user: User): Promise<UserRole> {
-    const userDocRef = doc(db, 'users', user.uid);
-    const userDoc = await getDoc(userDocRef);
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
 
-    if (userDoc.exists()) {
-        return userDoc.data().role as UserRole;
-    } else {
-        const usersRef = collection(db, 'users');
-        const querySnapshot = await getDocs(query(usersRef));
-        const isFirstUser = querySnapshot.empty;
-        const role: UserRole = isFirstUser ? 'admin' : 'viewer';
+  if (userDoc.exists()) {
+    return userDoc.data().role as UserRole;
+  } else {
+    const usersRef = collection(db, "users");
+    const querySnapshot = await getDocs(query(usersRef));
+    const isFirstUser = querySnapshot.empty;
+    const role: UserRole = isFirstUser ? "admin" : "viewer";
 
-        await setDoc(userDocRef, {
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            role: role,
-            createdAt: serverTimestamp(),
-        });
-        console.log(`Created user document for ${user.email} with role: ${role}`);
-        return role;
-    }
+    await setDoc(userDocRef, {
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      role: role,
+      createdAt: serverTimestamp(),
+    });
+    console.log(`Created user document for ${user.email} with role: ${role}`);
+    return role;
+  }
 }
 
 // --- AuthProvider Component ---
@@ -66,13 +79,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // If bypass is enabled, immediately set a mock user and skip Firebase.
     if (BYPASS_AUTH) {
-      setUser({ 
-        uid: 'fake-admin-user-uid', 
-        email: 'dev-admin@example.com',
-        displayName: 'Dev Admin',
-        photoURL: '',
+      setUser({
+        uid: "fake-admin-user-uid",
+        email: "dev-admin@example.com",
+        displayName: "Dev Admin",
+        photoURL: "",
       } as User);
-      setRole('admin');
+      setRole("admin");
       setIsLoading(false);
       return;
     }
@@ -100,23 +113,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribeAuth();
   }, []);
 
-  const isAdmin = role === 'admin';
-  const isEditor = role === 'admin' || role === 'editor';
+  const isAdmin = role === "admin";
+  const isEditor = role === "admin" || role === "editor";
 
   const value = { user, role, isLoading, isAdmin, isEditor };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // --- Custom Hook ---
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

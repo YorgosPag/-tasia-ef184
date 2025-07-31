@@ -1,9 +1,8 @@
+"use client";
 
-'use client';
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SimpleListsTab } from '@/components/custom-lists/SimpleListsTab';
-import { ComplexEntitiesTab } from '@/components/custom-lists/ComplexEntitiesTab';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SimpleListsTab } from "@/components/custom-lists/SimpleListsTab";
+import { ComplexEntitiesTab } from "@/components/custom-lists/ComplexEntitiesTab";
 
 export default function CustomListsPage() {
   return (
@@ -21,9 +20,7 @@ export default function CustomListsPage() {
       <Tabs defaultValue="simple-lists" className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-sm">
           <TabsTrigger value="simple-lists">Απλές Λίστες</TabsTrigger>
-          <TabsTrigger value="complex-entities">
-            Σύνθετες Οντότητες
-          </TabsTrigger>
+          <TabsTrigger value="complex-entities">Σύνθετες Οντότητες</TabsTrigger>
         </TabsList>
 
         <TabsContent value="simple-lists" className="space-y-6 mt-4">
@@ -37,4 +34,3 @@ export default function CustomListsPage() {
     </div>
   );
 }
-    

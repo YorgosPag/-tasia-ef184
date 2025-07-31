@@ -1,5 +1,4 @@
-
-'use client';
+"use client";
 
 import {
   ColumnDef,
@@ -8,7 +7,7 @@ import {
   useReactTable,
   getSortedRowModel,
   SortingState,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -16,11 +15,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
-import React from 'react';
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import React from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -49,7 +48,7 @@ export function DataTable<TData, TValue>({
   totalCount,
   pageSize,
   activeFilters,
-  initialDataLoaded
+  initialDataLoaded,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const table = useReactTable({
@@ -68,20 +67,24 @@ export function DataTable<TData, TValue>({
   const NoResultsMessage = () => {
     if (!initialDataLoaded && isLoading) return <span>Φόρτωση...</span>;
 
-    const totalPages = totalCount !== null ? Math.ceil(totalCount / pageSize) : 0;
-    const activeFilterEntries = Object.entries(activeFilters).filter(([, value]) => value);
+    const totalPages =
+      totalCount !== null ? Math.ceil(totalCount / pageSize) : 0;
+    const activeFilterEntries = Object.entries(activeFilters).filter(
+      ([, value]) => value,
+    );
 
     if (activeFilterEntries.length > 0 && data.length === 0) {
       const [firstFilterKey, firstFilterValue] = activeFilterEntries[0];
-       let message = `Δεν βρέθηκαν αποτελέσματα για το φίλτρο "${firstFilterKey}" με τιμή "${firstFilterValue}" σε αυτή τη σελίδα (${page}/${totalPages}).`;
-       if (canGoNext) {
-           message += ' Παρακαλώ, πατήστε "Επόμενη" για να ελέγξετε τις υπόλοιπες σελίδες.'
-       }
-       return <span>{message}</span>;
+      let message = `Δεν βρέθηκαν αποτελέσματα για το φίλτρο "${firstFilterKey}" με τιμή "${firstFilterValue}" σε αυτή τη σελίδα (${page}/${totalPages}).`;
+      if (canGoNext) {
+        message +=
+          ' Παρακαλώ, πατήστε "Επόμενη" για να ελέγξετε τις υπόλοιπες σελίδες.';
+      }
+      return <span>{message}</span>;
     }
 
     if (totalCount === 0) {
-        return <span>Δεν υπάρχουν εγγραφές σε αυτή τη λίστα.</span>
+      return <span>Δεν υπάρχουν εγγραφές σε αυτή τη λίστα.</span>;
     }
 
     return <span>Δεν βρέθηκαν αποτελέσματα.</span>;
@@ -101,7 +104,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -111,22 +114,25 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {isLoading && !initialDataLoaded ? (
-                 <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                    </TableCell>
-                </TableRow>
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                </TableCell>
+              </TableRow>
             ) : table.getRowModel().rows?.length > 0 ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
+                  data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -146,26 +152,28 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-between py-4">
-         <div className="text-sm text-muted-foreground">
-             {totalCount !== null ? `Σελίδα ${page} από ${Math.ceil(totalCount / pageSize)}` : `Σελίδα ${page}`}
+        <div className="text-sm text-muted-foreground">
+          {totalCount !== null
+            ? `Σελίδα ${page} από ${Math.ceil(totalCount / pageSize)}`
+            : `Σελίδα ${page}`}
         </div>
         <div className="flex items-center space-x-2">
-            <Button
+          <Button
             variant="outline"
             size="sm"
             onClick={prevPage}
             disabled={!canGoPrev || isLoading}
-            >
+          >
             Προηγούμενη
-            </Button>
-            <Button
+          </Button>
+          <Button
             variant="outline"
             size="sm"
             onClick={nextPage}
             disabled={!canGoNext || isLoading}
-            >
+          >
             Επόμενη
-            </Button>
+          </Button>
         </div>
       </div>
     </div>

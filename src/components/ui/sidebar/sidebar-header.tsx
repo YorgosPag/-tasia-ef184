@@ -1,8 +1,7 @@
+"use client";
 
-"use client"
-
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 export const SidebarHeader = React.forwardRef<
   HTMLDivElement,
@@ -15,6 +14,6 @@ export const SidebarHeader = React.forwardRef<
       className={cn("border-b border-sidebar-border", className)}
       {...props}
     />
-  )
-})
-SidebarHeader.displayName = "SidebarHeader"
+  );
+});
+SidebarHeader.displayName = "SidebarHeader";

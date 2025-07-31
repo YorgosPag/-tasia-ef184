@@ -1,23 +1,22 @@
-
 export interface AttachmentFormValues {
-    id?: string;
-    unitId?: string;
-    type: 'parking' | 'storage';
-    identifier?: string;
-    details?: string;
-    area?: string;
-    price?: string;
-    sharePercentage?: string;
-    isBundle: boolean;
-    isStandalone: boolean;
+  id?: string;
+  unitId?: string;
+  type: "parking" | "storage";
+  identifier?: string;
+  details?: string;
+  area?: string;
+  price?: string;
+  sharePercentage?: string;
+  isBundle: boolean;
+  isStandalone: boolean;
 }
 
 export interface Attachment extends AttachmentFormValues {
-    id: string;
+  id: string;
 }
 
 export interface Unit {
-    id: string;
-    name: string;
-    identifier: string;
+  id: string;
+  name: string;
+  identifier: string;
 }

@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import { useMemo } from 'react';
-import { getValidationRule } from '@/lib/validation/schemas/utils/documentValidation';
+import { useMemo } from "react";
+import { getValidationRule } from "@/lib/validation/schemas/utils/documentValidation";
 
 /**
  * A hook to get the correct placeholder, pattern, and formatting function

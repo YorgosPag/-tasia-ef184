@@ -1,11 +1,16 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import type { UseFormReturn } from 'react-hook-form';
-import type { ContactFormValues } from '@/lib/validation/contactSchema';
+import React from "react";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import type { UseFormReturn } from "react-hook-form";
+import type { ContactFormValues } from "@/lib/validation/contactSchema";
 
 interface DoyFieldProps {
   form: UseFormReturn<ContactFormValues>;

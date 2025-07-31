@@ -1,15 +1,13 @@
+"use client";
 
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import { getStorage, ref, getDownloadURL } from 'firebase/storage';
-import { Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface FloorPlanViewerProps {
   pdfUrl?: string; // This prop now expects a storage path, not a full URL
 }
-
 
 export function FloorPlanViewer({ pdfUrl: storagePath }: FloorPlanViewerProps) {
   const [displayUrl, setDisplayUrl] = useState<string | null>(null);
@@ -38,8 +36,8 @@ export function FloorPlanViewer({ pdfUrl: storagePath }: FloorPlanViewerProps) {
         console.error("Error getting download URL:", err);
         setError("Η φόρτωση της κάτοψης απέτυχε.");
         toast({
-          variant: 'destructive',
-          title: 'Σφάλμα Φόρτωσης PDF',
+          variant: "destructive",
+          title: "Σφάλμα Φόρτωσης PDF",
           description: `Code: ${err.code}. Message: ${err.message}`,
         });
       } finally {
@@ -49,7 +47,6 @@ export function FloorPlanViewer({ pdfUrl: storagePath }: FloorPlanViewerProps) {
 
     fetchDownloadUrl();
   }, [storagePath, toast]);
-
 
   if (isLoading) {
     return (
@@ -61,7 +58,7 @@ export function FloorPlanViewer({ pdfUrl: storagePath }: FloorPlanViewerProps) {
   }
 
   if (error) {
-     return (
+    return (
       <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-destructive/50 rounded-lg p-4">
         <p className="text-destructive font-semibold">{error}</p>
       </div>
@@ -71,24 +68,44 @@ export function FloorPlanViewer({ pdfUrl: storagePath }: FloorPlanViewerProps) {
   if (!storagePath || !displayUrl) {
     return (
       <div className="flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg">
-        <p className="text-muted-foreground">Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.</p>
-        <p className="text-sm text-muted-foreground mt-2">Παρακαλώ ανεβάστε ένα αρχείο PDF.</p>
+        <p className="text-muted-foreground">
+          Δεν έχει ανεβεί κάτοψη για αυτόν τον όροφο.
+        </p>
+        <p className="text-sm text-muted-foreground mt-2">
+          Παρακαλώ ανεβάστε ένα αρχείο PDF.
+        </p>
       </div>
     );
   }
-  
+
   return (
-    <div style={{ height: '75vh', border: '1px solid rgba(0, 0, 0, 0.1)', borderRadius: '0.5rem', overflow: 'hidden' }}>
+    <div
+      style={{
+        height: "75vh",
+        border: "1px solid rgba(0, 0, 0, 0.1)",
+        borderRadius: "0.5rem",
+        overflow: "hidden",
+      }}
+    >
       <iframe
-          src={displayUrl}
-          title="Προβολή Κάτοψης"
-          width="100%"
-          height="100%"
-          style={{ border: 'none' }}
+        src={displayUrl}
+        title="Προβολή Κάτοψης"
+        width="100%"
+        height="100%"
+        style={{ border: "none" }}
       >
         <p>
-          Ο browser σας δεν υποστηρίζει την ενσωματωμένη προβολή PDF. Μπορείτε να το κατεβάσετε από
-          <a href={displayUrl} className="text-primary hover:underline" download> εδώ</a>.
+          Ο browser σας δεν υποστηρίζει την ενσωματωμένη προβολή PDF. Μπορείτε
+          να το κατεβάσετε από
+          <a
+            href={displayUrl}
+            className="text-primary hover:underline"
+            download
+          >
+            {" "}
+            εδώ
+          </a>
+          .
         </p>
       </iframe>
     </div>

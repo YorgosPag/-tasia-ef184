@@ -1,15 +1,15 @@
-const admin = require('firebase-admin');
-const serviceAccount = require('./***REMOVED***');
+const admin = require("firebase-admin");
+const serviceAccount = require("./***REMOVED***");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  projectId: serviceAccount.project_id
+  projectId: serviceAccount.project_id,
 });
 
 const db = admin.firestore();
 
-const collectionName = 'tsia-complex-entities';
-const docId = '00ABWDQmABQWXPAem5Ya';
+const collectionName = "tsia-complex-entities";
+const docId = "00ABWDQmABQWXPAem5Ya";
 
 async function checkListId() {
   try {
@@ -17,12 +17,12 @@ async function checkListId() {
     const docSnap = await docRef.get();
 
     if (docSnap.exists) {
-      console.log('Document data:', docSnap.data());
+      console.log("Document data:", docSnap.data());
     } else {
-      console.log('No document found!');
+      console.log("No document found!");
     }
   } catch (error) {
-    console.error('Error fetching document:', error);
+    console.error("Error fetching document:", error);
   }
 }
 

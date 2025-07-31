@@ -1,10 +1,20 @@
+"use client";
 
-'use client';
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormDescription,
+  FormControl,
+} from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
 
-import { FormField, FormItem, FormLabel, FormDescription, FormControl } from '@/components/ui/form';
-import { Switch } from '@/components/ui/switch';
-
-export function BooleanSwitchField({ control, name, label, description }: {
+export function BooleanSwitchField({
+  control,
+  name,
+  label,
+  description,
+}: {
   control: any;
   name: string;
   label: string;

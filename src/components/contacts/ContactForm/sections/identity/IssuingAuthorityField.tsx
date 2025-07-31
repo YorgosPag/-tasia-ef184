@@ -1,14 +1,27 @@
+"use client";
 
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
-import type { UseFormReturn } from 'react-hook-form';
-import type { ContactFormValues } from '@/lib/validation/contactSchema';
-import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
-import { addDoc, collection, serverTimestamp, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+import type { UseFormReturn } from "react-hook-form";
+import type { ContactFormValues } from "@/lib/validation/contactSchema";
+import { CreatableCombobox } from "@/components/common/autocomplete/CreatableCombobox";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  onSnapshot,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 interface IssuingAuthorityFieldProps {
   form: UseFormReturn<ContactFormValues>;
@@ -16,19 +29,24 @@ interface IssuingAuthorityFieldProps {
 
 export function IssuingAuthorityField({ form }: IssuingAuthorityFieldProps) {
   const { toast } = useToast();
-  const [issuingAuthorityOptions, setIssuingAuthorityOptions] = useState<{ value: string; label: string; }[]>([]);
-  const [listId, setListId] = useState<string | null>('iGOjn86fcktREwMeDFPz'); // Hardcode the ID
+  const [issuingAuthorityOptions, setIssuingAuthorityOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [listId, setListId] = useState<string | null>("iGOjn86fcktREwMeDFPz"); // Hardcode the ID
 
   useEffect(() => {
     if (!listId) return;
-    
-    const itemsQuery = query(collection(db, 'tsia-custom-lists', listId, 'tsia-items'), orderBy('value'));
+
+    const itemsQuery = query(
+      collection(db, "tsia-custom-lists", listId, "tsia-items"),
+      orderBy("value"),
+    );
     const unsubscribe = onSnapshot(itemsQuery, (snapshot) => {
-        const options = snapshot.docs.map(doc => ({
-            value: doc.data().value,
-            label: doc.data().value,
-        }));
-        setIssuingAuthorityOptions(options);
+      const options = snapshot.docs.map((doc) => ({
+        value: doc.data().value,
+        label: doc.data().value,
+      }));
+      setIssuingAuthorityOptions(options);
     });
 
     return () => unsubscribe();
@@ -39,17 +57,24 @@ export function IssuingAuthorityField({ form }: IssuingAuthorityFieldProps) {
     if (!newValue.trim()) return null;
 
     try {
-        await addDoc(collection(db, 'tsia-custom-lists', listId, 'tsia-items'), {
-            value: newValue,
-            createdAt: serverTimestamp(),
-        });
-        toast({ title: 'Επιτυχία', description: `Η αρχή "${newValue}" προστέθηκε.` });
-        return newValue;
+      await addDoc(collection(db, "tsia-custom-lists", listId, "tsia-items"), {
+        value: newValue,
+        createdAt: serverTimestamp(),
+      });
+      toast({
+        title: "Επιτυχία",
+        description: `Η αρχή "${newValue}" προστέθηκε.`,
+      });
+      return newValue;
     } catch (error) {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη της νέας αρχής.'});
-        return null;
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Δεν ήταν δυνατή η προσθήκη της νέας αρχής.",
+      });
+      return null;
     }
-  }
+  };
 
   return (
     <FormField
@@ -61,7 +86,7 @@ export function IssuingAuthorityField({ form }: IssuingAuthorityFieldProps) {
           <div className="flex-1">
             <CreatableCombobox
               options={issuingAuthorityOptions}
-              value={field.value || ''}
+              value={field.value || ""}
               onChange={field.onChange}
               onCreate={handleCreateIssuingAuthority}
               placeholder="Επιλέξτε ή δημιουργήστε αρχή..."

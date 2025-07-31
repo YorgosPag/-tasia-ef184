@@ -1,11 +1,10 @@
+"use client";
 
-'use client';
-
-import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { XIcon, CheckIcon, ChevronsUpDownIcon, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { XIcon, CheckIcon, ChevronsUpDownIcon, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -13,37 +12,37 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { Badge } from '@/components/ui/badge';
-import { FormEventHandler } from 'react';
+} from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { FormEventHandler } from "react";
 
 const multiSelectVariants = cva(
-  'm-1 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300',
+  "m-1 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300",
   {
     variants: {
       variant: {
         default:
-          'border-foreground/10 text-foreground bg-card hover:bg-card/80',
+          "border-foreground/10 text-foreground bg-card hover:bg-card/80",
         secondary:
-          'border-foreground/10 bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          "border-foreground/10 bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive:
-          'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
-        inverted: 'inverted',
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        inverted: "inverted",
       },
     },
     defaultVariants: {
-      variant: 'default',
+      variant: "default",
     },
   },
 );
 
 interface MultiSelectProps
-  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'>,
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onChange">,
     VariantProps<typeof multiSelectVariants> {
   options: {
     label: string;
@@ -69,7 +68,7 @@ export const MultiSelect = React.forwardRef<
       onValueChange,
       variant,
       defaultValue,
-      placeholder = 'Select options',
+      placeholder = "Select options",
       maxCount = 3,
       isLoading = false,
       selected: selectedProp,
@@ -78,25 +77,27 @@ export const MultiSelect = React.forwardRef<
     },
     ref,
   ) => {
-    const [selected, setSelected] = React.useState<string[]>(defaultValue || []);
+    const [selected, setSelected] = React.useState<string[]>(
+      defaultValue || [],
+    );
     const [open, setOpen] = React.useState(false);
 
     React.useEffect(() => {
-        if(selectedProp) {
-            setSelected(selectedProp);
-        }
+      if (selectedProp) {
+        setSelected(selectedProp);
+      }
     }, [selectedProp]);
-    
+
     const handleSelect = (value: string) => {
       const newSelected = [...selected, value];
       setSelected(newSelected);
-      if(onChange) onChange(newSelected);
+      if (onChange) onChange(newSelected);
     };
 
     const handleDeselect = (value: string) => {
       const newSelected = selected.filter((v) => v !== value);
       setSelected(newSelected);
-       if(onChange) onChange(newSelected);
+      if (onChange) onChange(newSelected);
     };
 
     return (
@@ -110,7 +111,10 @@ export const MultiSelect = React.forwardRef<
             disabled={isLoading}
           >
             {isLoading ? (
-                <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /><span>Loading...</span></div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading...</span>
+              </div>
             ) : selected.length > 0 ? (
               <div className="flex justify-between items-center w-full">
                 <div className="flex flex-wrap items-center">
@@ -125,7 +129,7 @@ export const MultiSelect = React.forwardRef<
                         <span
                           className="ml-2 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
+                            if (e.key === "Enter") {
                               handleDeselect(value);
                             }
                           }}
@@ -146,7 +150,7 @@ export const MultiSelect = React.forwardRef<
                     className="h-4 mx-2 cursor-pointer text-muted-foreground"
                     onClick={(e) => {
                       setSelected([]);
-                       if(onChange) onChange([]);
+                      if (onChange) onChange([]);
                       e.stopPropagation();
                     }}
                   />
@@ -185,8 +189,8 @@ export const MultiSelect = React.forwardRef<
                     >
                       <CheckIcon
                         className={cn(
-                          'mr-2 h-4 w-4',
-                          isSelected ? 'opacity-100' : 'opacity-0',
+                          "mr-2 h-4 w-4",
+                          isSelected ? "opacity-100" : "opacity-0",
                         )}
                       />
                       {option.icon && (
@@ -205,4 +209,4 @@ export const MultiSelect = React.forwardRef<
   },
 );
 
-MultiSelect.displayName = 'MultiSelect';
+MultiSelect.displayName = "MultiSelect";

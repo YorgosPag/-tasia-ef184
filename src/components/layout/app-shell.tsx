@@ -1,11 +1,10 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { AppSidebar } from './Sidebar';
-import { AppHeader } from './Header';
-import { useCurrentDomain } from '@/hooks/useCurrentDomain';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { AppSidebar } from "./Sidebar";
+import { AppHeader } from "./Header";
+import { useCurrentDomain } from "@/hooks/useCurrentDomain";
+import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const domain = useCurrentDomain();
@@ -15,9 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <div className="flex-1 flex flex-col w-full">
         <AppHeader />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            {children}
-        </main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

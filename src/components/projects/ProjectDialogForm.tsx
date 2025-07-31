@@ -1,9 +1,8 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { z } from 'zod';
+import React from "react";
+import { UseFormReturn } from "react-hook-form";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -20,40 +19,50 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { Button } from '@/components/ui/button';
-import { Loader2, CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { el } from 'date-fns/locale';
-import { Company } from '@/hooks/use-data-store';
-import type { ProjectWithWorkStageSummary, ProjectFormValues } from '@/lib/types/project-types';
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Loader2, CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { el } from "date-fns/locale";
+import { Company } from "@/hooks/use-data-store";
+import type {
+  ProjectWithWorkStageSummary,
+  ProjectFormValues,
+} from "@/lib/types/project-types";
 
 export const projectSchema = z.object({
   id: z.string().optional(),
-  title: z.string().min(1, { message: 'Ο τίτλος είναι υποχρεωτικός.' }),
-  companyId: z.string().min(1, { message: 'Η εταιρεία είναι υποχρεωτική.' }),
-  location: z.string().min(1, { message: 'Η τοποθεσία είναι υποχρεωτική.' }),
+  title: z.string().min(1, { message: "Ο τίτλος είναι υποχρεωτικός." }),
+  companyId: z.string().min(1, { message: "Η εταιρεία είναι υποχρεωτική." }),
+  location: z.string().min(1, { message: "Η τοποθεσία είναι υποχρεωτική." }),
   description: z.string().optional(),
   deadline: z.date({
-    required_error: 'Η προθεσμία είναι υποχρεωτική.',
+    required_error: "Η προθεσμία είναι υποχρεωτική.",
   }),
-  status: z.enum(['Ενεργό', 'Σε εξέλιξη', 'Ολοκληρωμένο']),
-  photoUrl: z.string().url({ message: 'Το URL δεν είναι έγκυρο.' }).or(z.literal('')).optional(),
+  status: z.enum(["Ενεργό", "Σε εξέλιξη", "Ολοκληρωμένο"]),
+  photoUrl: z
+    .string()
+    .url({ message: "Το URL δεν είναι έγκυρο." })
+    .or(z.literal(""))
+    .optional(),
   tags: z.string().optional(),
 });
-
 
 interface ProjectDialogFormProps {
   open: boolean;
@@ -80,13 +89,20 @@ export function ProjectDialogForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editingProject ? 'Επεξεργασία' : 'Δημιουργία Νέου'} Έργου</DialogTitle>
+          <DialogTitle>
+            {editingProject ? "Επεξεργασία" : "Δημιουργία Νέου"} Έργου
+          </DialogTitle>
           <DialogDescription>
-            {editingProject ? 'Ενημερώστε τις πληροφορίες του έργου.' : 'Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε ένα νέο έργο.'}
+            {editingProject
+              ? "Ενημερώστε τις πληροφορίες του έργου."
+              : "Συμπληρώστε τις παρακάτω πληροφορίες για να δημιουργήσετε ένα νέο έργο."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={onSubmit} className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6">
+          <form
+            onSubmit={onSubmit}
+            className="grid gap-4 py-4 max-h-[80vh] overflow-y-auto pr-6"
+          >
             <FormField
               control={form.control}
               name="title"
@@ -106,7 +122,11 @@ export function ProjectDialogForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Εταιρεία</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value || ''}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    value={field.value || ""}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Επιλέξτε εταιρεία..." />
@@ -114,10 +134,14 @@ export function ProjectDialogForm({
                     </FormControl>
                     <SelectContent>
                       {isLoading ? (
-                        <div className="flex items-center justify-center p-2"><Loader2 className="h-4 w-4 animate-spin" /></div>
+                        <div className="flex items-center justify-center p-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
                       ) : (
                         companies.map((company) => (
-                          <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                          <SelectItem key={company.id} value={company.id}>
+                            {company.name}
+                          </SelectItem>
                         ))
                       )}
                     </SelectContent>
@@ -146,7 +170,10 @@ export function ProjectDialogForm({
                 <FormItem>
                   <FormLabel>URL Φωτογραφίας (Προαιρετικό)</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://example.com/project.jpg" {...field} />
+                    <Input
+                      placeholder="https://example.com/project.jpg"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -172,7 +199,10 @@ export function ProjectDialogForm({
                 <FormItem>
                   <FormLabel>Περιγραφή (Προαιρετικό)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Σύντομη περιγραφή του έργου..." {...field} />
+                    <Textarea
+                      placeholder="Σύντομη περιγραφή του έργου..."
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -188,14 +218,14 @@ export function ProjectDialogForm({
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={'outline'}
+                          variant={"outline"}
                           className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
                           )}
                         >
                           {field.value ? (
-                            format(new Date(field.value), 'PPP', { locale: el })
+                            format(new Date(field.value), "PPP", { locale: el })
                           ) : (
                             <span>Επιλέξτε ημερομηνία</span>
                           )}
@@ -206,7 +236,9 @@ export function ProjectDialogForm({
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={field.value ? new Date(field.value) : undefined}
+                        selected={
+                          field.value ? new Date(field.value) : undefined
+                        }
                         onSelect={field.onChange}
                         disabled={(date) =>
                           date < new Date(new Date().setHours(0, 0, 0, 0))
@@ -225,7 +257,10 @@ export function ProjectDialogForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Κατάσταση (Εμπορική)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Επιλέξτε κατάσταση" />
@@ -248,8 +283,10 @@ export function ProjectDialogForm({
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={isSubmitting || isLoading}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {editingProject ? 'Αποθήκευση' : 'Δημιουργία'}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {editingProject ? "Αποθήκευση" : "Δημιουργία"}
               </Button>
             </DialogFooter>
           </form>

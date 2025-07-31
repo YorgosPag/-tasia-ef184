@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,7 +7,7 @@
     /* Base Colors */
     --background: 60 48% 96%; /* Light Gray - #F2F2F0 */
     --foreground: 215 35% 21%; /* Dark Slate Blue - #2D3E4F */
-    
+
     /* Primary / Accent Colors */
     --primary: 0 84% 60%; /* Muted Orange - #F05454 */
     --primary-foreground: 210 40% 98%; /* Almost White for text on primary */
@@ -22,15 +21,15 @@
     /* Secondary Colors */
     --secondary: 215 28% 90%; /* Lighter Slate Blue for subtle backgrounds */
     --secondary-foreground: 215 35% 21%;
-    
+
     /* Muted Colors */
-    --muted: 215 28% 90%; 
+    --muted: 215 28% 90%;
     --muted-foreground: 215 16% 47%; /* Softer Slate Blue for text */
 
     /* Accent (used for hover states, etc.) */
     --accent: 215 28% 93%; /* Very light slate for hover */
     --accent-foreground: 215 35% 21%;
-    
+
     /* Custom Hover Color */
     --hover-accent: 0 76% 64%; /* #e46767 */
 
@@ -40,37 +39,37 @@
 
     /* Other UI Elements */
     --border: 215 20% 87%; /* Light gray border */
-    --input: 215 20% 91%;  /* Input background */
-    --ring: 0 84% 60%;     /* Focus ring - Orange */
+    --input: 215 20% 91%; /* Input background */
+    --ring: 0 84% 60%; /* Focus ring - Orange */
 
     /* Chart Colors */
-    --chart-1: 220 80% 60%;   /* Blue */
-    --chart-2: 160 70% 50%;   /* Green */
-    --chart-3: 40 80% 60%;    /* Yellow */
-    --chart-4: 0 80% 65%;     /* Red */
-    --chart-5: 280 70% 60%;   /* Purple */
-    
+    --chart-1: 220 80% 60%; /* Blue */
+    --chart-2: 160 70% 50%; /* Green */
+    --chart-3: 40 80% 60%; /* Yellow */
+    --chart-4: 0 80% 65%; /* Red */
+    --chart-5: 280 70% 60%; /* Purple */
+
     /* Radius */
     --radius: 0.5rem;
   }
- 
+
   .dark {
     /* Base Colors */
     --background: 215 28% 17%; /* Dark Slate Blue */
-    --foreground: 60 30% 96%;   /* Light Gray */
+    --foreground: 60 30% 96%; /* Light Gray */
 
     /* Primary / Accent Colors */
-    --primary: 0 84% 60%;       /* Muted Orange - Stays the same */
+    --primary: 0 84% 60%; /* Muted Orange - Stays the same */
     --primary-foreground: 210 40% 98%;
 
     /* Card & Popover */
-    --card: 215 28% 21%;        /* Slightly lighter than background */
+    --card: 215 28% 21%; /* Slightly lighter than background */
     --card-foreground: 60 30% 96%;
     --popover: 215 28% 17%;
     --popover-foreground: 60 30% 96%;
 
     /* Secondary Colors */
-    --secondary: 215 28% 25%;   /* Darker accent */
+    --secondary: 215 28% 25%; /* Darker accent */
     --secondary-foreground: 60 30% 96%;
 
     /* Muted Colors */
@@ -99,11 +98,11 @@
     --chart-3: 40 80% 60%;
     --chart-4: 0 80% 65%;
     --chart-5: 280 70% 60%;
-    
+
     --sidebar-background: 215 28% 21%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
@@ -111,18 +110,28 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-sans;
   }
-  
+
   /* -- ΙΕΡΑΡΧΙΑ ΤΙΤΛΩΝ -- */
-  h1, .h1 {
+  h1,
+  .h1 {
     @apply text-2xl font-bold;
   }
-  h2, .h2, h3, .h3 {
+  h2,
+  .h2,
+  h3,
+  .h3 {
     @apply text-xl font-bold;
   }
-  h4, .h4 {
+  h4,
+  .h4 {
     @apply text-lg font-bold;
   }
 }

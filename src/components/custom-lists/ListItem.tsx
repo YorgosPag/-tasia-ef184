@@ -1,14 +1,21 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import type { ListItem as ListItemType } from '@/lib/types/definitions';
-import { useToast } from '@/hooks/use-toast';
-import { doc, updateDoc, deleteDoc, query, collection, where, limit, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { ListItemDisplay } from './ListItemDisplay';
-import { ListItemEdit } from './ListItemEdit';
-
+import { useState } from "react";
+import type { ListItem as ListItemType } from "@/lib/types/definitions";
+import { useToast } from "@/hooks/use-toast";
+import {
+  doc,
+  updateDoc,
+  deleteDoc,
+  query,
+  collection,
+  where,
+  limit,
+  getDocs,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { ListItemDisplay } from "./ListItemDisplay";
+import { ListItemEdit } from "./ListItemEdit";
 
 interface ListItemProps {
   item: ListItemType;
@@ -28,27 +35,36 @@ export function ListItem({
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.value);
-  const [editCode, setEditCode] = useState(item.code || '');
+  const [editCode, setEditCode] = useState(item.code || "");
 
   const handleSave = async () => {
     const trimmedValue = editValue.trim();
     const trimmedCode = editCode.trim();
 
     const valueChanged = trimmedValue !== item.value;
-    const codeChanged = hasCode && trimmedCode !== (item.code || '');
+    const codeChanged = hasCode && trimmedCode !== (item.code || "");
 
     if (valueChanged || codeChanged) {
-      const dataToUpdate: { value: string; code?: string } = { value: trimmedValue };
+      const dataToUpdate: { value: string; code?: string } = {
+        value: trimmedValue,
+      };
       if (hasCode) {
         dataToUpdate.code = trimmedCode;
       }
       try {
-        await updateDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', item.id), dataToUpdate);
-        toast({ title: 'Επιτυχία', description: 'Το στοιχείο ενημερώθηκε.' });
+        await updateDoc(
+          doc(db, "tsia-custom-lists", listId, "tsia-items", item.id),
+          dataToUpdate,
+        );
+        toast({ title: "Επιτυχία", description: "Το στοιχείο ενημερώθηκε." });
         fetchAllLists();
         setIsEditing(false);
       } catch (error: any) {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η ενημέρωση απέτυχε: ${error.message}`});
+        toast({
+          variant: "destructive",
+          title: "Σφάλμα",
+          description: `Η ενημέρωση απέτυχε: ${error.message}`,
+        });
       }
     } else {
       setIsEditing(false);
@@ -57,23 +73,36 @@ export function ListItem({
 
   const handleCancel = () => {
     setEditValue(item.value);
-    setEditCode(item.code || '');
+    setEditCode(item.code || "");
     setIsEditing(false);
   };
 
   const handleDelete = async () => {
     // Simplified confirmation dialog
-    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε το στοιχείο "${item.value}"`)) {
+    if (
+      !confirm(
+        `Είστε σίγουροι ότι θέλετε να διαγράψετε το στοιχείο "${item.value}"`,
+      )
+    ) {
       return false;
     }
 
     try {
-        await deleteDoc(doc(db, 'tsia-custom-lists', listId, 'tsia-items', item.id));
-        toast({ title: 'Επιτυχία', description: `Το στοιχείο "${item.value}" διαγράφηκε.`});
-        fetchAllLists();
-        setIsEditing(false);
+      await deleteDoc(
+        doc(db, "tsia-custom-lists", listId, "tsia-items", item.id),
+      );
+      toast({
+        title: "Επιτυχία",
+        description: `Το στοιχείο "${item.value}" διαγράφηκε.`,
+      });
+      fetchAllLists();
+      setIsEditing(false);
     } catch (error: any) {
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η διαγραφή απέτυχε: ${error.message}`});
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: `Η διαγραφή απέτυχε: ${error.message}`,
+      });
     }
   };
 

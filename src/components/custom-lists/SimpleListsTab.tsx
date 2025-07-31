@@ -1,60 +1,77 @@
+"use client";
 
-'use client';
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { collection, onSnapshot, query, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { CreateListForm } from './CreateListForm';
-import { EditableList } from './EditableList';
-import { Input } from '@/components/ui/input';
-import { Search, Loader2, FileUp, FileDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { exportToCsv, exportToTxt } from '@/lib/exporter';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  getDocs,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { CreateListForm } from "./CreateListForm";
+import { EditableList } from "./EditableList";
+import { Input } from "@/components/ui/input";
+import { Search, Loader2, FileUp, FileDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { exportToCsv, exportToTxt } from "@/lib/exporter";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast';
-import type { CustomList, ListItem } from '@/lib/types/definitions';
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import type { CustomList, ListItem } from "@/lib/types/definitions";
 
 export function SimpleListsTab() {
   const [lists, setLists] = useState<CustomList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [openItems, setOpenItems] = useState<string[]>([]);
   const { toast } = useToast();
 
   const fetchAllLists = useCallback(async () => {
     setIsLoading(true);
-    const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
-    
+    const listsQuery = query(
+      collection(db, "tsia-custom-lists"),
+      orderBy("title", "asc"),
+    );
+
     try {
-        const listsSnapshot = await getDocs(listsQuery);
-        const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
-            const listData = listDoc.data();
-            const list: CustomList = { 
-              id: listDoc.id, 
-              title: listData.title,
-              description: listData.description,
-              hasCode: listData.hasCode,
-              isProtected: listData.isProtected,
-              items: [],
-              createdAt: listData.createdAt,
-            };
-            const itemsQuery = query(collection(listDoc.ref, 'tsia-items'), orderBy('value', 'asc'));
-            const itemsSnapshot = await getDocs(itemsQuery);
-            list.items = itemsSnapshot.docs.map(itemDoc => ({ id: itemDoc.id, ...itemDoc.data() } as ListItem));
-            return list;
-        });
-        const fetchedLists = await Promise.all(listsDataPromises);
-        setLists(fetchedLists);
+      const listsSnapshot = await getDocs(listsQuery);
+      const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
+        const listData = listDoc.data();
+        const list: CustomList = {
+          id: listDoc.id,
+          title: listData.title,
+          description: listData.description,
+          hasCode: listData.hasCode,
+          isProtected: listData.isProtected,
+          items: [],
+          createdAt: listData.createdAt,
+        };
+        const itemsQuery = query(
+          collection(listDoc.ref, "tsia-items"),
+          orderBy("value", "asc"),
+        );
+        const itemsSnapshot = await getDocs(itemsQuery);
+        list.items = itemsSnapshot.docs.map(
+          (itemDoc) => ({ id: itemDoc.id, ...itemDoc.data() }) as ListItem,
+        );
+        return list;
+      });
+      const fetchedLists = await Promise.all(listsDataPromises);
+      setLists(fetchedLists);
     } catch (error) {
-        console.error("Error fetching custom lists:", error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η φόρτωση των λιστών απέτυχε.' });
+      console.error("Error fetching custom lists:", error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Η φόρτωση των λιστών απέτυχε.",
+      });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }, [toast]);
 
@@ -62,17 +79,16 @@ export function SimpleListsTab() {
     fetchAllLists();
   }, [fetchAllLists]);
 
-
   const filteredLists = lists.filter(
     (list) =>
       list.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (list.description &&
-        list.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        list.description.toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
   const toggleAccordionItem = (id: string) => {
     setOpenItems((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -84,8 +100,8 @@ export function SimpleListsTab() {
     }
   };
 
-  const handleExport = (format: 'csv' | 'txt') => {
-    if (format === 'csv') {
+  const handleExport = (format: "csv" | "txt") => {
+    if (format === "csv") {
       exportToCsv(
         lists.flatMap((l) =>
           l.items.map((i) => ({
@@ -94,12 +110,12 @@ export function SimpleListsTab() {
             item_id: i.id,
             code: i.code,
             value: i.value,
-          }))
+          })),
         ),
-        'custom-lists'
+        "custom-lists",
       );
     } else {
-      exportToTxt(lists, 'custom-lists');
+      exportToTxt(lists, "custom-lists");
     }
   };
 
@@ -128,19 +144,15 @@ export function SimpleListsTab() {
                 <Button variant="outline">Εξαγωγή</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                <DropdownMenuItem onClick={() => handleExport("csv")}>
                   Εξαγωγή σε Excel (CSV)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('txt')}>
+                <DropdownMenuItem onClick={() => handleExport("txt")}>
                   Εξαγωγή σε TXT
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toggleAll(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => toggleAll(true)}>
               <FileDown className="mr-2 h-4 w-4" />
               Ανάπτυξη Όλων
             </Button>

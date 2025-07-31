@@ -109,8 +109,10 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
                       </div>
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl h-auto p-2 bg-transparent border-none">
-                      <img src={photo.url} alt={photo.name || `Unit Photo ${index + 1}`} className="max-w-full max-h-[90vh] mx-auto object-contain" />
+                  <DialogContent className="max-w-4xl h-[90vh] p-2 bg-transparent border-none flex items-center justify-center">
+                      <div className="relative w-full h-full">
+                        <Image src={photo.url} alt={photo.name || `Unit Photo ${index + 1}`} fill sizes="100vw" className="object-contain" />
+                      </div>
                   </DialogContent>
                 </Dialog>
                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">

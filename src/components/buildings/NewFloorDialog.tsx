@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import { useForm, UseFormReturn } from 'react-hook-form';
-import { z } from 'zod';
+import { useForm, UseFormReturn } from "react-hook-form";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -19,15 +18,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 export const floorSchema = z.object({
-  level: z.string().min(1, { message: 'Το επίπεδο είναι υποχρεωτικό.' }),
+  level: z.string().min(1, { message: "Το επίπεδο είναι υποχρεωτικό." }),
   description: z.string().optional(),
-  floorPlanUrl: z.string().url({ message: "Το URL της κάτοψης δεν είναι έγκυρο." }).or(z.literal('')).optional(),
+  floorPlanUrl: z
+    .string()
+    .url({ message: "Το URL της κάτοψης δεν είναι έγκυρο." })
+    .or(z.literal(""))
+    .optional(),
 });
 
 export type FloorFormValues = z.infer<typeof floorSchema>;
@@ -53,7 +56,8 @@ export function NewFloorDialog({
         <DialogHeader>
           <DialogTitle>Προσθήκη Νέου Ορόφου</DialogTitle>
           <DialogDescription>
-            Συμπληρώστε τις πληροφορίες για να προσθέσετε έναν νέο όροφο στο κτίριο.
+            Συμπληρώστε τις πληροφορίες για να προσθέσετε έναν νέο όροφο στο
+            κτίριο.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -91,7 +95,10 @@ export function NewFloorDialog({
                 <FormItem>
                   <FormLabel>URL Κάτοψης (Προαιρετικό)</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://example.com/plan.pdf" {...field} />
+                    <Input
+                      placeholder="https://example.com/plan.pdf"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -104,7 +111,9 @@ export function NewFloorDialog({
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Προσθήκη Ορόφου
               </Button>
             </DialogFooter>

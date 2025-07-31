@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   collection,
   onSnapshot,
@@ -12,9 +11,9 @@ import {
   query,
   where,
   orderBy,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Button } from '@/components/ui/button';
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -22,18 +21,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { PlusCircle, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { format } from 'date-fns';
-import { logActivity } from '@/lib/logger';
-import { useAuth } from '@/hooks/use-auth';
-import type { Building } from '@/lib/types/project-types';
-import { NewFloorDialog, floorSchema, type FloorFormValues } from './NewFloorDialog';
+} from "@/components/ui/table";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { PlusCircle, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
+import { logActivity } from "@/lib/logger";
+import { useAuth } from "@/hooks/use-auth";
+import type { Building } from "@/lib/types/project-types";
+import {
+  NewFloorDialog,
+  floorSchema,
+  type FloorFormValues,
+} from "./NewFloorDialog";
 
 interface Floor {
   id: string;
@@ -58,29 +61,41 @@ export function BuildingFloorsList({ building }: BuildingFloorsListProps) {
 
   const form = useForm<FloorFormValues>({
     resolver: zodResolver(floorSchema),
-    defaultValues: { level: '', description: '', floorPlanUrl: '' },
+    defaultValues: { level: "", description: "", floorPlanUrl: "" },
   });
 
   useEffect(() => {
     if (!building.id) return;
-    
-    setIsLoadingFloors(true);
-    const q = query(collection(db, 'floors'), where('buildingId', '==', building.id), orderBy('level', 'asc'));
 
-    const unsubscribe = onSnapshot(q,
+    setIsLoadingFloors(true);
+    const q = query(
+      collection(db, "floors"),
+      where("buildingId", "==", building.id),
+      orderBy("level", "asc"),
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
       (snapshot) => {
-        const floorsData: Floor[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Floor));
+        const floorsData: Floor[] = snapshot.docs.map(
+          (doc) =>
+            ({
+              id: doc.id,
+              ...doc.data(),
+            }) as Floor,
+        );
         setFloors(floorsData);
         setIsLoadingFloors(false);
       },
       (error) => {
-        console.error('Error fetching floors: ', error);
-        toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η φόρτωση των ορόφων.' });
+        console.error("Error fetching floors: ", error);
+        toast({
+          variant: "destructive",
+          title: "Σφάλμα",
+          description: "Δεν ήταν δυνατή η φόρτωση των ορόφων.",
+        });
         setIsLoadingFloors(false);
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -93,35 +108,61 @@ export function BuildingFloorsList({ building }: BuildingFloorsListProps) {
 
   const onSubmitFloor = async (data: FloorFormValues) => {
     if (!building.projectId || !building.originalId) {
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν βρέθηκε το γονικό κτίριο.' });
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Δεν βρέθηκε το γονικό κτίριο.",
+      });
       return;
     }
     setIsSubmitting(true);
     try {
       const batch = writeBatch(db);
-      const subCollectionFloorRef = doc(collection(db, 'projects', building.projectId, 'buildings', building.originalId, 'floors'));
-      const topLevelFloorRef = doc(collection(db, 'floors'));
-      
+      const subCollectionFloorRef = doc(
+        collection(
+          db,
+          "projects",
+          building.projectId,
+          "buildings",
+          building.originalId,
+          "floors",
+        ),
+      );
+      const topLevelFloorRef = doc(collection(db, "floors"));
+
       const finalData = {
         level: data.level,
-        description: data.description || '',
+        description: data.description || "",
         floorPlanUrl: data.floorPlanUrl?.trim() ? data.floorPlanUrl : null, // Initialize with null
       };
 
-      batch.set(subCollectionFloorRef, { ...finalData, topLevelId: topLevelFloorRef.id, createdAt: serverTimestamp() });
-      batch.set(topLevelFloorRef, { ...finalData, buildingId: building.id, originalId: subCollectionFloorRef.id, createdAt: serverTimestamp() });
+      batch.set(subCollectionFloorRef, {
+        ...finalData,
+        topLevelId: topLevelFloorRef.id,
+        createdAt: serverTimestamp(),
+      });
+      batch.set(topLevelFloorRef, {
+        ...finalData,
+        buildingId: building.id,
+        originalId: subCollectionFloorRef.id,
+        createdAt: serverTimestamp(),
+      });
       await batch.commit();
-      toast({ title: 'Επιτυχία', description: 'Ο όροφος προστέθηκε.' });
-      await logActivity('CREATE_FLOOR', {
+      toast({ title: "Επιτυχία", description: "Ο όροφος προστέθηκε." });
+      await logActivity("CREATE_FLOOR", {
         entityId: topLevelFloorRef.id,
-        entityType: 'floor',
+        entityType: "floor",
         details: finalData,
         projectId: building.projectId,
       });
       handleDialogOpenChange(false);
     } catch (error) {
-      console.error('Error adding floor: ', error);
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Δεν ήταν δυνατή η προσθήκη του ορόφου.' });
+      console.error("Error adding floor: ", error);
+      toast({
+        variant: "destructive",
+        title: "Σφάλμα",
+        description: "Δεν ήταν δυνατή η προσθήκη του ορόφου.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -132,8 +173,8 @@ export function BuildingFloorsList({ building }: BuildingFloorsListProps) {
   };
 
   const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'N/A';
-    return format(timestamp.toDate(), 'dd/MM/yyyy');
+    if (!timestamp) return "N/A";
+    return format(timestamp.toDate(), "dd/MM/yyyy");
   };
 
   return (
@@ -143,29 +184,46 @@ export function BuildingFloorsList({ building }: BuildingFloorsListProps) {
           <CardTitle>Όροφοι του Κτιρίου</CardTitle>
           {isEditor && (
             <Button size="sm" onClick={() => handleDialogOpenChange(true)}>
-                <PlusCircle className="mr-2" />Νέος Όροφος
+              <PlusCircle className="mr-2" />
+              Νέος Όροφος
             </Button>
           )}
         </div>
       </CardHeader>
       <CardContent>
         {isLoadingFloors ? (
-          <div className="flex justify-center items-center h-40"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+          <div className="flex justify-center items-center h-40">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
         ) : floors.length > 0 ? (
           <Table>
-            <TableHeader><TableRow><TableHead>Επίπεδο</TableHead><TableHead>Περιγραφή</TableHead><TableHead>Ημ/νία Δημιουργίας</TableHead></TableRow></TableHeader>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Επίπεδο</TableHead>
+                <TableHead>Περιγραφή</TableHead>
+                <TableHead>Ημ/νία Δημιουργίας</TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
               {floors.map((floor) => (
-                <TableRow key={floor.id} onClick={() => handleRowClick(floor.id)} className="cursor-pointer">
+                <TableRow
+                  key={floor.id}
+                  onClick={() => handleRowClick(floor.id)}
+                  className="cursor-pointer"
+                >
                   <TableCell className="font-medium">{floor.level}</TableCell>
-                  <TableCell className="text-muted-foreground">{floor.description || 'N/A'}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {floor.description || "N/A"}
+                  </TableCell>
                   <TableCell>{formatDate(floor.createdAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         ) : (
-          <p className="text-center text-muted-foreground py-8">Δεν βρέθηκαν όροφοι για αυτό το κτίριο.</p>
+          <p className="text-center text-muted-foreground py-8">
+            Δεν βρέθηκαν όροφοι για αυτό το κτίριο.
+          </p>
         )}
       </CardContent>
       <NewFloorDialog

@@ -1,16 +1,18 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import { doc, getDoc, DocumentData } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import type { BreadcrumbItem } from '@/components/layout/breadcrumbs';
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { doc, getDoc, DocumentData } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import type { BreadcrumbItem } from "@/components/layout/breadcrumbs";
 
 // Cache to avoid re-fetching the same documents within a session
 const docCache = new Map<string, DocumentData | null>();
 
-async function getDocFromFirestore(collectionName: string, id: string): Promise<DocumentData | null> {
+async function getDocFromFirestore(
+  collectionName: string,
+  id: string,
+): Promise<DocumentData | null> {
   if (!id || !collectionName) return null;
   const cacheKey = `${collectionName}/${id}`;
   if (docCache.has(cacheKey)) {
@@ -33,33 +35,33 @@ async function getDocFromFirestore(collectionName: string, id: string): Promise<
 }
 
 const STATIC_LABELS: Record<string, string> = {
-  'companies': 'Εταιρείες',
-  'projects': 'Έργα',
-  'buildings': 'Κτίρια',
-  'floors': 'Όροφοι',
-  'units': 'Ακίνητα',
-  'attachments': 'Παρακολουθήματα',
-  'audit-log': 'Audit Log',
-  'users': 'User Management',
-  'settings': 'Ρυθμίσεις',
-  'architect-dashboard': 'Architect\'s Dashboard',
-  'assignments': 'Οι Αναθέσεις μου',
-  'construction': 'Κατασκευή',
-  'calendar': 'Ημερολόγιο',
-  'leads': 'Leads',
-  'meetings': 'Συσκέψεις',
-  'templates': 'Πρότυπα',
-  'work-stages': 'Πρότυπα Εργασιών',
-  'new': 'Δημιουργία',
+  companies: "Εταιρείες",
+  projects: "Έργα",
+  buildings: "Κτίρια",
+  floors: "Όροφοι",
+  units: "Ακίνητα",
+  attachments: "Παρακολουθήματα",
+  "audit-log": "Audit Log",
+  users: "User Management",
+  settings: "Ρυθμίσεις",
+  "architect-dashboard": "Architect's Dashboard",
+  assignments: "Οι Αναθέσεις μου",
+  construction: "Κατασκευή",
+  calendar: "Ημερολόγιο",
+  leads: "Leads",
+  meetings: "Συσκέψεις",
+  templates: "Πρότυπα",
+  "work-stages": "Πρότυπα Εργασιών",
+  new: "Δημιουργία",
 };
 
 const COLLECTION_NAMES: Record<string, string> = {
-  companies: 'companies',
-  projects: 'projects',
-  buildings: 'buildings',
-  floors: 'floors',
-  units: 'units',
-  attachments: 'attachments',
+  companies: "companies",
+  projects: "projects",
+  buildings: "buildings",
+  floors: "floors",
+  units: "units",
+  attachments: "attachments",
 };
 
 const isLikelyId = (segment: string) => /^[a-zA-Z0-9]{16,}$/.test(segment);
@@ -70,16 +72,18 @@ export function useBreadcrumbs() {
 
   useEffect(() => {
     const generateBreadcrumbs = async () => {
-      const segments = pathname.split('/').filter(Boolean);
-      
+      const segments = pathname.split("/").filter(Boolean);
+
       if (segments.length === 0) {
         setBreadcrumbs([]);
         return;
       }
-      
-      let currentPath = '';
-      const pathSegments = pathname.split('/').filter(Boolean);
-      const isDetailsPage = pathSegments.length > 1 && isLikelyId(pathSegments[pathSegments.length - 1]);
+
+      let currentPath = "";
+      const pathSegments = pathname.split("/").filter(Boolean);
+      const isDetailsPage =
+        pathSegments.length > 1 &&
+        isLikelyId(pathSegments[pathSegments.length - 1]);
 
       if (!isDetailsPage) {
         // Handle list pages
@@ -87,7 +91,11 @@ export function useBreadcrumbs() {
         for (const segment of segments) {
           currentPath += `/${segment}`;
           if (STATIC_LABELS[segment]) {
-            staticCrumbs.push({ href: currentPath, label: STATIC_LABELS[segment], tooltip: STATIC_LABELS[segment] });
+            staticCrumbs.push({
+              href: currentPath,
+              label: STATIC_LABELS[segment],
+              tooltip: STATIC_LABELS[segment],
+            });
           }
         }
         setBreadcrumbs(staticCrumbs);
@@ -98,13 +106,16 @@ export function useBreadcrumbs() {
       const entityId = pathSegments[pathSegments.length - 1];
       const collectionSegment = pathSegments[pathSegments.length - 2];
       const mainCollectionName = COLLECTION_NAMES[collectionSegment];
-      
+
       if (!mainCollectionName) {
         setBreadcrumbs([]);
         return;
       }
 
-      const currentEntity = await getDocFromFirestore(mainCollectionName, entityId);
+      const currentEntity = await getDocFromFirestore(
+        mainCollectionName,
+        entityId,
+      );
       if (!currentEntity) {
         setBreadcrumbs([]);
         return;
@@ -116,64 +127,106 @@ export function useBreadcrumbs() {
       let buildingId: string | undefined;
       let floorId: string | undefined;
       let unitId: string | undefined;
-      let attachmentId: string | undefined = (mainCollectionName === 'attachments') ? currentEntity.id : undefined;
+      let attachmentId: string | undefined =
+        mainCollectionName === "attachments" ? currentEntity.id : undefined;
 
-      if(attachmentId) {
-          unitId = currentEntity.unitId;
-      } else if (mainCollectionName === 'units') {
-          unitId = currentEntity.id;
-      } else if (mainCollectionName === 'floors') {
-          floorId = currentEntity.id;
-      } else if (mainCollectionName === 'buildings') {
-          buildingId = currentEntity.id;
-      } else if (mainCollectionName === 'projects') {
-          projectId = currentEntity.id;
+      if (attachmentId) {
+        unitId = currentEntity.unitId;
+      } else if (mainCollectionName === "units") {
+        unitId = currentEntity.id;
+      } else if (mainCollectionName === "floors") {
+        floorId = currentEntity.id;
+      } else if (mainCollectionName === "buildings") {
+        buildingId = currentEntity.id;
+      } else if (mainCollectionName === "projects") {
+        projectId = currentEntity.id;
       }
 
-      const unitDoc = unitId ? await getDocFromFirestore('units', unitId) : null;
+      const unitDoc = unitId
+        ? await getDocFromFirestore("units", unitId)
+        : null;
       if (unitDoc) {
-          floorId = unitDoc.floorIds?.[0];
-          buildingId = unitDoc.buildingId;
-          projectId = unitDoc.projectId;
+        floorId = unitDoc.floorIds?.[0];
+        buildingId = unitDoc.buildingId;
+        projectId = unitDoc.projectId;
       }
-      
-      const floorDoc = floorId ? await getDocFromFirestore('floors', floorId) : null;
+
+      const floorDoc = floorId
+        ? await getDocFromFirestore("floors", floorId)
+        : null;
       if (floorDoc) {
-          buildingId = floorDoc.buildingId;
+        buildingId = floorDoc.buildingId;
       }
-      
-      const buildingDoc = buildingId ? await getDocFromFirestore('buildings', buildingId) : null;
+
+      const buildingDoc = buildingId
+        ? await getDocFromFirestore("buildings", buildingId)
+        : null;
       if (buildingDoc) {
-          projectId = buildingDoc.projectId;
+        projectId = buildingDoc.projectId;
       }
 
-      const projectDoc = projectId ? await getDocFromFirestore('projects', projectId) : null;
+      const projectDoc = projectId
+        ? await getDocFromFirestore("projects", projectId)
+        : null;
       if (projectDoc) {
-          companyId = projectDoc.companyId;
+        companyId = projectDoc.companyId;
       }
 
-      const companyDoc = companyId ? await getDocFromFirestore('companies', companyId) : null;
+      const companyDoc = companyId
+        ? await getDocFromFirestore("companies", companyId)
+        : null;
 
       // --- Construct breadcrumbs top-down ---
       const crumbs: BreadcrumbItem[] = [];
-      crumbs.push({ href: '/companies', label: 'Εταιρείες', tooltip: 'Μετάβαση στις Εταιρείες' });
+      crumbs.push({
+        href: "/companies",
+        label: "Εταιρείες",
+        tooltip: "Μετάβαση στις Εταιρείες",
+      });
 
       if (companyDoc) {
         // Since there is no company detail page, this just links to the list.
         // If there was a page /companies/[id], the link would be different.
       }
-      if (projectDoc) crumbs.push({ href: `/projects/${projectDoc.id}`, label: projectDoc.title || 'Έργο', tooltip: `Μετάβαση σε ${projectDoc.title}` });
-      if (buildingDoc) crumbs.push({ href: `/buildings/${buildingDoc.id}`, label: buildingDoc.address || 'Κτίριο', tooltip: `Μετάβαση σε ${buildingDoc.address}` });
-      if (floorDoc) crumbs.push({ href: `/floors/${floorDoc.id}`, label: `Όροφος ${floorDoc.level || ''}`.trim(), tooltip: `Μετάβαση στον Όροφο ${floorDoc.level}` });
-      if (unitDoc) crumbs.push({ href: `/units/${unitDoc.id}`, label: unitDoc.name || 'Ακίνητο', tooltip: `Μετάβαση στο ${unitDoc.name}` });
-      
+      if (projectDoc)
+        crumbs.push({
+          href: `/projects/${projectDoc.id}`,
+          label: projectDoc.title || "Έργο",
+          tooltip: `Μετάβαση σε ${projectDoc.title}`,
+        });
+      if (buildingDoc)
+        crumbs.push({
+          href: `/buildings/${buildingDoc.id}`,
+          label: buildingDoc.address || "Κτίριο",
+          tooltip: `Μετάβαση σε ${buildingDoc.address}`,
+        });
+      if (floorDoc)
+        crumbs.push({
+          href: `/floors/${floorDoc.id}`,
+          label: `Όροφος ${floorDoc.level || ""}`.trim(),
+          tooltip: `Μετάβαση στον Όροφο ${floorDoc.level}`,
+        });
+      if (unitDoc)
+        crumbs.push({
+          href: `/units/${unitDoc.id}`,
+          label: unitDoc.name || "Ακίνητο",
+          tooltip: `Μετάβαση στο ${unitDoc.name}`,
+        });
+
       if (attachmentId) {
-          const attachmentDoc = await getDocFromFirestore('attachments', attachmentId);
-          if (attachmentDoc) {
-               crumbs.push({ href: pathname, label: attachmentDoc.details || 'Παρακολουθημα', tooltip: `Μετάβαση στο ${attachmentDoc.details}` });
-          }
+        const attachmentDoc = await getDocFromFirestore(
+          "attachments",
+          attachmentId,
+        );
+        if (attachmentDoc) {
+          crumbs.push({
+            href: pathname,
+            label: attachmentDoc.details || "Παρακολουθημα",
+            tooltip: `Μετάβαση στο ${attachmentDoc.details}`,
+          });
+        }
       }
-      
+
       setBreadcrumbs(crumbs);
     };
 

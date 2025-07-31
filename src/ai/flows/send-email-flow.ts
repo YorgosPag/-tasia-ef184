@@ -1,25 +1,26 @@
-
-'use server';
+"use server";
 /**
  * @fileOverview A Genkit flow for sending emails via SendGrid.
  */
 
-import { ai } from '@/ai/genkit';
-import sgMail from '@sendgrid/mail';
+import { ai } from "@/ai/genkit";
+import sgMail from "@sendgrid/mail";
 import {
   SendEmailInputSchema,
   SendEmailOutputSchema,
   type SendEmailInput,
   type SendEmailOutput,
-} from '@/ai/schemas/email';
+} from "@/ai/schemas/email";
 
-export async function sendEmail(input: SendEmailInput): Promise<SendEmailOutput> {
+export async function sendEmail(
+  input: SendEmailInput,
+): Promise<SendEmailOutput> {
   return sendEmailFlow(input);
 }
 
 const sendEmailFlow = ai.defineFlow(
   {
-    name: 'sendEmailFlow',
+    name: "sendEmailFlow",
     inputSchema: SendEmailInputSchema,
     outputSchema: SendEmailOutputSchema,
   },
@@ -29,8 +30,10 @@ const sendEmailFlow = ai.defineFlow(
     const replyToEmail = process***REMOVED***.NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL;
 
     if (!apiKey || !fromEmail) {
-      console.error('SendGrid environment variables not configured. Please check next.config.js and ***REMOVED***.local');
-      return { success: false, message: 'Email service is not configured.' };
+      console.error(
+        "SendGrid environment variables not configured. Please check next.config.js and ***REMOVED***.local",
+      );
+      return { success: false, message: "Email service is not configured." };
     }
 
     sgMail.setApiKey(apiKey);
@@ -41,10 +44,10 @@ const sendEmailFlow = ai.defineFlow(
         from: fromEmail,
         replyTo: replyToEmail || fromEmail,
       });
-      return { success: true, message: 'Email sent successfully.' };
+      return { success: true, message: "Email sent successfully." };
     } catch (error: any) {
-      console.error('SendGrid Error:', error.response?.body || error);
-      return { success: false, message: 'Failed to send email.' };
+      console.error("SendGrid Error:", error.response?.body || error);
+      return { success: false, message: "Failed to send email." };
     }
-  }
+  },
 );

@@ -54,8 +54,10 @@ export function UnitCard({ unit }: UnitCardProps) {
                             </div>
                         </div>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl h-auto p-2 bg-transparent border-none">
-                        <img src={imageUrl} alt={`Photo of ${unit.name}`} className="max-w-full max-h-[90vh] mx-auto object-contain" />
+                    <DialogContent className="max-w-4xl h-[90vh] p-2 bg-transparent border-none flex items-center justify-center">
+                        <div className="relative w-full h-full">
+                            <Image src={imageUrl} alt={`Photo of ${unit.name}`} fill sizes="100vw" className="object-contain" />
+                        </div>
                     </DialogContent>
                 </Dialog>
                 <Badge className={`absolute top-2 right-2 ${getStatusClass(unit.status)}`}>

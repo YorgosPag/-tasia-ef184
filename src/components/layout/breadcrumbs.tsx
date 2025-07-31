@@ -1,17 +1,15 @@
+"use client";
 
-'use client';
-
-import React, { Fragment } from 'react';
-import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { Fragment } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-
+} from "@/components/ui/tooltip";
 
 export interface BreadcrumbItem {
   href: string;
@@ -31,12 +29,12 @@ interface BreadcrumbsProps {
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   return (
     <TooltipProvider>
-      <nav aria-label="Breadcrumb" className={cn('hidden md:block', className)}>
+      <nav aria-label="Breadcrumb" className={cn("hidden md:block", className)}>
         <ol className="flex items-center space-x-1 text-sm text-muted-foreground">
           {items.map((item, index) => {
             const isLast = index === items.length - 1;
             const itemContent = (
-              <span className="truncate" style={{ maxWidth: '150px' }}>
+              <span className="truncate" style={{ maxWidth: "150px" }}>
                 {item.label}
               </span>
             );
@@ -45,19 +43,19 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
               <Fragment key={`${item.href}-${item.label}`}>
                 <li>
                   {isLast ? (
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                           <span
-                            className="font-semibold text-foreground truncate"
-                            aria-current="page"
-                            style={{ maxWidth: '150px' }}
-                          >
-                            {item.label}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>{item.tooltip || item.label}</p>
-                        </TooltipContent>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span
+                          className="font-semibold text-foreground truncate"
+                          aria-current="page"
+                          style={{ maxWidth: "150px" }}
+                        >
+                          {item.label}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{item.tooltip || item.label}</p>
+                      </TooltipContent>
                     </Tooltip>
                   ) : (
                     <Tooltip>

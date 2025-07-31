@@ -16,4 +16,4 @@ export interface CustomList {
   items: ListItem[];
 }
 
-export type CreateListData = Omit<CustomList, 'id' | 'createdAt' | 'items'>;
+export type CreateListData = Omit<CustomList, "id" | "createdAt" | "items">;

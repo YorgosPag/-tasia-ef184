@@ -1,15 +1,27 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import type { Building, BuildingFormValues } from '@/lib/types/project-types';
-import { format } from 'date-fns';
-import { Timestamp } from 'firebase/firestore';
+import React from "react";
+import { UseFormReturn } from "react-hook-form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import type { Building, BuildingFormValues } from "@/lib/types/project-types";
+import { format } from "date-fns";
+import { Timestamp } from "firebase/firestore";
 
 interface BuildingDetailsFormProps {
   form: UseFormReturn<BuildingFormValues>;
@@ -17,18 +29,22 @@ interface BuildingDetailsFormProps {
 }
 
 const formatDate = (timestamp?: Timestamp | Date) => {
-    if (!timestamp) return '-';
-    const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
-    return format(date, 'dd/MM/yyyy');
+  if (!timestamp) return "-";
+  const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
+  return format(date, "dd/MM/yyyy");
 };
 
-export function BuildingDetailsForm({ form, building }: BuildingDetailsFormProps) {
+export function BuildingDetailsForm({
+  form,
+  building,
+}: BuildingDetailsFormProps) {
   return (
     <>
       <CardHeader>
         <CardTitle>Κτίριο: {building.address}</CardTitle>
         <CardDescription>
-          Τύπος: {building.type} | Ημερομηνία Δημιουργίας: {formatDate(building.createdAt)}
+          Τύπος: {building.type} | Ημερομηνία Δημιουργίας:{" "}
+          {formatDate(building.createdAt)}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid md:grid-cols-2 gap-6 pt-6">
@@ -65,7 +81,13 @@ export function BuildingDetailsForm({ form, building }: BuildingDetailsFormProps
             <FormItem>
               <FormLabel>Έτος Κατασκευής</FormLabel>
               <FormControl>
-                <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value,10) || '')} />
+                <Input
+                  type="number"
+                  {...field}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value, 10) || "")
+                  }
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import type { ListItem as ListItemType } from '@/lib/customListService';
-import { ListItem } from './ListItem';
+import type { ListItem as ListItemType } from "@/lib/customListService";
+import { ListItem } from "./ListItem";
 
 interface EditableListItemsProps {
   items: ListItemType[];
@@ -12,10 +11,18 @@ interface EditableListItemsProps {
   fetchAllLists: () => Promise<void>;
 }
 
-export function EditableListItems({ items, listId, hasCode, canBeModified, fetchAllLists }: EditableListItemsProps) {
+export function EditableListItems({
+  items,
+  listId,
+  hasCode,
+  canBeModified,
+  fetchAllLists,
+}: EditableListItemsProps) {
   return (
     <div className="space-y-2">
-      <h4 className="font-semibold text-sm">Υπάρχοντα Στοιχεία ({items.length})</h4>
+      <h4 className="font-semibold text-sm">
+        Υπάρχοντα Στοιχεία ({items.length})
+      </h4>
       {items.length > 0 ? (
         items.map((item) => (
           <ListItem

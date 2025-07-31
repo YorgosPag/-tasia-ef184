@@ -1,14 +1,13 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useSidebar } from '@/components/ui/sidebar/sidebar-context';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar/sidebar-context";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,19 +15,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { LogIn, LogOut } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { Breadcrumbs } from './breadcrumbs';
-import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
-import { Skeleton } from '@/components/ui/skeleton';
-import dynamic from 'next/dynamic';
+} from "@/components/ui/dropdown-menu";
+import { LogIn, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Breadcrumbs } from "./breadcrumbs";
+import { useBreadcrumbs } from "@/hooks/use-breadcrumbs";
+import { Skeleton } from "@/components/ui/skeleton";
+import dynamic from "next/dynamic";
 
-const ModeToggle = dynamic(() => import('@/components/layout/mode-toggle').then(mod => mod.ModeToggle), {
-  loading: () => <Skeleton className="h-8 w-8 rounded-full" />,
-  ssr: false,
-});
-
+const ModeToggle = dynamic(
+  () => import("@/components/layout/mode-toggle").then((mod) => mod.ModeToggle),
+  {
+    loading: () => <Skeleton className="h-8 w-8 rounded-full" />,
+    ssr: false,
+  },
+);
 
 export function AppHeader() {
   const { isMobile } = useSidebar();
@@ -36,32 +37,32 @@ export function AppHeader() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const pathname = usePathname();
   const breadcrumbs = useBreadcrumbs();
-  
-  const showBreadcrumbs = breadcrumbs.length > 0 && !pathname.startsWith('/login') && !pathname.startsWith('/register') && pathname !== '/';
 
+  const showBreadcrumbs =
+    breadcrumbs.length > 0 &&
+    !pathname.startsWith("/login") &&
+    !pathname.startsWith("/register") &&
+    pathname !== "/";
 
   const handleLogout = async () => {
     await signOut(auth);
-    router.push('/login');
+    router.push("/login");
   };
 
   const handleLogin = () => {
-    router.push('/login');
+    router.push("/login");
   };
 
   const getInitials = (email: string | null | undefined) => {
-    if (!email) return 'U';
+    if (!email) return "U";
     return email.substring(0, 2).toUpperCase();
   };
-
 
   return (
     <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-sidebar-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
       {isMobile && <SidebarTrigger />}
       <div className="flex-1">
-        {showBreadcrumbs && (
-          <Breadcrumbs items={breadcrumbs} />
-        )}
+        {showBreadcrumbs && <Breadcrumbs items={breadcrumbs} />}
       </div>
       <div className="flex items-center gap-4">
         <ModeToggle />
@@ -72,7 +73,10 @@ export function AppHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
+                  <AvatarImage
+                    src={user.photoURL ?? ""}
+                    alt={user.displayName ?? "User"}
+                  />
                   <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
                 </Avatar>
               </Button>
@@ -81,7 +85,7 @@ export function AppHeader() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {user.displayName ?? 'My Account'}
+                    {user.displayName ?? "My Account"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user.email}

@@ -1,8 +1,7 @@
+"use client";
 
-"use client"
-
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 export const SidebarGroup = React.forwardRef<
   HTMLDivElement,
@@ -15,9 +14,9 @@ export const SidebarGroup = React.forwardRef<
       className={cn("p-2", className)}
       {...props}
     />
-  )
-})
-SidebarGroup.displayName = "SidebarGroup"
+  );
+});
+SidebarGroup.displayName = "SidebarGroup";
 
 export const SidebarGroupLabel = React.forwardRef<
   HTMLDivElement,
@@ -29,13 +28,13 @@ export const SidebarGroupLabel = React.forwardRef<
       data-sidebar="group-label"
       className={cn(
         "px-2 pb-1 pt-3 text-xs font-medium uppercase text-sidebar-muted-foreground transition-opacity group-data-[state=collapsed]:opacity-0",
-        className
+        className,
       )}
       {...props}
     />
-  )
-})
-SidebarGroupLabel.displayName = "SidebarGroupLabel"
+  );
+});
+SidebarGroupLabel.displayName = "SidebarGroupLabel";
 
 export const SidebarGroupContent = React.forwardRef<
   HTMLDivElement,
@@ -48,6 +47,6 @@ export const SidebarGroupContent = React.forwardRef<
       className={cn("flex flex-col", className)}
       {...props}
     />
-  )
-})
-SidebarGroupContent.displayName = "SidebarGroupContent"
+  );
+});
+SidebarGroupContent.displayName = "SidebarGroupContent";

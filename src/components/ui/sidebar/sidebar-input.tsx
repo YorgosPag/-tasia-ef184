@@ -1,17 +1,16 @@
+"use client";
 
-"use client"
-
-import * as React from "react"
-import { Search } from "lucide-react"
-import { useSidebar } from "./sidebar-context"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
+import * as React from "react";
+import { Search } from "lucide-react";
+import { useSidebar } from "./sidebar-context";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export const SidebarInput = React.forwardRef<
   React.ElementRef<typeof Input>,
   React.ComponentProps<typeof Input>
 >(({ className, ...props }, ref) => {
-  const { state } = useSidebar()
+  const { state } = useSidebar();
 
   return (
     <div
@@ -25,6 +24,6 @@ export const SidebarInput = React.forwardRef<
         {...props}
       />
     </div>
-  )
-})
-SidebarInput.displayName = "SidebarInput"
+  );
+});
+SidebarInput.displayName = "SidebarInput";

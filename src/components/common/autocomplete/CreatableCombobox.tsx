@@ -1,13 +1,23 @@
+"use client";
 
-'use client';
-
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { ChevronsUpDown, Check, PlusCircle, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { ChevronsUpDown, Check, PlusCircle, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 interface CreatableComboboxProps {
   options: { value: string; label: string }[];
@@ -17,9 +27,15 @@ interface CreatableComboboxProps {
   placeholder?: string;
 }
 
-export function CreatableCombobox({ options, value, onChange, onCreate, placeholder }: CreatableComboboxProps) {
+export function CreatableCombobox({
+  options,
+  value,
+  onChange,
+  onCreate,
+  placeholder,
+}: CreatableComboboxProps) {
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreate = async () => {
@@ -31,11 +47,17 @@ export function CreatableCombobox({ options, value, onChange, onCreate, placehol
       setOpen(false);
     }
     setIsCreating(false);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
-  const filteredOptions = options.filter(opt => opt.label.toLowerCase().includes(searchQuery.toLowerCase()));
-  const showCreateOption = searchQuery && !filteredOptions.some(opt => opt.label.toLowerCase() === searchQuery.toLowerCase());
+  const filteredOptions = options.filter((opt) =>
+    opt.label.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+  const showCreateOption =
+    searchQuery &&
+    !filteredOptions.some(
+      (opt) => opt.label.toLowerCase() === searchQuery.toLowerCase(),
+    );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -46,7 +68,7 @@ export function CreatableCombobox({ options, value, onChange, onCreate, placehol
           aria-expanded={open}
           className="w-full justify-between font-normal"
         >
-          {value || (placeholder || "Επιλέξτε...")}
+          {value || placeholder || "Επιλέξτε..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -59,14 +81,23 @@ export function CreatableCombobox({ options, value, onChange, onCreate, placehol
           />
           <CommandList>
             <CommandEmpty>
-                {showCreateOption ? (
-                    <Button variant="ghost" className="w-full" onClick={handleCreate} disabled={isCreating}>
-                        {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-                        Δημιουργία &quot;{searchQuery}&quot;
-                    </Button>
-                ) : (
-                    <span>Δεν βρέθηκαν αποτελέσματα.</span>
-                )}
+              {showCreateOption ? (
+                <Button
+                  variant="ghost"
+                  className="w-full"
+                  onClick={handleCreate}
+                  disabled={isCreating}
+                >
+                  {isCreating ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                  )}
+                  Δημιουργία &quot;{searchQuery}&quot;
+                </Button>
+              ) : (
+                <span>Δεν βρέθηκαν αποτελέσματα.</span>
+              )}
             </CommandEmpty>
             <CommandGroup>
               {filteredOptions.map((option) => (
@@ -81,7 +112,7 @@ export function CreatableCombobox({ options, value, onChange, onCreate, placehol
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
+                      value === option.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {option.label}

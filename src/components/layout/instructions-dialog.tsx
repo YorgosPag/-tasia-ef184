@@ -1,5 +1,4 @@
-
-"use client"
+"use client";
 
 import {
   Dialog,
@@ -8,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
 export function InstructionsDialog({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <Dialog>
@@ -47,5 +46,5 @@ export function InstructionsDialog({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

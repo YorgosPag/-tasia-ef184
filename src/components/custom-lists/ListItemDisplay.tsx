@@ -1,9 +1,8 @@
+"use client";
 
-'use client';
-
-import { Button } from '@/components/ui/button';
-import { Edit, Trash2 } from 'lucide-react';
-import type { ListItem as ListItemType } from '@/lib/customListService';
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2 } from "lucide-react";
+import type { ListItem as ListItemType } from "@/lib/customListService";
 
 interface ListItemDisplayProps {
   item: ListItemType;
@@ -13,7 +12,13 @@ interface ListItemDisplayProps {
   onDelete: () => void;
 }
 
-export function ListItemDisplay({ item, hasCode, canBeModified, onEdit, onDelete }: ListItemDisplayProps) {
+export function ListItemDisplay({
+  item,
+  hasCode,
+  canBeModified,
+  onEdit,
+  onDelete,
+}: ListItemDisplayProps) {
   return (
     <>
       <div className="flex items-center gap-2 flex-1 min-w-0">

@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -10,69 +9,89 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Copy } from 'lucide-react';
-import { Company } from '@/hooks/use-data-store';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Edit, Trash2, Copy } from "lucide-react";
+import { Company } from "@/hooks/use-data-store";
+import { formatDate, getCompanyName } from "@/lib/project-helpers";
+import type { ProjectWithWorkStageSummary } from "@/lib/types/project-types";
 import {
-  formatDate,
-  getCompanyName,
-} from '@/lib/project-helpers';
-import type { ProjectWithWorkStageSummary } from '@/lib/types/project-types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Progress } from '@/components/ui/progress';
-
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
 
 interface WorkStageStatusBadgeProps {
-    summary: ProjectWithWorkStageSummary['workStageSummary'];
-    deadline: ProjectWithWorkStageSummary['deadline'];
+  summary: ProjectWithWorkStageSummary["workStageSummary"];
+  deadline: ProjectWithWorkStageSummary["deadline"];
 }
 
-function WorkStageStatusBadge({ summary, deadline }: WorkStageStatusBadgeProps) {
-    if (!summary) {
-        return <Badge variant="outline">Δεν έχει οριστεί</Badge>
-    }
+function WorkStageStatusBadge({
+  summary,
+  deadline,
+}: WorkStageStatusBadgeProps) {
+  if (!summary) {
+    return <Badge variant="outline">Δεν έχει οριστεί</Badge>;
+  }
 
-    let variant: "default" | "secondary" | "destructive" | "outline" = 'outline';
-    let label = 'Προπώληση';
+  let variant: "default" | "secondary" | "destructive" | "outline" = "outline";
+  let label = "Προπώληση";
 
-    switch(summary.overallStatus) {
-        case 'Σε εξέλιξη': variant = 'secondary'; label = 'Σε κατασκευή'; break;
-        case 'Καθυστερεί': variant = 'destructive'; label = 'Σε καθυστέρηση'; break;
-        case 'Ολοκληρώθηκε': variant = 'default'; label = 'Ολοκληρωμένο'; break;
-        default: variant = 'outline'; label = 'Προπώληση'; break;
-    }
-    
-    const tooltipText = `Τρέχον στάδιο: ${summary.currentWorkStageName || 'N/A'}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline)}`;
+  switch (summary.overallStatus) {
+    case "Σε εξέλιξη":
+      variant = "secondary";
+      label = "Σε κατασκευή";
+      break;
+    case "Καθυστερεί":
+      variant = "destructive";
+      label = "Σε καθυστέρηση";
+      break;
+    case "Ολοκληρώθηκε":
+      variant = "default";
+      label = "Ολοκληρωμένο";
+      break;
+    default:
+      variant = "outline";
+      label = "Προπώληση";
+      break;
+  }
 
-    return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <div className="flex flex-col gap-1.5 w-40">
-                    <div className="flex justify-between items-center">
-                        <Badge variant={variant} className="whitespace-nowrap">{label}</Badge>
-                        <span className="text-xs font-medium text-muted-foreground">{Math.round(summary.progress)}%</span>
-                    </div>
-                    <Progress value={summary.progress} className="h-1.5" />
-                </div>
-            </TooltipTrigger>
-            <TooltipContent>
-                <p>{tooltipText}</p>
-            </TooltipContent>
-        </Tooltip>
-    )
+  const tooltipText = `Τρέχον στάδιο: ${summary.currentWorkStageName || "N/A"}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline)}`;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex flex-col gap-1.5 w-40">
+          <div className="flex justify-between items-center">
+            <Badge variant={variant} className="whitespace-nowrap">
+              {label}
+            </Badge>
+            <span className="text-xs font-medium text-muted-foreground">
+              {Math.round(summary.progress)}%
+            </span>
+          </div>
+          <Progress value={summary.progress} className="h-1.5" />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{tooltipText}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 interface ProjectTableProps {
@@ -96,11 +115,11 @@ export function ProjectTable({
 }: ProjectTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const view = searchParams.get('view') || 'index';
+  const view = searchParams.get("view") || "index";
 
   const handleRowClick = (e: React.MouseEvent, projectId: string) => {
     // Prevent navigation if a button inside the row was clicked
-    if ((e.target as HTMLElement).closest('[data-action-button]')) {
+    if ((e.target as HTMLElement).closest("[data-action-button]")) {
       return;
     }
     router.push(`/projects/${projectId}?view=${view}`);
@@ -108,100 +127,111 @@ export function ProjectTable({
 
   return (
     <TooltipProvider>
-        <div className="overflow-x-auto">
+      <div className="overflow-x-auto">
         <Table>
-            <TableHeader>
+          <TableHeader>
             <TableRow>
-                <TableHead>Τίτλος</TableHead>
-                <TableHead>Εταιρεία</TableHead>
-                <TableHead>Τοποθεσία</TableHead>
-                <TableHead>Πρόοδος Κατασκευής</TableHead>
-                {isEditor && <TableHead className="text-right">Ενέργειες</TableHead>}
+              <TableHead>Τίτλος</TableHead>
+              <TableHead>Εταιρεία</TableHead>
+              <TableHead>Τοποθεσία</TableHead>
+              <TableHead>Πρόοδος Κατασκευής</TableHead>
+              {isEditor && (
+                <TableHead className="text-right">Ενέργειες</TableHead>
+              )}
             </TableRow>
-            </TableHeader>
-            <TableBody>
+          </TableHeader>
+          <TableBody>
             {projects.map((project) => (
-                <TableRow
+              <TableRow
                 key={project.id}
                 onClick={(e) => handleRowClick(e, project.id)}
                 onMouseEnter={() => onPrefetch(project.id)}
                 className="group cursor-pointer"
-                >
+              >
                 <TableCell className="font-medium">{project.title}</TableCell>
                 <TableCell className="text-muted-foreground">
-                    {getCompanyName(project.companyId, companies)}
+                  {getCompanyName(project.companyId, companies)}
                 </TableCell>
-                <TableCell className="text-muted-foreground">{project.location}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {project.location}
+                </TableCell>
                 <TableCell>
-                   <WorkStageStatusBadge
-                        summary={project.workStageSummary}
-                        deadline={project.deadline}
-                    />
+                  <WorkStageStatusBadge
+                    summary={project.workStageSummary}
+                    deadline={project.deadline}
+                  />
                 </TableCell>
                 {isEditor && (
-                    <TableCell className="text-right">
+                  <TableCell className="text-right">
                     <div
-                        className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1"
-                        data-action-button="true"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end gap-1"
+                      data-action-button="true"
                     >
-                        <Button
+                      <Button
                         variant="ghost"
                         size="icon"
                         title="Αντιγραφή"
-                        onClick={(e) => { e.stopPropagation(); onDuplicate(project.id)}}
-                        >
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDuplicate(project.id);
+                        }}
+                      >
                         <Copy className="h-4 w-4" />
                         <span className="sr-only">Αντιγραφή</span>
-                        </Button>
-                        <Button
+                      </Button>
+                      <Button
                         variant="ghost"
                         size="icon"
                         title="Επεξεργασία"
-                         onClick={(e) => { e.stopPropagation(); onEdit(project)}}
-                        >
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(project);
+                        }}
+                      >
                         <Edit className="h-4 w-4" />
                         <span className="sr-only">Επεξεργασία</span>
-                        </Button>
-                        <AlertDialog>
+                      </Button>
+                      <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button
+                          <Button
                             variant="ghost"
                             size="icon"
                             title="Διαγραφή"
                             className="text-destructive hover:text-destructive"
                             onClick={(e) => e.stopPropagation()}
-                            >
+                          >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Διαγραφή</span>
-                            </Button>
+                          </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
-                            <AlertDialogHeader>
+                          <AlertDialogHeader>
                             <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
                             <AlertDialogDescription>
-                                Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το
-                                έργο &quot;{project.title}&quot;.
+                              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα
+                              διαγραφεί οριστικά το έργο &quot;{project.title}
+                              &quot;.
                             </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
                             <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
                             <AlertDialogAction
-                                onClick={() => onDelete(project.id)}
-                                className="bg-destructive hover:bg-destructive/90"
+                              onClick={() => onDelete(project.id)}
+                              className="bg-destructive hover:bg-destructive/90"
                             >
-                                Διαγραφή
+                              Διαγραφή
                             </AlertDialogAction>
-                            </AlertDialogFooter>
+                          </AlertDialogFooter>
                         </AlertDialogContent>
-                        </AlertDialog>
+                      </AlertDialog>
                     </div>
-                    </TableCell>
+                  </TableCell>
                 )}
-                </TableRow>
+              </TableRow>
             ))}
-            </TableBody>
+          </TableBody>
         </Table>
-        </div>
+      </div>
     </TooltipProvider>
   );
 }

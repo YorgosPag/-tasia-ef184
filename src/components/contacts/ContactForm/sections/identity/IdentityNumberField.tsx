@@ -1,21 +1,26 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useDocumentNumberMask } from '@/hooks/useDocumentNumberMask';
-import type { UseFormReturn } from 'react-hook-form';
-import type { ContactFormValues } from '@/lib/validation/contactSchema';
+import React from "react";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useDocumentNumberMask } from "@/hooks/useDocumentNumberMask";
+import type { UseFormReturn } from "react-hook-form";
+import type { ContactFormValues } from "@/lib/validation/contactSchema";
 
 interface IdentityNumberFieldProps {
   form: UseFormReturn<ContactFormValues>;
 }
 
 export function IdentityNumberField({ form }: IdentityNumberFieldProps) {
-  const identityType = form.watch('identity.type');
+  const identityType = form.watch("identity.type");
   const { placeholder, formatValue } = useDocumentNumberMask(identityType);
-  
+
   return (
     <FormField
       control={form.control}

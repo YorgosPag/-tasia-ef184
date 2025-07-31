@@ -1,9 +1,8 @@
+"use client";
 
-'use client';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/hooks/use-auth';
-import { Briefcase, Users } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
+import { Briefcase, Users } from "lucide-react";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -23,7 +22,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">5</div>
-            <p className="text-xs text-muted-foreground">+2 από τον προηγούμενο μήνα</p>
+            <p className="text-xs text-muted-foreground">
+              +2 από τον προηγούμενο μήνα
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -33,7 +34,9 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+12</div>
-            <p className="text-xs text-muted-foreground">+18.1% από τον προηγούμενο μήνα</p>
+            <p className="text-xs text-muted-foreground">
+              +18.1% από τον προηγούμενο μήνα
+            </p>
           </CardContent>
         </Card>
       </div>

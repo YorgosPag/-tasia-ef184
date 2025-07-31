@@ -1,18 +1,26 @@
+"use client";
 
-'use client';
-
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Loader2, Upload } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2, Upload } from "lucide-react";
 
 interface FloorPlanUploadCardProps {
   onFileUpload: (file: File) => void;
   isUploading: boolean;
 }
 
-export function FloorPlanUploadCard({ onFileUpload, isUploading }: FloorPlanUploadCardProps) {
+export function FloorPlanUploadCard({
+  onFileUpload,
+  isUploading,
+}: FloorPlanUploadCardProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +39,10 @@ export function FloorPlanUploadCard({ onFileUpload, isUploading }: FloorPlanUplo
     <Card>
       <CardHeader>
         <CardTitle>Ανέβασμα Κάτοψης</CardTitle>
-        <CardDescription>Επιλέξτε ένα αρχείο PDF για να ανεβάσετε ως κάτοψη για αυτόν τον όροφο.</CardDescription>
+        <CardDescription>
+          Επιλέξτε ένα αρχείο PDF για να ανεβάσετε ως κάτοψη για αυτόν τον
+          όροφο.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-4">
@@ -42,13 +53,16 @@ export function FloorPlanUploadCard({ onFileUpload, isUploading }: FloorPlanUplo
             onChange={handleFileChange}
             className="flex-1"
           />
-          <Button onClick={handleUploadClick} disabled={!selectedFile || isUploading}>
+          <Button
+            onClick={handleUploadClick}
+            disabled={!selectedFile || isUploading}
+          >
             {isUploading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Upload className="mr-2 h-4 w-4" />
             )}
-            {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα'}
+            {isUploading ? "Ανέβασμα..." : "Ανέβασμα"}
           </Button>
         </div>
       </CardContent>

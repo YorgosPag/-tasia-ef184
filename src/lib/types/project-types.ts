@@ -1,40 +1,39 @@
-
-import type { Timestamp } from 'firebase/firestore';
-import { z } from 'zod';
-import { buildingSchema } from '@/components/projects/BuildingFormDialog';
+import type { Timestamp } from "firebase/firestore";
+import { z } from "zod";
+import { buildingSchema } from "@/components/projects/BuildingFormDialog";
 
 export interface Building {
-    id: string;
-    address: string;
-    type: string;
-    projectId: string;
-    originalId: string;
-    topLevelId: string;
-    createdAt: any;
-    description?: string;
-    photoUrl?: string;
-    constructionYear?: number;
+  id: string;
+  address: string;
+  type: string;
+  projectId: string;
+  originalId: string;
+  topLevelId: string;
+  createdAt: any;
+  description?: string;
+  photoUrl?: string;
+  constructionYear?: number;
 }
-  
+
 export interface Project {
-    id: string;
-    title: string;
-    companyId: string;
-    location?: string;
-    description?: string;
-    deadline: any;
-    status: 'Ενεργό' | 'Σε εξέλιξη' | 'Ολοκληρωμένο';
-    photoUrl?: string;
-    tags?: string[];
-    createdAt: any;
+  id: string;
+  title: string;
+  companyId: string;
+  location?: string;
+  description?: string;
+  deadline: any;
+  status: "Ενεργό" | "Σε εξέλιξη" | "Ολοκληρωμένο";
+  photoUrl?: string;
+  tags?: string[];
+  createdAt: any;
 }
 
 export interface ProjectWithWorkStageSummary extends Project {
-    workStageSummary?: {
-      currentWorkStageName?: string;
-      progress: number;
-      overallStatus: WorkStage['status'];
-    };
+  workStageSummary?: {
+    currentWorkStageName?: string;
+    progress: number;
+    overallStatus: WorkStage["status"];
+  };
 }
 
 export interface WorkStageComment {
@@ -46,41 +45,41 @@ export interface WorkStageComment {
 }
 
 export interface ChecklistItem {
-    task: string;
-    completed: boolean;
-    completionDate?: Timestamp;
-    completedBy?: string;
-    inspectionNotes?: string;
+  task: string;
+  completed: boolean;
+  completionDate?: Timestamp;
+  completedBy?: string;
+  inspectionNotes?: string;
 }
 
 export interface Photo {
-    url: string;
-    uploadedAt: Timestamp;
-    uploadedBy: string;
-    name: string;
+  url: string;
+  uploadedAt: Timestamp;
+  uploadedBy: string;
+  name: string;
 }
-  
+
 export interface WorkStage {
-    id: string;
-    name: string;
-    description?: string;
-    status: 'Εκκρεμεί' | 'Σε εξέλιξη' | 'Ολοκληρώθηκε' | 'Καθυστερεί';
-    assignedTo?: string[];
-    dependsOn?: string[];
-    startDate?: Timestamp;
-    endDate?: Timestamp;
-    deadline?: Timestamp;
-    documents?: string[];
-    notes?: string;
-    checklist?: ChecklistItem[];
-    photos?: Photo[];
-    comments?: WorkStageComment[];
-    budgetedCost?: number;
-    actualCost?: number;
+  id: string;
+  name: string;
+  description?: string;
+  status: "Εκκρεμεί" | "Σε εξέλιξη" | "Ολοκληρώθηκε" | "Καθυστερεί";
+  assignedTo?: string[];
+  dependsOn?: string[];
+  startDate?: Timestamp;
+  endDate?: Timestamp;
+  deadline?: Timestamp;
+  documents?: string[];
+  notes?: string;
+  checklist?: ChecklistItem[];
+  photos?: Photo[];
+  comments?: WorkStageComment[];
+  budgetedCost?: number;
+  actualCost?: number;
 }
 
 export interface WorkStageWithSubstages extends WorkStage {
-    workSubstages: WorkStage[];
+  workSubstages: WorkStage[];
 }
 
 export interface ProjectFormValues {
@@ -90,7 +89,7 @@ export interface ProjectFormValues {
   location?: string;
   description?: string;
   deadline: Date;
-  status: 'Ενεργό' | 'Σε εξέλιξη' | 'Ολοκληρωμένο';
+  status: "Ενεργό" | "Σε εξέλιξη" | "Ολοκληρωμένο";
   photoUrl?: string;
   tags?: string;
 }

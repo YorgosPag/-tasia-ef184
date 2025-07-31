@@ -1,11 +1,16 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { CreatableCombobox } from '@/components/common/autocomplete/CreatableCombobox';
-import type { UseFormReturn } from 'react-hook-form';
-import type { ContactFormValues } from '@/lib/validation/contactSchema';
+import React from "react";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { CreatableCombobox } from "@/components/common/autocomplete/CreatableCombobox";
+import type { UseFormReturn } from "react-hook-form";
+import type { ContactFormValues } from "@/lib/validation/contactSchema";
 
 interface IdentityTypeFieldProps {
   form: UseFormReturn<ContactFormValues>;
@@ -14,10 +19,10 @@ interface IdentityTypeFieldProps {
 export function IdentityTypeField({ form }: IdentityTypeFieldProps) {
   // Hardcoded options since the hook is removed.
   const identityTypeOptions = [
-      { value: 'Ταυτότητα (Νέο)', label: 'Ταυτότητα (Νέο)' },
-      { value: 'Ταυτότητα (Παλιό)', label: 'Ταυτότητα (Παλιό)' },
-      { value: 'Διαβατήριο', label: 'Διαβατήριο' },
-      { value: 'Άδεια Οδήγησης', label: 'Άδεια Οδήγησης' },
+    { value: "Ταυτότητα (Νέο)", label: "Ταυτότητα (Νέο)" },
+    { value: "Ταυτότητα (Παλιό)", label: "Ταυτότητα (Παλιό)" },
+    { value: "Διαβατήριο", label: "Διαβατήριο" },
+    { value: "Άδεια Οδήγησης", label: "Άδεια Οδήγησης" },
   ];
 
   // This is a placeholder as adding to the list is not required from this combobox
@@ -25,7 +30,7 @@ export function IdentityTypeField({ form }: IdentityTypeFieldProps) {
   const handleCreateIdentityType = async (newValue: string) => {
     return newValue;
   };
-  
+
   return (
     <FormField
       control={form.control}
@@ -36,7 +41,7 @@ export function IdentityTypeField({ form }: IdentityTypeFieldProps) {
           <div className="flex-1">
             <CreatableCombobox
               options={identityTypeOptions}
-              value={field.value || ''}
+              value={field.value || ""}
               onChange={field.onChange}
               onCreate={handleCreateIdentityType}
               placeholder="π.χ. Ταυτότητα, Διαβατήριο..."

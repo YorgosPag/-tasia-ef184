@@ -1,48 +1,60 @@
+"use client";
 
-'use client';
-
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Edit, Trash2, ChevronDown } from 'lucide-react';
-import type { CustomList } from '@/lib/customListService';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Edit, Trash2, ChevronDown } from "lucide-react";
+import type { CustomList } from "@/lib/customListService";
+import { cn } from "@/lib/utils";
 
 interface EditableListHeaderProps {
   list: CustomList;
   isOpen: boolean;
   canBeModified: boolean;
   onToggle: () => void;
-  onUpdate: (field: 'title' | 'description', value: string) => void;
+  onUpdate: (field: "title" | "description", value: string) => void;
   onDelete: () => void;
 }
 
-export function EditableListHeader({ list, isOpen, canBeModified, onToggle, onUpdate, onDelete }: EditableListHeaderProps) {
+export function EditableListHeader({
+  list,
+  isOpen,
+  canBeModified,
+  onToggle,
+  onUpdate,
+  onDelete,
+}: EditableListHeaderProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [newTitle, setNewTitle] = useState(list.title);
 
   const [isEditingDescription, setIsEditingDescription] = useState(false);
-  const [newDescription, setNewDescription] = useState(list.description || '');
+  const [newDescription, setNewDescription] = useState(list.description || "");
 
-  const handleBlur = (field: 'title' | 'description') => {
-    if (field === 'title') {
+  const handleBlur = (field: "title" | "description") => {
+    if (field === "title") {
       setIsEditingTitle(false);
-      onUpdate('title', newTitle);
+      onUpdate("title", newTitle);
     } else {
       setIsEditingDescription(false);
-      onUpdate('description', newDescription);
+      onUpdate("description", newDescription);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, field: 'title' | 'description') => {
-    if (e.key === 'Enter' || e.key === 'Escape') {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    field: "title" | "description",
+  ) => {
+    if (e.key === "Enter" || e.key === "Escape") {
       e.currentTarget.blur();
     }
   };
 
-  const handleEditClick = (e: React.MouseEvent, field: 'title' | 'description') => {
+  const handleEditClick = (
+    e: React.MouseEvent,
+    field: "title" | "description",
+  ) => {
     e.stopPropagation();
-    if (field === 'title') {
+    if (field === "title") {
       setIsEditingTitle(true);
     } else {
       setIsEditingDescription(true);
@@ -56,8 +68,8 @@ export function EditableListHeader({ list, isOpen, canBeModified, onToggle, onUp
           <Input
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            onBlur={() => handleBlur('title')}
-            onKeyDown={(e) => handleKeyDown(e, 'title')}
+            onBlur={() => handleBlur("title")}
+            onKeyDown={(e) => handleKeyDown(e, "title")}
             autoFocus
             className="h-8 font-bold text-base"
             onClick={(e) => e.stopPropagation()}
@@ -66,7 +78,12 @@ export function EditableListHeader({ list, isOpen, canBeModified, onToggle, onUp
           <div className="flex items-center gap-2">
             <p className="font-bold text-base">{list.title}</p>
             {canBeModified && (
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => handleEditClick(e, 'title')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => handleEditClick(e, "title")}
+              >
                 <Edit className="h-3 w-3" />
               </Button>
             )}
@@ -77,8 +94,8 @@ export function EditableListHeader({ list, isOpen, canBeModified, onToggle, onUp
           <Input
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
-            onBlur={() => handleBlur('description')}
-            onKeyDown={(e) => handleKeyDown(e, 'description')}
+            onBlur={() => handleBlur("description")}
+            onKeyDown={(e) => handleKeyDown(e, "description")}
             autoFocus
             className="h-8 text-sm text-muted-foreground mt-1"
             onClick={(e) => e.stopPropagation()}
@@ -86,16 +103,23 @@ export function EditableListHeader({ list, isOpen, canBeModified, onToggle, onUp
         ) : (
           <div className="flex items-center gap-2">
             <p className="text-sm text-muted-foreground">
-              {list.description || 'Δεν υπάρχει περιγραφή'}
+              {list.description || "Δεν υπάρχει περιγραφή"}
             </p>
             {canBeModified && (
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => handleEditClick(e, 'description')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => handleEditClick(e, "description")}
+              >
                 <Edit className="h-3 w-3" />
               </Button>
             )}
           </div>
         )}
-        <p className="text-xs text-muted-foreground font-mono mt-1">ID: {list.id}</p>
+        <p className="text-xs text-muted-foreground font-mono mt-1">
+          ID: {list.id}
+        </p>
       </div>
       <div className="flex items-center gap-2 ml-4">
         {canBeModified && (
@@ -103,14 +127,20 @@ export function EditableListHeader({ list, isOpen, canBeModified, onToggle, onUp
             variant="ghost"
             size="icon"
             className="text-destructive hover:text-destructive"
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
             title="Διαγραφή Λίστας"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
         )}
         <ChevronDown
-          className={cn('h-4 w-4 shrink-0 transition-transform duration-200 cursor-pointer', isOpen && 'rotate-180')}
+          className={cn(
+            "h-4 w-4 shrink-0 transition-transform duration-200 cursor-pointer",
+            isOpen && "rotate-180",
+          )}
           onClick={onToggle}
         />
       </div>

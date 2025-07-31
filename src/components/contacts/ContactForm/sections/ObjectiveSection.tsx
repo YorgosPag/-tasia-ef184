@@ -1,12 +1,16 @@
+"use client";
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import type { ContactFormProps } from "../types";
 
-'use client';
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import type { ContactFormProps } from '../types';
-
-export function ObjectiveSection({ form }: Pick<ContactFormProps, 'form'>) {
+export function ObjectiveSection({ form }: Pick<ContactFormProps, "form">) {
   return (
     <Card className="relative border-muted">
       <CardContent className="p-6 space-y-4">
@@ -20,7 +24,12 @@ export function ObjectiveSection({ form }: Pick<ContactFormProps, 'form'>) {
             <FormItem>
               <FormLabel>Σκοπός Εταιρείας</FormLabel>
               <FormControl>
-                <Textarea {...field} disabled placeholder="—" className="min-h-[120px]" />
+                <Textarea
+                  {...field}
+                  disabled
+                  placeholder="—"
+                  className="min-h-[120px]"
+                />
               </FormControl>
             </FormItem>
           )}

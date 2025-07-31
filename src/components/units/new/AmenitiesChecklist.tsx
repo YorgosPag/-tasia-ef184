@@ -1,9 +1,13 @@
+"use client";
 
-'use client';
-
-import { Checkbox } from '@/components/ui/checkbox';
-import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
-import { AMENITIES_LIST } from '@/lib/unit-helpers';
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+} from "@/components/ui/form";
+import { AMENITIES_LIST } from "@/lib/unit-helpers";
 
 export function AmenitiesChecklist({ control }: { control: any }) {
   return (
@@ -21,7 +25,11 @@ export function AmenitiesChecklist({ control }: { control: any }) {
                   onCheckedChange={(checked) =>
                     checked
                       ? field.onChange([...(field.value || []), item.id])
-                      : field.onChange((field.value || []).filter((v: string) => v !== item.id))
+                      : field.onChange(
+                          (field.value || []).filter(
+                            (v: string) => v !== item.id,
+                          ),
+                        )
                   }
                 />
               </FormControl>

@@ -1,25 +1,24 @@
+"use client";
 
-'use client';
-
-import { useWorkStageCalendar } from '@/hooks/use-work-stage-calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
-import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { useWorkStageCalendar } from "@/hooks/use-work-stage-calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function CalendarPage() {
   const { events, isLoading, month, setMonth } = useWorkStageCalendar();
 
   const DayWithEvents = ({ date, ...props }: { date: Date } & any) => {
     const dayEvents = events.filter(
-      (event) => event.date.toDateString() === date.toDateString()
+      (event) => event.date.toDateString() === date.toDateString(),
     );
 
     return (
@@ -27,8 +26,8 @@ export default function CalendarPage() {
         <PopoverTrigger asChild>
           <div
             className={cn(
-              'relative h-9 w-9 p-0 font-normal',
-              dayEvents.length > 0 && 'font-bold'
+              "relative h-9 w-9 p-0 font-normal",
+              dayEvents.length > 0 && "font-bold",
             )}
             {...props}
           >
@@ -59,7 +58,9 @@ export default function CalendarPage() {
                     key={`${event.id}-${event.type}`}
                     className="grid grid-cols-[25px_1fr] items-start pb-4 last:mb-0 last:pb-0"
                   >
-                    <span className={`flex h-2 w-2 translate-y-1 rounded-full ${event.color}`} />
+                    <span
+                      className={`flex h-2 w-2 translate-y-1 rounded-full ${event.color}`}
+                    />
                     <div className="grid gap-1">
                       <p className="text-sm font-medium leading-none">
                         {event.title}
@@ -94,15 +95,15 @@ export default function CalendarPage() {
               onMonthChange={setMonth}
               className="p-0"
               classNames={{
-                root: 'w-full',
-                months: 'w-full',
-                month: 'w-full space-y-4',
-                table: 'w-full border-collapse',
-                head_row: 'flex w-full',
-                head_cell: 'w-full rounded-md text-muted-foreground',
-                row: 'flex w-full mt-2',
-                cell: 'h-full w-full text-center text-sm p-0 relative first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md',
-                day: 'h-14 w-full rounded-md',
+                root: "w-full",
+                months: "w-full",
+                month: "w-full space-y-4",
+                table: "w-full border-collapse",
+                head_row: "flex w-full",
+                head_cell: "w-full rounded-md text-muted-foreground",
+                row: "flex w-full mt-2",
+                cell: "h-full w-full text-center text-sm p-0 relative first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
+                day: "h-14 w-full rounded-md",
               }}
               components={{
                 Day: DayWithEvents,
@@ -113,13 +114,13 @@ export default function CalendarPage() {
       </Card>
       <Card>
         <CardHeader>
-            <CardTitle>Επεξήγηση</CardTitle>
+          <CardTitle>Επεξήγηση</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-4">
-            <Badge variant="outline">Εκκρεμεί</Badge>
-            <Badge variant="secondary">Σε εξέλιξη</Badge>
-            <Badge variant="default">Ολοκληρώθηκε</Badge>
-            <Badge variant="destructive">Καθυστερεί</Badge>
+          <Badge variant="outline">Εκκρεμεί</Badge>
+          <Badge variant="secondary">Σε εξέλιξη</Badge>
+          <Badge variant="default">Ολοκληρώθηκε</Badge>
+          <Badge variant="destructive">Καθυστερεί</Badge>
         </CardContent>
       </Card>
     </div>

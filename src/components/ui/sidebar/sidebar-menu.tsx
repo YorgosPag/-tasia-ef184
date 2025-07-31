@@ -1,8 +1,7 @@
+"use client";
 
-"use client"
-
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 export const SidebarMenu = React.forwardRef<
   HTMLUListElement,
@@ -15,9 +14,9 @@ export const SidebarMenu = React.forwardRef<
       className={cn("flex flex-col", className)}
       {...props}
     />
-  )
-})
-SidebarMenu.displayName = "SidebarMenu"
+  );
+});
+SidebarMenu.displayName = "SidebarMenu";
 
 export const SidebarMenuItem = React.forwardRef<
   HTMLLIElement,
@@ -30,6 +29,6 @@ export const SidebarMenuItem = React.forwardRef<
       className={cn("relative", className)}
       {...props}
     />
-  )
-})
-SidebarMenuItem.displayName = "SidebarMenuItem"
+  );
+});
+SidebarMenuItem.displayName = "SidebarMenuItem";

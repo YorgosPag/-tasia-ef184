@@ -1,15 +1,14 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import { InstantSearch, Configure } from 'react-instantsearch-hooks-web';
-import algoliasearch from 'algoliasearch/lite';
-import type { UseFormReturn } from 'react-hook-form';
-import { Autocomplete } from './Autocomplete';
+import React from "react";
+import { InstantSearch, Configure } from "react-instantsearch-hooks-web";
+import algoliasearch from "algoliasearch/lite";
+import type { UseFormReturn } from "react-hook-form";
+import { Autocomplete } from "./Autocomplete";
 
 const searchClient = algoliasearch(
   process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID!,
-  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!
+  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!,
 );
 
 interface AddressAutocompleteInputProps {
@@ -36,7 +35,8 @@ export function AddressAutocompleteInput({
   ) {
     return (
       <div className="text-destructive text-xs p-2 rounded-md bg-destructive/10">
-        Η αναζήτηση Algolia δεν έχει ρυθμιστεί. Βεβαιωθείτε ότι οι μεταβλητές περιβάλλοντος υπάρχουν.
+        Η αναζήτηση Algolia δεν έχει ρυθμιστεί. Βεβαιωθείτε ότι οι μεταβλητές
+        περιβάλλοντος υπάρχουν.
       </div>
     );
   }

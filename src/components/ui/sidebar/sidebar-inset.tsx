@@ -1,8 +1,7 @@
+"use client";
 
-"use client"
-
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 export const SidebarInset = React.forwardRef<
   HTMLDivElement,
@@ -15,6 +14,6 @@ export const SidebarInset = React.forwardRef<
       className={cn("bg-background text-foreground", className)}
       {...props}
     />
-  )
-})
-SidebarInset.displayName = "SidebarInset"
+  );
+});
+SidebarInset.displayName = "SidebarInset";

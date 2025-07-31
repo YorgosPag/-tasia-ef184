@@ -1,12 +1,12 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect } from "react";
 
 /**
  * Helper to safely get the initial state from localStorage.
  */
 function getInitialState<T>(key: string, defaultValue: T): T {
   // Can't access localStorage on the server
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return defaultValue;
   }
 
@@ -33,10 +33,10 @@ function getInitialState<T>(key: string, defaultValue: T): T {
  */
 export function useLocalStorageState<T>(
   key: string,
-  defaultValue: T
+  defaultValue: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [state, setState] = useState<T>(() =>
-    getInitialState(key, defaultValue)
+    getInitialState(key, defaultValue),
   );
 
   // Effect to update localStorage when the state changes
@@ -55,12 +55,15 @@ export function useLocalStorageState<T>(
         try {
           setState(JSON.parse(e.newValue));
         } catch (error) {
-           console.error(`Error parsing localStorage key "${key}" from storage event:`, error);
+          console.error(
+            `Error parsing localStorage key "${key}" from storage event:`,
+            error,
+          );
         }
       }
     };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, [key]);
 
   return [state, setState];
