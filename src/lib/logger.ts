@@ -1,4 +1,4 @@
-"use strict";
+"use client";
 
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "./firebase";
