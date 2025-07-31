@@ -130,7 +130,6 @@ export function useComplexEntities(listType: string, filters: Record<string, str
         }
         return result;
     },
-    enabled: !!listType,
     keepPreviousData: true,
     staleTime: 5 * 60 * 1000,
   });
