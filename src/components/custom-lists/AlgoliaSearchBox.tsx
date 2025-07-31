@@ -160,6 +160,7 @@ export function AlgoliaSearchBox({
   return (
     <div className="w-full">
       <InstantSearch searchClient={searchClient} indexName={indexName}>
+        {/* @ts-ignore */}
         <Configure facetFilters={[`type:${listType}`]} />
         <div className="grid grid-cols-1 gap-4">
           <SearchBox />
