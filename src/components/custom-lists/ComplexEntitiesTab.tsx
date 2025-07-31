@@ -161,6 +161,10 @@ export function ComplexEntitiesTab() {
     }
   };
 
+  const handleHitsChange = React.useCallback((hits: any[]) => {
+    setAlgoliaHits(hits);
+  }, []);
+
   return (
     <div className="space-y-4">
       <Card>
@@ -272,7 +276,7 @@ export function ComplexEntitiesTab() {
             <AlgoliaSearchBox
               indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
               listType={selectedListType}
-              onHitsChange={setAlgoliaHits}
+              onHitsChange={handleHitsChange}
             />
           ) : (
             <div className="text-center py-10 text-muted-foreground">
