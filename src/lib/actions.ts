@@ -11,8 +11,46 @@ import {
   getDocs,
   where,
   orderBy,
+  setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { logActivity } from "./logger";
+
+type UserRole = "admin" | "editor" | "viewer";
+
+async function isFirstUser(): Promise<boolean> {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, limit(1));
+  const snapshot = await getDocs(q);
+  return snapshot.empty;
+}
+
+export async function findOrCreateUserAction(user: {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}): Promise<UserRole> {
+  const userDocRef = doc(db, "users", user.uid);
+  const userDoc = await getDoc(userDocRef);
+
+  if (userDoc.exists()) {
+    return userDoc.data().role as UserRole;
+  } else {
+    const isFirst = await isFirstUser();
+    const role: UserRole = isFirst ? "admin" : "viewer";
+
+    await setDoc(userDocRef, {
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      role: role,
+      createdAt: serverTimestamp(),
+    });
+    console.log(`Created user document for ${user.email} with role: ${role}`);
+    return role;
+  }
+}
 
 async function isAdmin(userId: string): Promise<boolean> {
   if (!userId) return false;
@@ -25,13 +63,6 @@ async function isAdmin(userId: string): Promise<boolean> {
     console.error("Error checking admin status:", error);
     return false;
   }
-}
-
-async function isFirstUser(): Promise<boolean> {
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, limit(1));
-  const snapshot = await getDocs(q);
-  return snapshot.empty;
 }
 
 export async function seedTasiaDataAction(userId: string) {

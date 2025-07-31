@@ -8,17 +8,8 @@ import {
   ReactNode,
 } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import {
-  doc,
-  onSnapshot,
-  setDoc,
-  getDoc,
-  serverTimestamp,
-  collection,
-  getDocs,
-  query,
-} from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
+import { findOrCreateUserAction } from "@/lib/actions";
 
 // --- Developer Configuration ---
 // Set to true to bypass Firebase Auth and log in as a mock admin user.
@@ -45,31 +36,6 @@ const AuthContext = createContext<AuthContextType>({
   isEditor: false,
 });
 
-// --- Helper Functions ---
-async function findOrCreateUserDocument(user: User): Promise<UserRole> {
-  const userDocRef = doc(db, "users", user.uid);
-  const userDoc = await getDoc(userDocRef);
-
-  if (userDoc.exists()) {
-    return userDoc.data().role as UserRole;
-  } else {
-    const usersRef = collection(db, "users");
-    const querySnapshot = await getDocs(query(usersRef));
-    const isFirstUser = querySnapshot.empty;
-    const role: UserRole = isFirstUser ? "admin" : "viewer";
-
-    await setDoc(userDocRef, {
-      email: user.email,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-      role: role,
-      createdAt: serverTimestamp(),
-    });
-    console.log(`Created user document for ${user.email} with role: ${role}`);
-    return role;
-  }
-}
-
 // --- AuthProvider Component ---
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null | undefined>(undefined);
@@ -95,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (userAuth) {
         setUser(userAuth);
         try {
-          const userRole = await findOrCreateUserDocument(userAuth);
+          const userRole = await findOrCreateUserAction(userAuth);
           setRole(userRole);
         } catch (error) {
           console.error("Error finding or creating user document:", error);
