@@ -107,47 +107,6 @@ if grep -q "***REMOVED***" .gitignore && git ls-files | grep -q "***REMOVED***";
 fi
 echo "✅ .gitignore and sensitive files check passed." | tee -a project-check.log
 
-echo "🚦 7 Checking for uncommitted changes..." | tee -a project-check.log
-if [ -n "$(git status --porcelain)" ]; then
-  echo "⚠️  Υπάρχουν uncommitted changes! Καλό είναι να τα commitάρεις πριν συνεχίσεις." | tee -a project-check.log
-  echo "ℹ️  Θέλεις να κάνεις commit τώρα; (y/n)" | tee -a project-check.log
-  read -p "↩️ " COMMIT_RESPONSE
-  if [ "$COMMIT_RESPONSE" = "y" ]; then
-    echo "ℹ️  Εισάγετε μήνυμα για το commit:" | tee -a project-check.log
-    read -p "↩️ " COMMIT_MESSAGE
-    if [ -z "$COMMIT_MESSAGE" ]; then
-      COMMIT_MESSAGE="Auto-commit from project-check.sh"
-    fi
-    git add .
-    git commit -m "$COMMIT_MESSAGE"
-    echo "✅ Changes committed." | tee -a project-check.log
-  else
-    echo "ℹ️  Συνεχίζουμε χωρίς commit." | tee -a project-check.log
-  fi
-else
-  echo "✅ No uncommitted changes found." | tee -a project-check.log
-fi
-
-echo "🚦 8 Checking for outdated dependencies..." | tee -a project-check.log
-if npm outdated | grep -q 'Package'; then
-  echo "⚠️  Υπάρχουν outdated dependencies!" | tee -a project-check.log
-  echo "ℹ️  Τρέξε 'npm outdated' για λεπτομέρειες και 'npm update' για ενημέρωση (προσοχή!)." | tee -a project-check.log
-  echo "ℹ️  Για major versions: 'npm install package@latest' (ελέγχεις ένα ένα)." | tee -a project-check.log
-  echo "ℹ️  Θέλεις να τρέξεις 'npm update' τώρα; (y/n)" | tee -a project-check.log
-  read -p "↩️ " UPDATE_RESPONSE
-  if [ "$UPDATE_RESPONSE" = "y" ]; then
-    if npm update; then
-      echo "✅ Dependencies updated." | tee -a project-check.log
-    else
-      echo "❌ Failed to update dependencies. Διόρθωσε τα σφάλματα!" | tee -a project-check.log
-      exit 1
-    fi
-  else
-    echo "ℹ️  Συνεχίζουμε χωρίς update." | tee -a project-check.log
-  fi
-else
-  echo "✅ No outdated dependencies found." | tee -a project-check.log
-fi
 
 echo "🚦 9 Linting code (npm run lint)..." | tee -a project-check.log
 if ! npm run lint; then
@@ -300,6 +259,16 @@ echo "🚦 17 Running development server (npm run dev)..." | tee -a project-chec
 # Find a free port for the development server
 START_PORT=9003
 END_PORT=9010
+find_free_port() {
+  for port in $(seq $1 $2); do
+    if ! lsof -i :$port >/dev/null 2>&1; then
+      echo $port
+      return 0
+    fi
+  done
+  return 1
+}
+
 PORT=$(find_free_port $START_PORT $END_PORT)
 if [ -z "$PORT" ]; then
   echo "❌ Δεν βρέθηκε ελεύθερο port μεταξύ $START_PORT-$END_PORT!" | tee -a project-check.log
@@ -309,7 +278,6 @@ echo "✅ Επιλέχθηκε το port $PORT για το development server." 
 npm run dev -- --port $PORT &
 DEV_PID=$!
 sleep 10
-
 echo "🔍 Checking if dev server responds at http://localhost:$PORT..." | tee -a project-check.log
 if timeout 30 curl --silent --fail http://localhost:$PORT >/dev/null; then
   echo "✅ Dev server responds!" | tee -a project-check.log
@@ -318,7 +286,6 @@ else
   kill $DEV_PID || true
   exit 1
 fi
-
 echo "🚦 3.1 Running E2E tests (npm run e2e)..." | tee -a project-check.log
 if [ -f package.json ] && grep -q "\"e2e\":" package.json; then
   if ! npm run e2e; then
