@@ -1,7 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Sidebar } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+} from "@/components/ui/sidebar";
 import { SidebarNav } from "./sidebar-nav";
 import { Logo } from "@/components/logo";
 import { InstructionsDialog } from "./instructions-dialog";
