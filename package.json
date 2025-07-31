@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --port $(./find-port.sh)",
+    "dev": "chmod +x find-port.sh && next dev --port $(./find-port.sh)",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
