@@ -42,8 +42,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { logActivity } from '@/lib/logger';
-import { BuildingFormDialog, buildingSchema, BuildingFormValues } from './BuildingFormDialog';
-import type { Project, Building } from '@/lib/types/project-types';
+import { BuildingFormDialog, buildingSchema } from './BuildingFormDialog';
+import type { Project, Building, BuildingFormValues } from '@/lib/types/project-types';
 import { useAuth } from '@/hooks/use-auth';
 
 interface BuildingsSectionProps {
@@ -141,7 +141,7 @@ export function BuildingsSection({ project }: BuildingsSectionProps) {
             address: data.address, type: data.type, description: data.description || '',
             photoUrl: data.photoUrl?.trim() || undefined, floorsCount: data.floorsCount || undefined,
             constructionYear: data.constructionYear || undefined,
-            tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+            tags: data.tags ? data.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : [],
             identifier: data.identifier,
         }
     

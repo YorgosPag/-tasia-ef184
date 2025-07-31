@@ -13,7 +13,7 @@ import { GemiCompanyInfo } from './job/GemiCompanyInfo';
 import { JobRoleSection } from './job/JobRoleSection';
 
 export function JobSection({ form }: Pick<ContactFormProps, 'form'>) {
-    const entityType = useWatch({ control: form.control, name: 'entityType' });
+    const entityType = form.watch('entityType');
     const { isLoadingGemi } = useGemiData(form);
 
     if (entityType === 'Δημ. Υπηρεσία' || entityType === 'Φυσικό Πρόσωπο') {

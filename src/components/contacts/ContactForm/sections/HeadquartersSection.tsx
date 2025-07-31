@@ -13,7 +13,7 @@ export function HeadquartersSection({ form }: Pick<ContactFormProps, 'form'>) {
   const { addresses } = useWatchedFields(form);
   const { fields } = useFieldArray({ control: form.control, name: 'addresses' });
 
-  const gemhAddressIndex = addresses.findIndex((addr: any) => addr.fromGEMI);
+  const gemhAddressIndex = addresses.findIndex((addr) => addr.fromGEMI);
 
   if (gemhAddressIndex === -1) {
     return (

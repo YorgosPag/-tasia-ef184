@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { InstantSearch } from 'react-instantsearch-hooks-web';
+import { InstantSearch, Configure } from 'react-instantsearch-hooks-web';
 import algoliasearch from 'algoliasearch/lite';
 import type { UseFormReturn } from 'react-hook-form';
 import { Autocomplete } from './Autocomplete';
@@ -43,6 +43,7 @@ export function AddressAutocompleteInput({
 
   return (
     <InstantSearch searchClient={searchClient} indexName={indexName}>
+      <Configure hitsPerPage={10} />
       <Autocomplete
         form={form}
         name={name}

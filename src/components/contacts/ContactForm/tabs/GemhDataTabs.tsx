@@ -21,12 +21,14 @@ import { DecisionsSection } from '../sections/DecisionsSection';
 import { EstablishmentSection } from '../sections/EstablishmentSection';
 import { VersionsSection } from '../sections/VersionsSection';
 import { ExternalLinksSection } from '../sections/ExternalLinksSection';
+import { LegalRepresentativeSection } from '../sections/LegalRepresentativeSection';
 
 export function GemhDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
   return (
     <Tabs defaultValue="general" className="w-full">
       <TabsList className="flex flex-wrap h-auto justify-start w-full gap-2">
         <TabsTrigger value="general" className="flex-1 min-w-[160px] text-center">Γενικά Στοιχεία</TabsTrigger>
+        <TabsTrigger value="representative" className="flex-1 min-w-[160px] text-center">Νόμιμος Εκπρόσωπος</TabsTrigger>
         <TabsTrigger value="registration" className="flex-1 min-w-[160px] text-center">Καταχώριση στο ΓΕΜΗ</TabsTrigger>
         <TabsTrigger value="enriched" className="flex-1 min-w-[160px] text-center">Εμπλουτισμένα Στοιχεία</TabsTrigger>
         <TabsTrigger value="headquarters" className="flex-1 min-w-[160px] text-center">Διεύθυνση Έδρας (ΓΕΜΗ)</TabsTrigger>
@@ -46,6 +48,10 @@ export function GemhDataTabs({ form }: Pick<ContactFormProps, 'form'>) {
 
       <TabsContent value="general" className="mt-4">
           <JobSection form={form} />
+      </TabsContent>
+      
+      <TabsContent value="representative" className="mt-4">
+        <LegalRepresentativeSection form={form} />
       </TabsContent>
 
       <TabsContent value="registration" className="mt-4">

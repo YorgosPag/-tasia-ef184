@@ -18,7 +18,7 @@ interface EditableListProps {
   list: CustomList;
   isOpen: boolean;
   onToggle: (id: string) => void;
-  fetchAllLists: () => Promise<void>;
+  fetchAllLists: () => void;
 }
 
 export function EditableList({ list, isOpen, onToggle, fetchAllLists }: EditableListProps) {
@@ -39,7 +39,7 @@ export function EditableList({ list, isOpen, onToggle, fetchAllLists }: Editable
       try {
         await updateDoc(doc(db, 'tsia-custom-lists', list.id), dataToUpdate);
         toast({ title: 'Επιτυχία', description: 'Η λίστα ενημερώθηκε.'});
-        fetchAllLists();
+        await fetchAllLists();
       } catch (error: any) {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η ενημέρωση απέτυχε: ${error.message}`});
       }
@@ -67,7 +67,7 @@ export function EditableList({ list, isOpen, onToggle, fetchAllLists }: Editable
 
         await logActivity('DELETE_LIST', { entityId: list.id, entityType: 'custom-list', name: list.title });
         toast({ title: 'Επιτυχία', description: 'Η λίστα και όλα τα στοιχεία της διαγράφηκαν.'});
-        fetchAllLists();
+        await fetchAllLists();
       } catch (error: any) {
         toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η διαγραφή απέτυχε: ${error.message}`});
       }

@@ -143,8 +143,8 @@ function useWorkStageForm(projectId: string) {
                 if (!topLevelId) throw new Error("topLevelId is missing for editing.");
                 const topLevelRef = parentId ? doc(db, 'workSubstages', topLevelId) : doc(db, 'workStages', topLevelId);
                 const subRef = parentId ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', workStageId) : doc(db, 'projects', projectId, 'workStages', workStageId);
-                batch.update(topLevelRef, { ...finalData, assignedToId: finalData.assignedTo?.[0] || null });
-                batch.update(subRef, finalData as any);
+                batch.update(topLevelRef, { ...finalData, assignedToId: finalData.assignedTo[0] || null });
+                batch.update(subRef, finalData);
                 toast({ title: 'Επιτυχία', description: 'Το Στάδιο Εργασίας ενημερώθηκε.' });
             } else {
                  const parentId = isSubstage ? (editingWorkStage as { parentId: string }).parentId : null;
@@ -265,7 +265,7 @@ function useWorkStageChecklist(projectId: string, workStages: WorkStageWithSubst
         try {
             const docRef = parentId ? doc(db, 'projects', projectId, 'workStages', parentId, 'workSubstages', stage.id) : doc(db, 'projects', projectId, 'workStages', stage.id);
             const newChecklist = [...(stage.checklist || [])];
-            const updatedItem: ChecklistItem = { ...newChecklist[itemIndex], completed, completionDate: completed ? Timestamp.now() : undefined, completedBy: completed ? user.email : undefined };
+            const updatedItem: ChecklistItem = { ...newChecklist[itemIndex], completed, completionDate: completed ? Timestamp.now() : undefined, completedBy: completed ? user.email || undefined : undefined };
             newChecklist[itemIndex] = updatedItem;
             const batch = writeBatch(db);
             batch.update(docRef, { checklist: newChecklist });

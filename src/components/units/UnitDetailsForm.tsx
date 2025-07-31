@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -87,7 +87,7 @@ export function UnitDetailsForm({ form, unit, getStatusClass }: UnitDetailsFormP
                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Επιλέξτε αριθμό..."/></SelectTrigger></FormControl>
                       <SelectContent>
-                          {Array.from({length: 8}).map((_, i) => (
+                          {Array.from({length: 8}, (_, i) => i).map(i => (
                               <SelectItem key={i} value={i.toString()}>{i === 0 ? 'Χωρίς υπνοδωμάτιο' : `${i} υπνοδωμάτιο(α)`}</SelectItem>
                           ))}
                       </SelectContent>

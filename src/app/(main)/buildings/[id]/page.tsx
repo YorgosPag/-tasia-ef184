@@ -12,24 +12,13 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { buildingSchema, BuildingFormValues } from '@/components/projects/BuildingFormDialog';
+import { buildingSchema } from '@/components/projects/BuildingFormDialog';
 import { BuildingDetailsForm } from '@/components/buildings/BuildingDetailsForm';
 import { BuildingFloorsList } from '@/components/buildings/BuildingFloorsList';
 import { logActivity } from '@/lib/logger';
 import { useAuth } from '@/hooks/use-auth';
+import type { Building, BuildingFormValues } from '@/lib/types/project-types';
 
-export interface Building {
-  id: string;
-  address: string;
-  type: string;
-  projectId: string;
-  originalId: string;
-  topLevelId: string;
-  createdAt: any;
-  description?: string;
-  photoUrl?: string;
-  constructionYear?: number;
-}
 
 export default function BuildingDetailsPage() {
   const params = useParams();
