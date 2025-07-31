@@ -1,13 +1,29 @@
 
-
 'use client';
 
 import React, { useState } from 'react';
-import { doc, updateDoc, arrayUnion, arrayRemove, Timestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+  doc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  Timestamp,
+} from 'firebase/firestore';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Upload, Trash2, CameraOff, ZoomIn } from 'lucide-react';
@@ -33,7 +49,10 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
     setIsUploading(true);
 
     const uploadPromises = Array.from(files).map(async (file) => {
-      const storageRef = ref(storage, `unit_photos/${unit.id}/${Date.now()}_${file.name}`);
+      const storageRef = ref(
+        storage,
+        `unit_photos/${unit.id}/${Date.now()}_${file.name}`,
+      );
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
       return { url, name: file.name, uploadedAt: Timestamp.now() };
@@ -43,15 +62,24 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
       const newPhotos = await Promise.all(uploadPromises);
       const unitRef = doc(db, 'units', unit.id);
       await updateDoc(unitRef, {
-        photos: arrayUnion(...newPhotos)
+        photos: arrayUnion(...newPhotos),
       });
-      toast({ title: 'Επιτυχία', description: `${files.length} φωτογραφίες ανέβηκαν.` });
+      toast({
+        title: 'Επιτυχία',
+        description: `${files.length} φωτογραφίες ανέβηκαν.`,
+      });
       setFiles(null);
       // Reset file input
-      const input = document.getElementById('photo-upload-input') as HTMLInputElement;
+      const input = document.getElementById(
+        'photo-upload-input',
+      ) as HTMLInputElement;
       if (input) input.value = '';
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η μεταφόρτωση απέτυχε: ${error.message}` });
+      toast({
+        variant: 'destructive',
+        title: 'Σφάλμα',
+        description: `Η μεταφόρτωση απέτυχε: ${error.message}`,
+      });
     } finally {
       setIsUploading(false);
     }
@@ -66,57 +94,88 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
       // Delete from Firestore document
       const unitRef = doc(db, 'units', unit.id);
       await updateDoc(unitRef, {
-        photos: arrayRemove(photo)
+        photos: arrayRemove(photo),
       });
-      
+
       toast({ title: 'Επιτυχία', description: 'Η φωτογραφία διαγράφηκε.' });
     } catch (error: any) {
-       toast({ variant: 'destructive', title: 'Σφάλμα', description: `Η διαγραφή απέτυχε: ${error.message}` });
+      toast({
+        variant: 'destructive',
+        title: 'Σφάλμα',
+        description: `Η διαγραφή απέτυχε: ${error.message}`,
+      });
     }
   };
-  
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Φωτογραφίες Ακινήτου</CardTitle>
-        <CardDescription>Ανεβάστε και διαχειριστείτε τις φωτογραφίες που σχετίζονται με αυτό το ακίνητο.</CardDescription>
+        <CardDescription>
+          Ανεβάστε και διαχειριστείτε τις φωτογραφίες που σχετίζονται με αυτό το
+          ακίνητο.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4 p-4 border rounded-lg">
-          <Input id="photo-upload-input" type="file" multiple accept="image/*" onChange={handleFileChange} />
+          <Input
+            id="photo-upload-input"
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+          />
           <Button onClick={handleUpload} disabled={isUploading || !files}>
-            {isUploading ? <Loader2 className="mr-2 animate-spin" /> : <Upload className="mr-2" />}
+            {isUploading ? (
+              <Loader2 className="mr-2 animate-spin" />
+            ) : (
+              <Upload className="mr-2" />
+            )}
             {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα'}
           </Button>
         </div>
-        
+
         {unit.photos && unit.photos.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {unit.photos.map((photo, index) => (
-              <div key={index} className="relative group border rounded-lg overflow-hidden aspect-square">
+              <div
+                key={index}
+                className="relative group border rounded-lg overflow-hidden aspect-square"
+              >
                 <Dialog>
                   <DialogTrigger asChild>
                     <div className="relative w-full h-full cursor-pointer">
                       <Image
-                          src={photo.url}
-                          alt={photo.name || `Unit Photo ${index + 1}`}
-                          fill
-                          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                          className="object-contain"
+                        src={photo.url}
+                        alt={photo.name || `Unit Photo ${index + 1}`}
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                        className="object-contain"
                       />
-                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <ZoomIn className="h-10 w-10 text-white" />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <ZoomIn className="h-10 w-10 text-white" />
                       </div>
                     </div>
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl h-[90vh] p-2 bg-transparent border-none flex items-center justify-center">
-                      <div className="relative w-full h-full">
-                        <Image src={photo.url} alt={photo.name || `Unit Photo ${index + 1}`} fill sizes="100vw" className="object-contain" />
-                      </div>
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={photo.url}
+                        alt={photo.name || `Unit Photo ${index + 1}`}
+                        fill
+                        sizes="100vw"
+                        className="object-contain"
+                      />
+                    </div>
                   </DialogContent>
                 </Dialog>
                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(photo)}>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => handleDelete(photo)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -126,7 +185,9 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
         ) : (
           <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-40 border-2 border-dashed rounded-lg">
             <CameraOff className="h-10 w-10" />
-            <p className="mt-2 text-sm">Δεν υπάρχουν φωτογραφίες για αυτό το ακίνητο.</p>
+            <p className="mt-2 text-sm">
+              Δεν υπάρχουν φωτογραφίες για αυτό το ακίνητο.
+            </p>
           </div>
         )}
       </CardContent>

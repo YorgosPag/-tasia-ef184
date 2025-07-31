@@ -1,23 +1,22 @@
-import { z } from "zod";
-import type { Unit } from "@/hooks/use-unit-details";
+
+import { z } from 'zod';
+import type { Unit } from '@/hooks/use-unit-details';
 
 export const newUnitSchema = z.object({
   floorIds: z
     .array(z.string())
-    .nonempty({ message: "Πρέπει να επιλέξετε τουλάχιστον έναν όροφο." }),
-  identifier: z
-    .string()
-    .min(1, {
-      message: "Ο κωδικός είναι υποχρεωτικός. Δημιουργήστε τον αυτόματα.",
-    }),
-  name: z.string().min(1, { message: "Το όνομα είναι υποχρεωτικό." }),
-  type: z.string().min(1, { message: "Ο τύπος είναι υποχρεωτικός." }),
+    .nonempty({ message: 'Πρέπει να επιλέξετε τουλάχιστον έναν όροφο.' }),
+  identifier: z.string().min(1, {
+    message: 'Ο κωδικός είναι υποχρεωτικός. Δημιουργήστε τον αυτόματα.',
+  }),
+  name: z.string().min(1, { message: 'Το όνομα είναι υποχρεωτικό.' }),
+  type: z.string().min(1, { message: 'Ο τύπος είναι υποχρεωτικός.' }),
   status: z.enum([
-    "Διαθέσιμο",
-    "Κρατημένο",
-    "Πωλημένο",
-    "Οικοπεδούχος",
-    "Προς Ενοικίαση",
+    'Διαθέσιμο',
+    'Κρατημένο',
+    'Πωλημένο',
+    'Οικοπεδούχος',
+    'Προς Ενοικίαση',
   ]),
 
   netArea: z.string().optional(),
@@ -40,46 +39,46 @@ export const newUnitSchema = z.object({
 
 export type NewUnitFormValues = z.infer<typeof newUnitSchema>;
 
-export const MULTI_FLOOR_TYPES = ["Μεζονέτα", "Κατάστημα"];
+export const MULTI_FLOOR_TYPES = ['Μεζονέτα', 'Κατάστημα'];
 
 export const AMENITIES_LIST = [
-  { id: "parking", label: "Θέση Στάθμευσης" },
-  { id: "elevator", label: "Ασανσέρ" },
-  { id: "securityDoor", label: "Πόρτα Ασφαλείας" },
-  { id: "alarm", label: "Συναγερμός" },
-  { id: "furnished", label: "Επιπλωμένο" },
-  { id: "storage", label: "Αποθήκη" },
-  { id: "fireplace", label: "Τζάκι" },
-  { id: "balcony", label: "Βεράντα/Μπαλκόνι" },
-  { id: "internalStairs", label: "Εσωτερική Σκάλα" },
-  { id: "garden", label: "Κήπος" },
-  { id: "pool", label: "Πισίνα" },
-  { id: "playroom", label: "Playroom" },
+  { id: 'parking', label: 'Θέση Στάθμευσης' },
+  { id: 'elevator', label: 'Ασανσέρ' },
+  { id: 'securityDoor', label: 'Πόρτα Ασφαλείας' },
+  { id: 'alarm', label: 'Συναγερμός' },
+  { id: 'furnished', label: 'Επιπλωμένο' },
+  { id: 'storage', label: 'Αποθήκη' },
+  { id: 'fireplace', label: 'Τζάκι' },
+  { id: 'balcony', label: 'Βεράντα/Μπαλκόνι' },
+  { id: 'internalStairs', label: 'Εσωτερική Σκάλα' },
+  { id: 'garden', label: 'Κήπος' },
+  { id: 'pool', label: 'Πισίνα' },
+  { id: 'playroom', label: 'Playroom' },
 ];
 
 export const ORIENTATIONS = [
-  "Ανατολικός",
-  "Δυτικός",
-  "Βόρειος",
-  "Νότιος",
-  "Βορειοανατολικός",
-  "Βορειοδυτικός",
-  "Νοτιοανατολικός",
-  "Νοτιοδυτικός",
-  "Διαμπερές",
+  'Ανατολικός',
+  'Δυτικός',
+  'Βόρειος',
+  'Νότιος',
+  'Βορειοανατολικός',
+  'Βορειοδυτικός',
+  'Νοτιοανατολικός',
+  'Νοτιοδυτικός',
+  'Διαμπερές',
 ];
 
 export const KITCHEN_LAYOUTS = [
-  "Σαλοκουζίνα (Ενιαίος χώρος)",
-  "Ξεχωριστή Κουζίνα",
-  "Χωρίς Κουζίνα/Σαλόνι",
+  'Σαλοκουζίνα (Ενιαίος χώρος)',
+  'Ξεχωριστή Κουζίνα',
+  'Χωρίς Κουζίνα/Σαλόνι',
 ];
 
 export function getUnitDataFromForm(data: NewUnitFormValues) {
   const unitData: { [key: string]: any } = {
     identifier: data.identifier,
     name: data.name,
-    type: data.type || "",
+    type: data.type || '',
     status: data.status,
     floorIds: data.floorIds,
     netArea: data.netArea ? parseFloat(data.netArea) : undefined,
@@ -97,9 +96,9 @@ export function getUnitDataFromForm(data: NewUnitFormValues) {
     price: data.price ? parseFloat(data.price) : undefined,
     bedrooms: data.bedrooms ? parseInt(data.bedrooms, 10) : undefined,
     bathrooms: data.bathrooms,
-    orientation: data.orientation || "",
-    kitchenLayout: data.kitchenLayout || "",
-    description: data.description || "",
+    orientation: data.orientation || '',
+    kitchenLayout: data.kitchenLayout || '',
+    description: data.description || '',
     isPenthouse: data.isPenthouse,
     amenities: data.amenities || [],
     levelSpan: data.levelSpan,
@@ -108,7 +107,7 @@ export function getUnitDataFromForm(data: NewUnitFormValues) {
   // Remove undefined keys before sending to Firestore
   Object.keys(unitData).forEach(
     (key) =>
-      (unitData[key] === undefined || unitData[key] === "") &&
+      (unitData[key] === undefined || unitData[key] === '') &&
       delete unitData[key],
   );
 
@@ -138,7 +137,7 @@ export function getAttachmentDataFromForm(data: any) {
   // Remove undefined keys before sending to Firestore
   Object.keys(attachmentData).forEach(
     (key) =>
-      (attachmentData[key] === undefined || attachmentData[key] === "") &&
+      (attachmentData[key] === undefined || attachmentData[key] === '') &&
       delete attachmentData[key],
   );
 
@@ -150,20 +149,20 @@ export function getAttachmentDataFromForm(data: any) {
 }
 
 export const getStatusClass = (
-  status: NewUnitFormValues["status"] | undefined,
+  status: NewUnitFormValues['status'] | undefined,
 ) => {
   switch (status) {
-    case "Πωλημένο":
-      return "bg-red-500 hover:bg-red-600 text-white";
-    case "Κρατημένο":
-      return "bg-yellow-500 hover:bg-yellow-600 text-white";
-    case "Διαθέσιμο":
-      return "bg-green-500 hover:bg-green-600 text-white";
-    case "Προς Ενοικίαση":
-      return "bg-purple-500 hover:bg-purple-600 text-white";
-    case "Οικοπεδούχος":
-      return "bg-orange-500 hover:bg-orange-600 text-white";
+    case 'Πωλημένο':
+      return 'bg-red-500 hover:bg-red-600 text-white';
+    case 'Κρατημένο':
+      return 'bg-yellow-500 hover:bg-yellow-600 text-white';
+    case 'Διαθέσιμο':
+      return 'bg-green-500 hover:bg-green-600 text-white';
+    case 'Προς Ενοικίαση':
+      return 'bg-purple-500 hover:bg-purple-600 text-white';
+    case 'Οικοπεδούχος':
+      return 'bg-orange-500 hover:bg-orange-600 text-white';
     default:
-      return "bg-gray-500 hover:bg-gray-600 text-white";
+      return 'bg-gray-500 hover:bg-gray-600 text-white';
   }
 };
