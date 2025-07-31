@@ -150,7 +150,10 @@ export function WorkStageFormDialog({
                         </div>
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Ακύρωση</Button></DialogClose>
-                            <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Αποθήκευση</Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                Αποθήκευση
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>

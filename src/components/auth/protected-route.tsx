@@ -17,14 +17,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   
   // --- START TEMPORARY AUTH BYPASS ---
   const bypassAuth = false; 
-  if (bypassAuth) {
-    return <>{children}</>;
-  }
   // --- END TEMPORARY AUTH BYPASS ---
 
   useEffect(() => {
-    if (isLoading) {
-      // Don't do anything while auth state is loading
+    if (bypassAuth || isLoading) {
+      // Don't do anything if bypassing or while auth state is loading
       return;
     }
 
@@ -36,8 +33,12 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       router.push('/dashboard');
     }
 
-  }, [user, isLoading, pathname, router, pathIsPublic]);
+  }, [user, isLoading, pathname, router, pathIsPublic, bypassAuth]);
   
+  if (bypassAuth) {
+    return <>{children}</>;
+  }
+
   if (isLoading && !pathIsPublic) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">

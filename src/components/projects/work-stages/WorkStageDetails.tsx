@@ -128,7 +128,7 @@ export function WorkStageDetails({
                     <Button variant="outline" size="sm" onClick={() => onEditWorkStage(stage)}><Edit className="mr-2"/>Επεξεργασία Σταδίου</Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild><Button variant="destructive_outline" size="sm"><Trash2 className="mr-2"/>Διαγραφή Σταδίου</Button></AlertDialogTrigger>
-                        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το στάδιο "{stage.name}" και όλα τα υποστάδια του.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(stage)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle><AlertDialogDescription>Αυτή η ενέργεια θα διαγράψει οριστικά το στάδιο &quot;{stage.name}&quot; και όλα τα υποστάδια του.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Ακύρωση</AlertDialogCancel><AlertDialogAction onClick={() => onDeleteWorkStage(stage)} className="bg-destructive hover:bg-destructive/90">Διαγραφή</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
                     </AlertDialog>
                 </div>
             )}
