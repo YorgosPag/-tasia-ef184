@@ -816,3 +816,19 @@
 ⚠️  Υπάρχουν uncommitted changes! Καλό είναι να τα commitάρεις πριν συνεχίσεις.
 ℹ️  Θέλεις να κάνεις commit τώρα; (y/n)
 ℹ️  Εισάγετε μήνυμα για το commit:
+✅ Changes committed.
+🚦 8 Checking for outdated dependencies...
+⚠️  Υπάρχουν outdated dependencies!
+ℹ️  Τρέξε 'npm outdated' για λεπτομέρειες και 'npm update' για ενημέρωση (προσοχή!).
+ℹ️  Για major versions: 'npm install package@latest' (ελέγχεις ένα ένα).
+ℹ️  Θέλεις να τρέξεις 'npm update' τώρα; (y/n)
+ℹ️  Συνεχίζουμε χωρίς update.
+🚦 9 Linting code (npm run lint)...
+✅ Linting passed.
+🚦 10 Checking code formatting (prettier --check)...
+✅ Formatting OK (prettier --check).
+🚦 11 Type checking (tsc --noEmit)...
+✅ TypeScript types are valid.
+🚦 12 Checking Firebase Emulator Suite...
+❌ Firestore emulator failed to respond!
+🧹 Cleaning up processes...
