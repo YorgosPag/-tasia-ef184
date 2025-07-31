@@ -218,11 +218,11 @@ fi
 echo "✅ Firestore emulator started for connection testing." | tee -a project-check.log
 
 # Test basic Firestore operations with Firebase Admin SDK (if exists)
-if [ -f "firebase-admin-test.js" ]; then
+if [ -f "firebase-admin-test.cjs" ]; then
   echo "ℹ️  Running Firestore connection test..." | tee -a project-check.log
-  node firebase-admin-test.js && echo "✅ Firestore operations test passed." | tee -a project-check.log
+  node firebase-admin-test.cjs && echo "✅ Firestore operations test passed." | tee -a project-check.log
 else
-  echo "ℹ️  No Firestore connection test file found. Consider adding firebase-admin-test.js" | tee -a project-check.log
+  echo "ℹ️  No Firestore connection test file found. Consider adding firebase-admin-test.cjs" | tee -a project-check.log
 fi
 
 # Check for Firebase config in the app
