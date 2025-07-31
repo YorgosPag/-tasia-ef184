@@ -3,7 +3,7 @@
 
 import { UnitLocationSelector } from '@/components/units/new/UnitLocationSelector';
 import { useUnitLocationState } from '@/hooks/useUnitLocationState';
-import { useDataStore } from '@/hooks/use-data-store';
+import { useCompanies, useProjects, useBuildings } from '@/hooks/use-data-store';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { newUnitSchema, MULTI_FLOOR_TYPES, getUnitDataFromForm } from '@/lib/unit-helpers';
@@ -26,7 +26,9 @@ import { db } from '@/lib/firebase';
 import { logActivity } from '@/lib/logger';
 
 export default function NewUnitPage() {
-    const { companies, projects, buildings } = useDataStore();
+    const { companies } = useCompanies();
+    const { projects } = useProjects();
+    const { buildings } = useBuildings();
     const router = useRouter();
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -190,5 +192,3 @@ export default function NewUnitPage() {
         </Form>
     );
 }
-
-    
