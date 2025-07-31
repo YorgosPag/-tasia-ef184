@@ -1,35 +1,34 @@
+"use client";
 
-'use client';
-
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   doc,
   updateDoc,
   arrayUnion,
   arrayRemove,
   Timestamp,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 import {
   ref,
   uploadBytes,
   getDownloadURL,
   deleteObject,
-} from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
+} from "firebase/storage";
+import { db, storage } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Loader2, Upload, Trash2, CameraOff, ZoomIn } from 'lucide-react';
-import Image from 'next/image';
-import { Unit } from '@/hooks/use-unit-details';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Upload, Trash2, CameraOff, ZoomIn } from "lucide-react";
+import Image from "next/image";
+import { Unit } from "@/hooks/use-unit-details";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 interface UnitPhotosTabProps {
   unit: Unit;
@@ -60,24 +59,24 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
 
     try {
       const newPhotos = await Promise.all(uploadPromises);
-      const unitRef = doc(db, 'units', unit.id);
+      const unitRef = doc(db, "units", unit.id);
       await updateDoc(unitRef, {
         photos: arrayUnion(...newPhotos),
       });
       toast({
-        title: 'Επιτυχία',
+        title: "Επιτυχία",
         description: `${files.length} φωτογραφίες ανέβηκαν.`,
       });
       setFiles(null);
       // Reset file input
       const input = document.getElementById(
-        'photo-upload-input',
+        "photo-upload-input",
       ) as HTMLInputElement;
-      if (input) input.value = '';
+      if (input) input.value = "";
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Σφάλμα',
+        variant: "destructive",
+        title: "Σφάλμα",
         description: `Η μεταφόρτωση απέτυχε: ${error.message}`,
       });
     } finally {
@@ -92,16 +91,16 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
       await deleteObject(photoRef);
 
       // Delete from Firestore document
-      const unitRef = doc(db, 'units', unit.id);
+      const unitRef = doc(db, "units", unit.id);
       await updateDoc(unitRef, {
         photos: arrayRemove(photo),
       });
 
-      toast({ title: 'Επιτυχία', description: 'Η φωτογραφία διαγράφηκε.' });
+      toast({ title: "Επιτυχία", description: "Η φωτογραφία διαγράφηκε." });
     } catch (error: any) {
       toast({
-        variant: 'destructive',
-        title: 'Σφάλμα',
+        variant: "destructive",
+        title: "Σφάλμα",
         description: `Η διαγραφή απέτυχε: ${error.message}`,
       });
     }
@@ -131,7 +130,7 @@ export function UnitPhotosTab({ unit }: UnitPhotosTabProps) {
             ) : (
               <Upload className="mr-2" />
             )}
-            {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα'}
+            {isUploading ? "Ανέβασμα..." : "Ανέβασμα"}
           </Button>
         </div>
 

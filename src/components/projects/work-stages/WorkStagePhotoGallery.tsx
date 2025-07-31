@@ -1,29 +1,23 @@
+"use client";
 
-'use client';
-
-import React, { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from '@/components/ui/carousel';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Upload, CameraOff, ZoomIn } from 'lucide-react';
-import Image from 'next/image';
-import { format } from 'date-fns';
-import { el } from 'date-fns/locale';
-import { Timestamp } from 'firebase/firestore';
-import type { WorkStage } from '@/lib/types/project-types';
-import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+} from "@/components/ui/carousel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Upload, CameraOff, ZoomIn } from "lucide-react";
+import Image from "next/image";
+import { format } from "date-fns";
+import { el } from "date-fns/locale";
+import { Timestamp } from "firebase/firestore";
+import type { WorkStage } from "@/lib/types/project-types";
+import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 
 interface WorkStagePhotoGalleryProps {
   stage: WorkStage;
@@ -31,8 +25,8 @@ interface WorkStagePhotoGalleryProps {
 }
 
 const formatDate = (timestamp?: Timestamp) => {
-  if (!timestamp) return 'Άγνωστη ημερομηνία';
-  return format(timestamp.toDate(), 'dd MMM yyyy, HH:mm', { locale: el });
+  if (!timestamp) return "Άγνωστη ημερομηνία";
+  return format(timestamp.toDate(), "dd MMM yyyy, HH:mm", { locale: el });
 };
 
 export function WorkStagePhotoGallery({
@@ -56,7 +50,7 @@ export function WorkStagePhotoGallery({
     const input = document.getElementById(
       `photo-upload-${stage.id}`,
     ) as HTMLInputElement;
-    if (input) input.value = '';
+    if (input) input.value = "";
   };
 
   return (
@@ -80,22 +74,16 @@ export function WorkStagePhotoGallery({
             disabled={!selectedFiles || isUploading}
           >
             <Upload className="mr-2" />
-            {isUploading ? 'Ανέβασμα...' : 'Ανέβασμα'}
+            {isUploading ? "Ανέβασμα..." : "Ανέβασμα"}
           </Button>
         </div>
       </CardHeader>
       <CardContent>
         {stage.photos && stage.photos.length > 0 ? (
-          <Carousel
-            opts={{ align: 'start', loop: true }}
-            className="w-full"
-          >
+          <Carousel opts={{ align: "start", loop: true }} className="w-full">
             <CarouselContent>
               {stage.photos.map((photo, index) => (
-                <CarouselItem
-                  key={index}
-                  className="md:basis-1/2 lg:basis-1/3"
-                >
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="p-1">
                     <Card>
                       <Dialog>

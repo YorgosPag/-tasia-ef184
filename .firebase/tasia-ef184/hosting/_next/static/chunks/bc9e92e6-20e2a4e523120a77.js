@@ -341,17 +341,15 @@
           return (
             (this.forceRefresh = !1),
             this.appCheck
-              ? this.appCheck
-                  .getToken(e)
-                  .then((e) =>
-                    e
-                      ? (C("string" == typeof e.token, 44558, {
-                          tokenResult: e,
-                        }),
-                        (this.m = e.token),
-                        new L(e.token))
-                      : null,
-                  )
+              ? this.appCheck.getToken(e).then((e) =>
+                  e
+                    ? (C("string" == typeof e.token, 44558, {
+                        tokenResult: e,
+                      }),
+                      (this.m = e.token),
+                      new L(e.token))
+                    : null,
+                )
               : Promise.resolve(null)
           );
         }
@@ -8752,17 +8750,15 @@
                   let s = new H(n),
                     a = [0, ek(s)];
                   r.push(
-                    t
-                      .get(a)
-                      .next((n) =>
-                        n
-                          ? ec.resolve()
-                          : t.put({
-                              targetId: 0,
-                              path: ek(s),
-                              sequenceNumber: e.highestListenSequenceNumber,
-                            }),
-                      ),
+                    t.get(a).next((n) =>
+                      n
+                        ? ec.resolve()
+                        : t.put({
+                            targetId: 0,
+                            path: ek(s),
+                            sequenceNumber: e.highestListenSequenceNumber,
+                          }),
+                    ),
                   );
                 })
                 .next(() => ec.waitFor(r));
@@ -9560,13 +9556,11 @@
                 for (let e of t)
                   for (let t of (s.push(e.batchId), e.mutations))
                     a = a.add(t.key);
-                return e.localDocuments
-                  .getDocuments(n, a)
-                  .next((e) => ({
-                    ks: e,
-                    removedBatchIds: i,
-                    addedBatchIds: s,
-                  }));
+                return e.localDocuments.getDocuments(n, a).next((e) => ({
+                  ks: e,
+                  removedBatchIds: i,
+                  addedBatchIds: s,
+                }));
               });
           },
         );

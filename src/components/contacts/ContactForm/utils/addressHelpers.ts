@@ -1,5 +1,7 @@
 import type { UseFormReturn } from "react-hook-form";
 import type { ContactFormValues } from "@/lib/validation/contactSchema";
+import { z } from "zod";
+import { addressSchema } from "@/lib/validation/schemas/addressSchema";
 
 export const ADDRESS_TYPES = [
   "Κύρια",
@@ -12,7 +14,8 @@ export const ADDRESS_TYPES = [
   "Άλλο",
 ];
 
-type AddressFieldKey = keyof ContactFormValues["addresses"][number];
+type AddressField = z.infer<typeof addressSchema.shape.addresses.element>;
+type AddressFieldKey = keyof AddressField;
 
 export const addressFieldsMap: {
   formKey: AddressFieldKey;
@@ -84,7 +87,7 @@ export const handleAddressSelect = (
     }
 
     if (value) {
-      form.setValue(`addresses.${idx}.${formKey}`, value, {
+      form.setValue(`addresses.${idx}.${formKey}` as any, value, {
         shouldDirty: true,
       });
     }

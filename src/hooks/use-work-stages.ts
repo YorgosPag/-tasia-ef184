@@ -251,7 +251,7 @@ function useWorkStageForm(projectId: string) {
           ...finalData,
           assignedToId: finalData.assignedTo[0] || null,
         });
-        batch.update(subRef, finalData);
+        batch.update(subRef, finalData as any);
         toast({
           title: "Επιτυχία",
           description: "Το Στάδιο Εργασίας ενημερώθηκε.",
@@ -499,7 +499,7 @@ function useWorkStageChecklist(
         ...newChecklist[itemIndex],
         completed,
         completionDate: completed ? Timestamp.now() : undefined,
-        completedBy: completed ? user.email || undefined : undefined,
+        completedBy: completed ? user.email ?? undefined : undefined,
       };
       newChecklist[itemIndex] = updatedItem;
       const batch = writeBatch(db);

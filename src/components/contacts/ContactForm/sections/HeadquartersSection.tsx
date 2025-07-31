@@ -20,7 +20,9 @@ export function HeadquartersSection({ form }: Pick<ContactFormProps, "form">) {
     name: "addresses",
   });
 
-  const gemhAddressIndex = addresses.findIndex((addr) => addr.fromGEMI);
+  const gemhAddressIndex = (addresses || []).findIndex(
+    (addr) => addr.fromGEMI,
+  );
 
   if (gemhAddressIndex === -1) {
     return (

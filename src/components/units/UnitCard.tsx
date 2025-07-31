@@ -1,8 +1,7 @@
+"use client";
 
-'use client';
-
-import Link from 'next/link';
-import Image from 'next/image';
+import Link from "next/link";
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -10,24 +9,24 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { BedDouble, Bath, Square, ArrowRight, ZoomIn } from 'lucide-react';
-import { getStatusClass } from '@/lib/unit-helpers';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import React from 'react';
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { BedDouble, Bath, Square, ArrowRight, ZoomIn } from "lucide-react";
+import { getStatusClass } from "@/lib/unit-helpers";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import React from "react";
 
 interface Unit {
   id: string;
   name: string;
   type?: string;
   status:
-    | 'Διαθέσιμο'
-    | 'Κρατημένο'
-    | 'Πωλημένο'
-    | 'Οικοπεδούχος'
-    | 'Προς Ενοικίαση';
+    | "Διαθέσιμο"
+    | "Κρατημένο"
+    | "Πωλημένο"
+    | "Οικοπεδούχος"
+    | "Προς Ενοικίαση";
   area?: number;
   price?: number;
   bedrooms?: number;
@@ -41,11 +40,11 @@ interface UnitCardProps {
 
 export function UnitCard({ unit }: UnitCardProps) {
   const formatPrice = (price?: number) => {
-    if (!price) return 'Κατόπιν Ερωτήσεως';
-    return `€${price.toLocaleString('el-GR')}`;
+    if (!price) return "Κατόπιν Ερωτήσεως";
+    return `€${price.toLocaleString("el-GR")}`;
   };
 
-  const imageUrl = unit.photoUrl || 'https://placehold.co/600x400.png';
+  const imageUrl = unit.photoUrl || "https://placehold.co/600x400.png";
 
   return (
     <Card className="overflow-hidden group flex flex-col">
@@ -84,23 +83,26 @@ export function UnitCard({ unit }: UnitCardProps) {
           {unit.status}
         </Badge>
       </div>
-      <Link href={`/units/${unit.id}`} className="flex flex-col h-full flex-grow">
+      <Link
+        href={`/units/${unit.id}`}
+        className="flex flex-col h-full flex-grow"
+      >
         <CardHeader className="flex-grow">
           <CardTitle>{unit.name}</CardTitle>
-          <CardDescription>{unit.type || 'Ακίνητο'}</CardDescription>
+          <CardDescription>{unit.type || "Ακίνητο"}</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-3 gap-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <BedDouble size={16} />
-            <span>{unit.bedrooms || '-'}</span>
+            <span>{unit.bedrooms || "-"}</span>
           </div>
           <div className="flex items-center gap-1">
             <Bath size={16} />
-            <span>{unit.bathrooms || '-'}</span>
+            <span>{unit.bathrooms || "-"}</span>
           </div>
           <div className="flex items-center gap-1">
             <Square size={16} />
-            <span>{unit.area || '-'} τ.μ.</span>
+            <span>{unit.area || "-"} τ.μ.</span>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center mt-auto pt-4">

@@ -36,7 +36,6 @@ import {
 import { AreaInputs } from "./new/AreaInputs";
 import { AmenitiesChecklist } from "./new/AmenitiesChecklist";
 import type { NewUnitFormValues as UnitFormValues } from "@/lib/unit-helpers";
-import { Card } from "@/components/ui/card";
 
 interface UnitDetailsFormProps {
   form: UseFormReturn<UnitFormValues>;
