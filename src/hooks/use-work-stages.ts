@@ -59,9 +59,12 @@ function useWorkStageData(projectId: string) {
       async (workStagesSnapshot) => {
         const workStagesDataPromises = workStagesSnapshot.docs.map(
           async (doc) => {
+            const docData = doc.data();
             const workStage: WorkStageWithSubstages = {
               id: doc.id,
-              ...doc.data(),
+              name: docData.name || "",
+              status: docData.status || "Εκκρεμεί",
+              ...docData,
               workSubstages: [],
             } as WorkStageWithSubstages;
             const workSubstagesQuery = query(
@@ -249,7 +252,7 @@ function useWorkStageForm(projectId: string) {
           : doc(db, "projects", projectId, "workStages", workStageId);
         batch.update(topLevelRef, {
           ...finalData,
-          assignedToId: finalData.assignedTo[0] || null,
+          assignedToId: finalData.assignedTo?.[0] || null,
         });
         batch.update(subRef, finalData as any);
         toast({
@@ -499,7 +502,7 @@ function useWorkStageChecklist(
         ...newChecklist[itemIndex],
         completed,
         completionDate: completed ? Timestamp.now() : undefined,
-        completedBy: completed ? user.email ?? undefined : undefined,
+        completedBy: completed ? user.email || undefined : undefined,
       };
       newChecklist[itemIndex] = updatedItem;
       const batch = writeBatch(db);

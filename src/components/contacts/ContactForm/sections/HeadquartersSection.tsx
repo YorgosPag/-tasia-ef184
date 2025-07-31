@@ -13,6 +13,8 @@ import { useWatchedFields } from "../hooks/useWatchedFields";
 import type { ContactFormProps } from "../types";
 import { ContactFormValues } from "@/lib/validation/contactSchema";
 
+type Address = ContactFormValues["addresses"][number];
+
 export function HeadquartersSection({ form }: Pick<ContactFormProps, "form">) {
   const { addresses } = useWatchedFields(form);
   const { fields } = useFieldArray({
@@ -21,7 +23,7 @@ export function HeadquartersSection({ form }: Pick<ContactFormProps, "form">) {
   });
 
   const gemhAddressIndex = (addresses || []).findIndex(
-    (addr) => addr.fromGEMI,
+    (addr: Address) => addr.fromGEMI,
   );
 
   if (gemhAddressIndex === -1) {

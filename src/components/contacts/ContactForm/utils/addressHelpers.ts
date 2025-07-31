@@ -87,7 +87,7 @@ export const handleAddressSelect = (
     }
 
     if (value) {
-      form.setValue(`addresses.${idx}.${formKey}` as any, value, {
+      form.setValue(`addresses.${idx}.${formKey}`, value, {
         shouldDirty: true,
       });
     }

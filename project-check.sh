@@ -47,6 +47,14 @@ for env_file in "${ENV_FILES[@]}"; do
   fi
 done
 
+echo "🚦 0.1.5 Ensuring .prettierignore exists and is sane..." | tee -a project-check.log
+if [ ! -f .prettierignore ]; then
+  echo "node_modules\n.next\n.firebase\nout\ndist\ncoverage\npublic" > .prettierignore
+  echo "✅ .prettierignore created!" | tee -a project-check.log
+else
+  echo "✅ .prettierignore already exists." | tee -a project-check.log
+fi
+
 echo "🚦 0.2 Checking for security vulnerabilities..." | tee -a project-check.log
 if npm audit --audit-level high 2>/dev/null | grep -q "found.*vulnerabilities"; then
   echo "⚠️  High severity vulnerabilities found! Run 'npm audit fix'" | tee -a project-check.log
@@ -131,7 +139,7 @@ echo "🚦 2.1 Checking Firebase Emulator Suite..." | tee -a project-check.log
 if firebase emulators:start --only firestore,functions --inspect-functions &>/tmp/emulator.log & then
   EMULATOR_PID=$!
   sleep 15
-  
+
   # Έλεγχος αν το Firestore emulator ξεκίνησε
   if timeout 30 curl --silent --fail http://localhost:8080 >/dev/null; then
     echo "✅ Firestore emulator responds!" | tee -a project-check.log
@@ -140,14 +148,14 @@ if firebase emulators:start --only firestore,functions --inspect-functions &>/tm
     kill $EMULATOR_PID || true
     exit 1
   fi
-  
+
   # Έλεγχος Firestore UI
   if timeout 10 curl --silent --fail http://localhost:4000 >/dev/null; then
     echo "✅ Firestore Emulator UI available at http://localhost:4000" | tee -a project-check.log
   else
     echo "⚠️  Firestore Emulator UI not accessible (might be disabled)" | tee -a project-check.log
   fi
-  
+
   kill $EMULATOR_PID || true
   sleep 3
 else
@@ -197,7 +205,7 @@ sleep 10
 # Έλεγχος σύνδεσης στο Firestore
 if timeout 30 curl --silent --fail http://localhost:8080 >/dev/null; then
   echo "✅ Firestore emulator started for connection testing." | tee -a project-check.log
-  
+
   # Test basic Firestore operations με το Firebase Admin SDK (αν υπάρχει)
   if [ -f "firebase-admin-test.js" ]; then
     echo "ℹ️  Running Firestore connection test..." | tee -a project-check.log
@@ -205,14 +213,14 @@ if timeout 30 curl --silent --fail http://localhost:8080 >/dev/null; then
   else
     echo "ℹ️  No Firestore connection test file found. Consider adding firebase-admin-test.js" | tee -a project-check.log
   fi
-  
+
   # Έλεγχος Firebase config στην εφαρμογή
   if grep -r "initializeApp\|getFirestore" src/ >/dev/null 2>&1; then
     echo "✅ Firebase/Firestore initialization found in source code." | tee -a project-check.log
   else
     echo "⚠️  No Firebase/Firestore initialization found in src/. Make sure Firebase is properly configured." | tee -a project-check.log
   fi
-  
+
   # Έλεγχος για Firebase environment variables
   ENV_VARS_FOUND=0
   for env_file in ***REMOVED*** ***REMOVED***.local ***REMOVED***.development ***REMOVED***.production; do
@@ -223,11 +231,11 @@ if timeout 30 curl --silent --fail http://localhost:8080 >/dev/null; then
       fi
     fi
   done
-  
+
   if [ $ENV_VARS_FOUND -eq 0 ]; then
     echo "⚠️  No Firebase environment variables found. Make sure Firebase config is set." | tee -a project-check.log
   fi
-  
+
 else
   echo "❌ Could not start Firestore emulator for testing!" | tee -a project-check.log
   kill $FIRESTORE_TEST_PID || true
@@ -315,15 +323,15 @@ sleep 10
 echo "🔍 Checking if production server responds at http://localhost:9003..." | tee -a project-check.log
 if timeout 30 curl --silent --fail http://localhost:9003 >/dev/null; then
   echo "✅ Production server responds!" | tee -a project-check.log
-  
+
   # Έλεγχος για Firestore errors στο production build
   echo "🚦 5.2 Checking Firestore connection in production mode..." | tee -a project-check.log
   sleep 5
-  
+
   # Test αν υπάρχουν console errors σχετικά με Firebase/Firestore
   echo "ℹ️  Ελέγχουμε για Firebase/Firestore errors στο production build..." | tee -a project-check.log
   echo "ℹ️  Άνοιξε το http://localhost:9003 και δες το console για Firebase errors." | tee -a project-check.log
-  
+
 else
   echo "❌ Production server ΔΕΝ απαντάει! Κάτι τρέχει..." | tee -a project-check.log
   kill $PREVIEW_PID || true
