@@ -156,9 +156,7 @@ export function AlgoliaSearchBox({
   return (
     <div className="w-full">
       <InstantSearch searchClient={searchClient} indexName={indexName}>
-        {listType && (
-          <Configure filters={`type:'${listType}'`} hitsPerPage={50} />
-        )}
+        {listType && <Configure filters={`type:'${listType}'`} hitsPerPage={50} />}
         <div className="grid grid-cols-1 gap-4">
           <SearchBox />
           <Hits onHitsChange={onHitsChange} />
