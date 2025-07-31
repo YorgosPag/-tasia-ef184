@@ -257,8 +257,8 @@ echo "✅ Firestore connection tests completed." | tee -a project-check.log
 
 echo "🚦 15 Running development server (npm run dev)..." | tee -a project-check.log
 # Find a free port for the development server
-START_PORT=9003
-END_PORT=9010
+START_PORT=9010
+END_PORT=9020
 find_free_port() {
   for port in $(seq $1 $2); do
     if ! lsof -i :$port >/dev/null 2>&1; then
@@ -411,8 +411,8 @@ echo "✅ Build ΟΚ." | tee -a project-check.log
 
 echo "🚦 27 [AUTO] Προεπισκόπηση (npm start)..." | tee -a project-check.log
 # Find a free port for the final production preview
-START_PORT=9003
-END_PORT=9010
+START_PORT=9010
+END_PORT=9020
 PORT=$(find_free_port $START_PORT $END_PORT)
 if [ -z "$PORT" ]; then
   echo "❌ Δεν βρέθηκε ελεύθερο port μεταξύ $START_PORT-$END_PORT!" | tee -a project-check.log
