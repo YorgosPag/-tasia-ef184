@@ -142,16 +142,6 @@ export function AlgoliaSearchBox({
     [],
   );
 
-  const initialUiState = useMemo(() => {
-    return {
-      [indexName]: {
-        configure: {
-          filters: `type:'${listType}'`,
-        },
-      },
-    };
-  }, [indexName, listType]);
-
   if (
     !indexName ||
     !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID ||
@@ -169,11 +159,8 @@ export function AlgoliaSearchBox({
 
   return (
     <div className="w-full">
-      <InstantSearch
-        searchClient={searchClient}
-        indexName={indexName}
-        initialUiState={initialUiState}
-      >
+      <InstantSearch searchClient={searchClient} indexName={indexName}>
+        <Configure filters={`type:'${listType}'`} />
         <div className="grid grid-cols-1 gap-4">
           <SearchBox />
           <Hits onHitsChange={onHitsChange} />

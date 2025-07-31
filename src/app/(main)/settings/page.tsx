@@ -12,10 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  clearTasiaDataAction,
-  seedTasiaDataAction,
-} from "@/lib/actions";
+import { clearTasiaDataAction, seedTasiaDataAction } from "@/lib/actions";
 
 export default function SettingsPage() {
   const { user, isAdmin } = useAuth();

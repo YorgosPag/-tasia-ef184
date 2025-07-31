@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -29,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { generateNextAttachmentIdentifier } from "@/lib/identifier-generator";
+import { generateNextAttachmentIdentifierAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
 
@@ -119,7 +120,7 @@ export function AttachmentDialog({
 
     setIsGeneratingId(true);
     try {
-      const nextId = await generateNextAttachmentIdentifier(
+      const nextId = await generateNextAttachmentIdentifierAction(
         unitId,
         attachmentType,
       );
