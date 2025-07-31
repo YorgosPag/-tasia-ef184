@@ -50,7 +50,7 @@ function Hits({ onHitsChange }: { onHitsChange: (hits: any[]) => void }) {
 
   useEffect(() => {
     onHitsChange(hits);
-  }, [hits, onHitsChange]);
+  }, [hits]);
 
   // Dynamically generate columns from the first hit
   const columns = React.useMemo((): ColumnDef<ComplexEntity>[] => {
