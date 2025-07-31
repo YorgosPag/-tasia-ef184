@@ -16,21 +16,22 @@
 
 set -e
 
+# Function to find a free port in the given range
+find_free_port() {
+  local start_port=$1
+  local end_port=$2
+  for ((port=$start_port; port<=$end_port; port++)); do
+    if ! lsof -i :$port >/dev/null 2>&1; then
+      echo $port
+      return 0
+    fi
+  done
+  return 1
+}
+
 # Cleanup function
 cleanup() {
   echo "🧹 Cleaning up processes..." | tee -a project-check.log
-  # Try to free port 9003 with multiple attempts
-  for i in {1..3}; do
-    if lsof -i :9003 >/dev/null 2>&1; then
-      echo "ℹ️  Attempt $i: Found process on port 9003, killing..." | tee -a project-check.log
-      kill -9 $(lsof -t -i :9003) 2>/dev/null || true
-      sleep 2
-    fi
-    if ! lsof -i :9003 >/dev/null 2>&1; then
-      echo "✅ Port 9003 freed successfully." | tee -a project-check.log
-      break
-    fi
-  done
   # Kill stored PIDs
   kill $DEV_PID $PREVIEW_PID $EMULATOR_PID $FIRESTORE_TEST_PID $FINAL_PREVIEW_PID 2>/dev/null || true
 }
@@ -293,23 +294,15 @@ sleep 3
 echo "✅ Firestore connection tests completed." | tee -a project-check.log
 
 echo "🚦 17 Running development server (npm run dev)..." | tee -a project-check.log
-# Check and free port 9003 before starting dev server, with fallback to port 9004
-PORT=9003
-for i in {1..3}; do
-  if lsof -i :$PORT >/dev/null 2>&1; then
-    echo "⚠️  Attempt $i: Port $PORT is in use, attempting to free it..." | tee -a project-check.log
-    kill -9 $(lsof -t -i :$PORT) 2>/dev/null || true
-    sleep 3
-  fi
-  if ! lsof -i :$PORT >/dev/null 2>&1; then
-    echo "✅ Port $PORT freed successfully." | tee -a project-check.log
-    break
-  fi
-  if [ $i -eq 3 ]; then
-    echo "⚠️  Port $PORT still in use, trying fallback port 9004..." | tee -a project-check.log
-    PORT=9004
-  fi
-done
+# Find a free port for the development server
+START_PORT=9003
+END_PORT=9010
+PORT=$(find_free_port $START_PORT $END_PORT)
+if [ -z "$PORT" ]; then
+  echo "❌ Δεν βρέθηκε ελεύθερο port μεταξύ $START_PORT-$END_PORT!" | tee -a project-check.log
+  exit 1
+fi
+echo "✅ Επιλέχθηκε το port $PORT για το development server." | tee -a project-check.log
 npm run dev -- --port $PORT &
 DEV_PID=$!
 sleep 10
@@ -379,23 +372,15 @@ else
 fi
 
 echo "🚦 23 Starting production preview (npm start)..." | tee -a project-check.log
-# Check and free port 9003 before starting production server, with fallback to port 9004
-PORT=9003
-for i in {1..3}; do
-  if lsof -i :$PORT >/dev/null 2>&1; then
-    echo "⚠️  Attempt $i: Port $PORT is in use, attempting to free it..." | tee -a project-check.log
-    kill -9 $(lsof -t -i :$PORT) 2>/dev/null || true
-    sleep 3
-  fi
-  if ! lsof -i :$PORT >/dev/null 2>&1; then
-    echo "✅ Port $PORT freed successfully." | tee -a project-check.log
-    break
-  fi
-  if [ $i -eq 3 ]; then
-    echo "⚠️  Port $PORT still in use, trying fallback port 9004..." | tee -a project-check.log
-    PORT=9004
-  fi
-done
+# Find a free port for the production preview
+START_PORT=9003
+END_PORT=9010
+PORT=$(find_free_port $START_PORT $END_PORT)
+if [ -z "$PORT" ]; then
+  echo "❌ Δεν βρέθηκε ελεύθερο port μεταξύ $START_PORT-$END_PORT!" | tee -a project-check.log
+  exit 1
+fi
+echo "✅ Επιλέχθηκε το port $PORT για το production preview." | tee -a project-check.log
 npm start -- --port $PORT &
 PREVIEW_PID=$!
 sleep 10
@@ -455,23 +440,15 @@ fi
 echo "✅ Build ΟΚ." | tee -a project-check.log
 
 echo "🚦 28 [AUTO] Προεπισκόπηση (npm start)..." | tee -a project-check.log
-# Check and free port 9003 before starting final production server, with fallback to port 9004
-PORT=9003
-for i in {1..3}; do
-  if lsof -i :$PORT >/dev/null 2>&1; then
-    echo "⚠️  Attempt $i: Port $PORT is in use, attempting to free it..." | tee -a project-check.log
-    kill -9 $(lsof -t -i :$PORT) 2>/dev/null || true
-    sleep 3
-  fi
-  if ! lsof -i :$PORT >/dev/null 2>&1; then
-    echo "✅ Port $PORT freed successfully." | tee -a project-check.log
-    break
-  fi
-  if [ $i -eq 3 ]; then
-    echo "⚠️  Port $PORT still in use, trying fallback port 9004..." | tee -a project-check.log
-    PORT=9004
-  fi
-done
+# Find a free port for the final production preview
+START_PORT=9003
+END_PORT=9010
+PORT=$(find_free_port $START_PORT $END_PORT)
+if [ -z "$PORT" ]; then
+  echo "❌ Δεν βρέθηκε ελεύθερο port μεταξύ $START_PORT-$END_PORT!" | tee -a project-check.log
+  exit 1
+fi
+echo "✅ Επιλέχθηκε το port $PORT για το final production preview." | tee -a project-check.log
 npm start -- --port $PORT &
 FINAL_PREVIEW_PID=$!
 sleep 10
