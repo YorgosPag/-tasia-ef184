@@ -30,8 +30,8 @@ export function SimpleListsTab() {
     setIsLoading(true);
     const listsQuery = query(collection(db, 'tsia-custom-lists'), orderBy('title', 'asc'));
     
-    // Using onSnapshot to listen for real-time updates
-    const unsubscribe = onSnapshot(listsQuery, async (listsSnapshot) => {
+    try {
+        const listsSnapshot = await getDocs(listsQuery);
         const listsDataPromises = listsSnapshot.docs.map(async (listDoc) => {
             const listData = listDoc.data();
             const list: CustomList = { 
@@ -50,25 +50,16 @@ export function SimpleListsTab() {
         });
         const fetchedLists = await Promise.all(listsDataPromises);
         setLists(fetchedLists);
-        setIsLoading(false);
-    }, (error) => {
+    } catch (error) {
         console.error("Error fetching custom lists:", error);
         toast({ variant: 'destructive', title: 'Σφάλμα', description: 'Η φόρτωση των λιστών απέτυχε.' });
+    } finally {
         setIsLoading(false);
-    });
-
-    return unsubscribe;
+    }
   }, [toast]);
 
   useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-    const init = async () => {
-        unsubscribe = await fetchAllLists();
-    }
-    init();
-    return () => {
-        if(unsubscribe) unsubscribe();
-    };
+    fetchAllLists();
   }, [fetchAllLists]);
 
 
