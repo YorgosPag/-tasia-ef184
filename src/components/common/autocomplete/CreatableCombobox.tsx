@@ -62,7 +62,7 @@ export function CreatableCombobox({ options, value, onChange, onCreate, placehol
                 {showCreateOption ? (
                     <Button variant="ghost" className="w-full" onClick={handleCreate} disabled={isCreating}>
                         {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-                        Δημιουργία "{searchQuery}"
+                        Δημιουργία &quot;{searchQuery}&quot;
                     </Button>
                 ) : (
                     <span>Δεν βρέθηκαν αποτελέσματα.</span>

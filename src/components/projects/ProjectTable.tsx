@@ -180,7 +180,7 @@ export function ProjectTable({
                             <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
                             <AlertDialogDescription>
                                 Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγραφεί οριστικά το
-                                έργο "{project.title}".
+                                έργο &quot;{project.title}&quot;.
                             </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

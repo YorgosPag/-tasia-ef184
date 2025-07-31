@@ -94,7 +94,7 @@ export function UnitContactForm({ unitName }: UnitContactFormProps) {
             <CardContent className="text-center">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <p className="text-muted-foreground">
-                    Το αίτημά σας για το ακίνητο "{unitName}" έχει καταχωρηθεί. Ένας εκπρόσωπός μας θα επικοινωνήσει μαζί σας σύντομα.
+                    Το αίτημά σας για το ακίνητο &quot;{unitName}&quot; έχει καταχωρηθεί. Ένας εκπρόσωπός μας θα επικοινωνήσει μαζί σας σύντομα.
                 </p>
             </CardContent>
         </Card>
@@ -105,7 +105,7 @@ export function UnitContactForm({ unitName }: UnitContactFormProps) {
     <Card>
         <CardHeader>
             <CardTitle>Εκδήλωση Ενδιαφέροντος</CardTitle>
-            <CardDescription>Συμπληρώστε τη φόρμα για να επικοινωνήσουμε μαζί σας για το ακίνητο "{unitName}".</CardDescription>
+            <CardDescription>Συμπληρώστε τη φόρμα για να επικοινωνήσουμε μαζί σας για το ακίνητο &quot;{unitName}&quot;.</CardDescription>
         </CardHeader>
         <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

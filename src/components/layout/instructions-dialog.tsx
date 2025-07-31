@@ -28,7 +28,7 @@ export function InstructionsDialog({
         <div className="prose prose-sm dark:prose-invert">
           <p>
             Καλώς ήρθατε στην εφαρμογή διαχείρισης έργων του προγράμματος
-            "Εξοικονομώ".
+            &quot;Εξοικονομώ&quot;.
           </p>
           <ul>
             <li>
