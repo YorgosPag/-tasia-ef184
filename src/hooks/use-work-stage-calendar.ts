@@ -58,7 +58,7 @@ export function useWorkStageCalendar() {
                     const workStagesSnapshot = await getDocs(workStagesRef);
 
                     for (const stageDoc of workStagesSnapshot.docs) {
-                        const stage = { id: stageDoc.id, ...doc.data() } as WorkStage;
+                        const stage = { id: stageDoc.id, ...stageDoc.data() } as WorkStage;
                         const stageTitle = `${project.title}: ${stage.name}`;
 
                         if (stage.startDate) {
