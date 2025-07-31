@@ -19,10 +19,18 @@ set -e
 # Cleanup function
 cleanup() {
   echo "🧹 Cleaning up processes..." | tee -a project-check.log
-  # Kill any process using port 9003
-  if lsof -i :9003 >/dev/null 2>&1; then
-    kill -9 $(lsof -t -i :9003) 2>/dev/null || true
-  fi
+  # Try to free port 9003 with multiple attempts
+  for i in {1..3}; do
+    if lsof -i :9003 >/dev/null 2>&1; then
+      echo "ℹ️  Attempt $i: Found process on port 9003, killing..." | tee -a project-check.log
+      kill -9 $(lsof -t -i :9003) 2>/dev/null || true
+      sleep 2
+    fi
+    if ! lsof -i :9003 >/dev/null 2>&1; then
+      echo "✅ Port 9003 freed successfully." | tee -a project-check.log
+      break
+    fi
+  done
   # Kill stored PIDs
   kill $DEV_PID $PREVIEW_PID $EMULATOR_PID $FIRESTORE_TEST_PID $FINAL_PREVIEW_PID 2>/dev/null || true
 }
@@ -285,18 +293,29 @@ sleep 3
 echo "✅ Firestore connection tests completed." | tee -a project-check.log
 
 echo "🚦 17 Running development server (npm run dev)..." | tee -a project-check.log
-# Check and free port 9003 before starting dev server
-if lsof -i :9003 >/dev/null 2>&1; then
-  echo "⚠️  Port 9003 is in use, attempting to free it..." | tee -a project-check.log
-  kill -9 $(lsof -t -i :9003) 2>/dev/null || true
-  sleep 2
-fi
-npm run dev &
+# Check and free port 9003 before starting dev server, with fallback to port 9004
+PORT=9003
+for i in {1..3}; do
+  if lsof -i :$PORT >/dev/null 2>&1; then
+    echo "⚠️  Attempt $i: Port $PORT is in use, attempting to free it..." | tee -a project-check.log
+    kill -9 $(lsof -t -i :$PORT) 2>/dev/null || true
+    sleep 3
+  fi
+  if ! lsof -i :$PORT >/dev/null 2>&1; then
+    echo "✅ Port $PORT freed successfully." | tee -a project-check.log
+    break
+  fi
+  if [ $i -eq 3 ]; then
+    echo "⚠️  Port $PORT still in use, trying fallback port 9004..." | tee -a project-check.log
+    PORT=9004
+  fi
+done
+npm run dev -- --port $PORT &
 DEV_PID=$!
 sleep 10
 
-echo "🔍 Checking if dev server responds at http://localhost:9003..." | tee -a project-check.log
-if timeout 30 curl --silent --fail http://localhost:9003 >/dev/null; then
+echo "🔍 Checking if dev server responds at http://localhost:$PORT..." | tee -a project-check.log
+if timeout 30 curl --silent --fail http://localhost:$PORT >/dev/null; then
   echo "✅ Dev server responds!" | tee -a project-check.log
 else
   echo "❌ Dev server ΔΕΝ απαντάει! Κάτι τρέχει..." | tee -a project-check.log
@@ -319,7 +338,7 @@ fi
 echo "🚦 18 Testing critical API endpoints..." | tee -a project-check.log
 CRITICAL_ENDPOINTS=("/api/health" "/api/auth/status")
 for endpoint in "${CRITICAL_ENDPOINTS[@]}"; do
-  if timeout 10 curl --silent --fail "http://localhost:9003$endpoint" >/dev/null; then
+  if timeout 10 curl --silent --fail "http://localhost:$PORT$endpoint" >/dev/null; then
     echo "✅ $endpoint responds" | tee -a project-check.log
   else
     echo "ℹ️  $endpoint not responding (might be expected)" | tee -a project-check.log
@@ -327,7 +346,7 @@ for endpoint in "${CRITICAL_ENDPOINTS[@]}"; do
 done
 
 echo "🚦 19 Manual testing required..." | tee -a project-check.log
-echo "ℹ️  Ελεγξε MANUAL στον browser σου αν φορτώνει σωστά στο http://localhost:9003" | tee -a project-check.log
+echo "ℹ️  Ελεγξε MANUAL στον browser σου αν φορτώνει σωστά στο http://localhost:$PORT" | tee -a project-check.log
 echo "ℹ️  Άνοιξε τα Developer Tools και δες αν υπάρχουν errors στο console" | tee -a project-check.log
 echo "ℹ️  Κόκκινα errors = πρόβλημα, κίτρινα warnings = προσοχή" | tee -a project-check.log
 echo "ℹ️  Πάτησε Enter όταν τελειώσεις το manual test (ή Ctrl+C για να το διακόψεις αν κάτι πάει στραβά)" | tee -a project-check.log
@@ -360,18 +379,29 @@ else
 fi
 
 echo "🚦 23 Starting production preview (npm start)..." | tee -a project-check.log
-# Check and free port 9003 before starting production server
-if lsof -i :9003 >/dev/null 2>&1; then
-  echo "⚠️  Port 9003 is in use, attempting to free it..." | tee -a project-check.log
-  kill -9 $(lsof -t -i :9003) 2>/dev/null || true
-  sleep 2
-fi
-npm start &
+# Check and free port 9003 before starting production server, with fallback to port 9004
+PORT=9003
+for i in {1..3}; do
+  if lsof -i :$PORT >/dev/null 2>&1; then
+    echo "⚠️  Attempt $i: Port $PORT is in use, attempting to free it..." | tee -a project-check.log
+    kill -9 $(lsof -t -i :$PORT) 2>/dev/null || true
+    sleep 3
+  fi
+  if ! lsof -i :$PORT >/dev/null 2>&1; then
+    echo "✅ Port $PORT freed successfully." | tee -a project-check.log
+    break
+  fi
+  if [ $i -eq 3 ]; then
+    echo "⚠️  Port $PORT still in use, trying fallback port 9004..." | tee -a project-check.log
+    PORT=9004
+  fi
+done
+npm start -- --port $PORT &
 PREVIEW_PID=$!
 sleep 10
 
-echo "🔍 Checking if production server responds at http://localhost:9003..." | tee -a project-check.log
-if timeout 30 curl --silent --fail http://localhost:9003 >/dev/null; then
+echo "🔍 Checking if production server responds at http://localhost:$PORT..." | tee -a project-check.log
+if timeout 30 curl --silent --fail http://localhost:$PORT >/dev/null; then
   echo "✅ Production server responds!" | tee -a project-check.log
 
   # Έλεγχος για Firestore errors στο production build
@@ -380,14 +410,14 @@ if timeout 30 curl --silent --fail http://localhost:9003 >/dev/null; then
 
   # Test αν υπάρχουν console errors σχετικά με Firebase/Firestore
   echo "ℹ️  Ελέγχουμε για Firebase/Firestore errors στο production build..." | tee -a project-check.log
-  echo "ℹ️  Άνοιξε το http://localhost:9003 και δες το console για Firebase errors." | tee -a project-check.log
+  echo "ℹ️  Άνοιξε το http://localhost:$PORT και δες το console για Firebase errors." | tee -a project-check.log
 else
   echo "❌ Production server ΔΕΝ απαντάει! Κάτι τρέχει..." | tee -a project-check.log
   kill $PREVIEW_PID || true
   exit 1
 fi
 
-echo "ℹ️  Ελεγξε MANUAL στον browser σου αν φορτώνει σωστά στο http://localhost:9003 (production mode)" | tee -a project-check.log
+echo "ℹ️  Ελεγξε MANUAL στον browser σου αν φορτώνει σωστά στο http://localhost:$PORT (production mode)" | tee -a project-check.log
 echo "ℹ️  Πάτησε Enter όταν τελειώσεις το manual test (ή Ctrl+C για να το διακόψεις αν κάτι πάει στραβά)" | tee -a project-check.log
 read -p "↩️ "
 
@@ -425,18 +455,29 @@ fi
 echo "✅ Build ΟΚ." | tee -a project-check.log
 
 echo "🚦 28 [AUTO] Προεπισκόπηση (npm start)..." | tee -a project-check.log
-# Check and free port 9003 before starting final production server
-if lsof -i :9003 >/dev/null 2>&1; then
-  echo "⚠️  Port 9003 is in use, attempting to free it..." | tee -a project-check.log
-  kill -9 $(lsof -t -i :9003) 2>/dev/null || true
-  sleep 2
-fi
-npm start &
+# Check and free port 9003 before starting final production server, with fallback to port 9004
+PORT=9003
+for i in {1..3}; do
+  if lsof -i :$PORT >/dev/null 2>&1; then
+    echo "⚠️  Attempt $i: Port $PORT is in use, attempting to free it..." | tee -a project-check.log
+    kill -9 $(lsof -t -i :$PORT) 2>/dev/null || true
+    sleep 3
+  fi
+  if ! lsof -i :$PORT >/dev/null 2>&1; then
+    echo "✅ Port $PORT freed successfully." | tee -a project-check.log
+    break
+  fi
+  if [ $i -eq 3 ]; then
+    echo "⚠️  Port $PORT still in use, trying fallback port 9004..." | tee -a project-check.log
+    PORT=9004
+  fi
+done
+npm start -- --port $PORT &
 FINAL_PREVIEW_PID=$!
 sleep 10
 
-echo "🔍 Έλεγχος αν το production server ανταποκρίνεται (http://localhost:9003)..." | tee -a project-check.log
-if timeout 30 curl --silent --fail http://localhost:9003 >/dev/null; then
+echo "🔍 Έλεγχος αν το production server ανταποκρίνεται (http://localhost:$PORT)..." | tee -a project-check.log
+if timeout 30 curl --silent --fail http://localhost:$PORT >/dev/null; then
   echo "✅ Production preview ΟΚ!" | tee -a project-check.log
 else
   echo "❌ Production server ΔΕΝ ανταποκρίνεται! Κάτι πήγε λάθος." | tee -a project-check.log
