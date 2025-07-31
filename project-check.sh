@@ -16,6 +16,9 @@
 
 set -e
 
+# Make sure the helper script is executable
+chmod +x find-port.sh
+
 # Function to find a free port in the given range
 find_free_port() {
   local start_port=$1
@@ -496,3 +499,5 @@ else
 fi
 echo "🎯 Μόλις πατήσεις και το PUBLISH, είσαι στον αέρα!" | tee -a project-check.log
 echo "Τελείωσε: $(date)" | tee -a project-check.log
+
+    
