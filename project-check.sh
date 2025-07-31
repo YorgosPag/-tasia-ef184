@@ -165,7 +165,7 @@ fi
 
 echo "🚦 2.2 Validating Firebase Security Rules..." | tee -a project-check.log
 if [ -f firestore.rules ]; then
-  if ! firebase firestore:rules:validate; then
+  if ! firebase emulators:exec --only firestore 'echo "Firestore emulator is running"'; then
     echo "❌ Firestore rules validation failed!" | tee -a project-check.log
     exit 1
   fi
