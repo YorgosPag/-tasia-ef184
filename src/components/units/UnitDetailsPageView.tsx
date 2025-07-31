@@ -16,7 +16,13 @@ import { UnitContactForm } from './UnitContactForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UnitFloorPlansTab } from './tabs/UnitFloorPlansTab';
 import { UnitPhotosTab } from './tabs/UnitPhotosTab';
-import { UnitContractsTab } from './tabs/UnitContractsTab';
+import dynamic from 'next/dynamic';
+
+const UnitContractsTab = dynamic(() => import('./tabs/UnitContractsTab').then(mod => mod.UnitContractsTab), {
+  loading: () => <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin"/></div>,
+  ssr: false,
+});
+
 
 interface UnitDetailsPageViewProps {
   unit: Unit;

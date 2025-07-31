@@ -24,6 +24,6 @@ export default function UnitDetailsPage() {
   }
 
   return (
-    <UnitDetailsPageView {...unitDetailsProps} />
+    <UnitDetailsPageView {...unitDetailsProps} unit={unitDetailsProps.unit} />
   );
 }
