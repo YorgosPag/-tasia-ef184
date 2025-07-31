@@ -19,7 +19,6 @@ import { Input } from '@/components/ui/input';
 import { getDocs, collection, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AlgoliaSearchBox } from './AlgoliaSearchBox';
-import { useComplexEntities } from '@/hooks/useComplexEntities';
 
 async function fetchListTypes(): Promise<string[]> {
   const snapshot = await getDocs(query(collection(db, 'tsia-list-types'), orderBy('name')));
