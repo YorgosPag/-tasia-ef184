@@ -25,13 +25,13 @@ const sendEmailFlow = ai.defineFlow(
     outputSchema: SendEmailOutputSchema,
   },
   async (input) => {
-    const apiKey = process***REMOVED***.SENDGRID_API_KEY;
-    const fromEmail = process***REMOVED***.NEXT_PUBLIC_SENDGRID_FROM_EMAIL;
-    const replyToEmail = process***REMOVED***.NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL;
+    const apiKey = process.env.SENDGRID_API_KEY;
+    const fromEmail = process.env.NEXT_PUBLIC_SENDGRID_FROM_EMAIL;
+    const replyToEmail = process.env.NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL;
 
     if (!apiKey || !fromEmail) {
       console.error(
-        "SendGrid environment variables not configured. Please check next.config.js and ***REMOVED***.local",
+        "SendGrid environment variables not configured. Please check next.config.js and .env.local",
       );
       return { success: false, message: "Email service is not configured." };
     }

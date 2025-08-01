@@ -61,7 +61,7 @@ export default function AttachmentsPage() {
   useEffect(() => {
     console.log(
       "Loaded project ID:",
-      process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     );
 
     const unsubscribeAttachments = onSnapshot(

@@ -7,8 +7,8 @@ import type { UseFormReturn } from "react-hook-form";
 import { Autocomplete } from "./Autocomplete";
 
 const searchClient = algoliasearch(
-  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID!,
-  process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!,
+  process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!,
+  process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY!,
 );
 
 interface AddressAutocompleteInputProps {
@@ -29,8 +29,8 @@ export function AddressAutocompleteInput({
   algoliaKey,
 }: AddressAutocompleteInputProps) {
   if (
-    !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_APP_ID ||
-    !process***REMOVED***.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY ||
+    !process.env.NEXT_PUBLIC_ALGOLIA_APP_ID ||
+    !process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_ONLY_API_KEY ||
     !indexName
   ) {
     return (

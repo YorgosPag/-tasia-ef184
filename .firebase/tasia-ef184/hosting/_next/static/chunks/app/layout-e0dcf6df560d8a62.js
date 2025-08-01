@@ -581,7 +581,7 @@
       let n = (0, r.Dk)().length
         ? (0, r.Sx)()
         : (0, r.Wp)({
-            apiKey: "***REMOVED***",
+            apiKey: "AIzaSyCr-DX1fBVHltkqfS_2fjOXnGimpbU25Uc",
             authDomain: "tasia-ef184.firebaseapp.com",
             projectId: "tasia-ef184",
             storageBucket: "tasia-ef184.appspot.com",

@@ -53,7 +53,7 @@ done
 echo "✅ Env variables look ok." | tee -a project-check.log
 
 echo "🚦 2 Checking environment files consistency..." | tee -a project-check.log
-ENV_FILES=("***REMOVED***.local" "***REMOVED***.development" "***REMOVED***.production")
+ENV_FILES=(".env.local" ".env.development" ".env.production")
 for env_file in "${ENV_FILES[@]}"; do
   if [ -f "$env_file" ]; then
     echo "ℹ️  Found $env_file - checking for required keys..." | tee -a project-check.log
@@ -101,8 +101,8 @@ if [ ! -f .gitignore ]; then
   echo "❌ Missing .gitignore file!" | tee -a project-check.log
   exit 1
 fi
-if grep -q "***REMOVED***" .gitignore && git ls-files | grep -q "***REMOVED***"; then
-  echo "❌ Sensitive ***REMOVED*** file found in git index!" | tee -a project-check.log
+if grep -q ".env" .gitignore && git ls-files | grep -q ".env"; then
+  echo "❌ Sensitive .env file found in git index!" | tee -a project-check.log
   exit 1
 fi
 echo "✅ .gitignore and sensitive files check passed." | tee -a project-check.log
@@ -238,7 +238,7 @@ fi
 
 # Check for Firebase environment variables
 ENV_VARS_FOUND=0
-for env_file in ***REMOVED*** ***REMOVED***.local ***REMOVED***.development ***REMOVED***.production; do
+for env_file in .env .env.local .env.development .env.production; do
   if [ -f "$env_file" ]; then
     if grep -q "FIREBASE\|NEXT_PUBLIC_FIREBASE" "$env_file"; then
       echo "✅ Firebase config found in $env_file" | tee -a project-check.log

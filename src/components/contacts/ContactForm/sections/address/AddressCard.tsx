@@ -149,7 +149,7 @@ export function AddressCard({ form, index, onRemove }: AddressCardProps) {
             label={f.label}
             algoliaKey={f.algoliaKey}
             onSelect={(hit: any) => handleAddressSelect(form, index, hit)}
-            indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
+            indexName={process.env.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
           />
         ))}
       </div>

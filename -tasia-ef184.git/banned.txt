@@ -1,4 +1,4 @@
 regex:AIza[0-9A-Za-z-_]{35}
-***REMOVED***
-***REMOVED***
-***REMOVED***
+.env
+serviceAccount.json
+tasia-6f77i-firebase-adminsdk-fbsvc-2b70113c64.json

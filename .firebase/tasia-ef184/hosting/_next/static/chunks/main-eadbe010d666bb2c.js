@@ -2808,8 +2808,8 @@
       "use strict";
       var n, o;
       e.exports =
-        (null == (n = r.g.process) ? void 0 : n***REMOVED***) &&
-        "object" == typeof (null == (o = r.g.process) ? void 0 : o***REMOVED***)
+        (null == (n = r.g.process) ? void 0 : n.env) &&
+        "object" == typeof (null == (o = r.g.process) ? void 0 : o.env)
           ? r.g.process
           : r(5861);
     },
@@ -2970,7 +2970,7 @@
           .map((e, t) => {
             let o = e.key || t;
             if (
-              n***REMOVED***.__NEXT_OPTIMIZE_FONTS &&
+              n.env.__NEXT_OPTIMIZE_FONTS &&
               !r &&
               "link" === e.type &&
               e.props.href &&
@@ -3119,7 +3119,7 @@
                 }),
                 (o.title = "browser"),
                 (o.browser = !0),
-                (o***REMOVED*** = {}),
+                (o.env = {}),
                 (o.argv = []),
                 (o.version = ""),
                 (o.versions = {}),

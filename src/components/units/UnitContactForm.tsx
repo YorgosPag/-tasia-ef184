@@ -54,7 +54,7 @@ export function UnitContactForm({ unitName }: UnitContactFormProps) {
         status: "New",
       });
 
-      const notificationEmail = process***REMOVED***.NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL;
+      const notificationEmail = process.env.NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL;
       if (!notificationEmail) {
         console.warn(
           "Lead notification email address is not set in environment variables (NEXT_PUBLIC_LEAD_NOTIFICATION_EMAIL). Skipping email notification.",

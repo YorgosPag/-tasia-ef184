@@ -7,13 +7,13 @@ import { getFunctions } from "firebase/functions";
 
 // Firebase configuration is now loaded via environment variables defined in next.config.js
 const firebaseConfig = {
-  apiKey: process***REMOVED***.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process***REMOVED***.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process***REMOVED***.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process***REMOVED***.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Basic check to ensure Firebase config is loaded

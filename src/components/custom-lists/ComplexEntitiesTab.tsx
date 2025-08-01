@@ -274,7 +274,7 @@ export function ComplexEntitiesTab() {
         <CardContent>
           {selectedListType ? (
             <AlgoliaSearchBox
-              indexName={process***REMOVED***.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
+              indexName={process.env.NEXT_PUBLIC_ALGOLIA_INDEX_NAME!}
               listType={selectedListType}
               onHitsChange={handleHitsChange}
             />

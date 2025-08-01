@@ -152,7 +152,7 @@
                 }),
                 (o.title = "browser"),
                 (o.browser = !0),
-                (o***REMOVED*** = {}),
+                (o.env = {}),
                 (o.argv = []),
                 (o.version = ""),
                 (o.versions = {}),
@@ -4846,7 +4846,7 @@
         return (
           (o[r] = "NEXT_CONSOLE_ERROR"),
           (o[n] = "string" == typeof e ? "string" : "error"),
-          t && !o***REMOVED***ironmentName && (o***REMOVED***ironmentName = t),
+          t && !o.environmentName && (o.environmentName = t),
           o
         );
       }
@@ -9603,8 +9603,8 @@
       "use strict";
       var n, o;
       e.exports =
-        (null == (n = r.g.process) ? void 0 : n***REMOVED***) &&
-        "object" == typeof (null == (o = r.g.process) ? void 0 : o***REMOVED***)
+        (null == (n = r.g.process) ? void 0 : n.env) &&
+        "object" == typeof (null == (o = r.g.process) ? void 0 : o.env)
           ? r.g.process
           : r(666);
     },

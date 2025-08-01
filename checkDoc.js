@@ -3,7 +3,7 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 // Firebase config (βάλε τα δικά σου ή import)
 const firebaseConfig = {
-  apiKey: "***REMOVED***",
+  apiKey: "AIzaSyCzb4bEOYVnUwit2r6wCdL1h06Jdyi7Woc",
   authDomain: "tasia-6f77i.firebaseapp.com",
   projectId: "tasia-6f77i",
   storageBucket: "tasia-6f77i.appspot.com",

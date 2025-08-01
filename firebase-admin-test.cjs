@@ -3,7 +3,7 @@ const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
 // Για emulator testing
-process***REMOVED***.FIRESTORE_EMULATOR_HOST = "localhost:8080";
+process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080";
 
 try {
   const app = initializeApp({ projectId: "demo-test" });

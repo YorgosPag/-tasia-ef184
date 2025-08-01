@@ -8323,8 +8323,8 @@
       }
       let d = () => f().__FIREBASE_DEFAULTS__,
         p = () => {
-          if (void 0 === i || void 0 === i***REMOVED***) return;
-          let t = i***REMOVED***.__FIREBASE_DEFAULTS__;
+          if (void 0 === i || void 0 === i.env) return;
+          let t = i.env.__FIREBASE_DEFAULTS__;
           if (t) return JSON.parse(t);
         },
         g = () => {
