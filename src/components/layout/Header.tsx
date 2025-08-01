@@ -16,11 +16,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Breadcrumbs } from "./breadcrumbs";
 import { useBreadcrumbs } from "@/hooks/use-breadcrumbs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTheme } from "next-themes";
 
 export function AppHeader() {
   const { isMobile } = useSidebar();
@@ -28,6 +29,7 @@ export function AppHeader() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const pathname = usePathname();
   const breadcrumbs = useBreadcrumbs();
+  const { setTheme, theme } = useTheme();
 
   const showBreadcrumbs =
     breadcrumbs.length > 0 &&
@@ -56,6 +58,16 @@ export function AppHeader() {
         {showBreadcrumbs && <Breadcrumbs items={breadcrumbs} />}
       </div>
       <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+        >
+          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
         {isAuthLoading ? (
           <Skeleton className="h-8 w-8 rounded-full" />
         ) : user ? (
