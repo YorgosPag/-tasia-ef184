@@ -1,6 +1,29 @@
+# Firebase
+/.firebase/
+firebase.json
+.firebaserc
+
+# Dependencies
+/node_modules/
+
+# Build outputs
+/.next/
+/out/
+/build/
+
+# Local Environment Variables
 ***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+***REMOVED****.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Other
+/coverage
+/dist
+*.tgz
 ***REMOVED***
 ***REMOVED***

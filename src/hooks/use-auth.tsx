@@ -61,7 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (userAuth) {
         setUser(userAuth);
         try {
-          const userRole = await findOrCreateUserAction(userAuth);
+          // Now calling the server action correctly
+          const userRole = await findOrCreateUserAction({
+            uid: userAuth.uid,
+            email: userAuth.email,
+            displayName: userAuth.displayName,
+            photoURL: userAuth.photoURL,
+          });
           setRole(userRole);
         } catch (error) {
           console.error("Error finding or creating user document:", error);

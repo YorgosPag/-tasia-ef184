@@ -34,6 +34,8 @@ import {
   FolderKanban,
   FilePen,
   Library,
+  BookLock,
+  Gavel,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -73,6 +75,8 @@ const nestorNav = [
 
 const managementNav = [
   { href: "/custom-lists", label: "Προσ. Λίστες", icon: List },
+  { href: "/privacy", label: "Πολιτική Απορρήτου", icon: BookLock },
+  { href: "/terms", label: "Όροι Χρήσης", icon: Gavel },
 ];
 
 export function SidebarNav() {

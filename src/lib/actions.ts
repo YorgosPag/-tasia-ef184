@@ -31,6 +31,9 @@ export async function findOrCreateUserAction(user: {
   displayName: string | null;
   photoURL: string | null;
 }): Promise<UserRole> {
+  if (!user || !user.uid) {
+    throw new Error("User object with uid is required.");
+  }
   const userDocRef = doc(db, "users", user.uid);
   const userDoc = await getDoc(userDocRef);
 
