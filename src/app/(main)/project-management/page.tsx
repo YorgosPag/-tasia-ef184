@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -37,6 +38,9 @@ import {
   Paperclip,
   Download,
   Pencil,
+  User,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
@@ -72,6 +76,63 @@ const attachedFiles = [
     name: "Σύμβαση Έργου.docx",
     type: "Συμβατικό",
     date: "2023-02-01",
+  },
+];
+
+const workers = [
+  {
+    id: "1",
+    name: "ΠΑΠΑΔΟΠΟΥΛΟΣ ΙΩΑΝΝΗΣ",
+    afm: "123456789",
+    specialty: "Τεχνίτης",
+    familyStatus: "Έγγαμος",
+    trieties: "0-6",
+    wage: "45,10 €",
+  },
+  {
+    id: "2",
+    name: "ΓΕΩΡΓΙΟΥ ΑΝΑΣΤΑΣΙΟΣ",
+    afm: "987654321",
+    specialty: "Βοηθός",
+    familyStatus: "Άγαμος",
+    trieties: "0-6",
+    wage: "38,00 €",
+  },
+  {
+    id: "3",
+    name: "ΔΗΜΗΤΡΙΟΥ ΝΙΚΟΛΑΟΣ",
+    afm: "112233445",
+    specialty: "Εργάτης",
+    familyStatus: "Έγγαμος",
+    trieties: "0-6",
+    wage: "38,50 €",
+  },
+  {
+    id: "4",
+    name: "ΑΝΤΩΝΙΟΥ ΕΛΕΝΗ",
+    afm: "223344556",
+    specialty: "Τεχνίτης",
+    familyStatus: "Άγαμος",
+    trieties: "0-6",
+    wage: "41,00 €",
+  },
+  {
+    id: "5",
+    name: "ΚΩΝΣΤΑΝΤΙΝΟΥ ΜΑΡΙΑ",
+    afm: "334455667",
+    specialty: "Εργάτης",
+    familyStatus: "Άγαμος",
+    trieties: "0-6",
+    wage: "35,00 €",
+  },
+  {
+    id: "6",
+    name: "ΒΑΣΙΛΕΙΟΥ ΠΕΤΡΟΣ",
+    afm: "445566778",
+    specialty: "Βοηθός",
+    familyStatus: "Έγγαμος",
+    trieties: "0-6",
+    wage: "41,80 €",
   },
 ];
 
@@ -134,7 +195,7 @@ export default function ProjectManagementPage() {
           <h1 className="text-xl font-bold">3. ΕΥΤΕΡΠΗΣ</h1>
         </div>
 
-        <Tabs defaultValue="building-elements" className="flex-1 flex flex-col">
+        <Tabs defaultValue="ika" className="flex-1 flex flex-col">
           <TabsList className="flex flex-wrap h-auto">
             <TabsTrigger value="general">Γενικά Έργου</TabsTrigger>
             <TabsTrigger value="building-elements">Στοιχεία Δόμησης</TabsTrigger>
@@ -686,6 +747,98 @@ export default function ProjectManagementPage() {
           </TabsContent>
           <TabsContent value="parking">
              <Card><CardContent className="p-4">Θέσεις Στάθμευσης</CardContent></Card>
+          </TabsContent>
+           <TabsContent value="ika" className="flex-1 mt-2 flex flex-col gap-4">
+             <Tabs defaultValue="worker-management" className="w-full">
+                <TabsList>
+                  <TabsTrigger value="worker-management">Εργατοτεχνίτες</TabsTrigger>
+                  <TabsTrigger value="payroll">Παρουσιολόγιο</TabsTrigger>
+                  <TabsTrigger value="insurance">Υπολογισμός Ενσήμων</TabsTrigger>
+                   <TabsTrigger value="apd">ΑΠΔ & Πληρωμές</TabsTrigger>
+                </TabsList>
+                <TabsContent value="worker-management" className="mt-4 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <User className="h-5 w-5 text-primary" />
+                                <CardTitle>Προσθήκη / Επεξεργασία Εργατοτεχνίτη</CardTitle>
+                            </div>
+                            <CardDescription>Συμπληρώστε τα στοιχεία του εργατοτεχνίτη για να τον προσθέσετε στο έργο.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="worker-name">Όνομα/Επωνυμία</Label>
+                                    <Input id="worker-name" placeholder="Εισάγετε το ονοματεπώνυμο" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="worker-afm">ΑΦΜ</Label>
+                                    <Input id="worker-afm" placeholder="Εισάγετε το ΑΦΜ" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Ειδικότητα</Label>
+                                    <Select><SelectTrigger><SelectValue placeholder="Επιλογή ειδικότητας" /></SelectTrigger></Select>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label>Οικογενειακή Κατάσταση</Label>
+                                    <Select><SelectTrigger><SelectValue placeholder="Επιλογή κατάστασης" /></SelectTrigger></Select>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label>Τριετίες</Label>
+                                    <Select><SelectTrigger><SelectValue placeholder="Επιλογή τριετιών" /></SelectTrigger></Select>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label>Υπολογιζόμενο Ημερομίσθιο</Label>
+                                    <Input readOnly value="0,00 €" />
+                                </div>
+                            </div>
+                            <div className="flex justify-end">
+                                <Button>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Προσθήκη Εργατοτεχνίτη
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Λίστα Εργατοτεχνιτών</CardTitle>
+                            <CardDescription>Οι εργατοτεχνίτες που έχουν καταχωρηθεί στο έργο.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Όνομα/Επωνυμία</TableHead>
+                                        <TableHead>ΑΦΜ</TableHead>
+                                        <TableHead>Ειδικότητα</TableHead>
+                                        <TableHead>Οικ. Κατάσταση</TableHead>
+                                        <TableHead>Τριετίες</TableHead>
+                                        <TableHead>Ημερομίσθιο</TableHead>
+                                        <TableHead className="text-right">Ενέργειες</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {workers.map((worker) => (
+                                        <TableRow key={worker.id}>
+                                            <TableCell>{worker.name}</TableCell>
+                                            <TableCell>{worker.afm}</TableCell>
+                                            <TableCell>{worker.specialty}</TableCell>
+                                            <TableCell>{worker.familyStatus}</TableCell>
+                                            <TableCell>{worker.trieties}</TableCell>
+                                            <TableCell>{worker.wage}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
+                                                <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>
