@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Copy,
   Eye,
@@ -23,9 +24,16 @@ import {
   Plus,
   FileDown,
   History,
+  Globe,
+  MapPin,
 } from "lucide-react";
 
 // Mock data based on the image provided
+const projects = [
+  { id: 1, title: "3. ΕΥΤΕΡΠΗΣ", subtitle: "Καληαρού & Κομνηνών" },
+  { id: 2, title: "Καληαρού & Κομνηνών", subtitle: "Κέντρο" },
+];
+
 const attachedFiles = [
   {
     title: "Χάρτης Περιοχής Έργου",
@@ -41,11 +49,6 @@ const attachedFiles = [
   },
 ];
 
-const projects = [
-  { id: 1, title: "3. ΕΥΤΕΡΠΗΣ", subtitle: "Καληαρού & Κομνηνών" },
-  { id: 2, title: "Καληαρού & Κομνηνών", subtitle: "Κέντρο" },
-];
-
 export default function ProjectManagementPage() {
   const handleCopyPath = (path: string) => {
     navigator.clipboard.writeText(path);
@@ -54,11 +57,13 @@ export default function ProjectManagementPage() {
   return (
     <div className="flex gap-4 h-full">
       {/* Left Sidebar for Project List */}
-      <Card className="w-80 flex-shrink-0">
+      <Card className="w-80 flex-shrink-0 hidden md:flex md:flex-col">
         <CardHeader>
           <CardTitle>Έργα</CardTitle>
           <div className="space-y-1 pt-2">
-            <label className="text-sm font-medium">Εταιρεία</label>
+            <label className="text-sm font-medium text-muted-foreground">
+              Εταιρεία
+            </label>
             <Select defaultValue="pagonis">
               <SelectTrigger>
                 <SelectValue />
@@ -80,8 +85,10 @@ export default function ProjectManagementPage() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <h3 className="text-sm font-semibold mb-2">Τίτλος</h3>
+        <CardContent className="flex-1 overflow-y-auto">
+          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
+            Τίτλος
+          </h3>
           <div className="space-y-1">
             {projects.map((p) => (
               <Button
@@ -106,7 +113,7 @@ export default function ProjectManagementPage() {
         </div>
 
         <Tabs defaultValue="general" className="flex-1 flex flex-col">
-          <TabsList>
+          <TabsList className="flex flex-wrap h-auto">
             <TabsTrigger value="general">Γενικά Έργου</TabsTrigger>
             <TabsTrigger value="structure">Στοιχεία Δόμησης</TabsTrigger>
             <TabsTrigger value="parking">Θέσεις Στάθμευσης</TabsTrigger>
@@ -119,19 +126,94 @@ export default function ProjectManagementPage() {
 
           <TabsContent value="general" className="flex-1 mt-2">
             <Card className="h-full">
-              <Tabs defaultValue="attachments" className="w-full h-full flex flex-col">
+              <Tabs defaultValue="location" className="w-full h-full flex flex-col">
                 <CardHeader>
-                  <TabsList>
+                  <TabsList className="flex flex-wrap h-auto">
                     <TabsTrigger value="info">Βασικές Πληροφορίες</TabsTrigger>
                     <TabsTrigger value="location">Τοποθεσία</TabsTrigger>
                     <TabsTrigger value="licenses">Άδειες & Κατάσταση</TabsTrigger>
                     <TabsTrigger value="attachments">Συνημμένα Αρχεία</TabsTrigger>
                   </TabsList>
                 </CardHeader>
+                <TabsContent value="location" className="mt-4 flex-1">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-6 w-6 text-primary" />
+                      <div>
+                        <CardTitle>Τοποθεσία</CardTitle>
+                        <CardDescription>
+                          Στοιχεία τοποθεσίας και διεύθυνσης του έργου
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Νομός
+                      </label>
+                      <Select defaultValue="thessaloniki">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="thessaloniki">
+                            Θεσσαλονίκης
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Πόλη/Δήμος
+                      </label>
+                      <Select defaultValue="thessaloniki-city">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="thessaloniki-city">
+                            Θεσσαλονίκη
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Δήμος/Δ. Διαμέρ.
+                      </label>
+                      <Select defaultValue="evosmos">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="evosmos">Δήμος Ευόσμου</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Διεύθυνση
+                      </label>
+                      <Input readOnly value="Ευτέρπης 32 - 34" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Ταχυδρομικός Κώδικας
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="border">
+                          <Globe className="h-4 w-4" />
+                        </Button>
+                        <Input readOnly value="562 24" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </TabsContent>
                 <TabsContent value="attachments" className="mt-4 flex-1">
                   <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <FolderArchive className="h-6 w-6" />
+                    <div className="flex items-center gap-3">
+                      <FolderArchive className="h-6 w-6 text-primary" />
                       <div>
                         <CardTitle>Συνημμένα Αρχεία</CardTitle>
                         <CardDescription>
@@ -143,7 +225,7 @@ export default function ProjectManagementPage() {
                   <CardContent className="mt-6 space-y-4">
                     {attachedFiles.map((file, index) => (
                       <div key={index} className="space-y-1">
-                        <label className="text-sm font-medium">
+                        <label className="text-sm font-medium text-muted-foreground">
                           {file.title}
                         </label>
                         <div className="flex items-center gap-2">
@@ -180,11 +262,3 @@ export default function ProjectManagementPage() {
     </div>
   );
 }
-
-// Dummy Input component to avoid breaking the code, as it's not in the scope
-const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-  <input
-    {...props}
-    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-  />
-);
