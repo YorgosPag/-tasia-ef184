@@ -43,6 +43,7 @@ import {
   Edit,
   Trash2,
   CalendarDays,
+  Calculator,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
@@ -753,7 +754,7 @@ export default function ProjectManagementPage() {
              <Card><CardContent className="p-4">Θέσεις Στάθμευσης</CardContent></Card>
           </TabsContent>
            <TabsContent value="ika" className="flex-1 mt-2 flex flex-col gap-4">
-             <Tabs defaultValue="payroll" className="w-full">
+             <Tabs defaultValue="worker-management" className="w-full">
                 <TabsList>
                   <TabsTrigger value="worker-management">Εργατοτεχνίτες</TabsTrigger>
                   <TabsTrigger value="payroll">Παρουσιολόγιο</TabsTrigger>
@@ -922,6 +923,53 @@ export default function ProjectManagementPage() {
                       </div>
                     </CardContent>
                   </Card>
+                </TabsContent>
+                 <TabsContent value="insurance" className="mt-4 space-y-6">
+                   <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <Calculator className="h-5 w-5 text-primary" />
+                            <CardTitle>Υπολογισμός Εισφορών</CardTitle>
+                        </div>
+                        <CardDescription>Συμπληρώστε τα παρακάτω πεδία για να υπολογίσετε τις ασφαλιστικές εισφορές.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                             <div className="space-y-2 md:col-span-2">
+                                <Label>Εργατοτεχνίτης</Label>
+                                <Select defaultValue="papadopoulos">
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent><SelectItem value="papadopoulos">ΠΑΠΑΔΟΠΟΥΛΟΣ ΙΩΑΝΝΗΣ</SelectItem></SelectContent>
+                                </Select>
+                                <p className="text-sm text-red-500">Επιλεγμένο Ημερομίσθιο: 65,50 €</p>
+                             </div>
+                             <div className="space-y-2">
+                                <Label>Έτος</Label>
+                                <Select defaultValue="2025">
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                     <SelectContent><SelectItem value="2025">2025</SelectItem></SelectContent>
+                                </Select>
+                             </div>
+                              <div className="space-y-2">
+                                <Label>Μήνας</Label>
+                                <Select defaultValue="august">
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                     <SelectContent><SelectItem value="august">Αύγουστος</SelectItem></SelectContent>
+                                </Select>
+                             </div>
+                              <div className="space-y-2">
+                                <Label>Ημέρες Εργασίας</Label>
+                                <Input type="number" defaultValue="0" />
+                             </div>
+                        </div>
+                        <div className="flex justify-end">
+                            <Button variant="destructive">
+                                <Calculator className="mr-2 h-4 w-4" />
+                                Υπολογισμός
+                            </Button>
+                        </div>
+                    </CardContent>
+                   </Card>
                 </TabsContent>
             </Tabs>
           </TabsContent>
