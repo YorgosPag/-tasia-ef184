@@ -26,12 +26,33 @@ import {
   History,
   Globe,
   MapPin,
+  Briefcase,
+  FilePenLine,
+  Landmark,
+  Square,
+  Building,
+  ParkingSquare,
+  FileText,
+  Camera,
+  Video,
+  Settings2,
+  List,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 // Mock data based on the image provided
 const projects = [
-  { id: 1, title: "3. ΕΥΤΕΡΠΗΣ", subtitle: "Καληαρού & Κομνηνών" },
-  { id: 2, title: "Καληαρού & Κομνηνών", subtitle: "Κέντρο" },
+  {
+    id: 1,
+    title: "3. ΕΥΤΕΡΠΗΣ",
+    subtitle: "Καληαρού & Κομνηνών",
+  },
+  {
+    id: 2,
+    title: "Καληαρού & Κομνηνών",
+    subtitle: "Κέντρο",
+  },
 ];
 
 const attachedFiles = [
@@ -59,11 +80,11 @@ export default function ProjectManagementPage() {
       {/* Left Sidebar for Project List */}
       <Card className="w-80 flex-shrink-0 hidden md:flex md:flex-col">
         <CardHeader>
-          <CardTitle>Έργα</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Briefcase className="h-6 w-6" /> Έργα
+          </CardTitle>
           <div className="space-y-1 pt-2">
-            <label className="text-sm font-medium text-muted-foreground">
-              Εταιρεία
-            </label>
+            <Label>Εταιρεία</Label>
             <Select defaultValue="pagonis">
               <SelectTrigger>
                 <SelectValue />
@@ -115,7 +136,7 @@ export default function ProjectManagementPage() {
         <Tabs defaultValue="general" className="flex-1 flex flex-col">
           <TabsList className="flex flex-wrap h-auto">
             <TabsTrigger value="general">Γενικά Έργου</TabsTrigger>
-            <TabsTrigger value="structure">Στοιχεία Δόμησης</TabsTrigger>
+            <TabsTrigger value="building-elements">Στοιχεία Δόμησης</TabsTrigger>
             <TabsTrigger value="parking">Θέσεις Στάθμευσης</TabsTrigger>
             <TabsTrigger value="factors">Συντελεστές</TabsTrigger>
             <TabsTrigger value="documents">Έγγραφα Έργου</TabsTrigger>
@@ -126,7 +147,7 @@ export default function ProjectManagementPage() {
 
           <TabsContent value="general" className="flex-1 mt-2">
             <Card className="h-full">
-              <Tabs defaultValue="location" className="w-full h-full flex flex-col">
+              <Tabs defaultValue="licenses" className="w-full h-full flex flex-col">
                 <CardHeader>
                   <TabsList className="flex flex-wrap h-auto">
                     <TabsTrigger value="info">Βασικές Πληροφορίες</TabsTrigger>
@@ -135,123 +156,53 @@ export default function ProjectManagementPage() {
                     <TabsTrigger value="attachments">Συνημμένα Αρχεία</TabsTrigger>
                   </TabsList>
                 </CardHeader>
-                <TabsContent value="location" className="mt-4 flex-1">
+                <TabsContent value="licenses" className="mt-4 flex-1">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <MapPin className="h-6 w-6 text-primary" />
+                      <FilePenLine className="h-6 w-6 text-primary" />
                       <div>
-                        <CardTitle>Τοποθεσία</CardTitle>
+                        <CardTitle>Άδειες & Κατάσταση</CardTitle>
                         <CardDescription>
-                          Στοιχεία τοποθεσίας και διεύθυνσης του έργου
+                          Στοιχεία αδειών και τρέχουσα κατάσταση του έργου
                         </CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <CardContent className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Νομός
-                      </label>
-                      <Select defaultValue="thessaloniki">
-                        <SelectTrigger>
+                      <Label>Οικοδομικό Τετράγωνο</Label>
+                      <Input readOnly value="10" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Αρ. Πρωτοκόλλου</Label>
+                      <Input placeholder="Εισάγετε αριθμό..." />
+                    </div>
+                     <div className="space-y-1">
+                      <Label>Αριθμός Άδειας</Label>
+                      <Input readOnly value="5142/24-10-2001" />
+                    </div>
+                     <div className="space-y-1">
+                      <Label>Αρχή Έκδοσης</Label>
+                      <Input placeholder="Εισάγετε αρχή..." />
+                    </div>
+                     <div className="space-y-1">
+                      <Label>Κατάσταση Έργου</Label>
+                       <Select defaultValue="built">
+                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="thessaloniki">
-                            Θεσσαλονίκης
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                         <SelectContent>
+                           <SelectItem value="built">Κατασκευασμένα</SelectItem>
+                         </SelectContent>
+                       </Select>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Πόλη/Δήμος
-                      </label>
-                      <Select defaultValue="thessaloniki-city">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="thessaloniki-city">
-                            Θεσσαλονίκη
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                     <div className="space-y-1 pt-5 flex items-center gap-2">
+                      <Checkbox id="publish" />
+                       <Label htmlFor="publish">Προβολή στο διαδίκτυο</Label>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Δήμος/Δ. Διαμέρ.
-                      </label>
-                      <Select defaultValue="evosmos">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="evosmos">Δήμος Ευόσμου</SelectItem>
-                        </SelectContent>
-                      </Select>
+                     <div className="space-y-1 pt-5 flex items-start">
+                       <Button variant="outline"><Settings2 className="mr-2 h-4 w-4" /> Επιλογή Έργου</Button>
                     </div>
-                    <div className="space-y-1 md:col-span-2">
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Διεύθυνση
-                      </label>
-                      <Input readOnly value="Ευτέρπης 32 - 34" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-muted-foreground">
-                        Ταχυδρομικός Κώδικας
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="border">
-                          <Globe className="h-4 w-4" />
-                        </Button>
-                        <Input readOnly value="562 24" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </TabsContent>
-                <TabsContent value="attachments" className="mt-4 flex-1">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <FolderArchive className="h-6 w-6 text-primary" />
-                      <div>
-                        <CardTitle>Συνημμένα Αρχεία</CardTitle>
-                        <CardDescription>
-                          Αρχεία και έγγραφα που σχετίζονται με το έργο
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="mt-6 space-y-4">
-                    {attachedFiles.map((file, index) => (
-                      <div key={index} className="space-y-1">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          {file.title}
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            readOnly
-                            value={file.path}
-                            className="bg-muted/50"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleCopyPath(file.path)}
-                            title="Αντιγραφή διαδρομής"
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Προβολή αρχείου"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
                   </CardContent>
                 </TabsContent>
               </Tabs>
