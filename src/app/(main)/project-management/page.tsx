@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ProjectsPage } from '@/app/projects/projects-page';
+import { ProjectsPageContent } from '@/app/projects/projects-page-content';
 
 export default function ProjectManagementPage() {
-  return <ProjectsPage />;
+  return <ProjectsPageContent />;
 }
