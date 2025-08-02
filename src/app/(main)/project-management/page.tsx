@@ -17,28 +17,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  Copy,
-  Eye,
-  FolderArchive,
+  Briefcase,
   Plus,
   FileDown,
   History,
-  Globe,
-  MapPin,
-  Briefcase,
   FilePenLine,
-  Landmark,
-  Square,
-  Building,
-  ParkingSquare,
-  FileText,
-  Camera,
-  Video,
-  Settings2,
-  List,
 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 // Mock data based on the image provided
@@ -55,26 +41,7 @@ const projects = [
   },
 ];
 
-const attachedFiles = [
-  {
-    title: "Χάρτης Περιοχής Έργου",
-    path: "\\\\Server\\shared\\6. erga\\Eterpis_Gen\\Eterp_Gen_Images\\Eterp_Xartis.jpg",
-  },
-  {
-    title: "Γενική Κάτοψη Έργου",
-    path: "\\\\Server\\shared\\6. erga\\TEST\\SSSSSS.pdf",
-  },
-  {
-    title: "Πίνακας Ποσοστών",
-    path: "\\\\Server\\shared\\6. erga\\TEST\\SSSSSSSS.xls",
-  },
-];
-
 export default function ProjectManagementPage() {
-  const handleCopyPath = (path: string) => {
-    navigator.clipboard.writeText(path);
-  };
-
   return (
     <div className="flex gap-4 h-full">
       {/* Left Sidebar for Project List */}
@@ -147,7 +114,10 @@ export default function ProjectManagementPage() {
 
           <TabsContent value="general" className="flex-1 mt-2">
             <Card className="h-full">
-              <Tabs defaultValue="licenses" className="w-full h-full flex flex-col">
+              <Tabs
+                defaultValue="info"
+                className="w-full h-full flex flex-col"
+              >
                 <CardHeader>
                   <TabsList className="flex flex-wrap h-auto">
                     <TabsTrigger value="info">Βασικές Πληροφορίες</TabsTrigger>
@@ -156,52 +126,34 @@ export default function ProjectManagementPage() {
                     <TabsTrigger value="attachments">Συνημμένα Αρχεία</TabsTrigger>
                   </TabsList>
                 </CardHeader>
-                <TabsContent value="licenses" className="mt-4 flex-1">
+                <TabsContent value="info" className="mt-4 flex-1">
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <FilePenLine className="h-6 w-6 text-primary" />
                       <div>
-                        <CardTitle>Άδειες & Κατάσταση</CardTitle>
+                        <CardTitle>Βασικές Πληροφορίες Έργου</CardTitle>
                         <CardDescription>
-                          Στοιχεία αδειών και τρέχουσα κατάσταση του έργου
+                          Γενικά στοιχεία και περιγραφή του έργου
                         </CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="space-y-1">
-                      <Label>Οικοδομικό Τετράγωνο</Label>
-                      <Input readOnly value="10" />
+                  <CardContent className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label>Τίτλος Έργου</Label>
+                      <Input readOnly value="3. ΕΥΤΕΡΠΗΣ" />
                     </div>
-                    <div className="space-y-1">
-                      <Label>Αρ. Πρωτοκόλλου</Label>
-                      <Input placeholder="Εισάγετε αριθμό..." />
+                    <div className="space-y-2">
+                      <Label>Τίτλος Άδειας</Label>
+                      <Input readOnly value="Τρεις πενταώροφες οικοδομές με καταστήματα πιλοτή & υπόγειο"/>
                     </div>
-                     <div className="space-y-1">
-                      <Label>Αριθμός Άδειας</Label>
-                      <Input readOnly value="5142/24-10-2001" />
-                    </div>
-                     <div className="space-y-1">
-                      <Label>Αρχή Έκδοσης</Label>
-                      <Input placeholder="Εισάγετε αρχή..." />
-                    </div>
-                     <div className="space-y-1">
-                      <Label>Κατάσταση Έργου</Label>
-                       <Select defaultValue="built">
-                         <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="built">Κατασκευασμένα</SelectItem>
-                         </SelectContent>
-                       </Select>
-                    </div>
-                     <div className="space-y-1 pt-5 flex items-center gap-2">
-                      <Checkbox id="publish" />
-                       <Label htmlFor="publish">Προβολή στο διαδίκτυο</Label>
-                    </div>
-                     <div className="space-y-1 pt-5 flex items-start">
-                       <Button variant="outline"><Settings2 className="mr-2 h-4 w-4" /> Επιλογή Έργου</Button>
+                    <div className="space-y-2 md:col-span-2">
+                       <Label>Περιγραφή Έργου</Label>
+                       <Textarea
+                        readOnly
+                        className="min-h-[120px]"
+                        value="Πρόκειται για ένα συγκρότημα τριών πενταόροφων κτιρίων, που βρίσκεται στο όριο του Ευόσμου με τη Νέα Επέκτασή του. Το κτιριολογικό πρόγραμμα περιλαμβάνει συνδυασμό κεντρικής χρήσης με χρήση κατοικίας. Το Συγκρότημα έχει διάταξη Π δημιουργώντας, έτσι, μια αίθρια εσωτερική αυλή που συνδέεται άμεσα με το δημόσιο χώρο της οδού Ευτέρπης. Ο χώρος αυτός διακρίνεται για τον άρτιο σχεδιασμό του και ευνοεί την προσέγγιση των καταστημάτων, που βρίσκονται στη στάθμη του ισογείου, από τους πεζούς."
+                       />
                     </div>
                   </CardContent>
                 </TabsContent>
