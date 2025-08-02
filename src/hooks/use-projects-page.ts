@@ -203,7 +203,6 @@ export function useProjectsPage() {
   const { companies, isLoading: isLoadingCompanies } = useCompanies();
   const { addProject } = useDataActions();
   const { isEditor } = useAuth();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const view = searchParams.get("view") || "index";
 
@@ -332,7 +331,6 @@ export function useProjectsPage() {
     editingProject,
     form,
     view,
-    router,
     handleExport,
     handleDialogOpenChange,
     onSubmit: form.handleSubmit(onSubmit),

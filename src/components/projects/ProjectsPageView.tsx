@@ -39,7 +39,6 @@ interface ProjectsPageViewProps {
   editingProject: ProjectWithWorkStageSummary | null;
   form: UseFormReturn<ProjectFormValues>;
   view: string;
-  router: any;
   handleExport: () => void;
   handleDialogOpenChange: (open: boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -60,7 +59,6 @@ export function ProjectsPageView({
   editingProject,
   form,
   view,
-  router,
   handleExport,
   handleDialogOpenChange,
   onSubmit,
@@ -70,6 +68,7 @@ export function ProjectsPageView({
   handlePrefetchProject,
 }: ProjectsPageViewProps) {
   const { companies, isLoading: isLoadingCompanies } = useCompanies();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const currentView = searchParams.get("view") || "index";
 
