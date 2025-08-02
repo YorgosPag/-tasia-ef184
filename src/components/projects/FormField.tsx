@@ -11,13 +11,10 @@ const formatValue = (value: number | string, options: { useGrouping?: boolean; i
     let num = Number(String(value).replace(',', '.'));
     if (isNaN(num)) return isPercentage ? '0,00' : '0,00';
     
-    // Convert percentage from 0-1 range to 0-100 for display
     if (isPercentage) {
       if (value > 1 && value <= 100) {
-        // Assume it's already in 0-100 range from user input
         num = value;
       } else {
-        // Assume it's in 0-1 range from calculations
         num *= 100;
       }
     }
@@ -79,7 +76,6 @@ export function FormField({
         let normalizedValue = target.value.replace(/\./g, '').replace(',', '.'); // Handle thousand separators and decimal comma
         let numValue = parseFloat(normalizedValue) || 0;
         
-        // For percentages, if user types "70", it means 70%, which is 0.7
         if (isPercentage) {
           numValue /= 100;
         }
@@ -108,7 +104,6 @@ export function FormField({
             onChange(syntheticEvent);
         }
     }
-
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
        if (isPercentage) {
