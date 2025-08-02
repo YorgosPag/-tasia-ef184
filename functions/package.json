@@ -6,7 +6,13 @@
     "node": "20"
   },
   "dependencies": {
-    "firebase-functions": "^4.4.1",
+    "@genkit-ai/core": "^1.15.5",
+    "@genkit-ai/googleai": "^1.15.5",
+    "firebase-functions": "^5.0.1",
     "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5.4.5"
   }
 }
