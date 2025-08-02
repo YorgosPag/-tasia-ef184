@@ -92,19 +92,18 @@ export function SidebarNav() {
   };
 
   const getButtonClass = (href: string) => {
-    const active = isActive(href);
     return cn(
       "text-lg font-medium text-left px-4 py-2 whitespace-nowrap",
-      active
-        ? "bg-gray-700 text-white" // Active state styles as per spec
-        : "text-gray-400", // Inactive state styles as per spec
+      isActive(href)
+        ? "text-sidebar-active-foreground"
+        : "text-sidebar-muted-foreground",
     );
   };
 
   return (
     <SidebarMenu>
       <SidebarGroup>
-        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-gray-500 uppercase px-4 whitespace-nowrap">
+        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-sidebar-muted-foreground uppercase px-4 whitespace-nowrap">
           Ευρετήριο Ακινήτων
         </SidebarGroupLabel>
         {entitiesNav.map((item) => (
@@ -114,6 +113,7 @@ export function SidebarNav() {
               className={getButtonClass(item.href)}
               icon={item.icon}
               tooltip={item.label}
+              isActive={isActive(item.href)}
             >
               <span className="ml-3">{item.label}</span>
             </SidebarMenuButton>
@@ -124,7 +124,7 @@ export function SidebarNav() {
       <SidebarSeparator />
 
       <SidebarGroup>
-        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-gray-500 uppercase px-4 whitespace-nowrap">
+        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-sidebar-muted-foreground uppercase px-4 whitespace-nowrap">
           Εργαλεία
         </SidebarGroupLabel>
         {tasiaProjectToolsNav.map((item) => (
@@ -134,6 +134,7 @@ export function SidebarNav() {
               className={getButtonClass(item.href)}
               icon={item.icon}
               tooltip={item.label}
+              isActive={isActive(item.href)}
             >
               <span className="ml-3">{item.label}</span>
             </SidebarMenuButton>
@@ -144,7 +145,7 @@ export function SidebarNav() {
       <SidebarSeparator />
 
       <SidebarGroup>
-        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-gray-500 uppercase px-4 whitespace-nowrap">
+        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-sidebar-muted-foreground uppercase px-4 whitespace-nowrap">
           Διαχείριση
         </SidebarGroupLabel>
         {managementNav.map((item) => (
@@ -154,6 +155,7 @@ export function SidebarNav() {
               className={getButtonClass(item.href)}
               icon={item.icon}
               tooltip={item.label}
+              isActive={isActive(item.href)}
             >
               <span className="ml-3">{item.label}</span>
             </SidebarMenuButton>
@@ -167,6 +169,7 @@ export function SidebarNav() {
           className={getButtonClass("/settings")}
           icon={Settings}
           tooltip="Ρυθμίσεις"
+          isActive={isActive("/settings")}
         >
           <span className="ml-3">Ρυθμίσεις</span>
         </SidebarMenuButton>

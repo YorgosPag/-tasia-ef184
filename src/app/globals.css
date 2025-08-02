@@ -37,6 +37,15 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Sidebar */
+    --sidebar-background: 215 35% 21%;
+    --sidebar-foreground: 60 30% 96%;
+    --sidebar-border: 215 28% 25%;
+    --sidebar-ring: 0 84% 60%;
+    --sidebar-active: 215 28% 28%;
+    --sidebar-active-foreground: 60 30% 96%;
+    --sidebar-muted-foreground: 215 15% 65%;
+
     /* Other UI Elements */
     --border: 215 20% 87%; /* Light gray border */
     --input: 215 20% 91%; /* Input background */
@@ -87,6 +96,15 @@
     --destructive: 0 72% 51%; /* Slightly adjusted for dark bg */
     --destructive-foreground: 0 0% 100%;
 
+    /* Sidebar */
+    --sidebar-background: 215 28% 21%;
+    --sidebar-foreground: 60 30% 96%;
+    --sidebar-border: 215 28% 25%;
+    --sidebar-ring: 0 84% 60%;
+    --sidebar-active: 215 28% 28%;
+    --sidebar-active-foreground: 60 30% 96%;
+    --sidebar-muted-foreground: 215 15% 65%;
+
     /* Other UI Elements */
     --border: 215 28% 25%;
     --input: 215 28% 25%;
@@ -98,8 +116,6 @@
     --chart-3: 40 80% 60%;
     --chart-4: 0 80% 65%;
     --chart-5: 280 70% 60%;
-
-    --sidebar-background: 215 28% 21%;
   }
 }
 
