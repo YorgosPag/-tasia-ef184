@@ -1,17 +1,80 @@
-export interface ParkingSpot {
-    id: number;
-    code: string;
-    type: string;
-    property: string;
-    level: string;
-    tm: number;
-    price: number;
-    value: number;
-    valueWithVat: number;
-    status: string;
-    owner: string;
-    holder: string;
-    registeredBy: string;
-}
+'use client';
+import type { ParkingSpot } from './types';
 
-export const parkingSpots: ParkingSpot[] = [];
+export const parkingSpots: ParkingSpot[] = [
+  {
+    id: 1,
+    code: 'P1',
+    type: 'Υπαίθρια',
+    property: 'A_D2.1',
+    level: 'Ισόγειο',
+    tm: 12.5,
+    price: 10000,
+    value: 12000,
+    valueWithVat: 14880,
+    status: 'Διαθέσιμο',
+    owner: 'ΠΑΓΩΝΗΣ ΝΕΣΤ. ΓΕΩΡΓΙΟΣ',
+    holder: 'path/to/p1.pdf',
+    registeredBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+  },
+  {
+    id: 2,
+    code: 'P2',
+    type: 'Υπόγεια',
+    property: 'A_D2.3',
+    level: 'Υπόγειο',
+    tm: 15.0,
+    price: 15000,
+    value: 18000,
+    valueWithVat: 22320,
+    status: 'Πουλημένο',
+    owner: 'Ιδιώτης',
+    holder: 'path/to/p2.pdf',
+    registeredBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+  },
+   {
+    id: 3,
+    code: 'G1',
+    type: 'Σκεπαστή',
+    property: 'B_A1.2',
+    level: 'Ισόγειο',
+    tm: 20.0,
+    price: 20000,
+    value: 24000,
+    valueWithVat: 29760,
+    status: 'Δεσμευμένο',
+    owner: 'ΠΑΓΩΝΗΣ ΝΕΣΤ. ΓΕΩΡΓΙΟΣ',
+    holder: 'path/to/g1.pdf',
+    registeredBy: 'ΣΠΥΡΟΓΙΑΝΝΗ ΕΥΑ',
+  },
+  {
+    id: 4,
+    code: 'G2',
+    type: 'Υπόγεια',
+    property: 'Γ_Γ2.1',
+    level: 'Υπόγειο',
+    tm: 18.0,
+    price: 18000,
+    value: 21600,
+    valueWithVat: 26784,
+    status: 'Διαθέσιμο',
+    owner: 'ΠΑΓΩΝΗΣ ΝΕΣΤ. ΓΕΩΡΓΙΟΣ',
+    holder: 'path/to/g2.pdf',
+    registeredBy: 'ΣΠΥΡΟΓΙΑΝΝΗ ΕΥΑ',
+  },
+   {
+    id: 5,
+    code: 'P5',
+    type: 'Υπαίθρια',
+    property: 'Κοινόχρηστο',
+    level: 'Ισόγειο',
+    tm: 11.0,
+    price: 8000,
+    value: 9600,
+    valueWithVat: 11904,
+    status: 'Οικοπεδούχοι',
+    owner: 'Οικοπεδούχος Α',
+    holder: 'path/to/p5.pdf',
+    registeredBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+  },
+];
