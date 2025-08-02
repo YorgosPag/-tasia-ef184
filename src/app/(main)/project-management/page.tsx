@@ -311,7 +311,7 @@ export default function ProjectManagementPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="allowed">
+                <Tabs defaultValue="implemented">
                   <TabsList>
                     <TabsTrigger value="terms">
                       Όροι Δόμησης Οικοπέδου
@@ -521,6 +521,98 @@ export default function ProjectManagementPage() {
                         </div>
                         <p></p>
 
+                      </div>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="implemented" className="mt-6">
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="font-semibold text-lg mb-6">
+                        Πραγματοποιούμενα Στοιχεία Δόμησης Οικοπέδου
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6 items-center">
+                        {/* Row 1 */}
+                        <Label className="text-green-500">Πραγματοποιούμενη Δόμηση</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="3.922,02" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <div></div> {/* Empty div for alignment */}
+                        {/* Row 2 */}
+                        <Label>Πραγματοποιούμενη Κάλυψη Οικοπέδου / Εμβαδό Οικοπέδου (Ε.Ο.) =</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="67,87" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+                        <Label className="text-green-500">Πραγματοποιούμενο Ποσοστό Κάλυψης</Label>
+                        {/* Row 3 */}
+                        <div></div> {/* Empty div for alignment */}
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="1.478,90" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <Label className="text-green-500">Πραγματοποιούμενη Κάλυψη Οικοπέδου</Label>
+                        {/* Row 4 */}
+                        <Label>Πραγματοποιούμενη Επιφάνεια Η/Χ / Πραγματοποιούμενη Δόμηση =</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="6,27" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+                        <Label className="text-orange-500">Πραγματοποιούμενο Ποσοστό Η/Χ</Label>
+                        {/* Row 5 */}
+                        <div></div> {/* Empty div for alignment */}
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="245,89" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <Label className="text-orange-500">Πραγματοποιούμενη Επιφάνεια Η/Χ</Label>
+                        {/* Row 6 */}
+                        <Label>Πραγματοποιούμενη Επιφάνεια Εξωστών / Πραγματοποιούμενη Δόμηση =</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="11,65" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+                        <Label className="text-green-500">Πραγματοποιούμενο Ποσοστό Εξωστών</Label>
+                        {/* Row 7 */}
+                        <div></div> {/* Empty div for alignment */}
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="456,89" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <Label className="text-green-500">Πραγματοποιούμενη Επιφάνεια Εξωστών</Label>
+                        {/* Row 8 */}
+                        <Label>Πραγματοποιούμενη Επιφ. Η/Χ, Εξωστών / Πραγματοποιούμενη Δόμηση =</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="17,92" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+                        <Label className="text-fuchsia-500">Πραγμ. Ποσοστό Επιτρεπ. Επιφάνεια Η/Χ & Εξωστών</Label>
+                        {/* Row 9 */}
+                        <Label>Πραγματ/μενη Επιφάνεια Η/Χ + Πραγματ/μενη Επιφάνεια Εξωστών =</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="702,78" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <Label className="text-fuchsia-500">Πραγματοποιούμενη Επιφάνεια Η/Χ & Εξωστών</Label>
+                        {/* Row 10 */}
+                        <div></div> {/* Empty div for alignment */}
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="0,00" className="flex-1" />
+                        </div>
+                        <Label className="text-green-500">Πραγματοποιούμενος Συντελεστής Όγκου (Σ.Ο.)</Label>
+                        {/* Row 11 */}
+                        <Label>Πραγμ. Κατ 'Όγκο Εκμετάλλευση (Ε.Ο.) * (Σ.Ο.) / Εμβαδό Οικοπέδου (Ε.Ο.) =</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="0,00" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">κ.μ.</span>
+                        </div>
+                        <Label className="text-red-500">Πραγματοποιούμενη Κατ' Όγκο Εκμετάλλευση</Label>
+                        {/* Row 12 */}
+                        <div></div> {/* Empty div for alignment */}
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="17,50" className="flex-1" />
+                          <span className="text-sm text-muted-foreground">m</span>
+                        </div>
+                        <Label className="text-blue-500">Πραγματοποιούμενο Ύψος</Label>
                       </div>
                     </div>
                   </TabsContent>
