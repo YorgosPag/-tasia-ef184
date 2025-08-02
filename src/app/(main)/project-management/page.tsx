@@ -311,7 +311,7 @@ export default function ProjectManagementPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="terms">
+                <Tabs defaultValue="allowed">
                   <TabsList>
                     <TabsTrigger value="terms">
                       Όροι Δόμησης Οικοπέδου
@@ -428,6 +428,99 @@ export default function ProjectManagementPage() {
                            <Label>Εμβαδόν Οικοπέδου (Ε.Ο.)</Label>
                         </div>
                         <div></div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="allowed" className="mt-6">
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="font-semibold text-lg mb-6">
+                        Επιτρεπόμενα Στοιχεία Δόμησης
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 items-center">
+                        
+                        <Label>Μέγιστη Επιτρεπόμενη Δόμηση</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="3.922,02" className="flex-1"/>
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">= Συντελεστής Δόμησης (Τελικός) * Εμβαδό Οικοπέδου (Ε.Ο.)</p>
+
+                        <Label className="text-green-500">Μέγιστο Ποσοστό Κάλυψης</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="70,00" className="flex-1"/>
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+                        <p></p>
+                        
+                        <Label className="text-green-500">Μέγιστη Κάλυψη Οικοπέδου</Label>
+                         <div className="flex items-center gap-1">
+                          <Input readOnly value="1.525,23" className="flex-1"/>
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">= Μέγιστο Ποσοστό Κάλυψης * Εμβαδό Οικοπέδου (Ε.Ο.)</p>
+
+                        <Label className="text-red-500">Μέγιστο Ποσοστό Η/Χ</Label>
+                         <div className="flex items-center gap-1">
+                          <Input readOnly value="15,00" className="flex-1"/>
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+                        <p></p>
+
+                         <Label className="text-red-500">Μέγιστη Επιτρεπόμενη Επιφάνεια Η/Χ</Label>
+                         <div className="flex items-center gap-1">
+                          <Input readOnly value="588,30" className="flex-1"/>
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">= Μέγιστο Ποσοστό Η/Χ * Μέγιστη Επιτρεπόμενη Δόμηση</p>
+
+                         <Label className="text-green-500">Μέγιστο Ποσοστό Εξωστών</Label>
+                         <div className="flex items-center gap-1">
+                          <Input readOnly value="40,00" className="flex-1"/>
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+                        <p></p>
+
+                        <Label>Μέγιστη Επιφάνεια Εξωστών</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="1.568,81" className="flex-1"/>
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">= Μέγιστο Ποσοστό Εξωστών * Μέγιστη Επιτρεπόμενη Δόμηση</p>
+
+                         <Label className="text-cyan-500">Μέγ. Ποσοστό Επιτρεπ. Η/Χ + Εξωστών</Label>
+                         <div className="flex items-center gap-1">
+                          <Input readOnly value="40,00" className="flex-1"/>
+                          <span className="text-sm text-muted-foreground">%</span>
+                        </div>
+                        <p></p>
+
+                        <Label className="text-cyan-500">Μέγ. Επιτρεπόμενη Επιφ. Η/Χ & Εξωστών</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="1.568,81" className="flex-1"/>
+                          <span className="text-sm text-muted-foreground">τ.μ.</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">= Μέγ. Ποσοστό Επιτρεπ. Επιφ. Η/Χ Εξωστών * Μέγιστη Επιτρεπ. Δόμηση</p>
+
+                        <Label className="text-yellow-500">Μέγιστος Συντελεστής Όγκου (Σ.Ο.)</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="5,50" className="flex-1"/>
+                        </div>
+                        <p></p>
+
+                        <Label className="text-red-500">Μέγιστη Κατ' Όγκο Εκμετάλλευση</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="11.983,95" className="flex-1"/>
+                           <span className="text-sm text-muted-foreground">κ.μ.</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">= Εμβαδόν Οικοπέδου (Ε.Ο.) * Μέγιστος Συντελεστής Όγκου (Σ.Ο.)</p>
+                        
+                        <Label>Μέγιστο Επιτρεπόμενο Ύψος</Label>
+                        <div className="flex items-center gap-1">
+                          <Input readOnly value="17,50" className="flex-1"/>
+                           <span className="text-sm text-muted-foreground">m</span>
+                        </div>
+                        <p></p>
+
                       </div>
                     </div>
                   </TabsContent>
