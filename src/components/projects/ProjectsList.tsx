@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -15,7 +14,11 @@ interface ProjectsListProps {
   onSelectProject: (project: Project) => void;
 }
 
-export function ProjectsList({ projects, selectedProject, onSelectProject }: ProjectsListProps) {
+export function ProjectsList({
+  projects,
+  selectedProject,
+  onSelectProject,
+}: ProjectsListProps) {
   return (
     <Card className="w-64 flex-shrink-0">
       <CardHeader>
@@ -26,7 +29,9 @@ export function ProjectsList({ projects, selectedProject, onSelectProject }: Pro
           {projects.map((project) => (
             <li key={project.id}>
               <Button
-                variant={selectedProject?.id === project.id ? "secondary" : "ghost"}
+                variant={
+                  selectedProject?.id === project.id ? "secondary" : "ghost"
+                }
                 className="w-full justify-start"
                 onClick={() => onSelectProject(project)}
               >

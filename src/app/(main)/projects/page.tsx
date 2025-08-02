@@ -1,6 +1,10 @@
+"use client";
 
-import { ProjectsPageContent } from '@/components/app/projects/projects-page-content';
+import React from "react";
+import { ProjectsPageView } from "@/components/projects/ProjectsPageView";
+import { useProjectsPage } from "@/hooks/use-projects-page";
 
-export default function ProjectsRoute() {
-    return <ProjectsPageContent />;
+export default function ProjectsPage() {
+  const projectsPageProps = useProjectsPage();
+  return <ProjectsPageView {...projectsPageProps} />;
 }
