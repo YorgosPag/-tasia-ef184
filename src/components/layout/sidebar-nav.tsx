@@ -74,6 +74,7 @@ const nestorNav = [
 ];
 
 const managementNav = [
+  { href: "/projects", label: "Διαχείριση Έργων", icon: FileText },
   { href: "/custom-lists", label: "Προσ. Λίστες", icon: List },
   { href: "/privacy", label: "Πολιτική Απορρήτου", icon: BookLock },
   { href: "/terms", label: "Όροι Χρήσης", icon: Gavel },
