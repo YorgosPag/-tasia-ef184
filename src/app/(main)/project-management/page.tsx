@@ -44,6 +44,7 @@ import {
   Trash2,
   CalendarDays,
   Calculator,
+  FileSignature,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
@@ -138,6 +139,20 @@ const workers = [
     wage: "41,80 €",
   },
 ];
+
+const apdDeadlines = [
+    { month: "Ιανουάριος 2025", deadline: "10/02/2025", status: "Εκκρεμεί" },
+    { month: "Φεβρουάριος 2025", deadline: "10/03/2025", status: "Εκκρεμεί" },
+    { month: "Μάρτιος 2025", deadline: "10/04/2025", status: "Εκκρεμεί" },
+    { month: "Απρίλιος 2025", deadline: "10/05/2025", status: "Εκκρεμεί" },
+]
+
+const contributionPayments = [
+    { month: "Ιανουάριος 2025", amount: "3.450,60 €", deadline: "28/02/2025", status: "Εκκρεμεί" },
+    { month: "Φεβρουάριος 2025", amount: "3.280,00 €", deadline: "31/03/2025", status: "Εκκρεμεί" },
+    { month: "Μάρτιος 2025", amount: "3.610,50 €", deadline: "30/04/2025", status: "Εκκρεμεί" },
+    { month: "Απρίλιος 2025", amount: "3.390,80 €", deadline: "31/05/2025", status: "Εκκρεμεί" },
+]
 
 const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
 
@@ -970,6 +985,74 @@ export default function ProjectManagementPage() {
                         </div>
                     </CardContent>
                    </Card>
+                </TabsContent>
+                <TabsContent value="apd" className="mt-4 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Προθεσμίες Υποβολής ΑΠΔ</CardTitle>
+                            <CardDescription>Παρακολούθηση της κατάστασης υποβολής των Αναλυτικών Περιοδικών Δηλώσεων.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Μήνας</TableHead>
+                                        <TableHead>Προθεσμία Υποβολής</TableHead>
+                                        <TableHead>Κατάσταση</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {apdDeadlines.map(item => (
+                                        <TableRow key={item.month}>
+                                            <TableCell>{item.month}</TableCell>
+                                            <TableCell>{item.deadline}</TableCell>
+                                            <TableCell><Button variant="destructive" size="sm">{item.status}</Button></TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                            <div className="flex justify-end">
+                                <Button variant="destructive">
+                                    <FileSignature className="mr-2 h-4 w-4" />
+                                    Δημιουργία Αρχείου ΑΠΔ
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Κατάσταση Πληρωμής Εισφορών</CardTitle>
+                            <CardDescription>Παρακολούθηση της κατάστασης πληρωμής των ασφαλιστικών εισφορών.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Μήνας</TableHead>
+                                        <TableHead>Ποσό Εισφορών</TableHead>
+                                        <TableHead>Προθεσμία Πληρωμής</TableHead>
+                                        <TableHead>Κατάσταση</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {contributionPayments.map(item => (
+                                        <TableRow key={item.month}>
+                                            <TableCell>{item.month}</TableCell>
+                                            <TableCell>{item.amount}</TableCell>
+                                            <TableCell>{item.deadline}</TableCell>
+                                            <TableCell><Button variant="destructive" size="sm">{item.status}</Button></TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                             <div className="flex justify-end">
+                                <Button variant="destructive">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Καταχώρηση Πληρωμής
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
             </Tabs>
           </TabsContent>
