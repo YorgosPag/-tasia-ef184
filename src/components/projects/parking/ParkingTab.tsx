@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ParkingSpot } from './types';
 import { ParkingToolbar } from './ParkingToolbar';
 import { ParkingTableHeader } from './ParkingTableHeader';
@@ -19,11 +19,17 @@ type SortConfig = {
 } | null;
 
 export function ParkingTab({ parkingSpots }: { parkingSpots: ParkingSpot[] }) {
-  const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(parkingSpots.length > 0 ? parkingSpots[0] : null);
+  const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
   const [filters, setFilters] = useState<FilterState>({});
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(columns.map(col => col.key));
   
+  useEffect(() => {
+    if (parkingSpots && parkingSpots.length > 0 && !selectedSpot) {
+      setSelectedSpot(parkingSpots[0]);
+    }
+  }, [parkingSpots, selectedSpot]);
+
   // Βελτιωμένα default widths με καλύτερο spacing
   const getDefaultWidths = () => {
     const defaultWidths: { [key: string]: number } = {
@@ -164,13 +170,23 @@ export function ParkingTab({ parkingSpots }: { parkingSpots: ParkingSpot[] }) {
   }, [processedParkingSpots]);
 
   // Ενημέρωση του selected spot αν δεν υπάρχει στα φιλτραρισμένα
-  useMemo(() => {
+  useEffect(() => {
     if (selectedSpot && !processedParkingSpots.find(spot => spot.id === selectedSpot.id)) {
       setSelectedSpot(processedParkingSpots.length > 0 ? processedParkingSpots[0] : null);
     }
   }, [processedParkingSpots, selectedSpot]);
 
-  if (!parkingSpots || parkingSpots.length === 0) {
+  if (!parkingSpots) {
+      return (
+        <div className="flex items-center justify-center h-64 text-muted-foreground">
+          <div className="text-center">
+            <p className="text-lg mb-2">Φόρτωση δεδομένων...</p>
+          </div>
+        </div>
+      );
+  }
+
+  if (parkingSpots.length === 0) {
       return (
         <div className="flex items-center justify-center h-64 text-muted-foreground">
           <div className="text-center">
@@ -200,7 +216,6 @@ export function ParkingTab({ parkingSpots }: { parkingSpots: ParkingSpot[] }) {
            columns={filteredColumns}
            columnWidths={columnWidths} 
            onColumnResize={handleColumnResize}
-           parkingSpots={parkingSpots}
            filters={filters}
            onFilterChange={handleFilterChange}
            sortConfig={sortConfig}
