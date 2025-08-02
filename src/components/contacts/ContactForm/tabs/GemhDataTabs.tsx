@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
+import { Accordion } from "@/components/ui/accordion";
 import type { ContactFormProps } from "../types";
 import { JobSection } from "../sections/JobSection";
 import { RegistrationInfoSection } from "../sections/RegistrationInfoSection";
@@ -135,7 +135,9 @@ export function GemhDataTabs({ form }: Pick<ContactFormProps, "form">) {
       </TabsContent>
 
       <TabsContent value="representative" className="mt-4">
-        <LegalRepresentativeSection form={form} />
+        <Accordion type="single" collapsible className="w-full">
+          <LegalRepresentativeSection form={form} />
+        </Accordion>
       </TabsContent>
 
       <TabsContent value="registration" className="mt-4">
