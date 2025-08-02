@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -41,6 +42,7 @@ import {
   User,
   Edit,
   Trash2,
+  CalendarDays,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
@@ -135,6 +137,8 @@ const workers = [
     wage: "41,80 €",
   },
 ];
+
+const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
 
 export default function ProjectManagementPage() {
   return (
@@ -749,7 +753,7 @@ export default function ProjectManagementPage() {
              <Card><CardContent className="p-4">Θέσεις Στάθμευσης</CardContent></Card>
           </TabsContent>
            <TabsContent value="ika" className="flex-1 mt-2 flex flex-col gap-4">
-             <Tabs defaultValue="worker-management" className="w-full">
+             <Tabs defaultValue="payroll" className="w-full">
                 <TabsList>
                   <TabsTrigger value="worker-management">Εργατοτεχνίτες</TabsTrigger>
                   <TabsTrigger value="payroll">Παρουσιολόγιο</TabsTrigger>
@@ -837,6 +841,87 @@ export default function ProjectManagementPage() {
                             </Table>
                         </CardContent>
                     </Card>
+                </TabsContent>
+                <TabsContent value="payroll" className="mt-4 space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="h-5 w-5 text-primary" />
+                        <CardTitle>Παρουσιολόγιο Εργατοτεχνίτη</CardTitle>
+                      </div>
+                      <CardDescription>
+                        Επιλέξτε μήνα, έτος και εργατοτεχνίτη για να καταχωρήσετε τις ημέρες εργασίας.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Έτος</Label>
+                          <Select defaultValue="2025">
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="2025">2025</SelectItem>
+                              <SelectItem value="2024">2024</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Μήνας</Label>
+                          <Select defaultValue="august">
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="august">Αύγουστος</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Εργατοτεχνίτης</Label>
+                           <Select defaultValue="papadopoulos">
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="papadopoulos">ΠΑΠΑΔΟΠΟΥΛΟΣ ΙΩΑΝΝΗΣ</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-4">
+                        <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-muted-foreground mb-2">
+                          <span>ΔΕΥ</span>
+                          <span>ΤΡΙ</span>
+                          <span>ΤΕΤ</span>
+                          <span>ΠΕΜ</span>
+                          <span>ΠΑΡ</span>
+                          <span>ΣΑΒ</span>
+                          <span>ΚΥΡ</span>
+                        </div>
+                        <div className="grid grid-cols-7 gap-1">
+                          {/* Empty cells for month start */}
+                          <div />
+                          <div />
+                          <div />
+                          <div />
+                          {daysInMonth.map(day => (
+                            <div key={day} className="p-2 border rounded-md h-16 flex flex-col items-center justify-center gap-1">
+                              <span className="text-sm font-medium">{day}</span>
+                              <Checkbox id={`day-${day}`} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                         <Button variant="destructive">
+                            <Download className="mr-2 h-4 w-4" />
+                           Αποθήκευση Παρουσιολογίου
+                         </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
             </Tabs>
           </TabsContent>
