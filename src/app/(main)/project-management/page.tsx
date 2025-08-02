@@ -311,7 +311,7 @@ export default function ProjectManagementPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="implemented">
+                <Tabs defaultValue="other">
                   <TabsList>
                     <TabsTrigger value="terms">
                       Όροι Δόμησης Οικοπέδου
@@ -613,6 +613,70 @@ export default function ProjectManagementPage() {
                           <span className="text-sm text-muted-foreground">m</span>
                         </div>
                         <Label className="text-blue-500">Πραγματοποιούμενο Ύψος</Label>
+                      </div>
+                    </div>
+                  </TabsContent>
+                   <TabsContent value="other" className="mt-6">
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="font-semibold text-lg mb-2">Άλλα Στοιχεία</h3>
+                       <p className="text-sm text-muted-foreground mb-6">Οικονομικά στοιχεία και παρακολούθηση της προόδου του έργου.</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label>Τιμή Πώλησης Ανά τ.μ.</Label>
+                            <Input readOnly value="0,00 €" className="w-40"/>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label>Κόστος Ανά τ.μ. Δόμησης</Label>
+                            <Input readOnly value="0,00 €" className="w-40"/>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label>Αξία Πραγματοποιηθέντος Έργου</Label>
+                            <Input readOnly value="3.922.222,00 €" className="w-40"/>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label>Απαιτούμενο Ποσό Αποπεράτωσης</Label>
+                            <Input readOnly value="-3.922.222,00 €" className="w-40"/>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Label>Χρηματοδότηση Έργου</Label>
+                            <Input readOnly value="0,00 €" className="w-40"/>
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                           <div className="flex items-center justify-between">
+                            <Label>Μικτά Εκτός Κλιμακοστασίου</Label>
+                             <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">τ.μ.</span>
+                                <Input readOnly value="0,00" className="w-32"/>
+                             </div>
+                          </div>
+                           <div className="flex items-center justify-between">
+                            <Label>Εμβαδόν Που Ανάγεται</Label>
+                             <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">τ.μ.</span>
+                                <Input readOnly value="0,00" className="w-32"/>
+                             </div>
+                          </div>
+                           <div className="flex items-center justify-between">
+                            <Label>Εμβαδόν Πραγμ. Δόμησης & Αναγωγής</Label>
+                             <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">τ.μ.</span>
+                                <Input readOnly value="0,00" className="w-32"/>
+                             </div>
+                          </div>
+                           <div className="flex items-center justify-between">
+                            <Label>Εκτιμώμενο Κόστος Έργου</Label>
+                            <Input readOnly value="0,00 €" className="w-40"/>
+                          </div>
+                           <div className="flex items-center justify-between">
+                            <Label>Ποσοστό Προόδου Έργου</Label>
+                             <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">%</span>
+                                <Input readOnly value="0,00" className="w-32"/>
+                             </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </TabsContent>
