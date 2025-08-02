@@ -83,7 +83,7 @@ export function ParkingTableHeader({
       <div 
         ref={headerRef}
         className="w-full h-10 border-b flex bg-muted/30 relative overflow-hidden"
-        style={{ gridTemplateColumns: columnWidths.map(w => `${w}px`).join(' ') }}
+        style={{ gridTemplateColumns: columnWidths.map(w => `${'w'}px`).join(' ') }}
       >
         {columns.map((col, index) => (
           <div
