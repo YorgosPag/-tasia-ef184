@@ -30,6 +30,7 @@ export function ParkingTab({ parkingSpots }: { parkingSpots: ParkingSpot[] }) {
     }
   }, [parkingSpots, selectedSpot]);
 
+
   // Βελτιωμένα default widths με καλύτερο spacing
   const getDefaultWidths = () => {
     const defaultWidths: { [key: string]: number } = {
@@ -177,13 +178,13 @@ export function ParkingTab({ parkingSpots }: { parkingSpots: ParkingSpot[] }) {
   }, [processedParkingSpots, selectedSpot]);
 
   if (!parkingSpots) {
-      return (
-        <div className="flex items-center justify-center h-64 text-muted-foreground">
-          <div className="text-center">
-            <p className="text-lg mb-2">Φόρτωση δεδομένων...</p>
-          </div>
+    return (
+      <div className="flex items-center justify-center h-64 text-muted-foreground">
+        <div className="text-center">
+          <p className="text-lg mb-2">Φόρτωση δεδομένων...</p>
         </div>
-      );
+      </div>
+    );
   }
 
   if (parkingSpots.length === 0) {
