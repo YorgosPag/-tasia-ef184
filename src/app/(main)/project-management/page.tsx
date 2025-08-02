@@ -19,11 +19,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Briefcase,
   Plus,
   FileDown,
   History,
   FilePenLine,
+  MapPin,
+  BadgeCheck,
+  Paperclip,
+  Download,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
@@ -39,6 +51,12 @@ const projects = [
     title: "Καληαρού & Κομνηνών",
     subtitle: "Κέντρο",
   },
+];
+
+const attachedFiles = [
+    { id: '1', name: 'Οικοδομική Άδεια.pdf', type: 'Άδεια', date: '2023-01-15' },
+    { id: '2', name: 'Τοπογραφικό Διάγραμμα.dwg', type: 'Σχέδιο', date: '2022-11-30' },
+    { id: '3', name: 'Σύμβαση Έργου.docx', type: 'Συμβατικό', date: '2023-02-01' },
 ];
 
 export default function ProjectManagementPage() {
@@ -156,6 +174,80 @@ export default function ProjectManagementPage() {
                        />
                     </div>
                   </CardContent>
+                </TabsContent>
+                 <TabsContent value="location" className="mt-4 flex-1">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-6 w-6 text-primary" />
+                      <div>
+                        <CardTitle>Τοποθεσία & Διεύθυνση</CardTitle>
+                        <CardDescription>
+                          Γεωγραφικά και διοικητικά στοιχεία του έργου.
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                   <CardContent className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="space-y-2"><Label>Οδός</Label><Input readOnly value="Καληαρού & Κομνηνών" /></div>
+                     <div className="space-y-2"><Label>Περιοχή</Label><Input readOnly value="Εύοσμος" /></div>
+                     <div className="space-y-2"><Label>Πόλη</Label><Input readOnly value="Θεσσαλονίκη" /></div>
+                     <div className="space-y-2"><Label>Ταχ. Κώδικας</Label><Input readOnly value="56224" /></div>
+                   </CardContent>
+                </TabsContent>
+                 <TabsContent value="licenses" className="mt-4 flex-1">
+                  <CardHeader>
+                     <div className="flex items-center gap-3">
+                       <BadgeCheck className="h-6 w-6 text-primary" />
+                       <div>
+                         <CardTitle>Άδειες & Κατάσταση</CardTitle>
+                         <CardDescription>
+                           Στοιχεία οικοδομικής άδειας και τρέχουσα κατάσταση του έργου.
+                         </CardDescription>
+                       </div>
+                     </div>
+                  </CardHeader>
+                   <CardContent className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="space-y-2"><Label>Αριθμός Άδειας</Label><Input readOnly value="12345/2023" /></div>
+                     <div className="space-y-2"><Label>Ημερομηνία Έκδοσης</Label><Input readOnly value="15/01/2023" /></div>
+                     <div className="space-y-2"><Label>Κατάσταση Έργου</Label><Input readOnly value="Σε εξέλιξη" /></div>
+                   </CardContent>
+                </TabsContent>
+                 <TabsContent value="attachments" className="mt-4 flex-1">
+                   <CardHeader>
+                     <div className="flex items-center gap-3">
+                       <Paperclip className="h-6 w-6 text-primary" />
+                       <div>
+                         <CardTitle>Συνημμένα Αρχεία</CardTitle>
+                         <CardDescription>
+                            Λίστα σχετικών εγγράφων και σχεδίων.
+                         </CardDescription>
+                       </div>
+                     </div>
+                   </CardHeader>
+                    <CardContent className="mt-6">
+                       <Table>
+                         <TableHeader>
+                           <TableRow>
+                             <TableHead>Όνομα Αρχείου</TableHead>
+                             <TableHead>Τύπος</TableHead>
+                             <TableHead>Ημ/νία</TableHead>
+                             <TableHead className="text-right">Λήψη</TableHead>
+                           </TableRow>
+                         </TableHeader>
+                         <TableBody>
+                            {attachedFiles.map((file) => (
+                               <TableRow key={file.id}>
+                                 <TableCell className="font-medium">{file.name}</TableCell>
+                                 <TableCell>{file.type}</TableCell>
+                                 <TableCell>{file.date}</TableCell>
+                                 <TableCell className="text-right">
+                                   <Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button>
+                                 </TableCell>
+                               </TableRow>
+                            ))}
+                         </TableBody>
+                       </Table>
+                    </CardContent>
                 </TabsContent>
               </Tabs>
             </Card>
