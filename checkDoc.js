@@ -1,7 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
-// Firebase config (βάλε τα δικά σου ή import)
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCzb4bEOYVnUwit2r6wCdL1h06Jdyi7Woc",
   authDomain: "tasia-6f77i.firebaseapp.com",
@@ -15,7 +15,7 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const collectionName = "tsia-complex-entities";
-const docId = "00ABWDQmABQWXP Aem5Ya".replace(/\s/g, ""); // ΜΗΝ αφήσεις κενά
+const docId = "00ABWDQmABQWXPAem5Ya"; // Χωρίς replace, βάλε το κανονικά
 
 async function checkDocument() {
   try {
@@ -23,12 +23,12 @@ async function checkDocument() {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
+      console.log("✅ Document found:", docSnap.data());
     } else {
-      console.log("No such document!");
+      console.log("❌ No such document!");
     }
   } catch (error) {
-    console.error("Error fetching document:", error);
+    console.error("🔥 Error fetching document:", error.message);
   }
 }
 

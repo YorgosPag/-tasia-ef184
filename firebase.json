@@ -10,6 +10,9 @@
       "region": "europe-west1"
     }
   },
+  "functions": {
+    "source": "functions"
+  },
   "emulators": {
     "firestore": {
       "port": 8081,

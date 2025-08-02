@@ -1,3 +1,5 @@
+process.env.FIRESTORE_EMULATOR_HOST = "localhost:8081"; // ΠΡΕΠΕΙ να μπει ΠΡΙΝ την αρχικοποίηση
+
 const admin = require("firebase-admin");
 const serviceAccount = require("./serviceAccount.json");
 

@@ -1,0 +1,12 @@
+{
+  "name": "agent-functions",
+  "type": "module",
+  "main": "dist/ask.js",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-functions": "^4.4.1",
+    "node-fetch": "^3.3.2"
+  }
+}

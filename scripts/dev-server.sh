@@ -27,12 +27,12 @@ fi
 
 echo "✅ Επιλέχθηκε το port $PORT για το development server."
 
-# Τρέχει το dev server με override της πόρτας μέσω περιβαλλοντικής μεταβλητής PORT
-PORT=$PORT npm run dev
+# Εκκίνηση του dev server με τη σωστή θύρα
+npx cross-env PORT=$PORT npm run dev -- --port $PORT &
 DEV_PID=$!
-sleep 10
+sleep 15  # Αυξήσαμε την αναμονή για ασφάλεια
 
-echo "🔍 Έλεγχος αν ο dev server απαντά στο http://localhost:$PORT..."
+echo "🔍 Έλεγχος αν ο dev server ανταποκρίνεται στο http://localhost:$PORT..."
 
 if timeout 30 curl --silent --fail http://localhost:$PORT >/dev/null; then
   echo "✅ Dev server ανταποκρίνεται."
@@ -42,5 +42,4 @@ else
   exit 1
 fi
 
-kill $DEV_PID || true
-sleep 2
+# Ο dev server μένει ανοιχτός, δεν σκοτώνουμε το DEV_PID εδώ

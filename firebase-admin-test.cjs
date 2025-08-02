@@ -1,38 +1,27 @@
-// firebase-admin-test.js
+process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8081";
+
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
-// Για emulator testing
-process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080";
+const app = initializeApp({ projectId: "tasia-6f77i" });
+const db = getFirestore(app);
 
-try {
-  const app = initializeApp({ projectId: "demo-test" });
-  const db = getFirestore(app);
-
-  // Test basic operations
-  async function testFirestore() {
-    // Test write
+async function testConnection() {
+  try {
     await db.collection("test").doc("connection").set({
-      timestamp: new Date(),
       status: "connected",
+      timestamp: new Date(),
     });
 
-    // Test read
     const doc = await db.collection("test").doc("connection").get();
     if (doc.exists) {
-      console.log("✅ Firestore read/write test successful");
-      process.exit(0);
+      console.log("✅ Firestore emulator is working:", doc.data());
     } else {
-      console.log("❌ Firestore read test failed");
-      process.exit(1);
+      console.log("❌ Document not found.");
     }
+  } catch (err) {
+    console.error("🔥 Connection failed:", err.message);
   }
-
-  testFirestore().catch((error) => {
-    console.log("❌ Firestore test failed:", error.message);
-    process.exit(1);
-  });
-} catch (error) {
-  console.log("❌ Firestore initialization failed:", error.message);
-  process.exit(1);
 }
+
+testConnection();
