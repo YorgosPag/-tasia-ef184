@@ -87,7 +87,7 @@ export function ProjectsPageView({
           <Button
             onClick={handleExport}
             variant="outline"
-            disabled={isLoading || filteredProjects.length === 0}
+            disabled={isLoading || !filteredProjects || filteredProjects.length === 0}
           >
             <Download className="mr-2" />
             Εξαγωγή σε JSON
@@ -120,12 +120,12 @@ export function ProjectsPageView({
 
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Λίστα Έργων ({filteredProjects.length})</CardTitle>
+            <CardTitle>Λίστα Έργων ({filteredProjects?.length || 0})</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <ProjectTableSkeleton />
-            ) : filteredProjects.length > 0 ? (
+            ) : filteredProjects && filteredProjects.length > 0 ? (
               <ProjectTable
                 projects={filteredProjects}
                 companies={companies}
