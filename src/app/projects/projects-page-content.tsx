@@ -1,10 +1,9 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import { ProjectsList } from './projects-list';
 import { ProjectDetails } from './project-details';
-import { PageLayout } from '../page-layout';
+import { PageLayout } from '@/components/app/page-layout';
 
 const projects = [
   { id: 1, name: "3. ΕΥΤΕΡΠΗΣ" },
