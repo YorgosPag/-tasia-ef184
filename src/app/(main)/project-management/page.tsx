@@ -47,6 +47,8 @@ import {
   FileSignature,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { ParkingTab } from "@/components/projects/parking/ParkingTab";
+import { parkingSpots } from "@/components/projects/parking/data";
 
 // Mock data based on the image provided
 const projects = [
@@ -215,7 +217,7 @@ export default function ProjectManagementPage() {
           <h1 className="text-xl font-bold">3. ΕΥΤΕΡΠΗΣ</h1>
         </div>
 
-        <Tabs defaultValue="ika" className="flex-1 flex flex-col">
+        <Tabs defaultValue="parking" className="flex-1 flex flex-col">
           <TabsList className="flex flex-wrap h-auto">
             <TabsTrigger value="general">Γενικά Έργου</TabsTrigger>
             <TabsTrigger value="building-elements">Στοιχεία Δόμησης</TabsTrigger>
@@ -765,8 +767,8 @@ export default function ProjectManagementPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="parking">
-             <Card><CardContent className="p-4">Θέσεις Στάθμευσης</CardContent></Card>
+          <TabsContent value="parking" className="mt-4 flex-1">
+             <ParkingTab parkingSpots={parkingSpots} />
           </TabsContent>
            <TabsContent value="ika" className="flex-1 mt-2 flex flex-col gap-4">
              <Tabs defaultValue="worker-management" className="w-full">
