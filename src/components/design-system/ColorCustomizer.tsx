@@ -24,26 +24,26 @@ interface ColorConfig {
 
 const defaultColors: ColorConfig[] = [
   // Primary Colors
-  { name: 'primary', displayName: 'Primary', value: '#3B82F6', category: 'primary' },
-  { name: 'secondary', displayName: 'Secondary', value: '#64748B', category: 'primary' },
-  { name: 'accent', displayName: 'Accent', value: '#F1F5F9', category: 'primary' },
-  { name: 'muted', displayName: 'Muted', value: '#F8FAFC', category: 'primary' },
+  { name: 'primary', displayName: 'Κύριο', value: '#3B82F6', category: 'primary' },
+  { name: 'secondary', displayName: 'Δευτερεύον', value: '#64748B', category: 'primary' },
+  { name: 'accent', displayName: 'Τονισμός', value: '#F1F5F9', category: 'primary' },
+  { name: 'muted', displayName: 'Σίγαση', value: '#F8FAFC', category: 'primary' },
   
   // Status Colors
-  { name: 'success', displayName: 'Success', value: '#22C55E', category: 'status' },
-  { name: 'warning', displayName: 'Warning', value: '#EAB308', category: 'status' },
-  { name: 'error', displayName: 'Error', value: '#EF4444', category: 'status' },
-  { name: 'info', displayName: 'Info', value: '#3B82F6', category: 'status' },
+  { name: 'success', displayName: 'Επιτυχία', value: '#22C55E', category: 'status' },
+  { name: 'warning', displayName: 'Προειδοποίηση', value: '#EAB308', category: 'status' },
+  { name: 'error', displayName: 'Σφάλμα', value: '#EF4444', category: 'status' },
+  { name: 'info', displayName: 'Πληροφορία', value: '#3B82F6', category: 'status' },
   
   // Background Colors
-  { name: 'background', displayName: 'Background', value: '#FFFFFF', category: 'background' },
-  { name: 'card', displayName: 'Card', value: '#FFFFFF', category: 'background' },
-  { name: 'popover', displayName: 'Popover', value: '#FFFFFF', category: 'background' },
-  { name: 'border', displayName: 'Border', value: '#E2E8F0', category: 'background' },
+  { name: 'background', displayName: 'Φόντο', value: '#FFFFFF', category: 'background' },
+  { name: 'card', displayName: 'Κάρτα', value: '#FFFFFF', category: 'background' },
+  { name: 'popover', displayName: 'Αναδυόμενο', value: '#FFFFFF', category: 'background' },
+  { name: 'border', displayName: 'Περίγραμμα', value: '#E2E8F0', category: 'background' },
   
   // Text Colors
-  { name: 'foreground', displayName: 'Text Primary', value: '#0F172A', category: 'text' },
-  { name: 'muted-foreground', displayName: 'Text Muted', value: '#64748B', category: 'text' },
+  { name: 'foreground', displayName: 'Κύριο Κείμενο', value: '#0F172A', category: 'text' },
+  { name: 'muted-foreground', displayName: 'Δευτερεύον Κείμενο', value: '#64748B', category: 'text' },
 ];
 
 export function ColorCustomizer() {
@@ -147,25 +147,25 @@ export function ColorCustomizer() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Paintbrush className="w-5 h-5" />
-                Color Palette Customizer
+                Παραμετροποίηση Παλέτας
               </CardTitle>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={resetColors}>
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset
+                  Επαναφορά
                 </Button>
                 <Button variant="outline" size="sm" onClick={exportColors}>
                   <Copy className="w-4 h-4 mr-2" />
-                  Export CSS
+                  Εξαγωγή CSS
                 </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <CategorySection category="primary" title="Primary Colors" />
-            <CategorySection category="status" title="Status Colors" />
-            <CategorySection category="background" title="Background Colors" />
-            <CategorySection category="text" title="Text Colors" />
+            <CategorySection category="primary" title="Κύρια Χρώματα" />
+            <CategorySection category="status" title="Χρώματα Κατάστασης" />
+            <CategorySection category="background" title="Χρώματα Φόντου" />
+            <CategorySection category="text" title="Χρώματα Κειμένου" />
           </CardContent>
         </Card>
       </div>
@@ -176,68 +176,68 @@ export function ColorCustomizer() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Eye className="w-5 h-5" />
-              Live Preview
+              Ζωντανή Προεπισκόπηση
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div>
-                <h5 className="text-sm font-medium mb-2">Buttons</h5>
+                <h5 className="text-sm font-medium mb-2">Κουμπιά</h5>
                 <div className="flex flex-wrap gap-2">
-                  <Button size="sm">Primary</Button>
-                  <Button variant="secondary" size="sm">Secondary</Button>
-                  <Button variant="outline" size="sm">Outline</Button>
-                  <Button variant="destructive" size="sm">Destructive</Button>
+                  <Button size="sm">Κύριο</Button>
+                  <Button variant="secondary" size="sm">Δευτερεύον</Button>
+                  <Button variant="outline" size="sm">Περίγραμμα</Button>
+                  <Button variant="destructive" size="sm">Σφάλμα</Button>
                 </div>
               </div>
 
               <div>
-                <h5 className="text-sm font-medium mb-2">Cards</h5>
+                <h5 className="text-sm font-medium mb-2">Κάρτες</h5>
                 <Card className="p-3">
-                  <h6 className="text-sm font-semibold mb-1">Sample Card</h6>
+                  <h6 className="text-sm font-semibold mb-1">Δείγμα Κάρτας</h6>
                   <p className="text-xs text-muted-foreground">
-                    This card shows how your colors look in practice.
+                    Αυτή η κάρτα δείχνει πώς φαίνονται τα χρώματα στην πράξη.
                   </p>
                 </Card>
               </div>
 
               <div>
-                <h5 className="text-sm font-medium mb-2">Badges</h5>
+                <h5 className="text-sm font-medium mb-2">Ετικέτες</h5>
                 <div className="flex flex-wrap gap-2">
-                  <Badge>Default</Badge>
-                  <Badge variant="secondary">Secondary</Badge>
-                  <Badge variant="outline">Outline</Badge>
-                  <Badge variant="destructive">Error</Badge>
+                  <Badge>Προεπιλογή</Badge>
+                  <Badge variant="secondary">Δευτερεύον</Badge>
+                  <Badge variant="outline">Περίγραμμα</Badge>
+                  <Badge variant="destructive">Σφάλμα</Badge>
                 </div>
               </div>
 
               <div>
-                <h5 className="text-sm font-medium mb-2">Text Styles</h5>
+                <h5 className="text-sm font-medium mb-2">Στυλ Κειμένου</h5>
                 <div className="space-y-1">
-                  <p className="text-sm font-semibold">Primary Text</p>
-                  <p className="text-sm text-muted-foreground">Muted Text</p>
-                  <p className="text-xs">Small Text</p>
+                  <p className="text-sm font-semibold">Κύριο Κείμενο</p>
+                  <p className="text-sm text-muted-foreground">Δευτερεύον Κείμενο</p>
+                  <p className="text-xs">Μικρό Κείμενο</p>
                 </div>
               </div>
 
               <div>
-                <h5 className="text-sm font-medium mb-2">Status Indicators</h5>
+                <h5 className="text-sm font-medium mb-2">Δείκτες Κατάστασης</h5>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-xs">Success Status</span>
+                    <span className="text-xs">Κατάσταση Επιτυχίας</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <span className="text-xs">Warning Status</span>
+                    <span className="text-xs">Κατάσταση Προειδοποίησης</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-xs">Error Status</span>
+                    <span className="text-xs">Κατάσταση Σφάλματος</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <span className="text-xs">Info Status</span>
+                    <span className="text-xs">Κατάσταση Πληροφορίας</span>
                   </div>
                 </div>
               </div>
@@ -249,7 +249,7 @@ export function ColorCustomizer() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Palette className="w-5 h-5" />
-              Color Values
+              Τιμές Χρωμάτων
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -24,11 +24,11 @@ export function DesignSystemPageContent() {
   const [activeTab, setActiveTab] = useState('colors');
 
   const exportAllSettings = () => {
-    alert('Theme export functionality would be implemented here');
+    alert('Η λειτουργικότητα εξαγωγής θέματος θα υλοποιηθεί σύντομα');
   };
 
   const importSettings = () => {
-    alert('Theme import functionality would be implemented here');
+    alert('Η λειτουργικότητα εισαγωγής θέματος θα υλοποιηθεί σύντομα');
   };
 
   return (
@@ -40,18 +40,18 @@ export function DesignSystemPageContent() {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Paintbrush className="w-6 h-6 text-primary" />
-                <h1 className="text-xl font-semibold">Design System</h1>
+                <h1 className="text-xl font-semibold">Σύστημα Σχεδίασης</h1>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={importSettings}>
                 <Upload className="w-4 h-4 mr-2" />
-                Import
+                Εισαγωγή
               </Button>
               <Button variant="outline" size="sm" onClick={exportAllSettings}>
                 <Download className="w-4 h-4 mr-2" />
-                Export
+                Εξαγωγή
               </Button>
             </div>
           </div>
@@ -68,11 +68,11 @@ export function DesignSystemPageContent() {
             </TabsTrigger>
             <TabsTrigger value="typography" onClick={() => setActiveTab('typography')} className="flex items-center gap-2">
               <Type className="w-4 h-4" />
-              Γραμματοσειρές
+              Τυπογραφία
             </TabsTrigger>
             <TabsTrigger value="layout" onClick={() => setActiveTab('layout')} className="flex items-center gap-2">
               <LayoutTemplate className="w-4 h-4" />
-              Layout & Spacing
+              Διάταξη & Αποστάσεις
             </TabsTrigger>
           </TabsList>
 

@@ -30,23 +30,23 @@ interface FontConfig {
 
 const defaultFonts: FontConfig[] = [
   // Headings
-  { name: 'h1', displayName: 'Heading 1', family: 'Inter', size: 32, weight: 700, lineHeight: 1.2, letterSpacing: -0.02, category: 'heading' },
-  { name: 'h2', displayName: 'Heading 2', family: 'Inter', size: 28, weight: 600, lineHeight: 1.3, letterSpacing: -0.01, category: 'heading' },
-  { name: 'h3', displayName: 'Heading 3', family: 'Inter', size: 24, weight: 600, lineHeight: 1.4, letterSpacing: 0, category: 'heading' },
-  { name: 'h4', displayName: 'Heading 4', family: 'Inter', size: 20, weight: 500, lineHeight: 1.4, letterSpacing: 0, category: 'heading' },
+  { name: 'h1', displayName: 'Επικεφαλίδα 1', family: 'Inter', size: 32, weight: 700, lineHeight: 1.2, letterSpacing: -0.02, category: 'heading' },
+  { name: 'h2', displayName: 'Επικεφαλίδα 2', family: 'Inter', size: 28, weight: 600, lineHeight: 1.3, letterSpacing: -0.01, category: 'heading' },
+  { name: 'h3', displayName: 'Επικεφαλίδα 3', family: 'Inter', size: 24, weight: 600, lineHeight: 1.4, letterSpacing: 0, category: 'heading' },
+  { name: 'h4', displayName: 'Επικεφαλίδα 4', family: 'Inter', size: 20, weight: 500, lineHeight: 1.4, letterSpacing: 0, category: 'heading' },
   
   // Body Text
-  { name: 'body-large', displayName: 'Body Large', family: 'Inter', size: 16, weight: 400, lineHeight: 1.6, letterSpacing: 0, category: 'body' },
-  { name: 'body', displayName: 'Body', family: 'Inter', size: 14, weight: 400, lineHeight: 1.5, letterSpacing: 0, category: 'body' },
-  { name: 'body-small', displayName: 'Body Small', family: 'Inter', size: 12, weight: 400, lineHeight: 1.4, letterSpacing: 0, category: 'body' },
+  { name: 'body-large', displayName: 'Μεγάλο Κείμενο', family: 'Inter', size: 16, weight: 400, lineHeight: 1.6, letterSpacing: 0, category: 'body' },
+  { name: 'body', displayName: 'Κείμενο', family: 'Inter', size: 14, weight: 400, lineHeight: 1.5, letterSpacing: 0, category: 'body' },
+  { name: 'body-small', displayName: 'Μικρό Κείμενο', family: 'Inter', size: 12, weight: 400, lineHeight: 1.4, letterSpacing: 0, category: 'body' },
   
   // Captions & Labels
-  { name: 'caption', displayName: 'Caption', family: 'Inter', size: 11, weight: 400, lineHeight: 1.3, letterSpacing: 0.01, category: 'caption' },
-  { name: 'label', displayName: 'Label', family: 'Inter', size: 12, weight: 500, lineHeight: 1.2, letterSpacing: 0.01, category: 'caption' },
+  { name: 'caption', displayName: 'Λεζάντα', family: 'Inter', size: 11, weight: 400, lineHeight: 1.3, letterSpacing: 0.01, category: 'caption' },
+  { name: 'label', displayName: 'Ετικέτα', family: 'Inter', size: 12, weight: 500, lineHeight: 1.2, letterSpacing: 0.01, category: 'caption' },
   
   // UI Elements
-  { name: 'button', displayName: 'Button', family: 'Inter', size: 14, weight: 500, lineHeight: 1.2, letterSpacing: 0, category: 'ui' },
-  { name: 'input', displayName: 'Input', family: 'Inter', size: 14, weight: 400, lineHeight: 1.4, letterSpacing: 0, category: 'ui' },
+  { name: 'button', displayName: 'Κουμπί', family: 'Inter', size: 14, weight: 500, lineHeight: 1.2, letterSpacing: 0, category: 'ui' },
+  { name: 'input', displayName: 'Πεδίο Εισαγωγής', family: 'Inter', size: 14, weight: 400, lineHeight: 1.4, letterSpacing: 0, category: 'ui' },
 ];
 
 const fontFamilies = [
@@ -133,7 +133,7 @@ export function TypographyCustomizer() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="text-xs">Font Family</Label>
+            <Label className="text-xs">Γραμματοσειρά</Label>
             <Select 
               value={font.family} 
               onValueChange={(value) => updateFont(font.name, 'family', value)}
@@ -152,7 +152,7 @@ export function TypographyCustomizer() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs">Font Weight</Label>
+            <Label className="text-xs">Πάχος</Label>
             <Select 
               value={font.weight.toString()} 
               onValueChange={(value) => updateFont(font.name, 'weight', parseInt(value))}
@@ -173,7 +173,7 @@ export function TypographyCustomizer() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label className="text-xs">Size: {font.size}px</Label>
+            <Label className="text-xs">Μέγεθος: {font.size}px</Label>
             <Slider
               value={[font.size]}
               onValueChange={([value]) => updateFont(font.name, 'size', value)}
@@ -185,7 +185,7 @@ export function TypographyCustomizer() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs">Line Height: {font.lineHeight}</Label>
+            <Label className="text-xs">Ύψος Γραμμής: {font.lineHeight}</Label>
             <Slider
               value={[font.lineHeight]}
               onValueChange={([value]) => updateFont(font.name, 'lineHeight', value)}
@@ -197,7 +197,7 @@ export function TypographyCustomizer() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs">Letter Spacing: {font.letterSpacing}em</Label>
+            <Label className="text-xs">Απόσταση Γραμμάτων: {font.letterSpacing}em</Label>
             <Slider
               value={[font.letterSpacing]}
               onValueChange={([value]) => updateFont(font.name, 'letterSpacing', value)}
@@ -249,25 +249,25 @@ export function TypographyCustomizer() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Type className="w-5 h-5" />
-                Typography System
+                Σύστημα Τυπογραφίας
               </CardTitle>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={resetFonts}>
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset
+                  Επαναφορά
                 </Button>
                 <Button variant="outline" size="sm" onClick={exportCSS}>
                   <Copy className="w-4 h-4 mr-2" />
-                  Export CSS
+                  Εξαγωγή CSS
                 </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-8">
-            <CategorySection category="heading" title="Headings" />
-            <CategorySection category="body" title="Body Text" />
-            <CategorySection category="caption" title="Captions & Labels" />
-            <CategorySection category="ui" title="UI Elements" />
+            <CategorySection category="heading" title="Επικεφαλίδες" />
+            <CategorySection category="body" title="Κείμενο" />
+            <CategorySection category="caption" title="Λεζάντες & Ετικέτες" />
+            <CategorySection category="ui" title="Στοιχεία Διεπαφής" />
           </CardContent>
         </Card>
       </div>
@@ -278,7 +278,7 @@ export function TypographyCustomizer() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Eye className="w-5 h-5" />
-              Typography Scale
+              Κλίμακα Τυπογραφίας
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -297,7 +297,7 @@ export function TypographyCustomizer() {
                     letterSpacing: `${font.letterSpacing}em`
                   }}
                 >
-                  Sample Text
+                  Δείγμα Κειμένου
                 </p>
               </div>
             ))}
@@ -308,7 +308,7 @@ export function TypographyCustomizer() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlignLeft className="w-5 h-5" />
-              Sample Content
+              Δείγμα Περιεχομένου
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -342,7 +342,7 @@ export function TypographyCustomizer() {
                       letterSpacing: `${font.letterSpacing}em`
                     }}
                   >
-                    This is {font.displayName} text used for regular content.
+                    Αυτό είναι ένα {font.displayName.toLowerCase()} που χρησιμοποιείται για κανονικό περιεχόμενο.
                   </p>
                 ))}
               </div>

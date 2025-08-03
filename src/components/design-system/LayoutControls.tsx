@@ -48,17 +48,17 @@ export function LayoutControls({ settings, updateSetting }: LayoutControlsProps)
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <RectangleHorizontal className="w-5 h-5" />
-          Container Controls
+          Έλεγχος Περιγραμμάτων
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4 p-4 border rounded-md">
           <h4 className="font-semibold text-sm flex items-center gap-2">
             <Move className="w-4 h-4" />
-            Spacing
+            Αποστάσεις
           </h4>
           <ControlSlider 
-            label="Padding"
+            label="Εσωτερικό περιθώριο (Padding)"
             value={settings.padding}
             onValueChange={(val) => updateSetting('padding', val)}
             min={0}
@@ -66,7 +66,7 @@ export function LayoutControls({ settings, updateSetting }: LayoutControlsProps)
             step={2}
           />
           <ControlSlider 
-            label="Margin"
+            label="Εξωτερικό περιθώριο (Margin)"
             value={settings.margin}
             onValueChange={(val) => updateSetting('margin', val)}
             min={0}
@@ -78,10 +78,10 @@ export function LayoutControls({ settings, updateSetting }: LayoutControlsProps)
         <div className="space-y-4 p-4 border rounded-md">
           <h4 className="font-semibold text-sm flex items-center gap-2">
             <Circle className="w-4 h-4" />
-            Border Radius
+            Στρογγυλοποίηση Γωνιών
           </h4>
           <ControlSlider 
-            label="Radius"
+            label="Ακτίνα"
             value={settings.borderRadius}
             onValueChange={(val) => updateSetting('borderRadius', val)}
             min={0}
@@ -93,10 +93,10 @@ export function LayoutControls({ settings, updateSetting }: LayoutControlsProps)
         <div className="space-y-4 p-4 border rounded-md">
           <h4 className="font-semibold text-sm flex items-center gap-2">
             <Square className="w-4 h-4" />
-            Border
+            Περίγραμμα
           </h4>
           <ControlSlider 
-            label="Border Width"
+            label="Πάχος Περιγράμματος"
             value={settings.borderWidth}
             onValueChange={(val) => updateSetting('borderWidth', val)}
             min={0}
@@ -108,10 +108,10 @@ export function LayoutControls({ settings, updateSetting }: LayoutControlsProps)
         <div className="space-y-4 p-4 border rounded-md">
           <h4 className="font-semibold text-sm flex items-center gap-2">
             <CopyIcon className="w-4 h-4" />
-            Shadow
+            Σκίαση
           </h4>
           <ControlSlider 
-            label="Shadow Opacity"
+            label="Αδιαφάνεια Σκίασης"
             value={settings.shadow}
             onValueChange={(val) => updateSetting('shadow', val)}
             min={0}

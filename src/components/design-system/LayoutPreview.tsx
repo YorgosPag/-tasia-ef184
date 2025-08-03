@@ -37,7 +37,7 @@ export function LayoutPreview({ settings }: LayoutPreviewProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <Eye className="w-5 h-5" />
-            Live Preview
+            Ζωντανή Προεπισκόπηση
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -51,9 +51,9 @@ export function LayoutPreview({ settings }: LayoutPreviewProps) {
                   <Building className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-card-foreground">Sample Container</h3>
+                  <h3 className="font-semibold text-card-foreground">Δείγμα Container</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    This is an example of how your layout settings will be applied to a container element.
+                    Αυτό είναι ένα παράδειγμα του πώς θα εφαρμόζονται οι ρυθμίσεις διάταξης.
                   </p>
                 </div>
               </div>
@@ -64,7 +64,7 @@ export function LayoutPreview({ settings }: LayoutPreviewProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Generated CSS</CardTitle>
+          <CardTitle className="text-lg">Παραγόμενο CSS</CardTitle>
         </CardHeader>
         <CardContent>
           <pre className="bg-muted/50 dark:bg-muted/20 p-4 rounded-md text-xs font-mono overflow-x-auto">
