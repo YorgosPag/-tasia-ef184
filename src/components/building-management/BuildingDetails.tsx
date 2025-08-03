@@ -39,7 +39,7 @@ import {
   Info,
   Plus,
   X,
-  Image as ImageIcon
+  Image
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -55,34 +55,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PlaceholderTab } from '@/app/projects/placeholder-tab';
 
-type Building = {
-  id: number;
-  name: string;
-  description?: string;
-  address?: string;
-  city?: string;
-  totalArea: number;
-  builtArea: number;
-  floors: number;
-  units: number;
-  status: 'active' | 'construction' | 'planned' | 'completed';
-  startDate?: string;
-  completionDate?: string;
-  progress: number;
-  totalValue: number;
-  image?: string;
-  company: string;
-  project: string;
-  category: 'residential' | 'commercial' | 'mixed' | 'industrial';
-  features?: string[];
-};
-
-interface BuildingDetailsProps {
-  building: Building;
-  getStatusColor: (status: string) => string;
-  getStatusLabel: (status: string) => string;
-}
-
+// Δημιουργούμε ένα απλό PlaceholderTab component αφού δεν υπάρχει
 const GeneralTabContent = ({ building }: { building: Building }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -366,196 +339,211 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
       </Card>
 
       {/* Enhanced Project Files */}
-<div className="bg-white shadow rounded-lg p-6">
-  <div className="flex items-center justify-between mb-4">
-    <h3 className="text-lg leading-6 font-medium text-gray-900">Αρχεία Έργου</h3>
-    <div className="flex gap-2">
-      <label className="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 cursor-pointer">
-        <input type="file" multiple className="hidden" onChange={(e) => {
-          const files = Array.from(e.target.files || []);
-          console.log('Επιλέχθηκαν αρχεία:', files.map(f => f.name));
-        }} />
-        📁 Προσθήκη Αρχείων
-      </label>
-      <button className="inline-flex items-center px-3 py-2 border border-green-300 shadow-sm text-sm leading-4 font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100">
-        📸 Νέα Φωτογραφία
-      </button>
-    </div>
-  </div>
-
-  {/* Drag & Drop Zone */}
-  <div 
-    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-blue-50"
-    onDragOver={(e) => {
-      e.preventDefault();
-      e.currentTarget.classList.add('border-blue-400', 'bg-blue-50');
-    }}
-    onDragLeave={(e) => {
-      e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
-    }}
-    onDrop={(e) => {
-      e.preventDefault();
-      e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
-      const files = Array.from(e.dataTransfer.files);
-      console.log('Αρχεία που έπεσαν:', files.map(f => f.name));
-    }}
-  >
-    <div className="space-y-2">
-      <div className="mx-auto h-12 w-12 text-gray-400">
-        📄
-      </div>
-      <div className="text-sm text-gray-600">
-        <span className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer">
-          Κάντε κλικ για επιλογή αρχείων
-        </span>
-        {' '}ή σύρετε και αφήστε εδώ
-      </div>
-      <p className="text-xs text-gray-500">
-        PNG, JPG, PDF, DOC, XLS μέχρι 10MB
-      </p>
-    </div>
-  </div>
-
-  {/* Existing Files */}
-  <div className="mt-6 space-y-3">
-    <h4 className="text-sm font-medium text-gray-900">Υπάρχοντα Αρχεία</h4>
-    
-    {/* File Item */}
-    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-      <div className="flex items-center space-x-3">
-        <div className="flex-shrink-0 h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
-          <span className="text-red-600 font-medium text-xs">PDF</span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-gray-900 truncate">
-            Συγγραφή Υποχρεώσεων.pdf
-          </p>
-          <p className="text-xs text-gray-500">
-            2.4 MB • Ανέβηκε 15/02/2025
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center space-x-2">
-        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-          👁️ Προβολή
-        </button>
-        <button className="text-green-600 hover:text-green-800 text-sm font-medium">
-          ⬇️ Λήψη
-        </button>
-        <button className="text-red-600 hover:text-red-800 text-sm font-medium">
-          🗑️
-        </button>
-      </div>
-    </div>
-
-    {/* Another File Item */}
-    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-      <div className="flex items-center space-x-3">
-        <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-          <span className="text-blue-600 font-medium text-xs">DOC</span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-gray-900 truncate">
-            Άδεια Οικοδομής.docx
-          </p>
-          <p className="text-xs text-gray-500">
-            1.8 MB • Ανέβηκε 10/02/2025
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center space-x-2">
-        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-          👁️ Προβολή
-        </button>
-        <button className="text-green-600 hover:text-green-800 text-sm font-medium">
-          ⬇️ Λήψη
-        </button>
-        <button className="text-red-600 hover:text-red-800 text-sm font-medium">
-          🗑️
-        </button>
-      </div>
-    </div>
-
-    {/* Image File */}
-    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-      <div className="flex items-center space-x-3">
-        <div className="flex-shrink-0 h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center overflow-hidden">
-          <div className="w-full h-full bg-gradient-to-br from-green-200 to-green-300 flex items-center justify-center">
-            <span className="text-green-700 text-xs">🖼️</span>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Αρχεία Έργου
+            </CardTitle>
+            <div className="flex gap-2">
+              <label className="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 cursor-pointer">
+                <input 
+                  type="file" 
+                  multiple 
+                  className="hidden" 
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    console.log('Επιλέχθηκαν αρχεία:', files.map(f => f.name));
+                  }} 
+                />
+                <Folder className="w-4 h-4 mr-2" />
+                Προσθήκη Αρχείων
+              </label>
+              <Button variant="outline" size="sm">
+                <Camera className="w-4 h-4 mr-2" />
+                Νέα Φωτογραφία
+              </Button>
+            </div>
           </div>
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-gray-900 truncate">
-            Πρόοδος Κατασκευής Φεβ 2025.jpg
-          </p>
-          <p className="text-xs text-gray-500">
-            4.2 MB • Ανέβηκε σήμερα
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center space-x-2">
-        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-          👁️ Προβολή
-        </button>
-        <button className="text-green-600 hover:text-green-800 text-sm font-medium">
-          ⬇️ Λήψη
-        </button>
-        <button className="text-red-600 hover:text-red-800 text-sm font-medium">
-          🗑️
-        </button>
-      </div>
-    </div>
-  </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Drag & Drop Zone */}
+          <div 
+            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-blue-50"
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.currentTarget.classList.add('border-blue-400', 'bg-blue-50');
+            }}
+            onDragLeave={(e) => {
+              e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
+              const files = Array.from(e.dataTransfer.files);
+              console.log('Αρχεία που έπεσαν:', files.map(f => f.name));
+            }}
+          >
+            <div className="space-y-2">
+              <div className="mx-auto h-12 w-12 text-gray-400 flex items-center justify-center">
+                <FileText className="w-8 h-8" />
+              </div>
+              <div className="text-sm text-gray-600">
+                <span className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer">
+                  Κάντε κλικ για επιλογή αρχείων
+                </span>
+                {' '}ή σύρετε και αφήστε εδώ
+              </div>
+              <p className="text-xs text-gray-500">
+                PNG, JPG, PDF, DOC, XLS μέχρι 10MB
+              </p>
+            </div>
+          </div>
 
-  {/* Upload Progress (when uploading) */}
-  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200" style={{display: 'none'}} id="upload-progress">
-    <div className="flex items-center space-x-3">
-      <div className="flex-shrink-0">
-        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-medium text-blue-900">
-          Ανέβασμα σε εξέλιξη...
-        </p>
-        <div className="mt-1 w-full bg-blue-200 rounded-full h-2">
-          <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{width: '45%'}}></div>
-        </div>
-        <p className="text-xs text-blue-700 mt-1">
-          2 από 5 αρχεία ολοκληρώθηκαν
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
+          {/* Existing Files */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-gray-900">Υπάρχοντα Αρχεία</h4>
             
-            {/* Additional Files */}
-            <div className="border rounded-lg p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">Συνημμένα Αρχεία</h4>
-                <Button variant="outline" size="sm">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Προσθήκη Αρχείου
+            {/* File Item */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
+                  <span className="text-red-600 font-medium text-xs">PDF</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    Συγγραφή Υποχρεώσεων.pdf
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    2.4 MB • Ανέβηκε 15/02/2025
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm">
+                  <Eye className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Download className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <X className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className="flex items-center gap-2 p-2 border rounded">
-                  <FileText className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm">Κανονισμός Κτιρίου.pdf</span>
-                  <Button variant="ghost" size="sm" className="ml-auto">
-                    <Download className="w-3 h-3" />
-                  </Button>
+            </div>
+
+            {/* Another File Item */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <span className="text-blue-600 font-medium text-xs">DOC</span>
                 </div>
-                <div className="flex items-center gap-2 p-2 border rounded">
-                  <FileText className="w-4 h-4 text-green-500" />
-                  <span className="text-sm">Άδεια Οικοδομής.pdf</span>
-                  <Button variant="ghost" size="sm" className="ml-auto">
-                    <Download className="w-3 h-3" />
-                  </Button>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    Άδεια Οικοδομής.docx
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    1.8 MB • Ανέβηκε 10/02/2025
+                  </p>
                 </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm">
+                  <Eye className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Download className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Image File */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center overflow-hidden">
+                  <div className="w-full h-full bg-gradient-to-br from-green-200 to-green-300 flex items-center justify-center">
+                    <Image className="w-6 h-6 text-green-700" />
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    Πρόοδος Κατασκευής Φεβ 2025.jpg
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    4.2 MB • Ανέβηκε σήμερα
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm">
+                  <Eye className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Download className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>
-  );
+
+          {/* Upload Progress (when uploading) */}
+          <div className="hidden p-3 bg-blue-50 rounded-lg border border-blue-200" id="upload-progress">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-900">
+                  Ανέβασμα σε εξέλιξη...
+                </p>
+                <div className="mt-1 w-full bg-blue-200 rounded-full h-2">
+                  <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{width: '45%'}}></div>
+                </div>
+                <p className="text-xs text-blue-700 mt-1">
+                  2 από 5 αρχεία ολοκληρώθηκαν
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+            
+      {/* Additional Files */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium text-sm">Συνημμένα Αρχεία</h4>
+            <Button variant="outline" size="sm">
+              <Upload className="w-4 h-4 mr-2" />
+              Προσθήκη Αρχείου
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="flex items-center gap-2 p-2 border rounded">
+              <FileText className="w-4 h-4 text-blue-500" />
+              <span className="text-sm">Κανονισμός Κτιρίου.pdf</span>
+              <Button variant="ghost" size="sm" className="ml-auto">
+                <Download className="w-3 h-3" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 p-2 border rounded">
+              <FileText className="w-4 h-4 text-green-500" />
+              <span className="text-sm">Άδεια Οικοδομής.pdf</span>
+              <Button variant="ghost" size="sm" className="ml-auto">
+                <Download className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
 };
 
 const PhotosTabContent = () => (
@@ -572,7 +560,7 @@ const PhotosTabContent = () => (
       {[1, 2, 3, 4, 5, 6].map((index) => (
         <div key={index} className="aspect-square bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border hover:border-blue-400 transition-colors cursor-pointer group">
           <div className="text-center">
-            <ImageIcon className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
+            <Image className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Προσθήκη Φωτογραφίας</p>
           </div>
         </div>
@@ -603,6 +591,34 @@ const VideosTabContent = () => (
     </div>
   </div>
 );
+
+type Building = {
+  id: number;
+  name: string;
+  description?: string;
+  address?: string;
+  city?: string;
+  totalArea: number;
+  builtArea: number;
+  floors: number;
+  units: number;
+  status: 'active' | 'construction' | 'planned' | 'completed';
+  startDate?: string;
+  completionDate?: string;
+  progress: number;
+  totalValue: number;
+  image?: string;
+  company: string;
+  project: string;
+  category: 'residential' | 'commercial' | 'mixed' | 'industrial';
+  features?: string[];
+};
+
+interface BuildingDetailsProps {
+  building: Building;
+  getStatusColor: (status: string) => string;
+  getStatusLabel: (status: string) => string;
+}
 
 export function BuildingDetails({ building, getStatusColor, getStatusLabel }: BuildingDetailsProps) {
   return (
