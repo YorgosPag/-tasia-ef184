@@ -207,7 +207,7 @@ export function ProjectsPageContent() {
       <div className="flex-1 flex overflow-hidden min-h-0 p-4 gap-4">
         {viewMode === 'list' && selectedProject ? (
           <>
-            <div className="flex-shrink-0">
+            <div className="w-full max-w-[420px] flex-shrink-0">
               <ProjectsList
                 projects={filteredProjects}
                 selectedProject={selectedProject}
