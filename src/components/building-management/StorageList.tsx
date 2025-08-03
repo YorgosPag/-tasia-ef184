@@ -242,7 +242,7 @@ export function StorageList({
                       <td className="p-4">
                         {unit.linkedProperty ? (
                           <div className="flex items-center gap-1 text-sm text-blue-600">
-                            <Link className="w-3 h-3" />
+                            <LinkIcon className="w-3 h-3" />
                             {unit.linkedProperty}
                           </div>
                         ) : (
