@@ -1,7 +1,58 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, Edit, Save, X, Share, Print, Image, Building2 as BuildingIcon, Users, FileText, Video, Info } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { 
+  Eye, 
+  Folder, 
+  Edit, 
+  Save, 
+  Download, 
+  Upload,
+  Camera,
+  Video,
+  FileText,
+  Calendar,
+  MapPin,
+  Building2,
+  Home,
+  Users,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  Star,
+  Share,
+  Print,
+  Settings,
+  AlertCircle,
+  CheckCircle,
+  Info,
+  Plus,
+  X,
+  Image as ImageIcon
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { PlaceholderTab } from '@/app/projects/placeholder-tab';
 
 type Building = {
@@ -32,263 +83,615 @@ interface BuildingDetailsProps {
   getStatusLabel: (status: string) => string;
 }
 
-function GeneralTabContent({ building, isEditing }: { building: Building; isEditing: boolean }) {
+const GeneralTabContent = ({ building }: { building: Building }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: building.name,
+    description: building.description || '',
+    totalArea: building.totalArea,
+    builtArea: building.builtArea,
+    floors: building.floors,
+    units: building.units,
+    totalValue: building.totalValue,
+    startDate: building.startDate || '',
+    completionDate: building.completionDate || '',
+    address: building.address || '',
+    city: building.city || ''
+  });
+
+  const handleSave = () => {
+    // Here you would typically save to your backend
+    setIsEditing(false);
+    console.log('Saving building data:', formData);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('el-GR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Basic Information */}
-      <div className="bg-card shadow rounded-lg p-6">
-        <h3 className="text-lg leading-6 font-medium text-card-foreground mb-4">Βασικές Πληροφορίες</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Τίτλος Κτιρίου</label>
-            <input
-              type="text"
-              defaultValue={building.name}
-              disabled={!isEditing}
-              className={`mt-1 block w-full border-border rounded-md shadow-sm ${
-                !isEditing ? 'bg-muted' : 'bg-background'
-              } p-2`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Περιγραφή Κτιρίου</label>
-            <textarea
-              rows={4}
-              defaultValue={building.description}
-              disabled={!isEditing}
-              className={`mt-1 block w-full border-border rounded-md shadow-sm ${
-                !isEditing ? 'bg-muted' : 'bg-background'
-              } p-2`}
-            />
-          </div>
+      {/* Quick Actions */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+            ID: {building.id}
+          </Badge>
+          <Badge variant="outline">
+            {building.category === 'residential' && 'Κατοικίες'}
+            {building.category === 'commercial' && 'Εμπορικό'}
+            {building.category === 'mixed' && 'Μικτή Χρήση'}
+            {building.category === 'industrial' && 'Βιομηχανικό'}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          {!isEditing ? (
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+              <Edit className="w-4 h-4 mr-2" />
+              Επεξεργασία
+            </Button>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                <X className="w-4 h-4 mr-2" />
+                Ακύρωση
+              </Button>
+              <Button size="sm" onClick={handleSave}>
+                <Save className="w-4 h-4 mr-2" />
+                Αποθήκευση
+              </Button>
+            </>
+          )}
+          <Button variant="outline" size="sm">
+            <Share className="w-4 h-4 mr-2" />
+            Κοινοποίηση
+          </Button>
+          <Button variant="outline" size="sm">
+            <Print className="w-4 h-4 mr-2" />
+            Εκτύπωση
+          </Button>
         </div>
       </div>
 
-      {/* Location */}
-      <div className="bg-card shadow rounded-lg p-6">
-        <h3 className="text-lg leading-6 font-medium text-card-foreground mb-4">Τοποθεσία</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Διεύθυνση</label>
-            <input
-              type="text"
-              defaultValue={building.address}
+      {/* Building Title and Description */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="w-5 h-5" />
+            Βασικές Πληροφορίες
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Τίτλος Κτιρίου</Label>
+            <Input 
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
               disabled={!isEditing}
-              className={`mt-1 block w-full border-border rounded-md shadow-sm ${
-                !isEditing ? 'bg-muted' : 'bg-background'
-              } p-2`}
+              className={cn(!isEditing && "bg-muted")}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Πόλη</label>
-            <input
-              type="text"
-              defaultValue={building.city}
+          <div className="space-y-2">
+            <Label>Περιγραφή Κτιρίου</Label>
+            <Textarea 
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
               disabled={!isEditing}
-              className={`mt-1 block w-full border-border rounded-md shadow-sm ${
-                !isEditing ? 'bg-muted' : 'bg-background'
-              } p-2`}
+              className={cn(!isEditing && "bg-muted")}
+              rows={4}
             />
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
+
+      {/* Location Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="w-5 h-5" />
+            Τοποθεσία
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Διεύθυνση</Label>
+              <Input 
+                value={formData.address}
+                onChange={(e) => setFormData({...formData, address: e.target.value})}
+                disabled={!isEditing}
+                className={cn(!isEditing && "bg-muted")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Πόλη</Label>
+              <Input 
+                value={formData.city}
+                onChange={(e) => setFormData({...formData, city: e.target.value})}
+                disabled={!isEditing}
+                className={cn(!isEditing && "bg-muted")}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Technical Specifications */}
-      <div className="bg-card shadow rounded-lg p-6">
-        <h3 className="text-lg leading-6 font-medium text-card-foreground mb-4">Τεχνικά Χαρακτηριστικά</h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Σύνολο Δόμησης (m²)</label>
-            <input
-              type="number"
-              defaultValue={building.totalArea}
-              disabled={!isEditing}
-              className={`mt-1 block w-full border-border rounded-md shadow-sm ${
-                !isEditing ? 'bg-muted' : 'bg-background'
-              } p-2`}
-            />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            Τεχνικά Χαρακτηριστικά
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label>Σύνολο Δόμησης (m²)</Label>
+              <Input 
+                type="number"
+                value={formData.totalArea}
+                onChange={(e) => setFormData({...formData, totalArea: parseFloat(e.target.value)})}
+                disabled={!isEditing}
+                className={cn(!isEditing && "bg-muted")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Δομημένη Επιφάνεια (m²)</Label>
+              <Input 
+                type="number"
+                value={formData.builtArea}
+                onChange={(e) => setFormData({...formData, builtArea: parseFloat(e.target.value)})}
+                disabled={!isEditing}
+                className={cn(!isEditing && "bg-muted")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Αριθμός Ορόφων</Label>
+              <Input 
+                type="number"
+                value={formData.floors}
+                onChange={(e) => setFormData({...formData, floors: parseInt(e.target.value)})}
+                disabled={!isEditing}
+                className={cn(!isEditing && "bg-muted")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Αριθμός Μονάδων</Label>
+              <Input 
+                type="number"
+                value={formData.units}
+                onChange={(e) => setFormData({...formData, units: parseInt(e.target.value)})}
+                disabled={!isEditing}
+                className={cn(!isEditing && "bg-muted")}
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Δομημένη Επιφάνεια (m²)</label>
-            <input
-              type="number"
-              defaultValue={building.builtArea}
-              disabled={!isEditing}
-              className={`mt-1 block w-full border-border rounded-md shadow-sm ${
-                !isEditing ? 'bg-muted' : 'bg-background'
-              } p-2`}
-            />
+        </CardContent>
+      </Card>
+
+      {/* Financial Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="w-5 h-5" />
+            Οικονομικά Στοιχεία
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Συνολική Αξία (€)</Label>
+              <Input 
+                type="number"
+                value={formData.totalValue}
+                onChange={(e) => setFormData({...formData, totalValue: parseFloat(e.target.value)})}
+                disabled={!isEditing}
+                className={cn(!isEditing && "bg-muted")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Κόστος ανά m² (€)</Label>
+              <Input 
+                value={(formData.totalValue / formData.totalArea).toFixed(2)}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Προϋπολογισμός Status</Label>
+              <div className="flex items-center gap-2 p-2 rounded-md bg-green-50 dark:bg-green-950/20">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-sm text-green-700 dark:text-green-400">Εντός Προϋπολογισμού</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Αριθμός Ορόφων</label>
-            <input
-              type="number"
-              defaultValue={building.floors}
-              disabled={!isEditing}
-              className={`mt-1 block w-full border-border rounded-md shadow-sm ${
-                !isEditing ? 'bg-muted' : 'bg-background'
-              } p-2`}
-            />
+        </CardContent>
+      </Card>
+
+      {/* Timeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            Χρονοδιάγραμμα
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="space-y-2">
+              <Label>Ημερομηνία Έναρξης</Label>
+              <Input 
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                disabled={!isEditing}
+                className={cn(!isEditing && "bg-muted")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Ημερομηνία Παράδοσης</Label>
+              <Input 
+                type="date"
+                value={formData.completionDate}
+                onChange={(e) => setFormData({...formData, completionDate: e.target.value})}
+                disabled={!isEditing}
+                className={cn(!isEditing && "bg-muted")}
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Αριθμός Μονάδων</label>
-            <input
-              type="number"
-              defaultValue={building.units}
-              disabled={!isEditing}
-              className={`mt-1 block w-full border-border rounded-md shadow-sm ${
-                !isEditing ? 'bg-muted' : 'bg-background'
-              } p-2`}
-            />
+          
+          {/* Progress Indicator */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Πρόοδος Έργου</Label>
+              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                {building.progress}% Ολοκληρωμένο
+              </Badge>
+            </div>
+            <Progress value={building.progress} className="h-3" />
+            <div className="text-sm text-muted-foreground">
+              {building.progress < 25 && "Αρχικό στάδιο - Προετοιμασία"}
+              {building.progress >= 25 && building.progress < 50 && "Υπό κατασκευή - Κύρια δομή"}
+              {building.progress >= 50 && building.progress < 75 && "Προχωρημένο στάδιο - Ολοκληρώσεις"}
+              {building.progress >= 75 && building.progress < 100 && "Τελικό στάδιο - Παραδοτέα"}
+              {building.progress === 100 && "Ολοκληρωμένο έργο"}
+            </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Enhanced Project Files */}
+<div className="bg-white shadow rounded-lg p-6">
+  <div className="flex items-center justify-between mb-4">
+    <h3 className="text-lg leading-6 font-medium text-gray-900">Αρχεία Έργου</h3>
+    <div className="flex gap-2">
+      <label className="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 cursor-pointer">
+        <input type="file" multiple className="hidden" onChange={(e) => {
+          const files = Array.from(e.target.files || []);
+          console.log('Επιλέχθηκαν αρχεία:', files.map(f => f.name));
+        }} />
+        📁 Προσθήκη Αρχείων
+      </label>
+      <button className="inline-flex items-center px-3 py-2 border border-green-300 shadow-sm text-sm leading-4 font-medium rounded-md text-green-700 bg-green-50 hover:bg-green-100">
+        📸 Νέα Φωτογραφία
+      </button>
+    </div>
+  </div>
+
+  {/* Drag & Drop Zone */}
+  <div 
+    className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-blue-50"
+    onDragOver={(e) => {
+      e.preventDefault();
+      e.currentTarget.classList.add('border-blue-400', 'bg-blue-50');
+    }}
+    onDragLeave={(e) => {
+      e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
+    }}
+    onDrop={(e) => {
+      e.preventDefault();
+      e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
+      const files = Array.from(e.dataTransfer.files);
+      console.log('Αρχεία που έπεσαν:', files.map(f => f.name));
+    }}
+  >
+    <div className="space-y-2">
+      <div className="mx-auto h-12 w-12 text-gray-400">
+        📄
+      </div>
+      <div className="text-sm text-gray-600">
+        <span className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer">
+          Κάντε κλικ για επιλογή αρχείων
+        </span>
+        {' '}ή σύρετε και αφήστε εδώ
+      </div>
+      <p className="text-xs text-gray-500">
+        PNG, JPG, PDF, DOC, XLS μέχρι 10MB
+      </p>
+    </div>
+  </div>
+
+  {/* Existing Files */}
+  <div className="mt-6 space-y-3">
+    <h4 className="text-sm font-medium text-gray-900">Υπάρχοντα Αρχεία</h4>
+    
+    {/* File Item */}
+    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+      <div className="flex items-center space-x-3">
+        <div className="flex-shrink-0 h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
+          <span className="text-red-600 font-medium text-xs">PDF</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            Συγγραφή Υποχρεώσεων.pdf
+          </p>
+          <p className="text-xs text-gray-500">
+            2.4 MB • Ανέβηκε 15/02/2025
+          </p>
         </div>
       </div>
-
-      {/* Progress */}
-      <div className="bg-card shadow rounded-lg p-6">
-        <h3 className="text-lg leading-6 font-medium text-card-foreground mb-4">Πρόοδος Έργου</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Πρόοδος</span>
-            <span className="text-sm font-medium text-primary">{building.progress}%</span>
-          </div>
-          <div className="w-full bg-muted rounded-full h-3">
-            <div 
-              className="bg-primary h-3 rounded-full transition-all duration-500" 
-              style={{ width: `${building.progress}%` }}
-            ></div>
-          </div>
-        </div>
+      <div className="flex items-center space-x-2">
+        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+          👁️ Προβολή
+        </button>
+        <button className="text-green-600 hover:text-green-800 text-sm font-medium">
+          ⬇️ Λήψη
+        </button>
+        <button className="text-red-600 hover:text-red-800 text-sm font-medium">
+          🗑️
+        </button>
       </div>
     </div>
+
+    {/* Another File Item */}
+    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+      <div className="flex items-center space-x-3">
+        <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <span className="text-blue-600 font-medium text-xs">DOC</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            Άδεια Οικοδομής.docx
+          </p>
+          <p className="text-xs text-gray-500">
+            1.8 MB • Ανέβηκε 10/02/2025
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center space-x-2">
+        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+          👁️ Προβολή
+        </button>
+        <button className="text-green-600 hover:text-green-800 text-sm font-medium">
+          ⬇️ Λήψη
+        </button>
+        <button className="text-red-600 hover:text-red-800 text-sm font-medium">
+          🗑️
+        </button>
+      </div>
+    </div>
+
+    {/* Image File */}
+    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+      <div className="flex items-center space-x-3">
+        <div className="flex-shrink-0 h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center overflow-hidden">
+          <div className="w-full h-full bg-gradient-to-br from-green-200 to-green-300 flex items-center justify-center">
+            <span className="text-green-700 text-xs">🖼️</span>
+          </div>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            Πρόοδος Κατασκευής Φεβ 2025.jpg
+          </p>
+          <p className="text-xs text-gray-500">
+            4.2 MB • Ανέβηκε σήμερα
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center space-x-2">
+        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+          👁️ Προβολή
+        </button>
+        <button className="text-green-600 hover:text-green-800 text-sm font-medium">
+          ⬇️ Λήψη
+        </button>
+        <button className="text-red-600 hover:text-red-800 text-sm font-medium">
+          🗑️
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {/* Upload Progress (when uploading) */}
+  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200" style={{display: 'none'}} id="upload-progress">
+    <div className="flex items-center space-x-3">
+      <div className="flex-shrink-0">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-medium text-blue-900">
+          Ανέβασμα σε εξέλιξη...
+        </p>
+        <div className="mt-1 w-full bg-blue-200 rounded-full h-2">
+          <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{width: '45%'}}></div>
+        </div>
+        <p className="text-xs text-blue-700 mt-1">
+          2 από 5 αρχεία ολοκληρώθηκαν
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+            
+            {/* Additional Files */}
+            <div className="border rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-sm">Συνημμένα Αρχεία</h4>
+                <Button variant="outline" size="sm">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Προσθήκη Αρχείου
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="flex items-center gap-2 p-2 border rounded">
+                  <FileText className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm">Κανονισμός Κτιρίου.pdf</span>
+                  <Button variant="ghost" size="sm" className="ml-auto">
+                    <Download className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2 p-2 border rounded">
+                  <FileText className="w-4 h-4 text-green-500" />
+                  <span className="text-sm">Άδεια Οικοδομής.pdf</span>
+                  <Button variant="ghost" size="sm" className="ml-auto">
+                    <Download className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
   );
-}
+};
 
-function StoragesTabContent() {
-  return <PlaceholderTab title="Αποθήκες" />;
-}
+const PhotosTabContent = () => (
+  <div className="space-y-6">
+    <div className="flex items-center justify-between">
+      <h3 className="text-lg font-semibold">Φωτογραφίες Κτιρίου</h3>
+      <Button>
+        <Upload className="w-4 h-4 mr-2" />
+        Ανέβασμα Φωτογραφιών
+      </Button>
+    </div>
+    
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {[1, 2, 3, 4, 5, 6].map((index) => (
+        <div key={index} className="aspect-square bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border hover:border-blue-400 transition-colors cursor-pointer group">
+          <div className="text-center">
+            <ImageIcon className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Προσθήκη Φωτογραφίας</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
-function ContractsTabContent() {
-  return <PlaceholderTab title="Συμβόλαια" />;
-}
-
-function ProtocolsTabContent() {
-  return <PlaceholderTab title="Πρωτόκολλα" />;
-}
-
-function PhotosTabContent() {
-  return <PlaceholderTab title="Φωτογραφίες" />;
-}
-
-function VideosTabContent() {
-    return <PlaceholderTab title="Videos" />;
-}
-
+const VideosTabContent = () => (
+  <div className="space-y-6">
+    <div className="flex items-center justify-between">
+      <h3 className="text-lg font-semibold">Videos Κτιρίου</h3>
+      <Button>
+        <Upload className="w-4 h-4 mr-2" />
+        Ανέβασμα Video
+      </Button>
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {[1, 2, 3].map((index) => (
+        <div key={index} className="aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border hover:border-blue-400 transition-colors cursor-pointer group">
+          <div className="text-center">
+            <Video className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Προσθήκη Video</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 export function BuildingDetails({ building, getStatusColor, getStatusLabel }: BuildingDetailsProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState('general');
-
-  const tabs = [
-    { id: 'general', label: 'Γενικά', icon: Info },
-    { id: 'storage', label: 'Αποθήκες', icon: BuildingIcon },
-    { id: 'contracts', label: 'Συμβόλαια', icon: FileText },
-    { id: 'protocols', label: 'Πρωτόκολλα', icon: Users },
-    { id: 'photos', label: 'Φωτογραφίες', icon: Image },
-    { id: 'videos', label: 'Videos', icon: Video }
-  ];
-
   return (
-    <div className="flex-1 flex flex-col bg-muted/20 border-l border-border min-w-0">
+    <div className="flex-1 flex flex-col bg-card border rounded-lg min-w-0 shadow-sm">
       {/* Header */}
-      <div className="p-4 border-b border-border bg-card">
+      <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-t-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm">
-              <span className="text-white font-bold text-lg">B</span>
+              <Building2 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">
+              <h3 className="text-lg font-semibold text-foreground line-clamp-1">
                 {building.name}
               </h3>
               <div className="flex items-center gap-2 mt-1">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(building.status).replace('bg-','bg-opacity-20 ')} ${getStatusColor(building.status).replace('bg-','text-')}`}>
+                <Badge className={cn("text-xs", getStatusColor(building.status).replace('bg-', 'bg-') + ' text-white')}>
                   {getStatusLabel(building.status)}
-                </span>
+                </Badge>
                 <span className="text-sm text-muted-foreground">
                   {building.progress}% ολοκληρωμένο
                 </span>
               </div>
             </div>
           </div>
-          <button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium">
-            <Eye className="w-4 h-4" />
+          <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+            <Eye className="w-4 h-4 mr-2" />
             Επίδειξη Κτιρίου
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-border bg-card">
-        <nav className="flex space-x-2 px-4" aria-label="Tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 py-3 px-3 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === tab.id
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
+      {/* Main Content */}
+      <ScrollArea className="flex-1">
+        <div className="p-4">
+          <Tabs defaultValue="general" className="h-full">
+            <TabsList className="grid w-full grid-cols-6 mb-6">
+              <TabsTrigger value="general" className="flex items-center gap-2">
+                <Home className="w-4 h-4" />
+                Γενικά
+              </TabsTrigger>
+              <TabsTrigger value="storage" className="flex items-center gap-2">
+                <Building2 className="w-4 h-4" />
+                Αποθήκες
+              </TabsTrigger>
+              <TabsTrigger value="contracts" className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Συμβόλαια
+              </TabsTrigger>
+              <TabsTrigger value="protocols" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Πρωτόκολλα
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="flex items-center gap-2">
+                <Camera className="w-4 h-4" />
+                Φωτογραφίες
+              </TabsTrigger>
+              <TabsTrigger value="videos" className="flex items-center gap-2">
+                <Video className="w-4 h-4" />
+                Videos
+              </TabsTrigger>
+            </TabsList>
 
-      {/* Content */}
-      <div className="flex-1 overflow-auto p-6">
-        {activeTab === 'general' && <GeneralTabContent building={building} isEditing={isEditing} />}
-        {activeTab === 'storage' && <StoragesTabContent />}
-        {activeTab === 'contracts' && <ContractsTabContent />}
-        {activeTab === 'protocols' && <ProtocolsTabContent />}
-        {activeTab === 'photos' && <PhotosTabContent />}
-        {activeTab === 'videos' && <VideosTabContent />}
-      </div>
+            <TabsContent value="general" className="mt-0">
+              <GeneralTabContent building={building} />
+            </TabsContent>
 
-      {/* Footer Actions */}
-      <div className="p-4 border-t border-border bg-card">
-        <div className="flex items-center justify-end gap-2">
-            {!isEditing ? (
-              <button 
-                onClick={() => setIsEditing(true)}
-                className="inline-flex items-center px-4 py-2 border border-border shadow-sm text-sm font-medium rounded-md text-foreground bg-card hover:bg-muted"
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Επεξεργασία
-              </button>
-            ) : (
-              <>
-                <button 
-                  onClick={() => setIsEditing(false)}
-                  className="inline-flex items-center px-4 py-2 border border-border shadow-sm text-sm font-medium rounded-md text-foreground bg-card hover:bg-muted"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Ακύρωση
-                </button>
-                <button 
-                  onClick={() => setIsEditing(false)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Αποθήκευση
-                </button>
-              </>
-            )}
+            <TabsContent value="storage" className="mt-0">
+              <PlaceholderTab title="Αποθήκες" icon={Building2} />
+            </TabsContent>
+
+            <TabsContent value="contracts" className="mt-0">
+              <PlaceholderTab title="Συμβόλαια Πελατών" icon={FileText} />
+            </TabsContent>
+
+            <TabsContent value="protocols" className="mt-0">
+              <PlaceholderTab title="Υ.Δ.Τοιχοποιίας & Πρωτόκολλα" icon={Settings} />
+            </TabsContent>
+
+            <TabsContent value="photos" className="mt-0">
+              <PhotosTabContent />
+            </TabsContent>
+
+            <TabsContent value="videos" className="mt-0">
+              <VideosTabContent />
+            </TabsContent>
+          </Tabs>
         </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 }
