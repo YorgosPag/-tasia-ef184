@@ -9,8 +9,8 @@ import {
   RectangleHorizontal,
   Move,
   Circle,
-  BorderStyle,
-  Shadow
+  Square,
+  Copy as CopyIcon
 } from 'lucide-react';
 import type { LayoutSettings } from './LayoutCustomizer';
 
@@ -92,7 +92,7 @@ export function LayoutControls({ settings, updateSetting }: LayoutControlsProps)
 
         <div className="space-y-4 p-4 border rounded-md">
           <h4 className="font-semibold text-sm flex items-center gap-2">
-            <BorderStyle className="w-4 h-4" />
+            <Square className="w-4 h-4" />
             Border
           </h4>
           <ControlSlider 
@@ -107,7 +107,7 @@ export function LayoutControls({ settings, updateSetting }: LayoutControlsProps)
         
         <div className="space-y-4 p-4 border rounded-md">
           <h4 className="font-semibold text-sm flex items-center gap-2">
-            <Shadow className="w-4 h-4" />
+            <CopyIcon className="w-4 h-4" />
             Shadow
           </h4>
           <ControlSlider 
