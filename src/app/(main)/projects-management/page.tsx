@@ -1,8 +1,12 @@
 'use client';
 
 import React from 'react';
-import { ProjectsPageContent } from '@/components/projects/ProjectsPageContent';
+import { PropertyManagementPageContent } from '@/components/property-management/PropertyManagementPageContent';
 
-export default function ProjectManagementPage() {
-  return <ProjectsPageContent />;
+export default function PropertyManagementPage() {
+  return (
+    <div className="h-full">
+      <PropertyManagementPageContent />
+    </div>
+  );
 }

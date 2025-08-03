@@ -1,8 +1,12 @@
 'use client';
 
 import React from 'react';
-import { PropertiesTab } from '@/components/projects/properties/PropertiesTab';
+import { PropertyManagementPageContent } from '@/components/property-management/PropertyManagementPageContent';
 
 export default function PropertyManagementPage() {
-  return <PropertiesTab />;
+  return (
+    <div className="h-full">
+      <PropertyManagementPageContent />
+    </div>
+  );
 }
