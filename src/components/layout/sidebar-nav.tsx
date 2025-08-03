@@ -50,174 +50,174 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 const tasiaProjectToolsNav = [
-  { 
-    href: "/contacts", 
-    label: "Επαφές", 
+  {
+    href: "/contacts",
+    label: "Επαφές",
     icon: Users,
     description: "Διαχείριση επαφών",
-    badge: "9"
+    badge: "9",
   },
-  { 
-    href: "/projects", 
-    label: "Διαχείριση Έργων", 
+  {
+    href: "/projects",
+    label: "Διαχείριση Έργων",
     icon: FolderKanban,
-    description: "Project management tools"
+    description: "Project management tools",
   },
-    { 
-    href: "/building-management", 
-    label: "Διαχείριση Κτιρίων", 
+  {
+    href: "/building-management",
+    label: "Διαχείριση Κτιρίων",
     icon: Building,
-    description: "Building management tools"
+    description: "Building management tools",
   },
-  { 
-    href: "/leads", 
-    label: "Leads", 
+  {
+    href: "/leads",
+    label: "Leads",
     icon: Target,
     description: "Δυνητικοί πελάτες",
-    badge: "3"
+    badge: "3",
   },
-  { 
-    href: "/meetings", 
-    label: "Συσκέψεις", 
+  {
+    href: "/meetings",
+    label: "Συσκέψεις",
     icon: MessageSquare,
-    description: "Προγραμματισμός συναντήσεων"
+    description: "Προγραμματισμός συναντήσεων",
   },
-  { 
-    href: "/contracts", 
-    label: "Συμβόλαια", 
+  {
+    href: "/contracts",
+    label: "Συμβόλαια",
     icon: FileText,
-    description: "Διαχείριση συμβολαίων"
+    description: "Διαχείριση συμβολαίων",
   },
-  { 
-    href: "/work-stages", 
-    label: "Στάδια Εργασιών", 
+  {
+    href: "/work-stages",
+    label: "Στάδια Εργασιών",
     icon: GanttChartSquare,
-    description: "Παρακολούθηση προόδου"
+    description: "Παρακολούθηση προόδου",
   },
-  { 
-    href: "/calendar", 
-    label: "Ημερολόγιο", 
+  {
+    href: "/calendar",
+    label: "Ημερολόγιο",
     icon: Calendar,
-    description: "Προγραμματισμός εργασιών"
+    description: "Προγραμματισμός εργασιών",
   },
-  { 
-    href: "/architect-desk", 
-    label: "Architect's Desk", 
+  {
+    href: "/architect-desk",
+    label: "Architect's Desk",
     icon: FilePen,
-    description: "Εργαλεία αρχιτέκτονα"
+    description: "Εργαλεία αρχιτέκτονα",
   },
-  { 
-    href: "/assignments", 
-    label: "Οι Αναθέσεις μου", 
+  {
+    href: "/assignments",
+    label: "Οι Αναθέσεις μου",
     icon: ClipboardList,
     description: "Προσωπικές εργασίες",
-    badge: "5"
+    badge: "5",
   },
 ];
 
 const entitiesNav = [
-  { 
-    href: "/companies", 
-    label: "Εταιρείες", 
+  {
+    href: "/companies",
+    label: "Εταιρείες",
     icon: Building2,
-    description: "Καταχώρηση εταιρειών"
+    description: "Καταχώρηση εταιρειών",
   },
-  { 
-    href: "/projects", 
-    label: "Έργα", 
+  {
+    href: "/projects",
+    label: "Έργα",
     icon: Briefcase,
     description: "Διαχείριση έργων",
-    badge: "12"
+    badge: "12",
   },
-  { 
-    href: "/buildings", 
-    label: "Κτίρια", 
+  {
+    href: "/buildings",
+    label: "Κτίρια",
     icon: Building,
-    description: "Καταγραφή κτιρίων"
+    description: "Καταγραφή κτιρίων",
   },
-  { 
-    href: "/floors", 
-    label: "Όροφοι", 
+  {
+    href: "/floors",
+    label: "Όροφοι",
     icon: Layers,
-    description: "Διαχείριση ορόφων"
+    description: "Διαχείριση ορόφων",
   },
-  { 
-    href: "/units", 
-    label: "Ακίνητα", 
+  {
+    href: "/units",
+    label: "Ακίνητα",
     icon: Home,
-    description: "Μονάδες ακινήτων"
+    description: "Μονάδες ακινήτων",
   },
-  { 
-    href: "/attachments", 
-    label: "Παρακολουθήματα", 
+  {
+    href: "/attachments",
+    label: "Παρακολουθήματα",
     icon: ClipboardList,
-    description: "Έγγραφα και αρχεία"
+    description: "Έγγραφα και αρχεία",
   },
 ];
 
 const nestorNav = [
-  { 
-    href: "/nestor/dashboard", 
-    label: "Πίνακας Ελέγχου", 
+  {
+    href: "/nestor/dashboard",
+    label: "Πίνακας Ελέγχου",
     icon: LayoutGrid,
-    description: "Γενική επισκόπηση"
+    description: "Γενική επισκόπηση",
   },
-  { 
-    href: "/nestor/projects", 
-    label: "Λίστα Έργων", 
+  {
+    href: "/nestor/projects",
+    label: "Λίστα Έργων",
     icon: FileBox,
-    description: "Όλα τα έργα"
+    description: "Όλα τα έργα",
   },
-  { 
-    href: "/nestor/reports", 
-    label: "Αναφορές", 
+  {
+    href: "/nestor/reports",
+    label: "Αναφορές",
     icon: BarChart3,
-    description: "Στατιστικά και αναλύσεις"
+    description: "Στατιστικά και αναλύσεις",
   },
-  { 
-    href: "/nestor/offers", 
-    label: "Προσφορές Προμηθευτών", 
+  {
+    href: "/nestor/offers",
+    label: "Προσφορές Προμηθευτών",
     icon: Award,
-    description: "Διαχείριση προσφορών"
+    description: "Διαχείριση προσφορών",
   },
-  { 
-    href: "/nestor/interventions", 
-    label: "Παρεμβάσεις Έργων", 
+  {
+    href: "/nestor/interventions",
+    label: "Παρεμβάσεις Έργων",
     icon: PenTool,
-    description: "Καταγραφή παρεμβάσεων"
+    description: "Καταγραφή παρεμβάσεων",
   },
   {
     href: "/nestor/stages",
     label: "Στάδια Παρεμβάσεων",
     icon: GanttChartSquare,
-    description: "Παρακολούθηση σταδίων"
+    description: "Παρακολούθηση σταδίων",
   },
-  { 
-    href: "/nestor/guides", 
-    label: "Οδηγίες", 
+  {
+    href: "/nestor/guides",
+    label: "Οδηγίες",
     icon: List,
-    description: "Εγχειρίδια χρήσης"
+    description: "Εγχειρίδια χρήσης",
   },
 ];
 
 const managementNav = [
-  { 
-    href: "/custom-lists", 
-    label: "Προσ. Λίστες", 
+  {
+    href: "/custom-lists",
+    label: "Προσ. Λίστες",
     icon: List,
-    description: "Προσαρμοσμένες λίστες"
+    description: "Προσαρμοσμένες λίστες",
   },
-  { 
-    href: "/privacy", 
-    label: "Πολιτική Απορρήτου", 
+  {
+    href: "/privacy",
+    label: "Πολιτική Απορρήτου",
     icon: BookLock,
-    description: "Όροι και προϋποθέσεις"
+    description: "Όροι και προϋποθέσεις",
   },
-  { 
-    href: "/terms", 
-    label: "Όροι Χρήσης", 
+  {
+    href: "/terms",
+    label: "Όροι Χρήσης",
     icon: Gavel,
-    description: "Νομικοί όροι"
+    description: "Νομικοί όροι",
   },
 ];
 
