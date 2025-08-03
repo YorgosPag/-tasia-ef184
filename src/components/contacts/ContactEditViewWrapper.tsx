@@ -150,11 +150,13 @@ export function ContactEditViewWrapper({ contactId }: { contactId: string }) {
   }, [contactId, form]);
 
   useEffect(() => {
-    if (isEditing) {
-      form.enable();
-    } else {
-      form.disable();
-    }
+    // This correctly updates the form's disabled state when `isEditing` changes.
+    // The `useForm` `disabled` property is reactive to this state change.
+    form.reset(form.getValues(), {
+      keepValues: true,
+      keepDirty: form.formState.isDirty,
+      disabled: !isEditing,
+    } as any);
   }, [isEditing, form]);
 
   const onSubmit = async (data: ContactFormValues) => {
