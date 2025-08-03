@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Palette, Eye } from 'lucide-react';
+import { Palette } from 'lucide-react';
 
 interface ButtonVariantStyle {
   background: string;
@@ -91,7 +91,7 @@ export function ButtonCustomizer() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
+              <Palette className="w-5 h-5" />
               Προεπισκόπηση
             </CardTitle>
           </CardHeader>
