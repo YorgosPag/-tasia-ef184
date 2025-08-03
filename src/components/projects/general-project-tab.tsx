@@ -1,181 +1,261 @@
+
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import React from 'react';
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Globe, Folder, Eye, MapPin, Building, FileText, Settings } from "lucide-react"
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const formatValue = (value: number | string, options: { useGrouping?: boolean; isPercentage?: boolean; decimals?: number } = {}) => {
-    const { useGrouping = false, isPercentage = false, decimals = 2 } = options;
-    let num = Number(String(value).replace(',', '.'));
-    if (isNaN(num)) return isPercentage ? '0,00' : '0,00';
-    
-    // Convert percentage from 0-1 range to 0-100 for display
-    if (isPercentage) {
-      if (value > 1 && value <= 100) {
-        // Assume it's already in 0-100 range from user input
-        num = value;
-      } else {
-        // Assume it's in 0-1 range from calculations
-        num *= 100;
-      }
-    }
-    
-    return num.toLocaleString('el-GR', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
-        useGrouping: useGrouping,
-    });
-};
 
-interface FormFieldProps {
-    label: string;
-    id: string;
-    unit?: string;
-    value: number;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    readOnly?: boolean;
-    labelPosition?: 'left' | 'right';
-    unitPosition?: 'left' | 'right';
-    useGrouping?: boolean;
-    onEnterPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-    labelClassName?: string;
-    inputClassName?: string;
-    tooltipText?: string;
-    isPercentage?: boolean;
+export function GeneralProjectTab() {
+  return (
+    <Tabs defaultValue="basic-info" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="basic-info">Βασικές Πληροφορίες</TabsTrigger>
+            <TabsTrigger value="location">Τοποθεσία</TabsTrigger>
+            <TabsTrigger value="permits">Άδειες & Κατάσταση</TabsTrigger>
+            <TabsTrigger value="attachments">Συνημμένα Αρχεία</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="basic-info" className="pt-4">
+            <Card>
+                <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                        <Building className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-lg">Βασικές Πληροφορίες Έργου</CardTitle>
+                    </div>
+                    <CardDescription>
+                        Γενικά στοιχεία και περιγραφή του έργου
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Τίτλος Έργου</Label>
+                            <Input defaultValue="3. ΕΥΤΕΡΠΗΣ" className="h-10" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Τίτλος Άδειας</Label>
+                            <Input defaultValue="Τρεις πενταώροφες οικοδομές με καταστήματα πιλοτή & υπόγειο" className="h-10" />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="text-sm font-medium">Περιγραφή Έργου</Label>
+                        <Textarea
+                            rows={4}
+                            className="resize-none"
+                            defaultValue="Πρόκειται για ένα συγκρότημα τριών πενταόροφων κτιρίων, που βρίσκεται στο όριο του Ευόσμου με τη Νέα Επέκτασή του. Το κτιριολογικό πρόγραμμα περιλαμβάνει συνδυασμό κεντρικής χρήσης με χρήση κατοικίας. Το Συγκρότημα έχει διάταξη Π δημιουργώντας, έτσι, μια αίθρια εσωτερική αυλή που συνδέεται άμεσα με το δημόσιο χώρο της οδού Ευτέρπης. Ο χώρος αυτός διακρίνεται για τον άρτιο σχεδιασμό του και ευνοεί την προσέγγιση των καταστημάτων, που βρίσκονται στη στάθμη του ισογείου, από τους πεζούς."
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
+        
+        <TabsContent value="location" className="pt-4">
+            <Card>
+                <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-lg">Τοποθεσία</CardTitle>
+                    </div>
+                    <CardDescription>
+                        Στοιχεία τοποθεσίας και διεύθυνσης του έργου
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Νομός</Label>
+                            <Select defaultValue="thessaloniki">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="thessaloniki">Θεσσαλονίκης</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Πόλη/Δήμος</Label>
+                            <Select defaultValue="thessaloniki">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="thessaloniki">Θεσσαλονίκη</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Δήμος/Δ. Διαμέρ.</Label>
+                            <Select defaultValue="evosmou">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="evosmou">Δήμος Ευόσμου</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div className="md:col-span-3 space-y-2">
+                            <Label className="text-sm font-medium">Διεύθυνση</Label>
+                            <div className="flex gap-2">
+                                <Input defaultValue="Ευτέρπης 32 - 34" className="h-10" />
+                                <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                                    <Globe className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Ταχυδρομικός Κώδικας</Label>
+                            <Input defaultValue="562 24" className="h-10" />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
+        
+        <TabsContent value="permits" className="pt-4">
+            <Card>
+                <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-lg">Άδειες & Κατάσταση</CardTitle>
+                    </div>
+                    <CardDescription>
+                        Στοιχεία αδειών και τρέχουσα κατάσταση του έργου
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Οικοδομικό Τετράγωνο</Label>
+                            <Input defaultValue="10" className="h-10" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Αρ. Πρωτοκόλλου</Label>
+                            <Input placeholder="Εισάγετε αριθμό..." className="h-10" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Αριθμός Άδειας</Label>
+                            <Input defaultValue="5142/24-10-2001" className="h-10 text-primary font-medium" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Αρχή Έκδοσης</Label>
+                            <Input placeholder="Εισάγετε αρχή..." className="h-10" />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Κατάσταση Έργου</Label>
+                            <Select defaultValue="constructed">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="constructed">
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                                Κατασκευασμένα
+                                            </Badge>
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-sm font-medium">Επιλογές</Label>
+                            <div className="flex items-center space-x-2 h-10">
+                                <Checkbox id="show-on-web" />
+                                <Label htmlFor="show-on-web" className="text-sm">Προβολή στο διαδίκτυο</Label>
+                            </div>
+                        </div>
+                        <div className="flex justify-start">
+                            <Button variant="outline" className="h-10">
+                                <Settings className="w-4 h-4 mr-2" />
+                                Επιλογή Έργου
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
+        
+        <TabsContent value="attachments" className="pt-4">
+            <Card>
+                <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                        <Folder className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-lg">Συνημμένα Αρχεία</CardTitle>
+                    </div>
+                    <CardDescription>
+                        Αρχεία και έγγραφα που σχετίζονται με το έργο
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label className="text-sm font-medium">Χάρτης Περιοχής Έργου</Label>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                readOnly
+                                defaultValue="\\\\Server\\shared\\6. erga\\Eterpis_Gen\\Eterp_Gen_Images\\Eterp_Xartis.jpg"
+                                className="h-10 bg-muted/30"
+                            />
+                            <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                                <Folder className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="text-sm font-medium">Γενική Κάτοψη Έργου</Label>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                readOnly
+                                defaultValue="\\\\Server\\shared\\6. erga\\TEST\\SSSSSS.pdf"
+                                className="h-10 bg-muted/30"
+                            />
+                            <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                                <Folder className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="text-sm font-medium">Πίνακας Ποσοστών</Label>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                readOnly
+                                defaultValue="\\\\Server\\shared\\6. erga\\TEST\\SSSSSSSS.xls"
+                                className="h-10 bg-muted/30"
+                            />
+                            <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                                <Folder className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
+    </Tabs>
+  );
 }
-
-export function FormField({
-    label,
-    id,
-    unit,
-    value,
-    onChange,
-    readOnly = false,
-    labelPosition = 'right',
-    unitPosition = 'right',
-    useGrouping = false,
-    onEnterPress,
-    labelClassName,
-    inputClassName,
-    tooltipText,
-    isPercentage = false,
-}: FormFieldProps) {
-    const [internalValue, setInternalValue] = useState(formatValue(value, { useGrouping, isPercentage }));
-
-    useEffect(() => {
-        if (document.activeElement?.id !== id) {
-            setInternalValue(formatValue(value, { useGrouping, isPercentage }));
-        }
-    }, [value, useGrouping, isPercentage, id]);
-
-    const handleInternalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInternalValue(e.target.value);
-    };
-    
-    const triggerChange = (e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
-        const target = e.target as HTMLInputElement;
-        let normalizedValue = target.value.replace(/\./g, '').replace(',', '.'); // Handle thousand separators and decimal comma
-        let numValue = parseFloat(normalizedValue) || 0;
-        
-        // For percentages, if user types "70", it means 70%, which is 0.7
-        if (isPercentage) {
-          numValue /= 100;
-        }
-
-        setInternalValue(formatValue(numValue, { useGrouping, isPercentage }));
-        
-        if (onChange) {
-            const syntheticEvent = {
-                target: { name: target.name, value: String(numValue) }
-            } as React.ChangeEvent<HTMLInputElement>;
-            onChange(syntheticEvent);
-        }
-    };
-    
-    const handlePercentageChange = (e: React.FocusEvent<HTMLInputElement> | React.KeyboardEvent<HTMLInputElement>) => {
-        const target = e.target as HTMLInputElement;
-        let normalizedValue = target.value.replace(/\./g, '').replace(',', '.');
-        let numValue = parseFloat(normalizedValue) || 0;
-
-        setInternalValue(formatValue(numValue, { useGrouping, isPercentage:true }));
-
-        if (onChange) {
-            const syntheticEvent = {
-                target: { name: target.name, value: String(numValue)}
-            } as React.ChangeEvent<HTMLInputElement>;
-            onChange(syntheticEvent);
-        }
-    }
-
-
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-       if (isPercentage) {
-          handlePercentageChange(e);
-       } else {
-          triggerChange(e);
-       }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            if (isPercentage) {
-                handlePercentageChange(e);
-            } else {
-                triggerChange(e);
-            }
-            onEnterPress?.(e);
-        }
-    };
-    
-    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-        e.target.select();
-    };
-
-    const inputField = (
-        <div className={cn("grid items-center", labelPosition === 'left' ? "grid-cols-[1fr_auto]" : "grid-cols-[auto_1fr]")}>
-            {labelPosition === 'left' && <Label htmlFor={id} className={cn("text-sm font-medium text-right pr-2", labelClassName)}>{label}</Label>}
-            <div className="relative flex items-center">
-                {unit && unitPosition === 'left' && <span className="absolute left-3 text-sm text-muted-foreground z-10 pointer-events-none">{unit}</span>}
-                <Input 
-                    id={id} 
-                    name={id} 
-                    type="text"
-                    value={readOnly ? formatValue(value, { useGrouping, isPercentage }) : internalValue}
-                    onChange={handleInternalChange}
-                    onBlur={handleBlur}
-                    onKeyDown={handleKeyDown}
-                    onFocus={handleFocus}
-                    readOnly={readOnly}
-                    className={cn(
-                        "h-8 text-right",
-                        readOnly && "bg-muted/50 font-medium",
-                        unit && unitPosition === 'left' && (isPercentage ? "pl-8" : "pl-12"),
-                        unit && unitPosition === 'right' && "pr-8",
-                        inputClassName
-                    )}
-                />
-                {unit && unitPosition === 'right' && <span className="absolute right-3 text-sm text-muted-foreground pointer-events-none">{unit}</span>}
-            </div>
-            {labelPosition === 'right' && <Label htmlFor={id} className={cn("text-sm font-medium text-left pl-2", labelClassName)}>{label}</Label>}
-        </div>
-    );
-    
-    if (tooltipText) {
-        return (
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        {inputField}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>{tooltipText}</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        );
-    }
-    
-    return inputField;
-};
