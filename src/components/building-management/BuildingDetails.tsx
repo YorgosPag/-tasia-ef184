@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -1078,7 +1078,7 @@ const MapTabContent = ({ building }: { building: Building }) => {
                 <Checkbox 
                   id="nearby-projects"
                   checked={showNearbyProjects}
-                  onCheckedChange={setShowNearbyProjects as (checked: boolean | 'indeterminate') => void}
+                  onCheckedChange={(checked) => setShowNearbyProjects(Boolean(checked))}
                 />
                 <Label htmlFor="nearby-projects" className="text-sm">
                   Εμφάνιση γειτονικών έργων
@@ -1227,6 +1227,423 @@ const MapTabContent = ({ building }: { building: Building }) => {
   );
 };
 
+const AnalyticsTabContent = ({ building }: { building: Building }) => {
+  const [timeRange, setTimeRange] = useState<'1M' | '3M' | '6M' | '1Y'>('6M');
+  const [analyticsView, setAnalyticsView] = useState<'overview' | 'financial' | 'progress' | 'comparison'>('overview');
+
+  // Mock analytics data
+  const costBreakdown = [
+    { category: 'Υλικά', amount: 450000, percentage: 45, color: 'bg-blue-500' },
+    { category: 'Εργατικά', amount: 300000, percentage: 30, color: 'bg-green-500' },
+    { category: 'Μηχανήματα', amount: 150000, percentage: 15, color: 'bg-yellow-500' },
+    { category: 'Άλλα', amount: 100000, percentage: 10, color: 'bg-purple-500' }
+  ];
+
+  const monthlyProgress = [
+    { month: 'Ιαν', planned: 10, actual: 8, cost: 85000 },
+    { month: 'Φεβ', planned: 20, actual: 18, cost: 92000 },
+    { month: 'Μαρ', planned: 35, actual: 32, cost: 98000 },
+    { month: 'Απρ', planned: 50, actual: 48, cost: 105000 },
+    { month: 'Μάι', planned: 65, actual: 62, cost: 89000 },
+    { month: 'Ιουν', planned: 80, actual: 75, cost: 94000 },
+    { month: 'Ιουλ', planned: 90, actual: 85, cost: 87000 }
+  ];
+
+  const kpis = {
+    costEfficiency: 92.5,
+    timeEfficiency: 88.7,
+    qualityScore: 95.2,
+    riskLevel: 'Χαμηλός',
+    roi: 15.8,
+    profitMargin: 12.3
+  };
+
+  const getEfficiencyColor = (value: number) => {
+    if (value >= 90) return 'text-green-600 bg-green-50';
+    if (value >= 75) return 'text-yellow-600 bg-yellow-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Analytics Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Advanced Analytics</h3>
+          <p className="text-sm text-muted-foreground">
+            Προχωρημένη ανάλυση δεδομένων και KPIs
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <select 
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value as any)}
+            className="text-sm border border-gray-300 rounded px-3 py-1"
+          >
+            <option value="1M">Τελευταίο μήνα</option>
+            <option value="3M">Τελευταίους 3 μήνες</option>
+            <option value="6M">Τελευταίους 6 μήνες</option>
+            <option value="1Y">Τελευταίο έτος</option>
+          </select>
+          <Button variant="outline" size="sm">
+            📊 Εξαγωγή Αναφοράς
+          </Button>
+        </div>
+      </div>
+
+      {/* Analytics Navigation */}
+      <div className="flex gap-2">
+        {[
+          { id: 'overview', label: 'Επισκόπηση', icon: '📊' },
+          { id: 'financial', label: 'Οικονομικά', icon: '💰' },
+          { id: 'progress', label: 'Πρόοδος', icon: '📈' },
+          { id: 'comparison', label: 'Σύγκριση', icon: '⚖️' }
+        ].map((view) => (
+          <Button
+            key={view.id}
+            variant={analyticsView === view.id ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setAnalyticsView(view.id as any)}
+          >
+            {view.icon} {view.label}
+          </Button>
+        ))}
+      </div>
+
+      {/* KPI Dashboard */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{kpis.costEfficiency}%</div>
+              <div className="text-xs text-muted-foreground">Κοστολογική Αποδοτικότητα</div>
+              <div className={`text-xs px-2 py-1 rounded mt-1 ${getEfficiencyColor(kpis.costEfficiency)}`}>
+                {kpis.costEfficiency >= 90 ? 'Άριστα' : kpis.costEfficiency >= 75 ? 'Καλά' : 'Χρήζει βελτίωσης'}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{kpis.timeEfficiency}%</div>
+              <div className="text-xs text-muted-foreground">Χρονική Αποδοτικότητα</div>
+              <div className={`text-xs px-2 py-1 rounded mt-1 ${getEfficiencyColor(kpis.timeEfficiency)}`}>
+                {kpis.timeEfficiency >= 90 ? 'Άριστα' : kpis.timeEfficiency >= 75 ? 'Καλά' : 'Χρήζει βελτίωσης'}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">{kpis.qualityScore}%</div>
+              <div className="text-xs text-muted-foreground">Δείκτης Ποιότητας</div>
+              <div className={`text-xs px-2 py-1 rounded mt-1 ${getEfficiencyColor(kpis.qualityScore)}`}>
+                Εξαιρετικό
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{kpis.roi}%</div>
+              <div className="text-xs text-muted-foreground">ROI</div>
+              <div className="text-xs px-2 py-1 rounded mt-1 bg-green-50 text-green-600">
+                Πάνω από στόχο
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{kpis.profitMargin}%</div>
+              <div className="text-xs text-muted-foreground">Περιθώριο Κέρδους</div>
+              <div className="text-xs px-2 py-1 rounded mt-1 bg-green-50 text-green-600">
+                Εντός στόχων
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-600">{kpis.riskLevel}</div>
+              <div className="text-xs text-muted-foreground">Επίπεδο Κινδύνου</div>
+              <div className="text-xs px-2 py-1 rounded mt-1 bg-green-50 text-green-600">
+                Υπό έλεγχο
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Analytics Content */}
+      {analyticsView === 'overview' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Cost Breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Ανάλυση Κόστους</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {costBreakdown.map((item) => (
+                  <div key={item.category}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">{item.category}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {item.amount.toLocaleString('el-GR')}€ ({item.percentage}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div 
+                        className={`h-3 rounded-full ${item.color} transition-all duration-500`}
+                        style={{ width: `${item.percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <div className="text-sm font-medium text-blue-900 mb-2">💡 Ανάλυση</div>
+                <p className="text-sm text-blue-700">
+                  Το κόστος υλικών είναι 5% υψηλότερο από τον μέσο όρο της αγοράς. 
+                  Συνιστάται επαναδιαπραγμάτευση με προμηθευτές.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Progress Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Πρόοδος vs Προγραμματισμός</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {monthlyProgress.map((month) => (
+                  <div key={month.month} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{month.month}</span>
+                      <span className="text-xs text-muted-foreground">
+                        Προγρ: {month.planned}% | Πραγμ: {month.actual}%
+                      </span>
+                    </div>
+                    <div className="relative">
+                      <div className="w-full bg-gray-200 rounded-full h-4">
+                        <div 
+                          className="h-4 bg-blue-200 rounded-full"
+                          style={{ width: `${month.planned}%` }}
+                        ></div>
+                        <div 
+                          className="absolute top-0 h-4 bg-blue-500 rounded-full"
+                          style={{ width: `${month.actual}%` }}
+                        ></div>
+                      </div>
+                      <div className="absolute right-2 top-0 text-xs font-medium text-white">
+                        {month.actual}%
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {analyticsView === 'financial' && (
+        <div className="space-y-6">
+          {/* Financial Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600">
+                    {building.totalValue.toLocaleString('el-GR')}€
+                  </div>
+                  <div className="text-xs text-muted-foreground">Συνολικός Προϋπολογισμός</div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-600">
+                    {(building.totalValue * 0.75).toLocaleString('el-GR')}€
+                  </div>
+                  <div className="text-xs text-muted-foreground">Δαπανηθέν Κόστος</div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-orange-600">
+                    {(building.totalValue * 0.25).toLocaleString('el-GR')}€
+                  </div>
+                  <div className="text-xs text-muted-foreground">Υπόλοιπο Budget</div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-600">
+                    {((building.totalValue / building.totalArea)).toLocaleString('el-GR')}€/m²
+                  </div>
+                  <div className="text-xs text-muted-foreground">Κόστος ανά m²</div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Cash Flow */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Ταμειακές Ροές</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {monthlyProgress.map((month, index) => (
+                  <div key={month.month} className="flex items-center justify-between p-3 border rounded">
+                    <div className="flex items-center gap-3">
+                      <div className="text-sm font-medium w-12">{month.month}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Μηνιαία δαπάνη: {month.cost.toLocaleString('el-GR')}€
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm">
+                        Σωρευτικό: {monthlyProgress.slice(0, index + 1).reduce((sum, m) => sum + m.cost, 0).toLocaleString('el-GR')}€
+                      </div>
+                      <div className={`text-sm px-2 py-1 rounded ${
+                        month.cost < 95000 ? 'bg-green-50 text-green-600' : 'bg-yellow-50 text-yellow-600'
+                      }`}>
+                        {month.cost < 95000 ? 'Εντός budget' : 'Προσοχή'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {analyticsView === 'progress' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Ανάλυση Προόδου</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-600 mb-2">{building.progress}%</div>
+                  <div className="text-sm text-muted-foreground">Συνολική Πρόοδος</div>
+                  <div className="mt-2 w-full bg-gray-200 rounded-full h-3">
+                    <div 
+                      className="bg-blue-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${building.progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600 mb-2">88%</div>
+                  <div className="text-sm text-muted-foreground">Αποδοτικότητα</div>
+                  <div className="mt-2 w-full bg-gray-200 rounded-full h-3">
+                    <div className="bg-green-500 h-3 rounded-full w-[88%] transition-all duration-500"></div>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-600 mb-2">12</div>
+                  <div className="text-sm text-muted-foreground">Ημέρες Καθυστέρηση</div>
+                  <div className="mt-2 text-xs text-orange-600">
+                    Εντός αποδεκτών ορίων
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-4">🎯 Προβλέψεις & Συστάσεις</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="font-medium text-green-700 mb-2">✅ Θετικά Σημεία:</div>
+                    <ul className="space-y-1 text-green-600">
+                      <li>• Ποιότητα εργασιών πάνω από τα standards</li>
+                      <li>• Κόστος υλικών εντός προϋπολογισμού</li>
+                      <li>• Ομάδα εργασίας αποδοτική</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="font-medium text-orange-700 mb-2">⚠️ Προτεινόμενες Βελτιώσεις:</div>
+                    <ul className="space-y-1 text-orange-600">
+                      <li>• Επιτάχυνση ηλ/μηχ εγκαταστάσεων</li>
+                      <li>• Προπαραγγελία υλικών τελικών εργασιών</li>
+                      <li>• Συντονισμός με τρίτους (ανελκυστήρες)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {analyticsView === 'comparison' && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Σύγκριση με Παρόμοια Έργα</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { metric: 'Κόστος/m²', current: '700€', average: '750€', status: 'better' },
+                  { metric: 'Χρόνος ολοκλήρωσης', current: '36 μήνες', average: '32 μήνες', status: 'worse' },
+                  { metric: 'Ποιότητα εργασιών', current: '9.5/10', average: '8.2/10', status: 'better' },
+                  { metric: 'Αποδοτικότητα', current: '88%', average: '82%', status: 'better' }
+                ].map((item) => (
+                  <div key={item.metric} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="font-medium">{item.metric}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Τρέχον: {item.current} | Μέσος όρος: {item.average}
+                      </div>
+                    </div>
+                    <div className={`px-3 py-1 rounded text-sm ${
+                      item.status === 'better' 
+                        ? 'bg-green-50 text-green-600' 
+                        : 'bg-red-50 text-red-600'
+                    }`}>
+                      {item.status === 'better' ? '↗️ Καλύτερα' : '↘️ Χειρότερα'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 const VideosTabContent = () => (
   <div className="space-y-6">
@@ -1265,7 +1682,7 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm">
-              <Building2 className="w-5 h-5 text-white" />
+              <Building2 className="h-5 w-5 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground line-clamp-1">
@@ -1292,7 +1709,7 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
       <ScrollArea className="flex-1">
         <div className="p-4">
           <Tabs defaultValue="general" className="h-full">
-          <TabsList className="grid w-full grid-cols-8 mb-6">
+          <TabsList className="grid w-full grid-cols-9 mb-6">
               <TabsTrigger value="general" className="flex items-center gap-2">
                 <Home className="w-4 h-4" />
                 Γενικά
@@ -1304,6 +1721,10 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
               <TabsTrigger value="map" className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 Χάρτης
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Analytics
               </TabsTrigger>
               <TabsTrigger value="storage" className="flex items-center gap-2">
                 <Building2 className="w-4 h-4" />
@@ -1337,6 +1758,10 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
 
             <TabsContent value="map" className="mt-0">
               <MapTabContent building={building} />
+            </TabsContent>
+            
+            <TabsContent value="analytics" className="mt-0">
+              <AnalyticsTabContent building={building} />
             </TabsContent>
 
             <TabsContent value="storage" className="mt-0">
