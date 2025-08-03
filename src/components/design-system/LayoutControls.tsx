@@ -13,7 +13,7 @@ import {
   Copy as CopyIcon
 } from 'lucide-react';
 import type { LayoutSettings } from './LayoutCustomizer';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface LayoutControlsProps {
   settings: LayoutSettings;
