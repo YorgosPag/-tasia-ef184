@@ -44,6 +44,7 @@ import {
   Clock,
   Archive,
   Zap,
+  Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -226,6 +227,15 @@ const managementNav = [
   },
 ];
 
+const designSystemNav = [
+  {
+    href: "/design-system",
+    label: "Design System",
+    icon: Palette,
+    description: "Customization & theming",
+  },
+];
+
 export function SidebarNav() {
   const pathname = usePathname();
 
@@ -314,6 +324,20 @@ export function SidebarNav() {
         </SidebarGroupLabel>
         <div className="space-y-0.5">
           {nestorNav.map((item) => (
+            <NavItem key={item.href} item={item} showBadge={false} />
+          ))}
+        </div>
+      </SidebarGroup>
+      
+      <SidebarSeparator className="my-4" />
+
+      <SidebarGroup className="px-0">
+        <SidebarGroupLabel className="px-3 pb-2 pt-4 text-xs font-semibold tracking-wider text-sidebar-muted-foreground/80 uppercase flex items-center gap-2">
+          <Palette className="h-4 w-4" />
+          <span className="group-data-[state=collapsed]:hidden">Design</span>
+        </SidebarGroupLabel>
+        <div className="space-y-0.5">
+          {designSystemNav.map((item) => (
             <NavItem key={item.href} item={item} showBadge={false} />
           ))}
         </div>
