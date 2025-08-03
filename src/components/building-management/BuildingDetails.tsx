@@ -772,5 +772,3 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
     </div>
   );
 }
-
-    
