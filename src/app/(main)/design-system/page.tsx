@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import DesignSystemPageContent from '@/components/design-system/DesignSystemPageContent';
+import { DesignSystemPageContent } from '@/components/design-system/DesignSystemPageContent';
 
 export default function DesignSystemPage() {
   return (
