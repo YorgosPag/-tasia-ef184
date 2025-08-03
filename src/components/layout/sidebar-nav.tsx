@@ -58,7 +58,7 @@ const tasiaProjectToolsNav = [
     badge: "9"
   },
   { 
-    href: "/project-management", 
+    href: "/projects", 
     label: "Διαχείριση Έργων", 
     icon: FolderKanban,
     description: "Project management tools"
