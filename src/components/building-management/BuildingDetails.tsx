@@ -54,9 +54,33 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { PhotosTab } from '@/app/projects/PhotosTab';
+import { VideosTab } from '@/app/projects/VideosTab';
 import { PlaceholderTab } from '@/app/projects/placeholder-tab';
 
-// Δημιουργούμε ένα απλό PlaceholderTab component αφού δεν υπάρχει
+type Building = {
+  id: number;
+  name: string;
+  description?: string;
+  address?: string;
+  city?: string;
+  totalArea: number;
+  builtArea: number;
+  floors: number;
+  units: number;
+  status: 'active' | 'construction' | 'planned' | 'completed';
+  startDate?: string;
+  completionDate?: string;
+  progress: number;
+  totalValue: number;
+  image?: string;
+  company: string;
+  project: string;
+  category: 'residential' | 'commercial' | 'mixed' | 'industrial';
+  features?: string[];
+};
+
+
 const GeneralTabContent = ({ building }: { building: Building }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -653,28 +677,6 @@ const VideosTabContent = () => (
   </div>
 );
 
-type Building = {
-  id: number;
-  name: string;
-  description?: string;
-  address?: string;
-  city?: string;
-  totalArea: number;
-  builtArea: number;
-  floors: number;
-  units: number;
-  status: 'active' | 'construction' | 'planned' | 'completed';
-  startDate?: string;
-  completionDate?: string;
-  progress: number;
-  totalValue: number;
-  image?: string;
-  company: string;
-  project: string;
-  category: 'residential' | 'commercial' | 'mixed' | 'industrial';
-  features?: string[];
-};
-
 interface BuildingDetailsProps {
   building: Building;
   getStatusColor: (status: string) => string;
@@ -772,3 +774,4 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
     </div>
   );
 }
+
