@@ -119,7 +119,7 @@ export function ProjectListItem({
                     <MoreVertical className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" sideOffset={4} className="w-40">
                   <DropdownMenuItem>
                     <Eye className="w-4 h-4 mr-2" />
                     Προβολή
