@@ -39,7 +39,7 @@ import {
   Info,
   Plus,
   X,
-  Image
+  Image as ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlaceholderTab } from '@/app/projects/placeholder-tab';
@@ -367,7 +367,7 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
               <Label>Συγγραφή Υποχρεώσεων</Label>
               <div className="flex gap-2">
                 <Input 
-                  defaultValue="\Server\shared\6. erga\Paleologou\Paleol_Gen\Paleol_Gen_Pinak Syggr\pal syggrafi.doc" 
+                  defaultValue="\\Server\shared\6. erga\Paleologou\Paleol_Gen\Paleol_Gen_Pinak Syggr\pal syggrafi.doc" 
                   className="bg-muted"
                   disabled
                 />
@@ -476,7 +476,7 @@ const PhotosTabContent = () => (
       {[1, 2, 3, 4, 5, 6].map((index) => (
         <div key={index} className="aspect-square bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border hover:border-blue-400 transition-colors cursor-pointer group">
           <div className="text-center">
-            <Image className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
+            <ImageIcon className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Προσθήκη Φωτογραφίας</p>
           </div>
         </div>
