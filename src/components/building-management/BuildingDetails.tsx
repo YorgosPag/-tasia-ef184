@@ -40,6 +40,7 @@ import {
   Plus,
   X,
   Image as ImageIcon,
+  Archive,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -55,6 +56,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PlaceholderTab } from '@/app/projects/placeholder-tab';
 import { GeneralProjectTab } from '@/components/projects/general-project-tab';
+import { StorageTab } from './StorageTab';
+
 
 type Building = {
   id: number;
@@ -1644,7 +1647,6 @@ const AnalyticsTabContent = ({ building }: { building: Building }) => {
   );
 };
 
-
 const VideosTabContent = () => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
@@ -1709,7 +1711,7 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
       <ScrollArea className="flex-1">
         <div className="p-4">
           <Tabs defaultValue="general" className="h-full">
-          <TabsList className="grid w-full grid-cols-9 mb-6">
+            <TabsList className="grid w-full grid-cols-9 mb-6">
               <TabsTrigger value="general" className="flex items-center gap-2">
                 <Home className="w-4 h-4" />
                 Γενικά
@@ -1727,7 +1729,7 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
                 Analytics
               </TabsTrigger>
               <TabsTrigger value="storage" className="flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
+                <Archive className="w-4 h-4" />
                 Αποθήκες
               </TabsTrigger>
               <TabsTrigger value="contracts" className="flex items-center gap-2">
@@ -1765,7 +1767,7 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
             </TabsContent>
 
             <TabsContent value="storage" className="mt-0">
-              <PlaceholderTab title="Αποθήκες" />
+              <StorageTab building={building} />
             </TabsContent>
 
             <TabsContent value="contracts" className="mt-0">
