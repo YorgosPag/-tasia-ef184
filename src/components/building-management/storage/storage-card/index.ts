@@ -1,2 +1,2 @@
 'use client';
-export * from './storage-card.tsx';
+export { StorageCard } from './storage-card';
