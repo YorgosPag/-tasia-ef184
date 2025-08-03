@@ -14,8 +14,8 @@ export function TimelineForecast() {
                 <div className="space-y-4">
                     <div>
                         <div className="flex items-center justify-between mb-2"><span className="text-sm text-muted-foreground">Αρχικό χρονοδιάγραμμα</span><span className="font-medium">28/02/2009</span></div>
-                        <div className="flex items-center justify-between mb-2"><span className="text-sm text-muted-foreground">Τρέχουσα πρόβλεψη</span><span className="font-medium text-orange-600">05/03/2009</span></div>
-                        <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Καθυστέρηση</span><Badge variant="outline" className="bg-orange-100 text-orange-700">+5 ημέρες</Badge></div>
+                        <div className="flex items-center justify-between mb-2"><span className="text-sm text-muted-foreground">Τρέχουσα πρόβλεψη</span><span className="font-medium text-orange-600 dark:text-orange-400">05/03/2009</span></div>
+                        <div className="flex items-center justify-between"><span className="text-sm text-muted-foreground">Καθυστέρηση</span><Badge variant="outline" className="bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-200">+5 ημέρες</Badge></div>
                     </div>
                     <Separator />
                     <div className="text-sm text-muted-foreground"><p className="mb-2">💡 <strong>Συμβουλή:</strong></p><p>Επιτάχυνση ηλ/μηχ εργασιών μπορεί να μειώσει την καθυστέρηση στις 2-3 ημέρες.</p></div>

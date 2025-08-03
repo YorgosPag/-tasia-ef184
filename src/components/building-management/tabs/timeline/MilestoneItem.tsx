@@ -50,9 +50,9 @@ export function MilestoneItem({ milestone }: MilestoneItemProps) {
             </div>
             <div className="flex-1 min-w-0 pb-6">
                 <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-lg font-semibold text-gray-900">{milestone.title}</h4>
+                    <h4 className="text-lg font-semibold text-foreground">{milestone.title}</h4>
                     <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={cn("text-xs", milestone.status === 'completed' ? 'bg-green-50 text-green-700 border-green-300' : milestone.status === 'in-progress' ? 'bg-blue-50 text-blue-700 border-blue-300' : 'bg-gray-50 text-gray-700 border-gray-300')}>{getStatusText(milestone.status)}</Badge>
+                        <Badge variant="outline" className={cn("text-xs", milestone.status === 'completed' ? 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/50 dark:text-green-300' : milestone.status === 'in-progress' ? 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/50 dark:text-blue-300' : 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-700 dark:text-gray-300')}>{getStatusText(milestone.status)}</Badge>
                         <span className="text-sm text-muted-foreground">{new Date(milestone.date).toLocaleDateString('el-GR')}</span>
                     </div>
                 </div>
@@ -62,10 +62,10 @@ export function MilestoneItem({ milestone }: MilestoneItemProps) {
                     <Progress value={milestone.progress} className="h-2" />
                 </div>
                 {milestone.status === 'in-progress' && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200"><div className="flex items-center gap-2 text-sm text-blue-800"><Clock className="w-4 h-4" /><span className="font-medium">Επόμενα βήματα:</span></div><ul className="mt-2 text-sm text-blue-700 space-y-1"><li>• Ολοκλήρωση κεντρικού θερμικού συστήματος</li><li>• Εγκατάσταση ανελκυστήρων</li><li>• Τελικός έλεγχος ηλεκτρολογικών</li></ul></div>
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/50 dark:border-blue-800"><div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300"><Clock className="w-4 h-4" /><span className="font-medium">Επόμενα βήματα:</span></div><ul className="mt-2 text-sm text-blue-700 dark:text-blue-200 space-y-1"><li>• Ολοκλήρωση κεντρικού θερμικού συστήματος</li><li>• Εγκατάσταση ανελκυστήρων</li><li>• Τελικός έλεγχος ηλεκτρολογικών</li></ul></div>
                 )}
                 {milestone.status === 'completed' && (
-                    <div className="mt-4 flex items-center gap-2 text-sm text-green-600"><CheckCircle className="w-4 h-4" /><span>Ολοκληρώθηκε στις {new Date(milestone.date).toLocaleDateString('el-GR')}</span></div>
+                    <div className="mt-4 flex items-center gap-2 text-sm text-green-600 dark:text-green-400"><CheckCircle className="w-4 h-4" /><span>Ολοκληρώθηκε στις {new Date(milestone.date).toLocaleDateString('el-GR')}</span></div>
                 )}
             </div>
         </div>

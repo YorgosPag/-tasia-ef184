@@ -26,25 +26,25 @@ export function GeneralProgress({ building }: GeneralProgressProps) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label>Ποσοστό Ολοκλήρωσης</Label>
-            <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+            <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
               {building.progress}% Ολοκληρωμένο
             </Badge>
           </div>
           <Progress value={building.progress} className="h-3" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs">
-            <div className={cn("p-2 rounded text-center", building.progress >= 25 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+            <div className={cn("p-2 rounded text-center", building.progress >= 25 ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-muted text-muted-foreground")}>
               <div className="font-medium">Θεμέλια</div>
               <div>0-25%</div>
             </div>
-            <div className={cn("p-2 rounded text-center", building.progress >= 50 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+            <div className={cn("p-2 rounded text-center", building.progress >= 50 ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-muted text-muted-foreground")}>
               <div className="font-medium">Κατασκευή</div>
               <div>25-50%</div>
             </div>
-            <div className={cn("p-2 rounded text-center", building.progress >= 75 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+            <div className={cn("p-2 rounded text-center", building.progress >= 75 ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-muted text-muted-foreground")}>
               <div className="font-medium">Ολοκληρώσεις</div>
               <div>50-75%</div>
             </div>
-            <div className={cn("p-2 rounded text-center", building.progress >= 100 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+            <div className={cn("p-2 rounded text-center", building.progress >= 100 ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" : "bg-muted text-muted-foreground")}>
               <div className="font-medium">Παράδοση</div>
               <div>75-100%</div>
             </div>
