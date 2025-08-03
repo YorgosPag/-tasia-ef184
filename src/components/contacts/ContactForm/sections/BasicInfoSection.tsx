@@ -76,6 +76,36 @@ export function BasicInfoSection({
           </FormItem>
         )}
       />
+      <FormField
+        control={form.control}
+        name="afm"
+        render={({ field }) => (
+          <FormItem className="flex items-center gap-4">
+            <FormLabel className="w-40 text-right">ΑΦΜ</FormLabel>
+            <div className="flex-1">
+              <FormControl>
+                <Input {...field} placeholder="π.χ. 123456789" />
+              </FormControl>
+              <FormMessage />
+            </div>
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="doy"
+        render={({ field }) => (
+          <FormItem className="flex items-center gap-4">
+            <FormLabel className="w-40 text-right">ΔΟΥ</FormLabel>
+            <div className="flex-1">
+              <FormControl>
+                <Input {...field} placeholder="π.χ. ΔΟΥ Καλαμαριάς" />
+              </FormControl>
+              <FormMessage />
+            </div>
+          </FormItem>
+        )}
+      />
     </div>
   );
 
