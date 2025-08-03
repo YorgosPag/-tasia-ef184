@@ -94,10 +94,10 @@ export function ProjectsList({
         onImport={() => console.log('Εισαγωγή')}
       />
 
-      <ScrollArea className="flex-1 overflow-hidden">
-        <div className="p-2 space-y-2 min-h-0">
+      <ScrollArea className="flex-1 overflow-y-auto w-full">
+        <div className="p-2 space-y-2 min-h-0 w-full">
           {sortedProjects.map((project) => (
-            <div key={project.id} className="shrink-0">
+            <div key={project.id} className="shrink-0 w-full">
               <ProjectListItem
                 project={project}
                 selectedProjectId={selectedProject?.id}
