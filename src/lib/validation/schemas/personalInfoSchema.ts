@@ -20,6 +20,8 @@ export const personalInfoSchema = z.object({
   birthPlace: z.string().optional(),
   gender: z.enum(["Άνδρας", "Γυναίκα", "Άλλο"]).optional(),
   nationality: z.string().optional(),
+  isActive: z.boolean().optional(),
+  showOnWeb: z.boolean().optional(),
 
   photoUrls: z
     .object({

@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function BasicInfoSection({
   form,
@@ -106,6 +107,50 @@ export function BasicInfoSection({
           </FormItem>
         )}
       />
+      <div className="flex items-center gap-4 pl-[176px]">
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-2">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  id="is-active-checkbox"
+                />
+              </FormControl>
+              <FormLabel
+                htmlFor="is-active-checkbox"
+                className="font-normal cursor-pointer"
+              >
+                Ενεργή
+              </FormLabel>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="showOnWeb"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-2">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  id="show-on-web-checkbox"
+                />
+              </FormControl>
+              <FormLabel
+                htmlFor="show-on-web-checkbox"
+                className="font-normal cursor-pointer"
+              >
+                Προβολή στο διαδίκτυο
+              </FormLabel>
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 
