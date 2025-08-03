@@ -25,6 +25,8 @@ import {
   Building2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PlaceholderTab } from '@/app/projects/placeholder-tab';
+
 
 // Enhanced building type with comprehensive data
 type Building = {

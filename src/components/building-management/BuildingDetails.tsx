@@ -1,16 +1,14 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Eye, 
@@ -28,21 +26,14 @@ import {
   Home,
   Users,
   DollarSign,
-  TrendingUp,
-  Clock,
-  Star,
-  Share,
-  Print,
   Settings,
-  AlertCircle,
   CheckCircle,
-  Info,
   Plus,
   X,
-  Image as ImageIcon
+  Share,
+  Print
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PlaceholderTab } from '@/app/projects/placeholder-tab';
 
 type Building = {
   id: number;
@@ -91,14 +82,6 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
   const handleSave = () => {
     setIsEditing(false);
     console.log('Saving building data:', formData);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('el-GR', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0
-    }).format(amount);
   };
 
   return (
@@ -341,7 +324,12 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
                 {building.progress}% Ολοκληρωμένο
               </Badge>
             </div>
-            <Progress value={building.progress} className="h-3" />
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div 
+                className="bg-blue-600 h-3 rounded-full transition-all duration-500" 
+                style={{ width: `${building.progress}%` }}
+              ></div>
+            </div>
             <div className="text-sm text-muted-foreground">
               {building.progress < 25 && "Αρχικό στάδιο - Προετοιμασία"}
               {building.progress >= 25 && building.progress < 50 && "Υπό κατασκευή - Κύρια δομή"}
@@ -367,7 +355,7 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
               <Label>Συγγραφή Υποχρεώσεων</Label>
               <div className="flex gap-2">
                 <Input 
-                  defaultValue="\\Server\shared\6. erga\Paleologou\Paleol_Gen\Paleol_Gen_Pinak Syggr\pal syggrafi.doc" 
+                  defaultValue="\Server\shared\6. erga\Paleologou\Paleol_Gen\Paleol_Gen_Pinak Syggr\pal syggrafi.doc" 
                   className="bg-muted"
                   disabled
                 />
@@ -381,63 +369,6 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
                   <Download className="w-4 h-4" />
                 </Button>
               </div>
-            </div>
-            
-            {/* Additional Files */}
-            <div className="border rounded-lg p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">Συνημμένα Αρχεία</h4>
-                <Button variant="outline" size="sm">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Προσθήκη Αρχείου
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className="flex items-center gap-2 p-2 border rounded">
-                  <FileText className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm">Κανονισμός Κτιρίου.pdf</span>
-                  <Button variant="ghost" size="sm" className="ml-auto">
-                    <Download className="w-3 h-3" />
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2 p-2 border rounded">
-                  <FileText className="w-4 h-4 text-green-500" />
-                  <span className="text-sm">Άδεια Οικοδομής.pdf</span>
-                  <Button variant="ghost" size="sm" className="ml-auto">
-                    <Download className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Legal Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" />
-            Νομικά Στοιχεία
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Αριθμός Συμβολαίου</Label>
-              <Input disabled className="bg-muted" />
-            </div>
-            <div className="space-y-2">
-              <Label>Ημερομηνία Συμβολαίου</Label>
-              <Input type="date" disabled className="bg-muted" />
-            </div>
-            <div className="space-y-2">
-              <Label>Αρχείο Συμβολαίου</Label>
-              <Input disabled className="bg-muted" />
-            </div>
-            <div className="space-y-2">
-              <Label>Συμβολαιογράφος</Label>
-              <Input disabled className="bg-muted" />
             </div>
           </div>
         </CardContent>
@@ -462,6 +393,20 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
   );
 };
 
+const PlaceholderTab = ({ title }: { title: string }) => (
+  <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed border-border rounded-lg bg-muted/50">
+    <Building2 className="w-12 h-12 text-muted-foreground mb-4" />
+    <h2 className="text-xl font-semibold text-muted-foreground mb-2">{title}</h2>
+    <p className="text-sm text-muted-foreground text-center max-w-md">
+      Αυτή η ενότητα θα αναπτυχθεί σύντομα. Θα περιέχει όλες τις απαραίτητες λειτουργίες για τη διαχείριση {title.toLowerCase()}.
+    </p>
+    <Button variant="outline" className="mt-4">
+      <Plus className="w-4 h-4 mr-2" />
+      Προσθήκη {title}
+    </Button>
+  </div>
+);
+
 const PhotosTabContent = () => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
@@ -476,7 +421,7 @@ const PhotosTabContent = () => (
       {[1, 2, 3, 4, 5, 6].map((index) => (
         <div key={index} className="aspect-square bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border hover:border-blue-400 transition-colors cursor-pointer group">
           <div className="text-center">
-            <ImageIcon className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
+            <Camera className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Προσθήκη Φωτογραφίας</p>
           </div>
         </div>
