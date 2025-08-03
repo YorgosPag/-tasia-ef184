@@ -1,7 +1,33 @@
-
 # Project Management Components Code
 
 This file contains the source code for all components related to the application's project management functionality.
+
+---
+## Required Files and Dependencies
+
+### Core Component Files:
+- **`src/app/projects/projects-page-content.tsx`**: The main container for the projects page.
+- **`src/app/projects/projects-list.tsx`**: The list view of all projects.
+- **`src/app/projects/project-details.tsx`**: The detailed view of a selected project.
+- **`src/app/projects/general-project-tab.tsx`**: Tab for general project information.
+- **`src/app/projects/BuildingDataTab.tsx`**: Tab for building data specifics.
+- **`src/app/projects/parking/ParkingTab.tsx`**: Tab for managing parking spots.
+- **`src/app/projects/contributors-tab.tsx`**: Tab for project contributors.
+- **`src/app/projects/documents-project-tab.tsx`**: Tab for project documents.
+- **`src/app/projects/ika-tab.tsx`**: Tab for IKA related information.
+- **`src/app/projects/PhotosTab.tsx`**: Tab for project photos.
+- **`src/app/projects/VideosTab.tsx`**: Tab for project videos.
+
+### Related Helper & UI Components:
+- **`src/components/app/page-layout.tsx`**: Main layout structure.
+- **`src/components/ui/button.tsx`**: Custom button component.
+- **`src/components/ui/table.tsx`**: Component for data tables.
+- **`src/components/ui/tooltip.tsx`**: Component for tooltips.
+- **`src/components/ui/select.tsx`**: Component for select dropdowns.
+- **`src/components/ui/label.tsx`**: Component for form labels.
+- **`src/components/ui/scroll-area.tsx`**: Component for scrollable areas.
+- **`src/components/ui/tabs.tsx`**: Component for tabbed navigation.
+- **`src/lib/utils.ts`**: Utility functions (e.g., `cn` for classnames).
 
 ---
 

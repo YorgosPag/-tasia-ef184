@@ -1,7 +1,29 @@
-
 # Building Management Components Code
 
 This file contains the source code for all components related to the application's building management functionality.
+
+---
+## Required Files and Dependencies
+
+### Core Component Files:
+- **`src/app/(main)/building-management/page.tsx`**: The main entry point for the building management page.
+- **`src/components/building-management/BuildingsPageContent.tsx`**: The primary container component that orchestrates the UI.
+- **`src/components/building-management/BuildingsList.tsx`**: Displays the list of buildings.
+- **`src/components/building-management/BuildingDetails.tsx`**: Shows the detailed view for a selected building.
+- **`src/components/building-management/BuildingCard.tsx`**: The card component used in the grid view.
+- **`src/components/building-management/tabs/GeneralTab.tsx`**: A tab within the details view for general information.
+- **`src/components/building-management/tabs/TimelineTab.tsx`**: A tab for the project timeline.
+- **`src/components/building-management/tabs/MapTab.tsx`**: A tab to display maps.
+- **`src/components/building-management/tabs/AnalyticsTab.tsx`**: A tab for data analytics.
+- **`src/components/building-management/storage/storage-tab.tsx`**: A tab for managing storage units and parking.
+
+### Related Helper & UI Components:
+- **`src/hooks/useBuildingFilters.ts`**: Custom hook for filtering and calculating stats for buildings.
+- **`src/hooks/useToolbarState.ts`**: Custom hook for managing toolbar state.
+- **`src/types/building.ts`**: TypeScript type definitions for building-related data.
+- **`src/types/storage.ts`**: TypeScript type definitions for storage and parking units.
+- **`src/components/ui/card.tsx`**, **`button.tsx`**, **`badge.tsx`**, **`progress.tsx`**, **`tabs.tsx`**, **`scroll-area.tsx`**, etc.: Reusable UI components from ShadCN.
+- **`lucide-react`**: For icons.
 
 ---
 
