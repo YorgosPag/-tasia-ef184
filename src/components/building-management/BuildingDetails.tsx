@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -39,7 +39,7 @@ import {
   Info,
   Plus,
   X,
-  Image
+  Image as ImageIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -427,9 +427,29 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
                 <Button variant="ghost" size="sm">
                   <Download className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm">
-                  <X className="w-4 h-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <div>
+                      <Button variant="ghost" size="sm">
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Επιβεβαίωση Διαγραφής</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το αρχείο;
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                      <AlertDialogAction className={cn(buttonVariants({ variant: 'destructive' }))}>
+                        Διαγραφή
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
 
@@ -455,9 +475,29 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
                 <Button variant="ghost" size="sm">
                   <Download className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm">
-                  <X className="w-4 h-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <div>
+                      <Button variant="ghost" size="sm">
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Επιβεβαίωση Διαγραφής</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το αρχείο;
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                      <AlertDialogAction className={cn(buttonVariants({ variant: 'destructive' }))}>
+                        Διαγραφή
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
 
@@ -466,7 +506,7 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0 h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center overflow-hidden">
                   <div className="w-full h-full bg-gradient-to-br from-green-200 to-green-300 flex items-center justify-center">
-                    <Image className="w-6 h-6 text-green-700" />
+                    <ImageIcon className="w-6 h-6 text-green-700" />
                   </div>
                 </div>
                 <div className="min-w-0 flex-1">
@@ -485,9 +525,29 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
                 <Button variant="ghost" size="sm">
                   <Download className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm">
-                  <X className="w-4 h-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <div>
+                      <Button variant="ghost" size="sm">
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Επιβεβαίωση Διαγραφής</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το αρχείο;
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+                      <AlertDialogAction className={cn(buttonVariants({ variant: 'destructive' }))}>
+                        Διαγραφή
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </div>
@@ -560,7 +620,7 @@ const PhotosTabContent = () => (
       {[1, 2, 3, 4, 5, 6].map((index) => (
         <div key={index} className="aspect-square bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border hover:border-blue-400 transition-colors cursor-pointer group">
           <div className="text-center">
-            <Image className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
+            <ImageIcon className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Προσθήκη Φωτογραφίας</p>
           </div>
         </div>
@@ -687,15 +747,15 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
             </TabsContent>
 
             <TabsContent value="storage" className="mt-0">
-              <PlaceholderTab title="Αποθήκες" icon={Building2} />
+              <PlaceholderTab title="Αποθήκες" />
             </TabsContent>
 
             <TabsContent value="contracts" className="mt-0">
-              <PlaceholderTab title="Συμβόλαια Πελατών" icon={FileText} />
+              <PlaceholderTab title="Συμβόλαια Πελατών" />
             </TabsContent>
 
             <TabsContent value="protocols" className="mt-0">
-              <PlaceholderTab title="Υ.Δ.Τοιχοποιίας & Πρωτόκολλα" icon={Settings} />
+              <PlaceholderTab title="Υ.Δ.Τοιχοποιίας & Πρωτόκολλα" />
             </TabsContent>
 
             <TabsContent value="photos" className="mt-0">
