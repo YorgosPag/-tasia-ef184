@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Eye, 
@@ -42,17 +41,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { PlaceholderTab } from '@/app/projects/placeholder-tab';
 
 type Building = {
   id: number;
@@ -99,7 +88,6 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
   });
 
   const handleSave = () => {
-    // Here you would typically save to your backend
     setIsEditing(false);
     console.log('Saving building data:', formData);
   };
@@ -519,20 +507,6 @@ const VideosTabContent = () => (
   </div>
 );
 
-const PlaceholderTab = ({ title, icon: Icon }: { title: string; icon: any }) => (
-  <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed border-border rounded-lg bg-muted/50">
-    <Icon className="w-12 h-12 text-muted-foreground mb-4" />
-    <h2 className="text-xl font-semibold text-muted-foreground mb-2">{title}</h2>
-    <p className="text-sm text-muted-foreground text-center max-w-md">
-      Αυτή η ενότητα θα αναπτυχθεί σύντομα. Θα περιέχει όλες τις απαραίτητες λειτουργίες για τη διαχείριση {title.toLowerCase()}.
-    </p>
-    <Button variant="outline" className="mt-4">
-      <Plus className="w-4 h-4 mr-2" />
-      Προσθήκη {title}
-    </Button>
-  </div>
-);
-
 export function BuildingDetails({ building, getStatusColor, getStatusLabel }: BuildingDetailsProps) {
   return (
     <div className="flex-1 flex flex-col bg-card border rounded-lg min-w-0 shadow-sm">
@@ -600,15 +574,15 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
             </TabsContent>
 
             <TabsContent value="storage" className="mt-0">
-              <PlaceholderTab title="Αποθήκες" icon={Building2} />
+              <PlaceholderTab title="Αποθήκες" />
             </TabsContent>
 
             <TabsContent value="contracts" className="mt-0">
-              <PlaceholderTab title="Συμβόλαια Πελατών" icon={FileText} />
+              <PlaceholderTab title="Συμβόλαια Πελατών" />
             </TabsContent>
 
             <TabsContent value="protocols" className="mt-0">
-              <PlaceholderTab title="Υ.Δ.Τοιχοποιίας & Πρωτόκολλα" icon={Settings} />
+              <PlaceholderTab title="Υ.Δ.Τοιχοποιίας & Πρωτόκολλα" />
             </TabsContent>
 
             <TabsContent value="photos" className="mt-0">
