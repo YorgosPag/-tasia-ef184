@@ -23,7 +23,7 @@ import { AnalyticsTab } from './tabs/AnalyticsTab';
 import { StorageTab } from './tabs/StorageTab';
 import { PhotosTab } from './tabs/PhotosTab';
 import { VideosTab } from './tabs/VideosTab';
-import { PlaceholderTab } from '@/app/projects/placeholder-tab';
+import { PlaceholderTab } from '@/components/common/placeholder-tab';
 
 interface BuildingDetailsProps {
   building: Building;
