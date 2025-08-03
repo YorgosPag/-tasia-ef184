@@ -200,7 +200,7 @@ export function ProjectsPageContent() {
       
       {showDashboard && <ProjectsDashboard stats={stats} />}
 
-      <div className="flex-1 flex overflow-hidden gap-4">
+      <div className="flex-1 flex overflow-hidden gap-4 min-w-0">
         {viewMode === 'list' && selectedProject ? (
           <>
             <ProjectsList
