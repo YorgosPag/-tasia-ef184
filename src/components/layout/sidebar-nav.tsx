@@ -291,7 +291,7 @@ export function SidebarNav() {
       <SidebarGroup className="px-0">
         <SidebarGroupLabel className="px-3 pb-2 pt-4 text-xs font-semibold tracking-wider text-sidebar-muted-foreground/80 uppercase flex items-center gap-2">
           <Zap className="h-4 w-4" />
-          <span className="group-data-[state=collapsed]:hidden">Εργαλεία CRM</span>
+          <span className="group-data-[state=collapsed]:hidden">ΕΡΓΑΛΕΙΑ CRM</span>
         </SidebarGroupLabel>
         <div className="space-y-0.5">
           {tasiaProjectToolsNav.map((item) => (
