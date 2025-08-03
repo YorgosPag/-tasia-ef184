@@ -74,7 +74,7 @@ export function ProjectsList({
   });
 
   return (
-    <div className="w-[420px] bg-card border rounded-lg flex flex-col shrink-0 shadow-sm">
+    <div className="w-[420px] bg-card border rounded-lg flex flex-col shrink-0 shadow-sm max-h-full overflow-hidden">
       <ProjectListHeader 
         projects={projects}
         sortBy={sortBy}
@@ -94,19 +94,20 @@ export function ProjectsList({
         onImport={() => console.log('Εισαγωγή')}
       />
 
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-2">
+      <ScrollArea className="flex-1 overflow-hidden">
+        <div className="p-2 space-y-2 min-h-0">
           {sortedProjects.map((project) => (
-            <ProjectListItem
-              key={project.id}
-              project={project}
-              selectedProjectId={selectedProject?.id}
-              onSelectProject={onSelectProject}
-              toggleFavorite={toggleFavorite}
-              favorites={favorites}
-              getStatusColor={getStatusColor}
-              getStatusLabel={getStatusLabel}
-            />
+            <div key={project.id} className="shrink-0">
+              <ProjectListItem
+                project={project}
+                selectedProjectId={selectedProject?.id}
+                onSelectProject={onSelectProject}
+                toggleFavorite={toggleFavorite}
+                favorites={favorites}
+                getStatusColor={getStatusColor}
+                getStatusLabel={getStatusLabel}
+              />
+            </div>
           ))}
         </div>
       </ScrollArea>

@@ -76,25 +76,25 @@ export function ProjectListItem({
   return (
     <Card 
       className={cn(
-        "cursor-pointer transition-all duration-200 hover:shadow-md",
+        "cursor-pointer transition-all duration-200 hover:shadow-md w-full max-w-full",
         isSelected && "ring-2 ring-primary bg-primary/5"
       )}
       onClick={() => onSelectProject?.(project)}
     >
-      <CardContent className="p-4">
-        <div className="space-y-3">
+      <CardContent className="p-3">
+        <div className="space-y-2">
           {/* Header με όνομα και actions */}
           <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 pr-2">
               <h4 className="font-semibold text-sm truncate">{project.name}</h4>
-              <p className="text-xs text-muted-foreground truncate mt-1">{project.title}</p>
+              <p className="text-xs text-muted-foreground truncate">{project.title}</p>
             </div>
             
-            <div className="flex items-center gap-1 ml-2">
+            <div className="flex items-center gap-1 shrink-0">
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7"
+                className="h-6 w-6"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleFavorite(project.id);
@@ -102,7 +102,7 @@ export function ProjectListItem({
               >
                 <Heart 
                   className={cn(
-                    "w-4 h-4",
+                    "w-3 h-3",
                     isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"
                   )} 
                 />
@@ -113,10 +113,10 @@ export function ProjectListItem({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7"
+                    className="h-6 w-6"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <MoreVertical className="w-4 h-4" />
+                    <MoreVertical className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -139,20 +139,20 @@ export function ProjectListItem({
           </div>
 
           {/* Status και Category */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <div className={`w-2 h-2 rounded-full ${getStatusColor(project.status)}`} />
               <span className="text-xs text-muted-foreground">{getStatusLabel(project.status)}</span>
             </div>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs py-0 px-1 h-5">
               {getCategoryLabel(project.category)}
             </Badge>
           </div>
 
           {/* Location */}
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="w-3 h-3" />
-            <span className="truncate">{project.address}, {project.municipality}</span>
+            <MapPin className="w-3 h-3 shrink-0" />
+            <span className="truncate">{project.address}</span>
           </div>
 
           {/* Progress */}
@@ -161,11 +161,11 @@ export function ProjectListItem({
               <span className="text-muted-foreground">Πρόοδος</span>
               <span className="font-medium">{project.progress}%</span>
             </div>
-            <Progress value={project.progress} className="h-1.5" />
+            <Progress value={project.progress} className="h-1" />
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-4 text-xs">
+          {/* Stats - Compact */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex items-center gap-1">
               <Building className="w-3 h-3 text-muted-foreground" />
               <span className="text-muted-foreground">Κτίρια:</span>
@@ -178,15 +178,15 @@ export function ProjectListItem({
             </div>
           </div>
 
-          {/* Value and Date */}
-          <div className="flex items-center justify-between text-xs pt-2 border-t">
+          {/* Value and Date - Compact */}
+          <div className="flex items-center justify-between text-xs pt-1 border-t">
             <div className="flex items-center gap-1">
               <Euro className="w-3 h-3 text-green-600" />
-              <span className="font-medium text-green-600">{formatCurrency(project.totalValue)}</span>
+              <span className="font-medium text-green-600 text-xs">{formatCurrency(project.totalValue)}</span>
             </div>
             <div className="flex items-center gap-1 text-muted-foreground">
               <Calendar className="w-3 h-3" />
-              <span>{formatDate(project.startDate)}</span>
+              <span className="text-xs">{formatDate(project.startDate)}</span>
             </div>
           </div>
         </div>

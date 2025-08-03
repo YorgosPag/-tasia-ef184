@@ -172,8 +172,8 @@ export function ProjectsPageContent() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-background p-4 gap-4">
-      <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+    <div className="h-full flex flex-col bg-background overflow-hidden">
+      <div className="border-b bg-card/50 backdrop-blur-sm shrink-0 z-40">
         <div className="p-4 space-y-4">
           <ProjectsPageHeader 
             showDashboard={showDashboard}
@@ -198,24 +198,32 @@ export function ProjectsPageContent() {
         </div>
       </div>
       
-      {showDashboard && <ProjectsDashboard stats={stats} />}
+      {showDashboard && (
+        <div className="shrink-0 p-4">
+          <ProjectsDashboard stats={stats} />
+        </div>
+      )}
 
-      <div className="flex-1 flex overflow-hidden gap-4 min-w-0">
+      <div className="flex-1 flex overflow-hidden min-h-0 p-4 gap-4">
         {viewMode === 'list' && selectedProject ? (
           <>
-            <ProjectsList
-              projects={filteredProjects}
-              selectedProject={selectedProject}
-              onSelectProject={setSelectedProject}
-              getStatusColor={getStatusColor}
-              getStatusLabel={getStatusLabel}
-            />
-            <ProjectDetails 
-              project={selectedProject} 
-            />
+            <div className="flex-shrink-0 overflow-hidden">
+              <ProjectsList
+                projects={filteredProjects}
+                selectedProject={selectedProject}
+                onSelectProject={setSelectedProject}
+                getStatusColor={getStatusColor}
+                getStatusLabel={getStatusLabel}
+              />
+            </div>
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <ProjectDetails 
+                project={selectedProject} 
+              />
+            </div>
           </>
         ) : viewMode === 'grid' && selectedProject ? (
-          <div className="flex-1 p-4 overflow-auto">
+          <div className="flex-1 overflow-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProjects.map((project) => (
                 <ProjectCard
@@ -229,7 +237,11 @@ export function ProjectsPageContent() {
               ))}
             </div>
           </div>
-        ) : <div className="flex-1 flex items-center justify-center text-muted-foreground">Επιλέξτε ένα έργο για να δείτε τις λεπτομέρειες.</div>}
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            Επιλέξτε ένα έργο για να δείτε τις λεπτομέρειες.
+          </div>
+        )}
       </div>
     </div>
   );
