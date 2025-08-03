@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -58,7 +57,7 @@ const tasiaProjectToolsNav = [
     badge: "9",
   },
   {
-    href: "/projects",
+    href: "/projects-management",
     label: "Διαχείριση Έργων",
     icon: FolderKanban,
     description: "Project management tools",
