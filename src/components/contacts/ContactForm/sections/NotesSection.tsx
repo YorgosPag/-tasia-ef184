@@ -221,8 +221,8 @@ export function NotesSection({ form }: Pick<ContactFormProps, "form">) {
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">CRM Σημειώσεων - Εργολαβική Εταιρεία</h1>
-          <p className="text-gray-600 mt-2">Διαχείριση σημειώσεων, tasks, υπενθυμίσεων και επικοινωνίας για έργα</p>
+          <h1 className="text-3xl font-bold">CRM Σημειώσεων</h1>
+          <p className="text-muted-foreground mt-2">Διαχείριση σημειώσεων, tasks, υπενθυμίσεων και επικοινωνίας για έργα</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)} className="bg-blue-600 hover:bg-blue-700">
           <Plus className="w-4 h-4 mr-2" />
@@ -527,14 +527,14 @@ export function NotesSection({ form }: Pick<ContactFormProps, "form">) {
                     {note.assignedTo.map(contactId => {
                       const contact = contacts.find(c => c.id === contactId);
                       return (
-                        <div key={contactId} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1">
+                        <div key={contactId} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1 text-gray-800">
                           <User className="w-3 h-3" />
                           <span className="text-sm">{contact?.name}</span>
                           <div className="flex gap-1">
-                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-gray-600 hover:text-gray-800">
                               <Mail className="w-3 h-3" />
                             </Button>
-                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-gray-600 hover:text-gray-800">
                               <Phone className="w-3 h-3" />
                             </Button>
                           </div>
