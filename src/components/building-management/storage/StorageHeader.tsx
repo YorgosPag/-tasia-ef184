@@ -1,9 +1,7 @@
 'use client';
 
-import React from 'react';
+import { Archive, Plus, List, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Plus, MapPin, List } from 'lucide-react';
-import { Archive } from 'lucide-react';
 
 interface StorageHeaderProps {
   buildingName: string;
@@ -12,7 +10,12 @@ interface StorageHeaderProps {
   onAddNew: () => void;
 }
 
-export function StorageHeader({ buildingName, viewMode, setViewMode, onAddNew }: StorageHeaderProps) {
+export function StorageHeader({
+  buildingName,
+  viewMode,
+  setViewMode,
+  onAddNew,
+}: StorageHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -24,6 +27,7 @@ export function StorageHeader({ buildingName, viewMode, setViewMode, onAddNew }:
           Διαχείριση παρακολουθημάτων κτιρίου {buildingName}
         </p>
       </div>
+
       <div className="flex items-center gap-2">
         <Button
           variant={viewMode === 'list' ? 'default' : 'outline'}

@@ -8,7 +8,7 @@ import { StorageDashboard } from '../storage/StorageDashboard';
 import { StorageFilters } from '../storage/StorageFilters';
 import { StorageMapPlaceholder } from '../storage/StorageMapPlaceholder';
 import { useFilteredStorage } from '@/hooks/useFilteredStorage';
-import { StorageUnit, StorageType, StorageStatus } from '@/types/storage';
+import { StorageUnit, StorageType, StorageStatus } from '@/lib/types/storage';
 
 const mockStorageUnits: StorageUnit[] = [
   { id: 'A_A2_1', code: 'A_A2_1', type: 'storage', floor: 'Υπόγειο', area: 4.08, price: 1590.00, status: 'available', description: 'ΜΑΥΡΑΚΗ ΑΙΚΑΤΕΡΙΝΗ', building: 'ΚΤΙΡΙΟ Α', project: 'Παλαιολόγου', company: 'Ν.Χ.Γ. ΠΑΓΩΝΗΣ & ΣΙΑ Ο.Ε.', linkedProperty: null, coordinates: { x: 10, y: 15 }, features: ['Ηλεκτρικό ρεύμα', 'Αεροθαλάμος'] },
