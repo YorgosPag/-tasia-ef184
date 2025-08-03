@@ -8,7 +8,9 @@ import {
   Edit, 
   MoreVertical,
   Star, 
-  Trash2
+  Trash2,
+  Package,
+  Car
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -17,9 +19,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { StorageUnit } from '@/types/storage';
+import { StorageUnit, StorageType } from '@/types/storage';
 import { cn } from '@/lib/utils';
-import { getTypeIcon, getTypeColor, getStatusColor, getStatusLabel } from './storage-card-utils.tsx';
+import { getStatusColor, getStatusLabel } from './storage-card-utils';
+
+const getTypeIcon = (type: StorageType) => {
+  return type === 'storage' ? <Package className="w-4 h-4" /> : <Car className="w-4 h-4" />;
+};
+
+const getTypeLabel = (type: StorageType) => {
+  return type === 'storage' ? 'Αποθήκη' : 'Θέση Στάθμευσης';
+};
+
+const getTypeColor = (type: StorageType) => {
+  return type === 'storage' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700';
+};
+
 
 interface StorageCardHeaderProps {
   unit: StorageUnit;
