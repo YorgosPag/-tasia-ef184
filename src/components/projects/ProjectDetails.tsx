@@ -21,6 +21,7 @@ import {
 import { GeneralProjectTab } from './general-project-tab';
 import { BuildingDataTab } from './BuildingDataTab';
 import { ParkingTab } from './parking/ParkingTab';
+import { PropertiesTab } from './properties/PropertiesTab';
 import { ContributorsTab } from './contributors-tab';
 import { DocumentsProjectTab } from './documents-project-tab';
 import { IkaTab } from './ika-tab';
@@ -190,6 +191,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
             <TabsList className="shrink-0 flex-wrap h-auto justify-start">
               <TabsTrigger value="general">Γενικά Έργου</TabsTrigger>
               <TabsTrigger value="building-data">Στοιχεία Δόμησης</TabsTrigger>
+              <TabsTrigger value="properties">Ακίνητα</TabsTrigger>
               <TabsTrigger value="parking">Θέσεις Στάθμευσης</TabsTrigger>
               <TabsTrigger value="contributors">Συντελεστές</TabsTrigger>
               <TabsTrigger value="documents">Έγγραφα Έργου</TabsTrigger>
@@ -203,6 +205,9 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
             </TabsContent>
             <TabsContent value="building-data" className="flex-grow overflow-auto mt-4">
               <BuildingDataTab />
+            </TabsContent>
+            <TabsContent value="properties" className="flex-grow overflow-auto mt-4">
+              <PropertiesTab />
             </TabsContent>
             <TabsContent value="parking" className="flex-grow overflow-auto mt-4">
               <ParkingTab parkingSpots={parkingSpots} />

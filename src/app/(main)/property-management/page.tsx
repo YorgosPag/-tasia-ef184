@@ -1,11 +1,8 @@
 'use client';
 
 import React from 'react';
+import { PropertiesTab } from '@/components/projects/properties/PropertiesTab';
 
 export default function PropertyManagementPage() {
-  return (
-    <div>
-      {/* This page is intentionally left blank for future development */}
-    </div>
-  );
+  return <PropertiesTab />;
 }
