@@ -80,7 +80,6 @@ type Building = {
   features?: string[];
 };
 
-
 const GeneralTabContent = ({ building }: { building: Building }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -774,4 +773,3 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
     </div>
   );
 }
-
