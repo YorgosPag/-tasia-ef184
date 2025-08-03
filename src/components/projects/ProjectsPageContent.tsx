@@ -149,6 +149,7 @@ export function ProjectsPageContent() {
     }
   }, [filteredProjects, selectedProject]);
 
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-green-500';
@@ -172,7 +173,7 @@ export function ProjectsPageContent() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-background overflow-hidden">
+    <div className="h-full w-full flex flex-col bg-background overflow-x-hidden overflow-y-auto max-w-screen">
       <div className="border-b bg-card/50 backdrop-blur-sm shrink-0 z-40">
         <div className="p-4 space-y-4">
           <ProjectsPageHeader 
