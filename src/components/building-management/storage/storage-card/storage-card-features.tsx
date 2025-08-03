@@ -6,7 +6,7 @@ import {
   Link as LinkIcon
 } from 'lucide-react';
 import { StorageUnit } from '@/types/storage';
-import { getFeatureIcon } from './storage-card-utils.tsx';
+import { getFeatureIcon } from './storage-card-utils';
 
 interface StorageCardFeaturesProps {
   unit: StorageUnit;
@@ -38,9 +38,9 @@ export function StorageCardFeatures({ unit }: StorageCardFeaturesProps) {
                 <span className="truncate max-w-[80px]">{feature}</span>
               </div>
             ))}
-            {unit.features.length > 2 && (
+            {unit.features.length > 3 && (
               <div className="px-2 py-1 bg-gray-50 rounded text-xs text-gray-500">
-                +{unit.features.length - 2}
+                +{unit.features.length - 3}
               </div>
             )}
           </div>
