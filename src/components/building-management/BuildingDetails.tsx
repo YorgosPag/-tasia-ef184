@@ -53,7 +53,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PlaceholderTab } from '@/components/projects/placeholder-tab';
+import { PlaceholderTab } from '@/app/projects/placeholder-tab';
 
 // Δημιουργούμε ένα απλό PlaceholderTab component αφού δεν υπάρχει
 const GeneralTabContent = ({ building }: { building: Building }) => {
