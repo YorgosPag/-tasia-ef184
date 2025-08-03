@@ -10,7 +10,8 @@ import {
   Eye,
   Paintbrush,
   Sparkles,
-  LayoutTemplate
+  LayoutTemplate,
+  MousePointerSquare
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -18,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { ColorCustomizer } from './ColorCustomizer';
 import { TypographyCustomizer } from './TypographyCustomizer';
 import { LayoutCustomizer } from './LayoutCustomizer';
+import { ButtonCustomizer } from './ButtonCustomizer';
 
 
 export function DesignSystemPageContent() {
@@ -66,6 +68,10 @@ export function DesignSystemPageContent() {
               <Palette className="w-4 h-4" />
               Χρώματα
             </TabsTrigger>
+            <TabsTrigger value="buttons" onClick={() => setActiveTab('buttons')} className="flex items-center gap-2">
+              <MousePointerSquare className="w-4 h-4" />
+              Κουμπιά
+            </TabsTrigger>
             <TabsTrigger value="typography" onClick={() => setActiveTab('typography')} className="flex items-center gap-2">
               <Type className="w-4 h-4" />
               Τυπογραφία
@@ -78,6 +84,10 @@ export function DesignSystemPageContent() {
 
           <TabsContent value="colors" className="space-y-6">
              <ColorCustomizer />
+          </TabsContent>
+
+          <TabsContent value="buttons" className="space-y-6">
+            <ButtonCustomizer />
           </TabsContent>
 
           <TabsContent value="typography" className="space-y-6">
