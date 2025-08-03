@@ -118,6 +118,7 @@ export function BasicInfoSection({
                   checked={field.value}
                   onCheckedChange={field.onChange}
                   id="is-active-checkbox"
+                  disabled={form.formState.disabled}
                 />
               </FormControl>
               <FormLabel
@@ -139,6 +140,7 @@ export function BasicInfoSection({
                   checked={field.value}
                   onCheckedChange={field.onChange}
                   id="show-on-web-checkbox"
+                  disabled={form.formState.disabled}
                 />
               </FormControl>
               <FormLabel
