@@ -1,12 +1,8 @@
-"use client";
+'use client';
+
+import React from 'react';
+import { ProjectsPageContent } from '@/components/projects/ProjectsPageContent';
 
 export default function PropertyManagementPage() {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold">Διαχείριση Ακινήτων</h1>
-      <p className="text-muted-foreground">
-        Η σελίδα για τη διαχείριση ακινήτων θα είναι σύντομα διαθέσιμη.
-      </p>
-    </div>
-  );
+  return <ProjectsPageContent />;
 }
