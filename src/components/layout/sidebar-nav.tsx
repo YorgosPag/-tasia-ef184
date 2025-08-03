@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -55,6 +56,18 @@ const tasiaProjectToolsNav = [
     icon: Users,
     description: "Διαχείριση επαφών",
     badge: "9"
+  },
+  { 
+    href: "/project-management", 
+    label: "Διαχείριση Έργων", 
+    icon: FolderKanban,
+    description: "Project management tools"
+  },
+    { 
+    href: "/building-management", 
+    label: "Διαχείριση Κτιρίων", 
+    icon: Building,
+    description: "Building management tools"
   },
   { 
     href: "/leads", 
@@ -188,12 +201,6 @@ const nestorNav = [
 ];
 
 const managementNav = [
-  { 
-    href: "/project-management", 
-    label: "Διαχείριση Έργων", 
-    icon: FolderKanban,
-    description: "Project management tools"
-  },
   { 
     href: "/custom-lists", 
     label: "Προσ. Λίστες", 
