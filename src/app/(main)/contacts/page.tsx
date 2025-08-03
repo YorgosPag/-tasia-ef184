@@ -9,8 +9,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { exportToJson } from "@/lib/exporter";
 import { useAuth } from "@/hooks/use-auth";
 import { useContacts } from "@/hooks/use-contacts";
-import { ContactDetailView } from "@/components/contacts/ContactDetailView";
 import { ContactList } from "@/components/contacts/ContactList";
+import { ContactEditViewWrapper } from "@/components/contacts/ContactEditViewWrapper";
+import { ContactPlaceholder } from "@/components/contacts/detail-view/ContactPlaceholder";
 
 export default function ContactsPage() {
   const { isEditor } = useAuth();
@@ -46,22 +47,17 @@ export default function ContactsPage() {
   }, [contacts, searchQuery]);
 
   useEffect(() => {
-    // If there's no selection or the selected contact is no longer in the list,
-    // select the first one from the filtered list.
-    const currentSelection = filteredContacts.find(
-      (c) => c.id === selectedContactId,
-    );
-    if (!currentSelection && filteredContacts.length > 0) {
+    if (filteredContacts.length > 0 && !selectedContactId) {
       setSelectedContactId(filteredContacts[0].id);
+    } else if (
+      selectedContactId &&
+      !filteredContacts.find((c) => c.id === selectedContactId)
+    ) {
+      setSelectedContactId(filteredContacts.length > 0 ? filteredContacts[0].id : null);
     } else if (filteredContacts.length === 0) {
       setSelectedContactId(null);
     }
   }, [filteredContacts, selectedContactId]);
-
-  const selectedContact = useMemo(() => {
-    if (!selectedContactId || !contacts) return null;
-    return contacts.find((c) => c.id === selectedContactId) || null;
-  }, [contacts, selectedContactId]);
 
   const handleExport = () => {
     exportToJson(filteredContacts, "contacts");
@@ -121,7 +117,11 @@ export default function ContactsPage() {
           </Card>
         </div>
         <div className="md:col-span-2 lg:col-span-3">
-          <ContactDetailView contact={selectedContact} />
+          {selectedContactId ? (
+            <ContactEditViewWrapper contactId={selectedContactId} />
+          ) : (
+            <ContactPlaceholder />
+          )}
         </div>
       </div>
     </div>
