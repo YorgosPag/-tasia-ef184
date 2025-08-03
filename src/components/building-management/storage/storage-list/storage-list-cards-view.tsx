@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StorageCard } from '../storage-card';
+import { StorageCard } from '../../StorageCard';
 import { StorageUnit } from '@/types/storage';
 
 interface StorageListCardsViewProps {

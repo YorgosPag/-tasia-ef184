@@ -1,2 +1,2 @@
 'use client';
-export * from './storage-list';
+export { StorageList } from './storage-list';
