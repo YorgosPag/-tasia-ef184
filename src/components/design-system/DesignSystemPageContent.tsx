@@ -9,7 +9,6 @@ import {
   Upload,
   Eye,
   Paintbrush,
-  Sparkles,
   LayoutTemplate,
   MousePointerSquare
 } from 'lucide-react';
