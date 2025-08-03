@@ -117,10 +117,10 @@ export function BuildingCard({
   };
 
   const getProgressColor = (progress: number) => {
-    if (progress < 25) return 'bg-red-500';
-    if (progress < 50) return 'bg-yellow-500';
-    if (progress < 75) return 'bg-blue-500';
-    return 'bg-green-500';
+    if (progress < 25) return 'text-red-500';
+    if (progress < 50) return 'text-yellow-500';
+    if (progress < 75) return 'text-blue-500';
+    return 'text-green-500';
   };
 
   const getDaysUntilCompletion = () => {
@@ -140,26 +140,27 @@ export function BuildingCard({
         className={cn(
           "relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl group border-2",
           isSelected 
-            ? "border-blue-500 shadow-lg ring-2 ring-blue-500/20" 
-            : "border-border hover:border-blue-500/50",
-          "transform hover:scale-[1.02] bg-card"
+            ? "border-blue-500 shadow-lg ring-2 ring-blue-200 dark:ring-blue-800" 
+            : "border-border hover:border-blue-300 hover:shadow-lg",
+          "transform hover:scale-[1.02]"
         )}
         onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Hero Image/Header */}
-        <div className="relative h-48 bg-gradient-to-br from-secondary via-background to-secondary/50 overflow-hidden">
-           {/* Background Pattern */}
+        <div className="relative h-48 bg-gradient-to-br from-blue-100 via-purple-50 to-blue-50 dark:from-blue-950 dark:via-purple-950 dark:to-blue-900 overflow-hidden">
+          {/* Background Pattern */}
           <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-4 left-4 w-8 h-8 bg-foreground/5 rounded-full"></div>
-            <div className="absolute top-8 right-8 w-6 h-6 bg-foreground/5 rounded-full"></div>
-            <div className="absolute bottom-6 left-8 w-4 h-4 bg-foreground/10 rounded-full"></div>
-            <div className="absolute bottom-8 right-4 w-10 h-10 bg-foreground/5 rounded-full"></div>
+            <div className="absolute top-4 left-4 w-8 h-8 bg-white/30 rounded-full"></div>
+            <div className="absolute top-8 right-8 w-6 h-6 bg-white/20 rounded-full"></div>
+            <div className="absolute bottom-6 left-8 w-4 h-4 bg-white/40 rounded-full"></div>
+            <div className="absolute bottom-8 right-4 w-10 h-10 bg-white/20 rounded-full"></div>
           </div>
+
           {/* Building Icon/Logo */}
           <div className="absolute top-4 left-4 z-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-background/90 shadow-lg backdrop-blur-sm border">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/90 shadow-lg backdrop-blur-sm">
               {getCategoryIcon(building.category)}
             </div>
           </div>
@@ -171,7 +172,7 @@ export function BuildingCard({
           )}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-background/90 backdrop-blur-sm shadow-lg hover:bg-background">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white">
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -194,7 +195,7 @@ export function BuildingCard({
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setIsFavorite(!isFavorite)}>
-                  <Star className={cn("w-4 h-4 mr-2", isFavorite && "text-yellow-400 fill-yellow-400")} />
+                  <Star className={cn("w-4 h-4 mr-2", isFavorite && "text-yellow-500 fill-yellow-500")} />
                   {isFavorite ? 'Αφαίρεση από αγαπημένα' : 'Προσθήκη στα αγαπημένα'}
                 </DropdownMenuItem>
                 <DropdownMenuItem>
@@ -208,23 +209,23 @@ export function BuildingCard({
           {/* Status and Favorite */}
           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between z-10">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className={cn("text-xs shadow-sm", getStatusColor(building.status))}>
+              <Badge className={cn("text-xs shadow-sm", getStatusColor(building.status).replace('bg-', 'bg-') + ' text-white')}>
                 {getStatusLabel(building.status)}
               </Badge>
-              <Badge variant="secondary" className="text-xs bg-background/90 text-foreground shadow-sm">
+              <Badge variant="secondary" className="text-xs bg-white/90 text-gray-700 shadow-sm">
                 {getCategoryLabel(building.category)}
               </Badge>
             </div>
             
             {isFavorite && (
-              <Star className="w-5 h-5 text-yellow-400 fill-yellow-400 filter drop-shadow-sm" />
+              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 filter drop-shadow-sm" />
             )}
           </div>
 
           {/* Progress Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-foreground/10">
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
             <div 
-              className={cn("h-full transition-all duration-500", getProgressColor(building.progress))}
+              className={cn("h-full transition-all duration-500", getStatusColor(building.status).replace('text-', 'bg-'))}
               style={{ width: `${building.progress}%` }}
             />
           </div>
@@ -234,7 +235,7 @@ export function BuildingCard({
         <CardContent className="p-6 space-y-4">
           {/* Title and Description */}
           <div>
-            <h3 className="font-semibold text-lg leading-tight line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-lg leading-tight line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
               {building.name}
             </h3>
             {building.description && (
@@ -256,7 +257,7 @@ export function BuildingCard({
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Πρόοδος Έργου</span>
-              <span className={cn("font-semibold", getProgressColor(building.progress).replace('bg-', 'text-'))}>
+              <span className={cn("font-semibold", getProgressColor(building.progress))}>
                 {building.progress}%
               </span>
             </div>
@@ -281,7 +282,7 @@ export function BuildingCard({
               <p className="text-xs text-muted-foreground">Αξία</p>
               <Tooltip>
                 <TooltipTrigger>
-                  <p className="text-sm font-semibold text-green-400">
+                  <p className="text-sm font-semibold text-green-600">
                     {formatCurrency(building.totalValue)}
                   </p>
                 </TooltipTrigger>
@@ -305,8 +306,8 @@ export function BuildingCard({
                   {daysUntilCompletion !== null && (
                     <p className={cn(
                       "text-xs",
-                      daysUntilCompletion < 0 ? "text-red-400" : 
-                      daysUntilCompletion < 30 ? "text-yellow-400" : "text-green-400"
+                      daysUntilCompletion < 0 ? "text-red-500" : 
+                      daysUntilCompletion < 30 ? "text-yellow-600" : "text-green-600"
                     )}>
                       {daysUntilCompletion < 0 
                         ? `${Math.abs(daysUntilCompletion)} ημέρες καθυστέρηση`

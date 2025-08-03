@@ -66,7 +66,7 @@
 
   .dark {
     /* Base Colors */
-    --background: 222 47% 11%; /* Very Dark Blue */
+    --background: 224 71% 4%; /* Very Dark Blue-Black */
     --foreground: 210 40% 98%; /* Light Gray */
 
     /* Primary / Accent Colors */
@@ -74,9 +74,9 @@
     --primary-foreground: 210 40% 98%;
 
     /* Card & Popover */
-    --card: 222 47% 15%; /* Slightly lighter than background */
+    --card: 222 47% 11%; /* Dark Blue */
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
+    --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
 
     /* Secondary Colors */
@@ -84,7 +84,7 @@
     --secondary-foreground: 210 40% 98%;
 
     /* Muted Colors */
-    --muted: 217 33% 17%;
+    --muted: 222 47% 15%; /* Slightly lighter dark blue for muted backgrounds */
     --muted-foreground: 215 20% 65%; /* Lighter gray for muted text */
 
     /* Accent (Hover) */
@@ -99,7 +99,7 @@
     --destructive-foreground: 0 0% 100%;
 
     /* Sidebar */
-    --sidebar-background: 222 47% 11%;
+    --sidebar-background: 222 47% 9%; /* Darker sidebar background */
     --sidebar-foreground: 210 40% 98%;
     --sidebar-border: 217 33% 17%;
     --sidebar-ring: 217 91% 60%;

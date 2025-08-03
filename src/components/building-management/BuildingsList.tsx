@@ -150,10 +150,10 @@ export function BuildingsList({
   return (
     <div className="w-[420px] bg-card border-r flex flex-col shrink-0 shadow-sm">
       {/* Header */}
-      <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+      <div className="p-4 border-b">
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm">
-            <Building2 className="w-4 h-4 text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
+            <Building2 className="w-4 h-4" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">Κτίρια</h3>
@@ -165,7 +165,7 @@ export function BuildingsList({
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 border">
+          <div className="bg-muted/50 rounded-lg p-3 border">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-green-500" />
               <div>
@@ -176,7 +176,7 @@ export function BuildingsList({
               </div>
             </div>
           </div>
-          <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 border">
+          <div className="bg-muted/50 rounded-lg p-3 border">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-blue-500" />
               <div>
@@ -224,8 +224,8 @@ export function BuildingsList({
               className={cn(
                 "relative p-4 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md group",
                 selectedBuilding.id === building.id
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-sm"
-                  : "border-border hover:border-blue-300 bg-card hover:bg-accent/50"
+                  ? "border-primary bg-primary/10 shadow-sm"
+                  : "border-border hover:border-primary/50 bg-card hover:bg-muted/50"
               )}
               onClick={() => onSelectBuilding?.(building)}
             >
@@ -242,7 +242,7 @@ export function BuildingsList({
                     "w-4 h-4 transition-colors",
                     favorites.includes(building.id)
                       ? "text-yellow-500 fill-yellow-500"
-                      : "text-gray-400 hover:text-yellow-500"
+                      : "text-muted-foreground hover:text-yellow-500"
                   )}
                 />
               </button>
@@ -335,7 +335,7 @@ export function BuildingsList({
                       Επεξεργασία
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => toggleFavorite(building.id)}>
                       <Star className="w-4 h-4 mr-2" />
                       {favorites.includes(building.id) ? 'Αφαίρεση από αγαπημένα' : 'Προσθήκη στα αγαπημένα'}
                     </DropdownMenuItem>
@@ -345,7 +345,7 @@ export function BuildingsList({
 
               {/* Selected Indicator */}
               {selectedBuilding.id === building.id && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-full" />
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
               )}
             </div>
           ))}
