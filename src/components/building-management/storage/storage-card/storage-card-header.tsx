@@ -21,20 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StorageUnit, StorageType } from '@/types/storage';
 import { cn } from '@/lib/utils';
-import { getStatusColor, getStatusLabel } from './storage-card-utils';
-
-const getTypeIcon = (type: StorageType) => {
-  return type === 'storage' ? <Package className="w-4 h-4" /> : <Car className="w-4 h-4" />;
-};
-
-const getTypeLabel = (type: StorageType) => {
-  return type === 'storage' ? 'Αποθήκη' : 'Θέση Στάθμευσης';
-};
-
-const getTypeColor = (type: StorageType) => {
-  return type === 'storage' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700';
-};
-
+import { getTypeColor, getStatusColor, getStatusLabel } from './storage-card-utils';
 
 interface StorageCardHeaderProps {
   unit: StorageUnit;
@@ -45,6 +32,14 @@ interface StorageCardHeaderProps {
   onDelete: () => void;
   onToggleFavorite: () => void;
 }
+
+const getTypeIcon = (type: StorageType) => {
+  return type === 'storage' ? (
+    <Package className="w-4 h-4" />
+  ) : (
+    <Car className="w-4 h-4" />
+  );
+};
 
 export function StorageCardHeader({
   unit,

@@ -3,20 +3,10 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Link as LinkIcon,
-  Zap,
-  Lightbulb,
-  Shield,
-  Package
+  Link as LinkIcon
 } from 'lucide-react';
 import { StorageUnit } from '@/types/storage';
-
-const getFeatureIcon = (feature: string) => {
-  if (feature.includes('ηλεκτρικό') || feature.includes('ρεύμα') || feature.includes('πρίζα') || feature.includes('φόρτιση')) return <Zap className="w-3 h-3" />;
-  if (feature.includes('φωτισμός')) return <Lightbulb className="w-3 h-3" />;
-  if (feature.includes('ασφάλεια') || feature.includes('προστασία')) return <Shield className="w-3 h-3" />;
-  return <Package className="w-3 h-3" />;
-};
+import { getFeatureIcon } from './storage-card-utils';
 
 interface StorageCardFeaturesProps {
   unit: StorageUnit;
@@ -48,9 +38,9 @@ export function StorageCardFeatures({ unit }: StorageCardFeaturesProps) {
                 <span className="truncate max-w-[80px]">{feature}</span>
               </div>
             ))}
-            {unit.features.length > 3 && (
+            {unit.features.length > 2 && (
               <div className="px-2 py-1 bg-gray-50 rounded text-xs text-gray-500">
-                +{unit.features.length - 3}
+                +{unit.features.length - 2}
               </div>
             )}
           </div>

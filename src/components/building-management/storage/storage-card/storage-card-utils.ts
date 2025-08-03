@@ -1,5 +1,5 @@
 'use client';
-import { StorageStatus } from '@/types/storage';
+import { StorageStatus, StorageType } from '@/types/storage';
 
 export const formatPrice = (price: number) => {
   return new Intl.NumberFormat('el-GR', {
@@ -31,4 +31,14 @@ export const getStatusColor = (status: StorageStatus) => {
 export const getStatusLabel = (status: StorageStatus) => {
   const labels: Record<StorageStatus, string> = { available: 'Διαθέσιμο', sold: 'Πωλήθηκε', reserved: 'Κρατημένο', maintenance: 'Συντήρηση' };
   return labels[status];
+};
+
+export const getTypeColor = (type: StorageType) => {
+    return type === 'storage'
+        ? 'text-purple-700'
+        : 'text-orange-700'
+}
+
+export const getTypeLabel = (type: StorageType) => {
+  return type === 'storage' ? 'Αποθήκη' : 'Θέση Στάθμευσης';
 };

@@ -1,6 +1,7 @@
 'use client';
+import React from 'react';
 import { Package, Car } from 'lucide-react';
-import { StorageStatus, StorageType } from '@/lib/types/storage';
+import { StorageStatus, StorageType } from '@/types/storage';
 
 export const formatPrice = (price: number) => {
   return new Intl.NumberFormat('el-GR', {
