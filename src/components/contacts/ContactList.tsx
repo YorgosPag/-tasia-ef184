@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -45,7 +46,11 @@ interface Contact {
   email?: string;
   phone?: string;
   mobile?: string;
-  address?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    postalCode?: string;
+  };
   city?: string;
   role?: string;
   company?: string;
@@ -69,7 +74,7 @@ const mockContacts: Contact[] = [
     email: "maria.papadopoulou@email.gr",
     phone: "2101234567",
     mobile: "6971234567",
-    address: "Βασιλίσσης Σοφίας 125",
+    address: { street: "Βασιλίσσης Σοφίας 125", city: "Αθήνα" },
     city: "Αθήνα",
     role: "Αρχιτέκτονας",
     company: "Studio Architects",
@@ -88,7 +93,7 @@ const mockContacts: Contact[] = [
     entityType: "Νομικό Πρόσωπο",
     email: "info@devconstruct.gr",
     phone: "2107654321",
-    address: "Λεωφ. Κηφισίας 58",
+    address: { street: "Λεωφ. Κηφισίας 58", city: "Αθήνα" },
     city: "Αθήνα",
     role: "Πελάτης",
     lastContact: "2025-07-28",
@@ -107,7 +112,7 @@ const mockContacts: Contact[] = [
     email: "giannis.kostou@email.gr",
     phone: "2103456789",
     mobile: "6943456789",
-    address: "Αγίου Δημητρίου 45",
+    address: { street: "Αγίου Δημητρίου 45", city: "Θεσσαλονίκη" },
     city: "Θεσσαλονίκη",
     role: "Project Manager",
     company: "BuildTech Ltd",
@@ -126,7 +131,7 @@ const mockContacts: Contact[] = [
     entityType: "Δημ. Υπηρεσία",
     email: "projects@athens.gr",
     phone: "2132057000",
-    address: "Λιοσίων 15",
+    address: { street: "Λιοσίων 15", city: "Αθήνα" },
     city: "Αθήνα",
     role: "Δημόσιος Φορέας",
     lastContact: "2025-07-15",
@@ -295,7 +300,7 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
               {contact.address && (
                 <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
                   <MapPin className="w-3 h-3" />
-                  <span className="truncate">{contact.address}, {contact.city}</span>
+                  <span className="truncate">{contact.address.street}, {contact.address.city}</span>
                 </div>
               )}
             </div>
