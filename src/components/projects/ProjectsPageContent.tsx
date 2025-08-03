@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProjectsList } from './ProjectsList';
 import { ProjectDetails } from './ProjectDetails';
 import { ProjectCard } from './ProjectCard';
@@ -121,7 +121,7 @@ const municipalities = [
 ];
 
 export function ProjectsPageContent() {
-  const [selectedProject, setSelectedProject] = useState<Project>(projectsData[0]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [showDashboard, setShowDashboard] = useState(true);
 
@@ -140,6 +140,14 @@ export function ProjectsPageContent() {
     filterCategory,
     filterMunicipality
   );
+  
+  useEffect(() => {
+    if (filteredProjects.length > 0 && !selectedProject) {
+      setSelectedProject(filteredProjects[0]);
+    } else if (selectedProject && !filteredProjects.some(p => p.id === selectedProject.id)) {
+      setSelectedProject(filteredProjects.length > 0 ? filteredProjects[0] : null);
+    }
+  }, [filteredProjects, selectedProject]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -193,7 +201,7 @@ export function ProjectsPageContent() {
       {showDashboard && <ProjectsDashboard stats={stats} />}
 
       <div className="flex-1 flex overflow-hidden gap-4">
-        {viewMode === 'list' ? (
+        {viewMode === 'list' && selectedProject ? (
           <>
             <ProjectsList
               projects={filteredProjects}
@@ -206,7 +214,7 @@ export function ProjectsPageContent() {
               project={selectedProject} 
             />
           </>
-        ) : (
+        ) : viewMode === 'grid' && selectedProject ? (
           <div className="flex-1 p-4 overflow-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProjects.map((project) => (
@@ -221,7 +229,7 @@ export function ProjectsPageContent() {
               ))}
             </div>
           </div>
-        )}
+        ) : <div className="flex-1 flex items-center justify-center text-muted-foreground">Επιλέξτε ένα έργο για να δείτε τις λεπτομέρειες.</div>}
       </div>
     </div>
   );
