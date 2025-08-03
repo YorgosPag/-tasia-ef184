@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -8,13 +9,14 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { Phone, Map as MapIcon, Info } from "lucide-react";
+import { Phone, Map as MapIcon, Info, User } from "lucide-react";
 import { ContactSection } from "../sections/ContactSection";
 import { SocialsSection } from "../sections/SocialsSection";
 import { AddressSection } from "../sections/AddressSection";
 import { NotesSection } from "../sections/NotesSection";
 import { UseFormReturn } from "react-hook-form";
 import { ContactFormValues } from "@/lib/validation/contactSchema";
+import { BasicInfoSection } from "../sections/BasicInfoSection";
 
 interface UserDataTabsProps {
   form: UseFormReturn<ContactFormValues>;
@@ -22,8 +24,14 @@ interface UserDataTabsProps {
 
 export function UserDataTabs({ form }: UserDataTabsProps) {
   return (
-    <Tabs defaultValue="contact" className="w-full">
+    <Tabs defaultValue="basic" className="w-full">
       <TabsList className="flex flex-wrap h-auto justify-start w-full gap-2">
+        <TabsTrigger
+          value="basic"
+          className="flex-1 min-w-[160px] text-center"
+        >
+          Βασικά Στοιχεία
+        </TabsTrigger>
         <TabsTrigger
           value="contact"
           className="flex-1 min-w-[160px] text-center"
@@ -40,6 +48,26 @@ export function UserDataTabs({ form }: UserDataTabsProps) {
           Σημειώσεις
         </TabsTrigger>
       </TabsList>
+      <TabsContent value="basic" className="mt-4">
+        <Accordion
+          type="single"
+          collapsible
+          defaultValue="basic"
+          className="w-full"
+        >
+          <AccordionItem value="basic">
+            <AccordionTrigger>
+              <div className="flex items-center gap-2 text-primary">
+                <User className="h-5 w-5" />
+                <span>Βασικά Στοιχεία</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="p-1">
+              <BasicInfoSection form={form} onFileSelect={() => {}} />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </TabsContent>
       <TabsContent value="contact" className="mt-4">
         <Accordion
           type="single"
