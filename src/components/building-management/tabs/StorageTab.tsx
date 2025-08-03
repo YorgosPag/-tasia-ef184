@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { StorageList } from '../storage/StorageList';
+import { StorageList } from '../StorageList';
 import { StorageForm } from '../StorageForm';
 import { StorageHeader } from '../storage/StorageHeader';
 import { StorageDashboard } from '../storage/StorageDashboard';
