@@ -81,7 +81,7 @@ export function ProjectListItem({
       )}
       onClick={() => onSelectProject?.(project)}
     >
-      <CardContent className="p-3">
+      <CardContent className="p-3 overflow-hidden">
         <div className="space-y-2">
           {/* Header με όνομα και actions */}
           <div className="flex items-start justify-between">
