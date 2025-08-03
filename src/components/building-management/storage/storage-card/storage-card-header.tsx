@@ -54,11 +54,11 @@ export function StorageCardHeader({
     <div className={cn(
       "h-20 relative overflow-hidden",
       unit.type === 'storage' 
-        ? "bg-gradient-to-br from-purple-100 via-blue-50 to-purple-100" 
-        : "bg-gradient-to-br from-orange-100 via-yellow-50 to-orange-100"
+        ? "bg-gradient-to-br from-purple-100 via-blue-50 to-purple-100 dark:from-purple-900/20 dark:via-blue-950/20 dark:to-purple-900/20" 
+        : "bg-gradient-to-br from-orange-100 via-yellow-50 to-orange-100 dark:from-orange-900/20 dark:via-yellow-950/20 dark:to-orange-900/20"
     )}>
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
+      <div className="absolute inset-0 opacity-10 dark:opacity-5">
         <div className="absolute top-2 left-2 w-6 h-6 bg-white/30 rounded-full"></div>
         <div className="absolute top-4 right-4 w-4 h-4 bg-white/20 rounded-full"></div>
         <div className="absolute bottom-2 left-6 w-3 h-3 bg-white/40 rounded-full"></div>
@@ -68,7 +68,7 @@ export function StorageCardHeader({
       {/* Type Icon */}
       <div className="absolute top-3 left-3 z-10">
         <div className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 shadow-sm",
+          "flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 dark:bg-gray-800/80 shadow-sm",
           getTypeColor(unit.type)
         )}>
           {getTypeIcon(unit.type)}
@@ -82,7 +82,7 @@ export function StorageCardHeader({
       )}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 bg-white/90 dark:bg-gray-900/70 backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-gray-800">
               <MoreVertical className="w-3 h-3" />
             </Button>
           </DropdownMenuTrigger>
@@ -115,7 +115,7 @@ export function StorageCardHeader({
       <div className="absolute bottom-2 left-3 z-10">
         <Badge 
           className={cn(
-            "text-xs text-white shadow-sm",
+            "text-xs shadow-sm",
             getStatusColor(unit.status)
           )}
         >
