@@ -1,2 +1,3 @@
 'use client';
-export { StorageTab } from './storage-tab';
+import { StorageTab } from './storage-tab';
+export { StorageTab };

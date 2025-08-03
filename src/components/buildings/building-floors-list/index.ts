@@ -1,1 +1,3 @@
-export * from './building-floors-list';
+'use client';
+import { BuildingFloorsList } from './building-floors-list';
+export { BuildingFloorsList };

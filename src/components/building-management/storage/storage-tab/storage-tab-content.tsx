@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StorageList } from '../storage-list';
+import { StorageList } from '../storage-list/storage-list';
 import { StorageMapPlaceholder } from './storage-tab-map-view';
 import { StorageUnit } from '@/lib/types/storage';
 
