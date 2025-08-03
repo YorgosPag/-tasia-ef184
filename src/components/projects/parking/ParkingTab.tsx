@@ -1,284 +1,325 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { ParkingSpot } from './types';
-import { ParkingToolbar } from './ParkingToolbar';
-import { ParkingTableHeader } from './ParkingTableHeader';
-import { ParkingTableRow } from './ParkingTableRow';
-import { ParkingTableMobile } from './ParkingTableMobile';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { columns } from './columns';
+import React, { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ParkingTableToolbar } from './ParkingTableToolbar';
+import { ParkingSpotTable } from './ParkingSpotTable';
+import type { ParkingSpot, ParkingFilters, ParkingStats } from '@/types/parking';
 
-// Τύπος για τα φίλτρα
-type FilterState = { [key: string]: string };
+// Mock data based on the images provided
+const mockParkingSpots: ParkingSpot[] = [
+  {
+    id: '1',
+    code: 'G_S5.2',
+    type: 'open',
+    propertyCode: 'G_D5.2',
+    level: 'Ισόγειο',
+    area: 13.2,
+    price: 0,
+    value: 0,
+    valueWithSyndicate: 0,
+    status: 'sold',
+    owner: 'ΧΑΤΖΗΙΩΑΝΝΟΥ ΠΑΡΘΕΝΑ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '2',
+    code: 'B_S5.7',
+    type: 'open',
+    propertyCode: 'B_D5.7',
+    level: 'Ισόγειο',
+    area: 12.5,
+    price: 0,
+    value: 0,
+    valueWithSyndicate: 0,
+    status: 'sold',
+    owner: 'ΧΑΤΖΗΓΕΩΡΓΙΟΥ (Μ) ΚΑΘΑΡΙΝΑ ΔΗΜΗΤΡΑ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '3',
+    code: 'A_S2.7',
+    type: 'open',
+    propertyCode: 'A_D2.7',
+    level: 'Ισόγειο',
+    area: 12.21,
+    price: 0,
+    value: 0,
+    valueWithSyndicate: 0,
+    status: 'sold',
+    owner: 'ΤΣΟΠΟΖΙΔΟΥ ΒΙΟΛΑ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '4',
+    code: 'G_S4.5',
+    type: 'open',
+    propertyCode: 'G_D4.5',
+    level: 'Ισόγειο',
+    area: 12,
+    price: 0,
+    value: 1.00,
+    valueWithSyndicate: 0,
+    status: 'sold',
+    owner: 'ΤΣΑΠΡΑΝΖΗ ΑΓΓΕΛΙΚΗ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '5',
+    code: 'G_S4.6',
+    type: 'open',
+    propertyCode: 'G_D4.6',
+    level: 'Ισόγειο',
+    area: 12,
+    price: 0,
+    value: 1.00,
+    valueWithSyndicate: 0,
+    status: 'sold',
+    owner: 'ΤΣΑΠΡΑΝΖΗ ΑΓΓΕΛΙΚΗ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '6',
+    code: 'G_S2.2',
+    type: 'open',
+    propertyCode: 'G_D2.2',
+    level: 'Ισόγειο',
+    area: 12,
+    price: 0,
+    value: 0,
+    valueWithSyndicate: 0,
+    status: 'sold',
+    owner: 'ΤΣΑΚΙΛΑΚΗΣ ΧΡΗΣΤΟΣ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '7',
+    code: 'G_S1.1',
+    type: 'open',
+    propertyCode: 'G_D1.1',
+    level: 'Ισόγειο',
+    area: 12,
+    price: 0,
+    value: 0,
+    valueWithSyndicate: 0,
+    status: 'sold',
+    owner: 'ΤΟΥΡΛΙΑΡΗΣ ΜΑΡΙΑ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '8',
+    code: 'G_S5.3',
+    type: 'open',
+    propertyCode: 'G_D5.3',
+    level: 'Ισόγειο',
+    area: 12.27,
+    price: 0,
+    value: 0,
+    valueWithSyndicate: 0,
+    status: 'sold',
+    owner: 'ΤΟΙΖΚΙΝ ΑΛΕΞΕΙ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '9',
+    code: 'A_S3.6',
+    type: 'open',
+    propertyCode: 'A_D3.6',
+    level: 'Ισόγειο',
+    area: 12.33,
+    price: 0,
+    value: 0,
+    valueWithSyndicate: 0,
+    status: 'owner',
+    owner: 'ΤΕΖΑΜΙΔΟΥ ΠΟΛΥΞΕΝΗ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  },
+  {
+    id: '10',
+    code: 'B_S3.7',
+    type: 'covered',
+    propertyCode: 'B_D3.7',
+    level: 'Ισόγειο',
+    area: 10.34,
+    price: 0,
+    value: 0,
+    valueWithSyndicate: 0,
+    status: 'owner',
+    owner: 'ΤΕΖΑΜΙΔΟΥ ΠΟΛΥΞΕΝΗ',
+    floorPlan: '\\Server\\shared\\6. erga\\Palaiologou\\ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    constructedBy: 'ΠΑΓΩΝΗΣ ΓΕΩΡΓΙΟΣ',
+    projectId: 1,
+    createdAt: '2024-01-01',
+    updatedAt: '2024-01-15'
+  }
+];
 
-// Τύπος για το sorting
-type SortConfig = {
-  key: string;
-  direction: 'asc' | 'desc';
-} | null;
+interface ParkingTabProps {
+  parkingSpots?: ParkingSpot[];
+}
 
-export function ParkingTab({ parkingSpots }: { parkingSpots: ParkingSpot[] }) {
-  const [selectedSpot, setSelectedSpot] = useState<ParkingSpot | null>(null);
-  const [filters, setFilters] = useState<FilterState>({});
-  const [sortConfig, setSortConfig] = useState<SortConfig>(null);
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(columns.map(col => col.key));
-  
-  useEffect(() => {
-    if (parkingSpots && parkingSpots.length > 0 && !selectedSpot) {
-      setSelectedSpot(parkingSpots[0]);
-    }
-  }, [parkingSpots, selectedSpot]);
+export function ParkingTab({ parkingSpots = mockParkingSpots }: ParkingTabProps) {
+  const [selectedSpots, setSelectedSpots] = useState<string[]>([]);
+  const [filters, setFilters] = useState<ParkingFilters>({
+    searchTerm: '',
+    type: 'all',
+    status: 'all',
+    level: 'all',
+    owner: '',
+    minArea: null,
+    maxArea: null,
+    minPrice: null,
+    maxPrice: null
+  });
 
+  const stats = useMemo<ParkingStats>(() => {
+    const totalSpots = parkingSpots.length;
+    const soldSpots = parkingSpots.filter(spot => spot.status === 'sold').length;
+    const ownerSpots = parkingSpots.filter(spot => spot.status === 'owner').length;
+    const availableSpots = parkingSpots.filter(spot => spot.status === 'available').length;
+    const reservedSpots = parkingSpots.filter(spot => spot.status === 'reserved').length;
+    
+    const totalValue = parkingSpots.reduce((sum, spot) => sum + spot.value, 0);
+    const totalArea = parkingSpots.reduce((sum, spot) => sum + spot.area, 0);
+    const averagePrice = totalSpots > 0 ? parkingSpots.reduce((sum, spot) => sum + spot.price, 0) / totalSpots : 0;
 
-  // Βελτιωμένα default widths με καλύτερο spacing
-  const getDefaultWidths = () => {
-    const defaultWidths: { [key: string]: number } = {
-      'code': 120,        // Κωδικός
-      'type': 140,        // Τύπος  
-      'property': 160,    // Ακίνητο
-      'level': 120,       // Επίπεδο
-      'tm': 100,          // Τ.Μ.
-      'price': 140,       // Τιμή
-      'value': 140,       // Αντ. Αξία
-      'valueWithVat': 200, // Αντ. Αξία Με Συνιδιοκτησία
-      'status': 120,      // Κατάσταση
-      'owner': 160,       // Ιδιοκτήτης
-      'holder': 140,      // Κάτοψη
-      'registeredBy': 160 // Καταχωρήθηκε Από
+    const spotsByType = parkingSpots.reduce((acc, spot) => {
+      acc[spot.type] = (acc[spot.type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const spotsByLevel = parkingSpots.reduce((acc, spot) => {
+      acc[spot.level] = (acc[spot.level] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const spotsByStatus = parkingSpots.reduce((acc, spot) => {
+      acc[spot.status] = (acc[spot.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      totalSpots,
+      soldSpots,
+      ownerSpots,
+      availableSpots,
+      reservedSpots,
+      totalValue,
+      totalArea,
+      averagePrice,
+      spotsByType,
+      spotsByLevel,
+      spotsByStatus
     };
-    
-    return columns.map(col => defaultWidths[col.key] || col.defaultWidth || 140);
+  }, [parkingSpots]);
+
+  const handleFiltersChange = (newFilters: Partial<ParkingFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
   };
 
-  const [columnWidths, setColumnWidths] = useState<number[]>(getDefaultWidths());
-
-  const handleColumnResize = (newWidths: number[]) => {
-    setColumnWidths(newWidths);
+  const handleExport = () => {
+    console.log('Εξαγωγή δεδομένων θέσεων στάθμευσης');
   };
 
-  // Συνάρτηση για ενημέρωση φίλτρων
-  const handleFilterChange = (columnKey: string, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [columnKey]: value
-    }));
+  const handleImport = () => {
+    console.log('Εισαγωγή δεδομένων θέσεων στάθμευσης');
   };
 
-  // Συνάρτηση για καθαρισμό φίλτρων
-  const clearFilters = () => {
-    setFilters({});
+  const handleAdd = () => {
+    console.log('Προσθήκη νέας θέσης στάθμευσης');
   };
 
-  // Συνάρτηση για sorting
-  const handleSort = (columnKey: string) => {
-    setSortConfig(prev => {
-      if (prev?.key === columnKey) {
-        // Αν κάνουμε click στην ίδια στήλη, αλλάζουμε κατεύθυνση
-        return { key: columnKey, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
-      } else {
-        // Νέα στήλη, ξεκινάμε με ascending
-        return { key: columnKey, direction: 'asc' };
-      }
-    });
+  const handleDelete = () => {
+    console.log('Διαγραφή επιλεγμένων θέσεων:', selectedSpots);
   };
 
-  // Συνάρτηση για toggle visibility στηλών
-  const toggleColumnVisibility = (columnKey: string) => {
-    setVisibleColumns(prev => {
-      if (prev.includes(columnKey)) {
-        // Αν υπάρχει, την αφαιρούμε (αλλά κρατάμε τουλάχιστον μία στήλη)
-        return prev.length > 1 ? prev.filter(key => key !== columnKey) : prev;
-      } else {
-        // Αν δεν υπάρχει, την προσθέτουμε
-        return [...prev, columnKey];
-      }
-    });
+  const handleSave = () => {
+    console.log('Αποθήκευση αλλαγών');
   };
 
-  // Φιλτραρισμένες στήλες
-  const filteredColumns = useMemo(() => {
-    return columns.filter(col => visibleColumns.includes(col.key));
-  }, [visibleColumns]);
+  const handleRefresh = () => {
+    console.log('Ανανέωση δεδομένων');
+  };
 
-  // Φιλτραρισμένα και ταξινομημένα spots
-  const processedParkingSpots = useMemo(() => {
-    if (!parkingSpots) return [];
-    
-    // Πρώτα φιλτράρουμε
-    let filtered = parkingSpots.filter(spot => {
-      return filteredColumns.every(column => {
-        const filterValue = filters[column.key];
-        if (!filterValue) return true; // Αν δεν υπάρχει φίλτρο, περνάει
-        
-        const spotValue = spot[column.key as keyof ParkingSpot];
-        let displayValue = '';
-        
-        // Μετατροπή σε string για σύγκριση
-        if (column.format && spotValue !== null && spotValue !== undefined) {
-          displayValue = String(column.format(spotValue));
-        } else {
-          displayValue = String(spotValue || '');
-        }
-        
-        // Case-insensitive αναζήτηση
-        return displayValue.toLowerCase().includes(filterValue.toLowerCase());
-      });
-    });
+  const handleEdit = (spot: ParkingSpot) => {
+    console.log('Επεξεργασία θέσης:', spot);
+  };
 
-    // Μετά ταξινομούμε
-    if (sortConfig) {
-      filtered.sort((a, b) => {
-        const aValue = a[sortConfig.key as keyof ParkingSpot];
-        const bValue = b[sortConfig.key as keyof ParkingSpot];
-        
-        // Handle null/undefined values
-        if (aValue == null && bValue == null) return 0;
-        if (aValue == null) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (bValue == null) return sortConfig.direction === 'asc' ? 1 : -1;
-        
-        // Numeric comparison
-        if (typeof aValue === 'number' && typeof bValue === 'number') {
-          return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
-        }
-        
-        // String comparison
-        const aStr = String(aValue).toLowerCase();
-        const bStr = String(bValue).toLowerCase();
-        
-        if (aStr < bStr) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aStr > bStr) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
+  const handleView = (spot: ParkingSpot) => {
+    console.log('Προβολή θέσης:', spot);
+  };
 
-    return filtered;
-  }, [parkingSpots, filters, filteredColumns, sortConfig]);
-
-  // Υπολογισμός totals βάσει φιλτραρισμένων αποτελεσμάτων
-  const totals = useMemo(() => {
-    if (!processedParkingSpots) return { tm: 0, price: 0, value: 0, valueWithVat: 0 };
-    return processedParkingSpots.reduce(
-      (acc, spot) => {
-        acc.tm += spot.tm || 0;
-        acc.price += spot.price || 0;
-        acc.value += spot.value || 0;
-        acc.valueWithVat += spot.valueWithVat || 0;
-        return acc;
-      },
-      { tm: 0, price: 0, value: 0, valueWithVat: 0 }
-    );
-  }, [processedParkingSpots]);
-
-  // Ενημέρωση του selected spot αν δεν υπάρχει στα φιλτραρισμένα
-  useEffect(() => {
-    if (selectedSpot && !processedParkingSpots.find(spot => spot.id === selectedSpot.id)) {
-      setSelectedSpot(processedParkingSpots.length > 0 ? processedParkingSpots[0] : null);
-    }
-  }, [processedParkingSpots, selectedSpot]);
-
-  if (!parkingSpots) {
-    return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
-        <div className="text-center">
-          <p className="text-lg mb-2">Φόρτωση δεδομένων...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (parkingSpots.length === 0) {
-      return (
-        <div className="flex items-center justify-center h-64 text-muted-foreground">
-          <div className="text-center">
-            <p className="text-lg mb-2">Δεν υπάρχουν δεδομένα</p>
-            <p className="text-sm">Δεν βρέθηκαν θέσεις στάθμευσης για αυτό το έργο.</p>
-          </div>
-        </div>
-      );
-  }
+  const handleViewFloorPlan = (spot: ParkingSpot) => {
+    console.log('Προβολή κάτοψης για θέση:', spot);
+  };
 
   return (
-    <div className="bg-card border rounded-lg shadow-sm flex flex-col h-full">
-      <ParkingToolbar 
-        selectedSpot={selectedSpot} 
-        hasActiveFilters={Object.values(filters).some(value => value.length > 0)}
-        onClearFilters={clearFilters}
-        totalCount={parkingSpots.length}
-        filteredCount={processedParkingSpots.length}
-        columns={columns}
-        visibleColumns={visibleColumns}
-        onToggleColumnVisibility={toggleColumnVisibility}
-      />
-      
-      {/* Desktop View */}
-      <div className="hidden md:flex flex-col flex-grow min-h-0">
-         <ParkingTableHeader 
-           columns={filteredColumns}
-           columnWidths={columnWidths} 
-           onColumnResize={handleColumnResize}
-           filters={filters}
-           onFilterChange={handleFilterChange}
-           sortConfig={sortConfig}
-           onSort={handleSort}
-         />
-         <ScrollArea className="flex-grow">
-            <div className="flex flex-col">
-                {processedParkingSpots.map((spot) => (
-                <ParkingTableRow
-                    key={spot.id}
-                    spot={spot}
-                    columns={filteredColumns}
-                    columnWidths={columnWidths}
-                    isSelected={spot.id === selectedSpot?.id}
-                    onSelect={() => setSelectedSpot(spot)}
-                />
-                ))}
-                {processedParkingSpots.length === 0 && (
-                  <div className="p-12 text-center text-muted-foreground">
-                    <div className="max-w-md mx-auto">
-                      <p className="text-lg mb-2">Δεν βρέθηκαν αποτελέσματα</p>
-                      <p className="text-sm mb-4">Δοκιμάστε να αλλάξετε τα φίλτρα αναζήτησης ή να καθαρίσετε όλα τα φίλτρα.</p>
-                      <button 
-                        onClick={clearFilters}
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-md transition-colors"
-                      >
-                        Καθαρισμός φίλτρων
-                      </button>
-                    </div>
-                  </div>
-                )}
-            </div>
-        </ScrollArea>
-      </div>
-      
-      {/* Mobile View */}
-      <div className="md:hidden flex-grow">
-          <ParkingTableMobile 
-            parkingSpots={processedParkingSpots}
-            selectedSpot={selectedSpot}
-            onSelectSpot={setSelectedSpot}
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Διαχείριση Θέσεων Στάθμευσης</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <ParkingTableToolbar
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            stats={stats}
+            selectedCount={selectedSpots.length}
+            onExport={handleExport}
+            onImport={handleImport}
+            onAdd={handleAdd}
+            onDelete={handleDelete}
+            onSave={handleSave}
+            onRefresh={handleRefresh}
           />
-      </div>
-
-      {/* Totals */}
-      <div className="p-4 border-t bg-muted/20 text-sm font-medium">
-        <div className="flex flex-wrap justify-between items-center gap-x-6 gap-y-3">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <span>Εμφάνιση:</span>
-            <span className="text-foreground font-semibold">{processedParkingSpots.length}</span>
-            <span>από</span>
-            <span className="text-foreground font-semibold">{parkingSpots.length}</span>
-            <span>εγγραφές</span>
-          </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <span>Σύνολο Τ.Μ.: <span className="text-primary font-semibold">{totals.tm.toLocaleString('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
-            <span>Σύνολο Τιμής: <span className="text-primary font-semibold">{totals.price.toLocaleString('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
-            <span>Σύνολο Αντ. Αξίας: <span className="text-primary font-semibold">{totals.value.toLocaleString('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
-            <span>Σύνολο Αντ. Αξίας Με Συνιδιοκτησία: <span className="text-primary font-semibold">{totals.valueWithVat.toLocaleString('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
-          </div>
-        </div>
-      </div>
+          
+          <ParkingSpotTable
+            spots={parkingSpots}
+            filters={filters}
+            selectedSpots={selectedSpots}
+            onSelectionChange={setSelectedSpots}
+            onEdit={handleEdit}
+            onView={handleView}
+            onViewFloorPlan={handleViewFloorPlan}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -69,6 +69,12 @@ const tasiaProjectToolsNav = [
     description: "Building management tools",
   },
   {
+    href: "/property-management",
+    label: "Διαχείριση Ακινήτων",
+    icon: Home,
+    description: "Property management tools",
+  },
+  {
     href: "/leads",
     label: "Leads",
     icon: Target,
