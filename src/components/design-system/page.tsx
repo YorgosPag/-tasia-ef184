@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { DesignSystemPageContent } from '@/components/design-system/DesignSystemPageContent';
+// ✅ Ενημερωμένο import με σχετική διαδρομή
+import { DesignSystemPageContent } from './DesignSystemPageContent';
 
 export default function DesignSystemPage() {
   return (
