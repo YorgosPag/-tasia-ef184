@@ -203,19 +203,19 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active": return "text-green-600 bg-green-50";
-      case "inactive": return "text-gray-600 bg-gray-50";
-      case "potential": return "text-blue-600 bg-blue-50";
-      default: return "text-gray-600 bg-gray-50";
+      case "active": return "text-green-700 bg-green-50 dark:text-green-300 dark:bg-green-900/20";
+      case "inactive": return "text-gray-700 bg-gray-50 dark:text-gray-300 dark:bg-gray-900/20";
+      case "potential": return "text-blue-700 bg-blue-50 dark:text-blue-300 dark:bg-blue-900/20";
+      default: return "text-gray-700 bg-gray-50 dark:text-gray-300 dark:bg-gray-900/20";
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high": return "text-red-600";
-      case "medium": return "text-yellow-600";
-      case "low": return "text-green-600";
-      default: return "text-gray-600";
+      case "high": return "text-red-500";
+      case "medium": return "text-yellow-500";
+      case "low": return "text-green-500";
+      default: return "text-gray-500";
     }
   };
 
@@ -246,8 +246,8 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
 
   const ContactCard = ({ contact }: { contact: Contact }) => (
     <Card 
-      className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-        selectedContactId === contact.id ? "ring-2 ring-blue-500 bg-blue-50" : ""
+      className={`cursor-pointer transition-all duration-200 hover:shadow-md bg-card text-card-foreground ${
+        selectedContactId === contact.id ? "ring-2 ring-primary bg-primary/10" : "border-border"
       }`}
       onClick={() => onSelectContact(contact.id)}
     >
@@ -262,12 +262,12 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
                 </AvatarFallback>
               </Avatar>
               {contact.isFavorite && (
-                <Star className="absolute -top-1 -right-1 w-4 h-4 text-yellow-500 fill-current" />
+                <Star className="absolute -top-1 -right-1 w-4 h-4 text-yellow-400 fill-current" />
               )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-base text-gray-900 truncate">
+                <h3 className="font-semibold text-base text-foreground truncate">
                   {contact.name}
                 </h3>
                 <div className={`w-2 h-2 rounded-full ${getPriorityColor(contact.priority)}`} 
@@ -275,14 +275,10 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
               </div>
               
               {contact.role && (
-                <p className="text-sm text-gray-600 mb-1">{contact.role}</p>
+                <p className="text-sm text-muted-foreground mb-1">{contact.role}</p>
               )}
-              
-              {contact.company && contact.entityType === "Φυσικό Πρόσωπο" && (
-                <p className="text-xs text-gray-500 mb-2">{contact.company}</p>
-              )}
-              
-              <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
+                            
+              <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
                 {contact.email && (
                   <div className="flex items-center gap-1">
                     <Mail className="w-3 h-3" />
@@ -298,7 +294,7 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
               </div>
               
               {contact.address && (
-                <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
                   <MapPin className="w-3 h-3" />
                   <span className="truncate">{contact.address.street}, {contact.address.city}</span>
                 </div>
@@ -325,7 +321,7 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
                 <Star className="w-4 h-4 mr-2" />
                 {contact.isFavorite ? "Αφαίρεση από αγαπημένα" : "Προσθήκη στα αγαπημένα"}
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem className="text-destructive">
                 <Trash2 className="w-4 h-4 mr-2" />
                 Διαγραφή
               </DropdownMenuItem>
@@ -349,29 +345,29 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
 
         <div className="grid grid-cols-3 gap-4 text-xs">
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-gray-500 mb-1">
+            <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
               <FileText className="w-3 h-3" />
               <span>Έργα</span>
             </div>
-            <div className="font-semibold text-gray-900">{contact.projectsCount || 0}</div>
+            <div className="font-semibold text-foreground">{contact.projectsCount || 0}</div>
           </div>
           
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-gray-500 mb-1">
+            <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
               <DollarSign className="w-3 h-3" />
               <span>Αξία</span>
             </div>
-            <div className="font-semibold text-gray-900">
+            <div className="font-semibold text-foreground">
               {contact.totalValue ? formatCurrency(contact.totalValue) : "€0"}
             </div>
           </div>
           
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-gray-500 mb-1">
+            <div className="flex items-center justify-center gap-1 text-muted-foreground mb-1">
               <Clock className="w-3 h-3" />
               <span>Τελ. επαφή</span>
             </div>
-            <div className="font-semibold text-gray-900">
+            <div className="font-semibold text-foreground">
               {contact.lastContact ? formatDate(contact.lastContact) : "Ποτέ"}
             </div>
           </div>
@@ -392,7 +388,7 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
           </div>
         )}
 
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between mt-3 pt-3 border-t">
           <div className="flex gap-1">
             <Button size="sm" variant="ghost" className="h-7 px-2 text-xs">
               <Mail className="w-3 h-3 mr-1" />
@@ -407,7 +403,7 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
               SMS
             </Button>
           </div>
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-muted-foreground">
             {formatDate(contact.createdAt)}
           </div>
         </div>
@@ -416,24 +412,26 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
   );
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-card text-card-foreground">
       {/* Header με αναζήτηση και φίλτρα */}
-      <div className="p-4 border-b border-gray-200 space-y-4">
+      <div className="p-4 border-b border-border space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-foreground">
             Επαφές ({sortedContacts.length})
           </h2>
           <div className="flex items-center gap-2">
             <Button
-              variant={viewMode === "list" ? "default" : "outline"}
-              size="sm"
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="icon"
+              className="h-8 w-8"
               onClick={() => setViewMode("list")}
             >
               <List className="w-4 h-4" />
             </Button>
             <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
-              size="sm"
+              variant={viewMode === "grid" ? "secondary" : "ghost"}
+              size="icon"
+              className="h-8 w-8"
               onClick={() => setViewMode("grid")}
             >
               <Grid3X3 className="w-4 h-4" />
@@ -443,7 +441,7 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
 
         {/* Αναζήτηση */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Αναζήτηση επαφών..."
             value={searchTerm}
@@ -496,12 +494,12 @@ export function ContactList({ contacts, onSelectContact, selectedContactId }: Co
       <div className="flex-1 overflow-auto p-4">
         {sortedContacts.length === 0 ? (
           <div className="text-center py-12">
-            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">Δεν βρέθηκαν επαφές</p>
+            <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Δεν βρέθηκαν επαφές</p>
           </div>
         ) : (
           <div className={viewMode === "grid" 
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" 
+            ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" 
             : "space-y-3"
           }>
             {sortedContacts.map(contact => (
