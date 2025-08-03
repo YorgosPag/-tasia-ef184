@@ -150,7 +150,7 @@ export function BuildingsPageContent() {
       
       {showDashboard && <BuildingsDashboard stats={stats} />}
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden p-4 gap-4">
         {viewMode === 'list' ? (
           <>
             <BuildingsList

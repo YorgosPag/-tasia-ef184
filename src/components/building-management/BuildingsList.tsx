@@ -71,7 +71,7 @@ export function BuildingsList({
 
 
   return (
-    <div className="w-[420px] bg-card border-r flex flex-col shrink-0 shadow-sm">
+    <div className="w-[420px] bg-card border rounded-lg flex flex-col shrink-0 shadow-sm">
       <BuildingListHeader 
         buildings={buildings}
         sortBy={sortBy}
