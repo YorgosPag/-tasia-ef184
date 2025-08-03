@@ -33,7 +33,7 @@ export function StorageListTableView({
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-muted/50 border-b">
               <tr>
                 <th className="text-left p-4">
                   <Checkbox
@@ -42,23 +42,23 @@ export function StorageListTableView({
                     className="rounded"
                   />
                 </th>
-                <th className="text-left p-4 text-sm font-medium text-gray-900">Κωδικός</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-900">Τύπος</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-900">Όροφος</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-900">Επιφάνεια</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-900">Τιμή</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-900">Κατάσταση</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-900">Συνδεδεμένο</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-900">Ενέργειες</th>
+                <th className="text-left p-4 text-sm font-medium text-foreground">Κωδικός</th>
+                <th className="text-left p-4 text-sm font-medium text-foreground">Τύπος</th>
+                <th className="text-left p-4 text-sm font-medium text-foreground">Όροφος</th>
+                <th className="text-left p-4 text-sm font-medium text-foreground">Επιφάνεια</th>
+                <th className="text-left p-4 text-sm font-medium text-foreground">Τιμή</th>
+                <th className="text-left p-4 text-sm font-medium text-foreground">Κατάσταση</th>
+                <th className="text-left p-4 text-sm font-medium text-foreground">Συνδεδεμένο</th>
+                <th className="text-left p-4 text-sm font-medium text-foreground">Ενέργειες</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {units.map((unit) => (
                 <tr
                   key={unit.id}
                   className={cn(
-                    "hover:bg-gray-50 transition-colors",
-                    selectedUnits.includes(unit.id) && "bg-blue-50"
+                    "hover:bg-muted/50 transition-colors",
+                    selectedUnits.includes(unit.id) && "bg-blue-50 dark:bg-blue-900/20"
                   )}
                 >
                   <td className="p-4">
@@ -69,8 +69,8 @@ export function StorageListTableView({
                     />
                   </td>
                   <td className="p-4">
-                    <div className="font-medium text-gray-900">{unit.code}</div>
-                    <div className="text-sm text-gray-500 truncate max-w-[200px]">
+                    <div className="font-medium text-foreground">{unit.code}</div>
+                    <div className="text-sm text-muted-foreground truncate max-w-[200px]">
                       {unit.description}
                     </div>
                   </td>
@@ -82,14 +82,14 @@ export function StorageListTableView({
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-1 text-sm">
-                      <Building className="w-3 h-3 text-gray-400" />
+                      <Building className="w-3 h-3 text-muted-foreground" />
                       {unit.floor}
                     </div>
                   </td>
                   <td className="p-4">{formatArea(unit.area)}</td>
                   <td className="p-4">{formatPrice(unit.price)}</td>
                   <td className="p-4">
-                    <Badge className={cn("text-xs text-white", getStatusColor(unit.status))}>
+                    <Badge className={cn("text-xs", getStatusColor(unit.status))}>
                       {getStatusLabel(unit.status)}
                     </Badge>
                   </td>
@@ -100,7 +100,7 @@ export function StorageListTableView({
                         {unit.linkedProperty}
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-400">-</span>
+                      <span className="text-sm text-muted-foreground">-</span>
                     )}
                   </td>
                   <td className="p-4">

@@ -22,7 +22,7 @@ export function StorageFormHeader({
   onCancel,
 }: StorageFormHeaderProps) {
   return (
-    <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10">
+    <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
@@ -34,10 +34,10 @@ export function StorageFormHeader({
             {unitType === 'storage' ? <Package className="w-5 h-5" /> : <Car className="w-5 h-5" />}
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <h2 className="text-xl font-semibold text-foreground">
               {isEditing ? 'Επεξεργασία' : 'Νέα'} {unitType === 'storage' ? 'Αποθήκη' : 'Θέση Στάθμευσης'}
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               {buildingName} - {projectName}
             </p>
           </div>

@@ -10,8 +10,8 @@ interface StorageFormFooterProps {
 
 export function StorageFormFooter({ onCancel }: StorageFormFooterProps) {
   return (
-    <div className="p-6 border-t bg-gray-50 dark:bg-gray-900 flex items-center justify-between">
-      <div className="text-sm text-gray-500">
+    <div className="p-6 border-t bg-muted/20 flex items-center justify-between">
+      <div className="text-sm text-muted-foreground">
         * Υποχρεωτικά πεδία
       </div>
       <div className="flex gap-3">
