@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -771,3 +772,5 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
     </div>
   );
 }
+
+    
