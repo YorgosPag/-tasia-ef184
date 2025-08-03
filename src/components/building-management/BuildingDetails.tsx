@@ -31,9 +31,11 @@ import {
   Plus,
   X,
   Share,
-  Print
+  Print,
+  Image as ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PlaceholderTab } from '@/app/projects/placeholder-tab';
 
 type Building = {
   id: number;
@@ -393,20 +395,6 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
   );
 };
 
-const PlaceholderTab = ({ title }: { title: string }) => (
-  <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed border-border rounded-lg bg-muted/50">
-    <Building2 className="w-12 h-12 text-muted-foreground mb-4" />
-    <h2 className="text-xl font-semibold text-muted-foreground mb-2">{title}</h2>
-    <p className="text-sm text-muted-foreground text-center max-w-md">
-      Αυτή η ενότητα θα αναπτυχθεί σύντομα. Θα περιέχει όλες τις απαραίτητες λειτουργίες για τη διαχείριση {title.toLowerCase()}.
-    </p>
-    <Button variant="outline" className="mt-4">
-      <Plus className="w-4 h-4 mr-2" />
-      Προσθήκη {title}
-    </Button>
-  </div>
-);
-
 const PhotosTabContent = () => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
@@ -421,7 +409,7 @@ const PhotosTabContent = () => (
       {[1, 2, 3, 4, 5, 6].map((index) => (
         <div key={index} className="aspect-square bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border hover:border-blue-400 transition-colors cursor-pointer group">
           <div className="text-center">
-            <Camera className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
+            <ImageIcon className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Προσθήκη Φωτογραφίας</p>
           </div>
         </div>
