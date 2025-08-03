@@ -11,7 +11,7 @@ export const SidebarGroup = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="group"
-      className={cn("p-2", className)}
+      className={cn("relative px-2 py-1", className)}
       {...props}
     />
   );
@@ -27,7 +27,11 @@ export const SidebarGroupLabel = React.forwardRef<
       ref={ref}
       data-sidebar="group-label"
       className={cn(
-        "px-2 pb-1 pt-3 text-xs font-medium uppercase text-sidebar-muted-foreground transition-opacity group-data-[state=collapsed]:opacity-0",
+        "relative flex items-center gap-2 px-2 py-2 text-xs font-semibold tracking-wider text-sidebar-muted-foreground/80 uppercase transition-all duration-200",
+        "before:absolute before:left-0 before:top-1/2 before:h-px before:w-4 before:bg-gradient-to-r before:from-sidebar-border before:to-transparent before:-translate-y-1/2",
+        "after:absolute after:right-0 after:top-1/2 after:h-px after:flex-1 after:bg-gradient-to-l after:from-sidebar-border after:to-transparent after:-translate-y-1/2",
+        "group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:before:hidden group-data-[state=collapsed]:after:hidden",
+        "hover:text-sidebar-muted-foreground transition-colors duration-200",
         className,
       )}
       {...props}
@@ -44,7 +48,11 @@ export const SidebarGroupContent = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="group-content"
-      className={cn("flex flex-col", className)}
+      className={cn(
+        "flex flex-col space-y-1 transition-all duration-200",
+        "group-data-[state=collapsed]:space-y-2",
+        className,
+      )}
       {...props}
     />
   );
