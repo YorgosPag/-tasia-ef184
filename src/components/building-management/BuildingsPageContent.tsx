@@ -127,7 +127,7 @@ const projects = [
 
 export function BuildingsPageContent() {
   const [selectedBuilding, setSelectedBuilding] = useState<Building>(buildings[0]);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCompany, setFilterCompany] = useState('all');
   const [filterProject, setFilterProject] = useState('all');
@@ -159,11 +159,11 @@ export function BuildingsPageContent() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'construction': return 'bg-blue-500';
-      case 'planned': return 'bg-yellow-500';
-      case 'completed': return 'bg-gray-500';
-      default: return 'bg-gray-400';
+      case 'active': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'construction': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'planned': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'completed': return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+      default: return 'bg-gray-400/20 text-gray-300 border-gray-400/30';
     }
   };
 
@@ -178,7 +178,7 @@ export function BuildingsPageContent() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background text-foreground">
       {/* Header */}
       <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="p-4 space-y-4">
@@ -196,28 +196,31 @@ export function BuildingsPageContent() {
             </div>
             <div className="flex items-center gap-2">
               <Button
-                variant={showDashboard ? "default" : "outline"}
+                variant={showDashboard ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => setShowDashboard(!showDashboard)}
+                className="bg-primary/10 text-primary-foreground border-primary/20 hover:bg-primary/20"
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Dashboard
               </Button>
               <Button
-                variant={viewMode === 'list' ? "default" : "outline"}
+                variant={viewMode === 'list' ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => setViewMode('list')}
+                className="bg-primary/10 text-primary-foreground border-primary/20 hover:bg-primary/20"
               >
                 <List className="w-4 h-4" />
               </Button>
               <Button
-                variant={viewMode === 'grid' ? "default" : "outline"}
+                variant={viewMode === 'grid' ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => setViewMode('grid')}
+                className="bg-primary/10 text-primary-foreground border-primary/20 hover:bg-primary/20"
               >
                 <LayoutGrid className="w-4 h-4" />
               </Button>
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg">
                 <Plus className="w-4 h-4 mr-2" />
                 Νέο Κτίριο
               </Button>
@@ -232,7 +235,7 @@ export function BuildingsPageContent() {
                 placeholder="Αναζήτηση κτιρίων, διευθύνσεων, περιγραφών..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-muted/50 border-border/50"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -240,7 +243,7 @@ export function BuildingsPageContent() {
               <select
                 value={filterCompany}
                 onChange={(e) => setFilterCompany(e.target.value)}
-                className="h-9 px-3 rounded-md border border-input bg-background text-sm"
+                className="h-9 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="all">Όλες οι εταιρείες</option>
                 {companies.map(company => (
@@ -250,7 +253,7 @@ export function BuildingsPageContent() {
               <select
                 value={filterProject}
                 onChange={(e) => setFilterProject(e.target.value)}
-                className="h-9 px-3 rounded-md border border-input bg-background text-sm"
+                className="h-9 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="all">Όλα τα έργα</option>
                 {projects.map(project => (
@@ -260,7 +263,7 @@ export function BuildingsPageContent() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="h-9 px-3 rounded-md border border-input bg-background text-sm"
+                className="h-9 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="all">Όλες οι καταστάσεις</option>
                 <option value="active">Ενεργά</option>
@@ -275,38 +278,38 @@ export function BuildingsPageContent() {
 
       {/* Dashboard Stats */}
       {showDashboard && (
-        <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+        <div className="p-4 border-b">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20">
+            <Card className="border-blue-500/30 bg-blue-500/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Σύνολο Κτιρίων</p>
-                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.totalBuildings}</p>
+                    <p className="text-xs font-medium text-blue-400">Σύνολο Κτιρίων</p>
+                    <p className="text-2xl font-bold text-blue-300">{stats.totalBuildings}</p>
                   </div>
                   <Building className="h-8 w-8 text-blue-500" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
+            <Card className="border-green-500/30 bg-green-500/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-green-600 dark:text-green-400">Ενεργά Έργα</p>
-                    <p className="text-2xl font-bold text-green-700 dark:text-green-300">{stats.activeProjects}</p>
+                    <p className="text-xs font-medium text-green-400">Ενεργά Έργα</p>
+                    <p className="text-2xl font-bold text-green-300">{stats.activeProjects}</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-green-500" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-purple-200 bg-purple-50/50 dark:bg-purple-950/20">
+            <Card className="border-purple-500/30 bg-purple-500/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-purple-600 dark:text-purple-400">Συνολική Αξία</p>
-                    <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                    <p className="text-xs font-medium text-purple-400">Συνολική Αξία</p>
+                    <p className="text-2xl font-bold text-purple-300">
                       €{(stats.totalValue / 1000000).toFixed(1)}M
                     </p>
                   </div>
@@ -315,12 +318,12 @@ export function BuildingsPageContent() {
               </CardContent>
             </Card>
 
-            <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
+            <Card className="border-orange-500/30 bg-orange-500/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Συνολική Επιφάνεια</p>
-                    <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                    <p className="text-xs font-medium text-orange-400">Συνολική Επιφάνεια</p>
+                    <p className="text-2xl font-bold text-orange-300">
                       {(stats.totalArea / 1000).toFixed(1)}K m²
                     </p>
                   </div>
@@ -329,24 +332,24 @@ export function BuildingsPageContent() {
               </CardContent>
             </Card>
 
-            <Card className="border-cyan-200 bg-cyan-50/50 dark:bg-cyan-950/20">
+            <Card className="border-cyan-500/30 bg-cyan-500/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-cyan-600 dark:text-cyan-400">Μέση Πρόοδος</p>
-                    <p className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{stats.averageProgress}%</p>
+                    <p className="text-xs font-medium text-cyan-400">Μέση Πρόοδος</p>
+                    <p className="text-2xl font-bold text-cyan-300">{stats.averageProgress}%</p>
                   </div>
                   <Calendar className="h-8 w-8 text-cyan-500" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-pink-200 bg-pink-50/50 dark:bg-pink-950/20">
+            <Card className="border-pink-500/30 bg-pink-500/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-pink-600 dark:text-pink-400">Σύνολο Μονάδων</p>
-                    <p className="text-2xl font-bold text-pink-700 dark:text-pink-300">{stats.totalUnits}</p>
+                    <p className="text-xs font-medium text-pink-400">Σύνολο Μονάδων</p>
+                    <p className="text-2xl font-bold text-pink-300">{stats.totalUnits}</p>
                   </div>
                   <Home className="h-8 w-8 text-pink-500" />
                 </div>
@@ -357,7 +360,7 @@ export function BuildingsPageContent() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden p-4 gap-4">
         {viewMode === 'list' ? (
           <>
             <BuildingsList
@@ -374,7 +377,7 @@ export function BuildingsPageContent() {
             />
           </>
         ) : (
-          <div className="flex-1 p-4 overflow-auto">
+          <div className="flex-1 overflow-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredBuildings.map((building) => (
                 <BuildingCard

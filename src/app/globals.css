@@ -5,51 +5,53 @@
 @layer base {
   :root {
     /* Base Colors */
-    --background: 60 48% 96%; /* Light Gray - #F2F2F0 */
-    --foreground: 215 35% 21%; /* Dark Slate Blue - #2D3E4F */
+    --background: 220 20% 98%; /* Lighter Cool Gray */
+    --foreground: 220 15% 20%; /* Dark Cool Gray */
 
     /* Primary / Accent Colors */
-    --primary: 0 84% 60%; /* Muted Orange - #F05454 */
-    --primary-foreground: 210 40% 98%; /* Almost White for text on primary */
+    --primary: 217 91% 60%; /* Vibrant Blue */
+    --primary-foreground: 210 20% 98%; /* Almost White for text on primary */
 
     /* Card & Popover */
     --card: 0 0% 100%; /* White */
-    --card-foreground: 215 35% 21%; /* Dark Slate Blue */
+    --card-foreground: 220 15% 20%; /* Dark Cool Gray */
     --popover: 0 0% 100%;
-    --popover-foreground: 215 35% 21%;
+    --popover-foreground: 220 15% 20%;
 
     /* Secondary Colors */
-    --secondary: 215 28% 90%; /* Lighter Slate Blue for subtle backgrounds */
-    --secondary-foreground: 215 35% 21%;
+    --secondary: 220 14% 96%; /* Very Light Cool Gray */
+    --secondary-foreground: 220 15% 20%;
 
     /* Muted Colors */
-    --muted: 215 28% 90%;
-    --muted-foreground: 215 16% 47%; /* Softer Slate Blue for text */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%; /* Softer Cool Gray for text */
 
     /* Accent (used for hover states, etc.) */
-    --accent: 215 28% 93%; /* Very light slate for hover */
-    --accent-foreground: 215 35% 21%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 15% 20%;
 
     /* Custom Hover Color */
-    --hover-accent: 0 76% 64%; /* #e46767 */
+    --hover-accent: 217 91% 65%;
 
     /* Destructive Color */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     /* Sidebar */
-    --sidebar-background: 215 35% 21%;
-    --sidebar-foreground: 60 30% 96%;
-    --sidebar-border: 215 28% 25%;
-    --sidebar-ring: 0 84% 60%;
-    --sidebar-active: 215 28% 28%;
-    --sidebar-active-foreground: 60 30% 96%;
-    --sidebar-muted-foreground: 215 15% 65%;
+    --sidebar-background: 220 15% 20%; /* Dark Cool Gray */
+    --sidebar-foreground: 220 20% 90%; /* Light Cool Gray */
+    --sidebar-border: 220 15% 25%;
+    --sidebar-ring: 217 91% 60%;
+    --sidebar-active: 217 91% 60%; /* Vibrant Blue */
+    --sidebar-active-foreground: 210 20% 98%;
+    --sidebar-muted-foreground: 220 10% 60%;
+    --sidebar-accent: 220 15% 25%;
+    --sidebar-accent-foreground: 210 20% 98%;
 
     /* Other UI Elements */
-    --border: 215 20% 87%; /* Light gray border */
-    --input: 215 20% 91%; /* Input background */
-    --ring: 0 84% 60%; /* Focus ring - Orange */
+    --border: 220 13% 91%; /* Light gray border */
+    --input: 220 13% 91%; /* Input background */
+    --ring: 217 91% 60%; /* Focus ring - Vibrant Blue */
 
     /* Chart Colors */
     --chart-1: 220 80% 60%; /* Blue */
@@ -64,51 +66,53 @@
 
   .dark {
     /* Base Colors */
-    --background: 215 28% 17%; /* Dark Slate Blue */
-    --foreground: 60 30% 96%; /* Light Gray */
+    --background: 222 47% 11%; /* Very Dark Blue */
+    --foreground: 210 40% 98%; /* Light Gray */
 
     /* Primary / Accent Colors */
-    --primary: 0 84% 60%; /* Muted Orange - Stays the same */
+    --primary: 217 91% 60%; /* Vibrant Blue */
     --primary-foreground: 210 40% 98%;
 
     /* Card & Popover */
-    --card: 215 28% 21%; /* Slightly lighter than background */
-    --card-foreground: 60 30% 96%;
-    --popover: 215 28% 17%;
-    --popover-foreground: 60 30% 96%;
+    --card: 222 47% 15%; /* Slightly lighter than background */
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
 
     /* Secondary Colors */
-    --secondary: 215 28% 25%; /* Darker accent */
-    --secondary-foreground: 60 30% 96%;
+    --secondary: 217 33% 17%; /* Darker accent */
+    --secondary-foreground: 210 40% 98%;
 
     /* Muted Colors */
-    --muted: 215 28% 25%;
-    --muted-foreground: 215 15% 65%; /* Lighter gray for muted text */
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%; /* Lighter gray for muted text */
 
     /* Accent (Hover) */
-    --accent: 215 28% 28%;
-    --accent-foreground: 60 30% 96%;
+    --accent: 217 33% 22%;
+    --accent-foreground: 210 40% 98%;
 
     /* Custom Hover Color */
-    --hover-accent: 0 76% 64%; /* #e46767 */
+    --hover-accent: 217 91% 65%;
 
     /* Destructive Color */
-    --destructive: 0 72% 51%; /* Slightly adjusted for dark bg */
+    --destructive: 0 63% 31%; /* Darker Red */
     --destructive-foreground: 0 0% 100%;
 
     /* Sidebar */
-    --sidebar-background: 215 28% 21%;
-    --sidebar-foreground: 60 30% 96%;
-    --sidebar-border: 215 28% 25%;
-    --sidebar-ring: 0 84% 60%;
-    --sidebar-active: 215 28% 28%;
-    --sidebar-active-foreground: 60 30% 96%;
-    --sidebar-muted-foreground: 215 15% 65%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 217 91% 60%;
+    --sidebar-active: 217 91% 60%;
+    --sidebar-active-foreground: 210 40% 98%;
+    --sidebar-muted-foreground: 215 20% 65%;
+    --sidebar-accent: 217 33% 22%;
+    --sidebar-accent-foreground: 210 40% 98%;
 
     /* Other UI Elements */
-    --border: 215 28% 25%;
-    --input: 215 28% 25%;
-    --ring: 0 84% 60%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
 
     /* Chart Colors (can be the same or adjusted for dark mode) */
     --chart-1: 220 80% 60%;
