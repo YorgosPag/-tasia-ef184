@@ -34,7 +34,7 @@ export function ProjectsPageFilters({
   filterMunicipality,
   setFilterMunicipality,
   companies,
-  municipalities
+  municipalities,
 }: ProjectsPageFiltersProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
@@ -97,3 +97,38 @@ export function ProjectsPageFilters({
           <Briefcase className="w-3 h-3" />
           Κατηγορία
         </Label>
+        <Select value={filterCategory} onValueChange={setFilterCategory}>
+          <SelectTrigger id="category-filter" className="h-9">
+            <SelectValue placeholder="Όλες οι κατηγορίες" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Όλες οι κατηγορίες</SelectItem>
+            <SelectItem value="residential">Κατοικίες</SelectItem>
+            <SelectItem value="commercial">Εμπορικά</SelectItem>
+            <SelectItem value="mixed">Μικτή Χρήση</SelectItem>
+            <SelectItem value="industrial">Βιομηχανικά</SelectItem>
+            <SelectItem value="public">Δημόσια</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="municipality-filter" className="text-xs font-medium flex items-center gap-1">
+          <MapPin className="w-3 h-3" />
+          Δήμος
+        </Label>
+        <Select value={filterMunicipality} onValueChange={setFilterMunicipality}>
+          <SelectTrigger id="municipality-filter" className="h-9">
+            <SelectValue placeholder="Όλοι οι δήμοι" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Όλοι οι δήμοι</SelectItem>
+            {municipalities.map(m => (
+              <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
