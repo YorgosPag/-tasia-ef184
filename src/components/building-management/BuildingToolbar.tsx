@@ -30,7 +30,8 @@ import {
   MapPin,
   BarChart3,
   Zap,
-  AlertCircle
+  AlertCircle,
+  X
 } from "lucide-react";
 import { cn } from '@/lib/utils';
 import {
