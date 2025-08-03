@@ -1,8 +1,11 @@
 'use client';
 
 import React from 'react';
-import { ProjectsPageContent } from '@/components/projects/ProjectsPageContent';
 
 export default function PropertyManagementPage() {
-  return <ProjectsPageContent />;
+  return (
+    <div>
+      {/* This page is intentionally left blank for future development */}
+    </div>
+  );
 }
