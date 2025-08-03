@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { StorageUnit } from '@/types/storage';
-import { StorageFormHeader } from './storage/storage-form/storage-form-header';
-import { StorageFormBasicInfo } from './storage/storage-form/storage-form-basic-info';
-import { StorageFormLocationSpecs } from './storage/storage-form/storage-form-location-specs';
-import { StorageFormFeatures } from './storage/storage-form/storage-form-features';
-import { StorageFormFooter } from './storage/storage-form/storage-form-footer';
-import { useFormValidation } from './storage/storage-form/storage-form-hooks';
-import { generateAutoCode } from './storage/storage-form/storage-form-utils';
+import { StorageFormHeader } from './storage-form-header';
+import { StorageFormBasicInfo } from './storage-form-basic-info';
+import { StorageFormLocationSpecs } from './storage-form-location-specs';
+import { StorageFormFeatures } from './storage-form-features';
+import { StorageFormFooter } from './storage-form-footer';
+import { useFormValidation } from './storage-form-hooks';
+import { generateAutoCode } from './storage-form-utils';
 
 interface StorageFormProps {
   unit: StorageUnit | null;
