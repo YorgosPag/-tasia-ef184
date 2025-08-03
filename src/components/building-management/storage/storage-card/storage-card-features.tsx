@@ -3,10 +3,22 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Link as LinkIcon
+  Link as LinkIcon,
+  Zap,
+  Lightbulb,
+  Shield,
+  Package
 } from 'lucide-react';
 import { StorageUnit } from '@/types/storage';
-import { getFeatureIcon } from './storage-card-utils';
+
+const getFeatureIcon = (feature: string) => {
+  const lowerFeature = feature.toLowerCase();
+  if (lowerFeature.includes('ηλεκτρικό') || lowerFeature.includes('ρεύμα') || lowerFeature.includes('πρίζα') || lowerFeature.includes('φόρτιση')) return <Zap className="w-3 h-3" />;
+  if (lowerFeature.includes('φωτισμός')) return <Lightbulb className="w-3 h-3" />;
+  if (lowerFeature.includes('ασφάλεια') || lowerFeature.includes('προστασία')) return <Shield className="w-3 h-3" />;
+  return <Package className="w-3 h-3" />;
+};
+
 
 interface StorageCardFeaturesProps {
   unit: StorageUnit;
