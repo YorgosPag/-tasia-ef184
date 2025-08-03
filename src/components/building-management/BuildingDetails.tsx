@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -38,7 +39,7 @@ import {
   Info,
   Plus,
   X,
-  Image as ImageIcon
+  Image
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlaceholderTab } from '@/app/projects/placeholder-tab';
@@ -475,7 +476,7 @@ const PhotosTabContent = () => (
       {[1, 2, 3, 4, 5, 6].map((index) => (
         <div key={index} className="aspect-square bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border hover:border-blue-400 transition-colors cursor-pointer group">
           <div className="text-center">
-            <ImageIcon className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
+            <Image className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Προσθήκη Φωτογραφίας</p>
           </div>
         </div>
