@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Sidebar, PanelTop } from 'lucide-react';
+import { Sidebar, Monitor } from 'lucide-react';
 
 export function AppLayoutCustomizer() {
   const [sidebarBg, setSidebarBg] = useState<string>('');
@@ -70,14 +70,38 @@ export function AppLayoutCustomizer() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Πλάτος Sidebar (Expanded)</Label>
+            <div className="flex justify-between items-center mb-2">
+              <Label>Πλάτος Sidebar (Expanded)</Label>
+               <div className="relative w-24">
+                  <Input
+                      type="number"
+                      value={sidebarWidth}
+                      onChange={(e) => setSidebarWidth(parseInt(e.target.value, 10) || 0)}
+                      min={200}
+                      max={400}
+                      className="h-8 text-sm pr-7"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
+              </div>
+            </div>
             <Slider value={[sidebarWidth]} onValueChange={([val]) => setSidebarWidth(val)} min={200} max={400} step={4} />
-            <div className="text-right text-sm text-muted-foreground">{sidebarWidth}px</div>
           </div>
           <div className="space-y-2">
-            <Label>Πλάτος Sidebar (Collapsed)</Label>
+            <div className="flex justify-between items-center mb-2">
+              <Label>Πλάτος Sidebar (Collapsed)</Label>
+               <div className="relative w-24">
+                  <Input
+                      type="number"
+                      value={sidebarCollapsedWidth}
+                      onChange={(e) => setSidebarCollapsedWidth(parseInt(e.target.value, 10) || 0)}
+                      min={40}
+                      max={80}
+                      className="h-8 text-sm pr-7"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
+              </div>
+            </div>
             <Slider value={[sidebarCollapsedWidth]} onValueChange={([val]) => setSidebarCollapsedWidth(val)} min={40} max={80} step={1} />
-             <div className="text-right text-sm text-muted-foreground">{sidebarCollapsedWidth}px</div>
           </div>
         </CardContent>
       </Card>
@@ -86,7 +110,7 @@ export function AppLayoutCustomizer() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <PanelTop className="w-5 h-5" />
+            <Monitor className="w-5 h-5" />
             Ρυθμίσεις Header
           </CardTitle>
         </CardHeader>
@@ -109,9 +133,21 @@ export function AppLayoutCustomizer() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Ύψος Header</Label>
+            <div className="flex justify-between items-center mb-2">
+              <Label>Ύψος Header</Label>
+               <div className="relative w-24">
+                  <Input
+                      type="number"
+                      value={headerHeight}
+                      onChange={(e) => setHeaderHeight(parseInt(e.target.value, 10) || 0)}
+                      min={48}
+                      max={96}
+                      className="h-8 text-sm pr-7"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
+              </div>
+            </div>
             <Slider value={[headerHeight]} onValueChange={([val]) => setHeaderHeight(val)} min={48} max={96} step={2} />
-             <div className="text-right text-sm text-muted-foreground">{headerHeight}px</div>
           </div>
         </CardContent>
       </Card>

@@ -10,7 +10,7 @@ import {
   Eye,
   Paintbrush,
   LayoutTemplate,
-  MousePointerSquare,
+  Mouse,
   Sidebar
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -70,7 +70,7 @@ export function DesignSystemPageContent() {
               Χρώματα
             </TabsTrigger>
             <TabsTrigger value="buttons" className="flex items-center gap-2">
-              <MousePointerSquare className="w-4 h-4" />
+              <Mouse className="w-4 h-4" />
               Κουμπιά
             </TabsTrigger>
             <TabsTrigger value="typography" className="flex items-center gap-2">
