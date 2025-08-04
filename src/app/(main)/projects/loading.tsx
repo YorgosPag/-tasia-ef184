@@ -2,13 +2,70 @@
 
 import { ProjectsList } from "@/components/projects/ProjectsList";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageLayout } from "@/components/app/page-layout";
+import type { Project } from "@/types/project";
 
-// Mock data for the list during loading
-const projects = [
-  { id: "1", name: "3. ΕΥΤΕΡΠΗΣ" },
-  { id: "2", name: "Καληαρού & Κομνηνών" },
+// Mock data for the list during loading, conforming to the Project type
+const mockProjects: Project[] = [
+  {
+    id: 1,
+    name: "3. ΕΥΤΕΡΠΗΣ",
+    title: "Τρεις πενταώροφες οικοδομές με καταστήματα πιλοτή & υπόγειο",
+    description: "Loading project details...",
+    address: "Ευτέρπης 32 - 34",
+    city: "Θεσσαλονίκη",
+    municipality: "Δήμος Ευόσμου",
+    postalCode: "562 24",
+    permitNumber: "Loading...",
+    permitAuthority: "Loading...",
+    buildingBlock: "10",
+    protocolNumber: "Loading...",
+    status: "construction",
+    startDate: new Date().toISOString(),
+    completionDate: new Date().toISOString(),
+    progress: 50,
+    totalValue: 2000000,
+    company: "Loading Company...",
+    companyId: "loading-company",
+    category: "mixed",
+    totalArea: 3000,
+    buildingCount: 3,
+    floorCount: 5,
+    unitCount: 20,
+    showOnWeb: true,
+    features: ["Loading..."],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    name: "Καληαρού & Κομνηνών",
+    title: "Σύγχρονο συγκρότημα κατοικιών",
+    description: "Loading project details...",
+    address: "Καληαρού & Κομνηνών",
+    city: "Θεσσαλονίκη",
+    municipality: "Δήμος Θεσσαλονίκης",
+    postalCode: "546 24",
+    permitNumber: "Loading...",
+    permitAuthority: "Loading...",
+    buildingBlock: "15",
+    protocolNumber: "Loading...",
+    status: "planning",
+    startDate: new Date().toISOString(),
+    completionDate: new Date().toISOString(),
+    progress: 10,
+    totalValue: 1500000,
+    company: "Loading Company...",
+    companyId: "loading-company",
+    category: "residential",
+    totalArea: 2000,
+    buildingCount: 2,
+    floorCount: 6,
+    unitCount: 15,
+    showOnWeb: false,
+    features: ["Loading..."],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 function ProjectDetailsSkeleton() {
@@ -79,13 +136,15 @@ function ProjectDetailsSkeleton() {
 
 export default function Loading() {
   return (
-    <PageLayout>
+    <div className="flex h-[calc(100vh-theme(spacing.24))] gap-4">
       <ProjectsList
-        projects={projects}
-        selectedProject={projects[0]}
+        projects={mockProjects}
+        selectedProject={mockProjects[0]}
         onSelectProject={() => {}}
+        getStatusColor={() => "bg-gray-400"}
+        getStatusLabel={(status) => status}
       />
       <ProjectDetailsSkeleton />
-    </PageLayout>
+    </div>
   );
 }
