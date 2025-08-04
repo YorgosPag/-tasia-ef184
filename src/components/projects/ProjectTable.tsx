@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Copy } from "lucide-react";
 import { Company } from "@/hooks/use-data-store";
-import { formatDate, getCompanyName } from "@/lib/project-helpers";
+import { formatDate, getCompanyName } from "@/lib/utils";
 import type { ProjectWithWorkStageSummary } from "@/lib/types/project-types";
 import {
   Tooltip,
@@ -70,7 +70,7 @@ function WorkStageStatusBadge({
       break;
   }
 
-  const tooltipText = `Τρέχον στάδιο: ${summary.currentWorkStageName || "N/A"}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline)}`;
+  const tooltipText = `Τρέχον στάδιο: ${summary.currentWorkStageName || "N/A"}. Εκτιμ. ολοκλήρωση: ${formatDate(deadline as any)}`;
 
   return (
     <Tooltip>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { ParkingSpot } from './types';
+import type { ParkingSpot } from '@/types/parking';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -51,7 +51,7 @@ export function ParkingTableMobile({
               <div className="flex justify-between items-start">
                   <div>
                       <CardTitle className="text-lg">{spot.code} - {spot.type}</CardTitle>
-                      <CardDescription>{spot.property} - {spot.level}</CardDescription>
+                      <CardDescription>{spot.propertyCode} - {spot.level}</CardDescription>
                   </div>
                   <Badge variant="outline" className={cn("text-xs", getStatusBadgeClass(spot.status))}>
                     {spot.status}
@@ -59,9 +59,9 @@ export function ParkingTableMobile({
               </div>
             </CardHeader>
             <CardContent className="text-sm space-y-1">
-                <p><strong>Τ.Μ.:</strong> {spot.tm.toFixed(2)}</p>
+                <p><strong>Τ.Μ.:</strong> {spot.area.toFixed(2)}</p>
                 <p><strong>Τιμή:</strong> {formatCurrency(spot.price)}</p>
-                <p><strong>Αντ. Αξία:</strong> {formatCurrency(spot.valueWithVat)}</p>
+                <p><strong>Αντ. Αξία:</strong> {formatCurrency(spot.valueWithSyndicate)}</p>
                 <p><strong>Ιδιοκτήτης:</strong> {spot.owner}</p>
             </CardContent>
             <CardFooter className="flex justify-end gap-2">

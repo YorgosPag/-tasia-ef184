@@ -14,7 +14,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { Property } from '@/types/property';
 import { PROPERTY_TYPE_LABELS, PROPERTY_STATUS_LABELS, PROPERTY_STATUS_COLORS } from '@/types/property';
-import { formatCurrency } from '@/lib/project-helpers';
+import { formatCurrency } from '@/lib/utils';
 
 interface PropertyDetailsHeaderProps {
   property: Property;
