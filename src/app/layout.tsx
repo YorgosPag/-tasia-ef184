@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SidebarProvider } from "@/components/layout/sidebar-provider";
 import { QueryProvider } from "@/hooks/use-query-provider";
 import { DataProvider } from "@/hooks/use-data-store";
 import "./globals.css";
@@ -34,9 +33,7 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <AuthProvider>
-                <SidebarProvider>{children}</SidebarProvider>
-              </AuthProvider>
+              <AuthProvider>{children}</AuthProvider>
             </ThemeProvider>
           </DataProvider>
         </QueryProvider>
