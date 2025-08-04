@@ -66,7 +66,7 @@ export function LayoutPreview({ settings }: LayoutPreviewProps) {
                 <div>
                   <h3 className="font-semibold text-card-foreground">Δείγμα Κάρτας 2</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Το κενό μεταξύ των καρτών ελέγχεται από το "Κενό μεταξύ ενοτήτων".
+                    Το κενό μεταξύ των καρτών ελέγχεται από το &quot;Κενό μεταξύ ενοτήτων&quot;.
                   </p>
                 </div>
               </div>

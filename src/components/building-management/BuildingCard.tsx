@@ -9,6 +9,7 @@ import { BuildingCardBody } from './cards/BuildingCardBody';
 import { BuildingCardFooter } from './cards/BuildingCardFooter';
 import { BuildingCardTags } from './cards/BuildingCardTags';
 import type { Building } from '@/types/building';
+import { Home, Building2, Users } from 'lucide-react';
 
 interface BuildingCardProps {
   building: Building;
