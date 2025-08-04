@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSidebar } from "@/components/ui/sidebar/sidebar-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogIn, LogOut, Moon, Sun } from "lucide-react";
+import { LogIn, LogOut, Moon, Sun, PanelLeft } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Breadcrumbs } from "./breadcrumbs";
 import { useBreadcrumbs } from "@/hooks/use-breadcrumbs";
@@ -24,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "next-themes";
 
 export function AppHeader() {
-  const { isMobile } = useSidebar();
+  const { toggleSidebar } = useSidebar();
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const pathname = usePathname();
@@ -53,10 +52,17 @@ export function AppHeader() {
 
   return (
     <header 
-      className="sticky top-0 z-10 flex items-center gap-4 border-b bg-header/80 px-4 backdrop-blur-sm"
-      style={{ height: 'var(--header-height, 64px)' }}
+      className="sticky top-0 z-10 flex h-[var(--header-height)] items-center gap-4 border-b bg-header/80 px-4 backdrop-blur-sm"
     >
-      {isMobile && <SidebarTrigger />}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 md:hidden"
+        onClick={toggleSidebar}
+      >
+        <PanelLeft className="h-5 w-5" />
+        <span className="sr-only">Toggle Sidebar</span>
+      </Button>
       <div className="flex-1">
         {showBreadcrumbs && <Breadcrumbs items={breadcrumbs} />}
       </div>
