@@ -5,12 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Palette } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Palette, Type } from 'lucide-react';
 
 interface ButtonVariantStyle {
   background: string;
   foreground: string;
   border: string;
+  fontFamily: string;
+  fontSize: number;
 }
 
 interface ButtonStyles {
@@ -22,19 +26,24 @@ interface ButtonStyles {
   link: ButtonVariantStyle;
 }
 
+const fontFamilies = [
+  'Inter', 'Roboto', 'Open Sans', 'Lato', 'Source Sans Pro', 'Nunito', 'Poppins', 'Montserrat', 'Raleway', 'PT Sans',
+  'Georgia', 'Times New Roman', 'serif', 'Arial', 'Helvetica', 'sans-serif', 'Courier New', 'Monaco', 'monospace'
+];
+
 const initialButtonStyles: ButtonStyles = {
-  default: { background: '#3B82F6', foreground: '#FFFFFF', border: '#3B82F6' },
-  destructive: { background: '#EF4444', foreground: '#FFFFFF', border: '#EF4444' },
-  outline: { background: 'transparent', foreground: '#0F172A', border: '#E2E8F0' },
-  secondary: { background: '#F1F5F9', foreground: '#0F172A', border: '#F1F5F9' },
-  ghost: { background: 'transparent', foreground: '#0F172A', border: 'transparent' },
-  link: { background: 'transparent', foreground: '#3B82F6', border: 'transparent' },
+  default: { background: '#3B82F6', foreground: '#FFFFFF', border: '#3B82F6', fontFamily: 'Inter', fontSize: 14 },
+  destructive: { background: '#EF4444', foreground: '#FFFFFF', border: '#EF4444', fontFamily: 'Inter', fontSize: 14 },
+  outline: { background: 'transparent', foreground: '#0F172A', border: '#E2E8F0', fontFamily: 'Inter', fontSize: 14 },
+  secondary: { background: '#F1F5F9', foreground: '#0F172A', border: '#F1F5F9', fontFamily: 'Inter', fontSize: 14 },
+  ghost: { background: 'transparent', foreground: '#0F172A', border: 'transparent', fontFamily: 'Inter', fontSize: 14 },
+  link: { background: 'transparent', foreground: '#3B82F6', border: 'transparent', fontFamily: 'Inter', fontSize: 14 },
 };
 
 export function ButtonCustomizer() {
   const [styles, setStyles] = useState<ButtonStyles>(initialButtonStyles);
 
-  const handleStyleChange = (variant: keyof ButtonStyles, property: keyof ButtonVariantStyle, value: string) => {
+  const handleStyleChange = (variant: keyof ButtonStyles, property: keyof ButtonVariantStyle, value: string | number) => {
     setStyles(prev => ({
       ...prev,
       [variant]: {
@@ -51,18 +60,43 @@ export function ButtonCustomizer() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
         <div>
           <h4 className="font-medium mb-3">{title}</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor={`${variant}-bg`} className="text-xs">Φόντο</Label>
-              <Input type="color" id={`${variant}-bg`} value={currentStyle.background} onChange={e => handleStyleChange(variant, 'background', e.target.value)} className="h-10 p-1" />
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor={`${variant}-bg`} className="text-xs">Φόντο</Label>
+                <Input type="color" id={`${variant}-bg`} value={currentStyle.background} onChange={e => handleStyleChange(variant, 'background', e.target.value)} className="h-10 w-full p-1"/>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor={`${variant}-fg`} className="text-xs">Κείμενο</Label>
+                <Input type="color" id={`${variant}-fg`} value={currentStyle.foreground} onChange={e => handleStyleChange(variant, 'foreground', e.target.value)} className="h-10 w-full p-1"/>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor={`${variant}-border`} className="text-xs">Περίγραμμα</Label>
+                <Input type="color" id={`${variant}-border`} value={currentStyle.border} onChange={e => handleStyleChange(variant, 'border', e.target.value)} className="h-10 w-full p-1"/>
+              </div>
             </div>
-            <div className="space-y-1">
-              <Label htmlFor={`${variant}-fg`} className="text-xs">Κείμενο</Label>
-              <Input type="color" id={`${variant}-fg`} value={currentStyle.foreground} onChange={e => handleStyleChange(variant, 'foreground', e.target.value)} className="h-10 p-1" />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor={`${variant}-border`} className="text-xs">Περίγραμμα</Label>
-              <Input type="color" id={`${variant}-border`} value={currentStyle.border} onChange={e => handleStyleChange(variant, 'border', e.target.value)} className="h-10 p-1" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Γραμματοσειρά</Label>
+                <Select value={currentStyle.fontFamily} onValueChange={(value) => handleStyleChange(variant, 'fontFamily', value)}>
+                  <SelectTrigger className="h-10 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {fontFamilies.map(family => (
+                      <SelectItem key={family} value={family} style={{ fontFamily: family }}>{family}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+               <div className="space-y-1">
+                <Label className="text-xs">Μέγεθος ({currentStyle.fontSize}px)</Label>
+                <Slider 
+                  value={[currentStyle.fontSize]} 
+                  onValueChange={([val]) => handleStyleChange(variant, 'fontSize', val)}
+                  min={10} max={24} step={1} 
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -72,7 +106,9 @@ export function ButtonCustomizer() {
               style={{
                 backgroundColor: currentStyle.background,
                 color: currentStyle.foreground,
-                borderColor: currentStyle.border
+                borderColor: currentStyle.border,
+                fontFamily: `'${currentStyle.fontFamily}', sans-serif`,
+                fontSize: `${currentStyle.fontSize}px`
               }}
               className="border"
             >
