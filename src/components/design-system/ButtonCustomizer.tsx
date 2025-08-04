@@ -54,15 +54,15 @@ export function ButtonCustomizer() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="space-y-1">
               <Label htmlFor={`${variant}-bg`} className="text-xs">Φόντο</Label>
-              <Input type="color" id={`${variant}-bg`} value={currentStyle.background} onChange={e => handleStyleChange(variant, 'background', e.target.value)} className="h-10" />
+              <Input type="color" id={`${variant}-bg`} value={currentStyle.background} onChange={e => handleStyleChange(variant, 'background', e.target.value)} className="h-10 p-1" />
             </div>
             <div className="space-y-1">
               <Label htmlFor={`${variant}-fg`} className="text-xs">Κείμενο</Label>
-              <Input type="color" id={`${variant}-fg`} value={currentStyle.foreground} onChange={e => handleStyleChange(variant, 'foreground', e.target.value)} className="h-10" />
+              <Input type="color" id={`${variant}-fg`} value={currentStyle.foreground} onChange={e => handleStyleChange(variant, 'foreground', e.target.value)} className="h-10 p-1" />
             </div>
             <div className="space-y-1">
               <Label htmlFor={`${variant}-border`} className="text-xs">Περίγραμμα</Label>
-              <Input type="color" id={`${variant}-border`} value={currentStyle.border} onChange={e => handleStyleChange(variant, 'border', e.target.value)} className="h-10" />
+              <Input type="color" id={`${variant}-border`} value={currentStyle.border} onChange={e => handleStyleChange(variant, 'border', e.target.value)} className="h-10 p-1" />
             </div>
           </div>
         </div>
