@@ -1,6 +1,9 @@
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import {
+  getFirestore,
+  enableMultiTabIndexedDbPersistence,
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
@@ -33,7 +36,7 @@ export const functions = getFunctions(app);
 
 // Enable offline persistence
 if (typeof window !== "undefined") {
-  enableIndexedDbPersistence(db)
+  enableMultiTabIndexedDbPersistence(db)
     .then(() => console.log("Firestore offline persistence enabled."))
     .catch((err) => {
       if (err.code == "failed-precondition") {
