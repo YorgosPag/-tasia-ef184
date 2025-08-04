@@ -12,6 +12,9 @@
     "e2e": "cypress run --e2e --browser chrome"
   },
   "dependencies": {
+    "@genkit-ai/ai": "^1.15.5",
+    "@genkit-ai/core": "^1.15.5",
+    "@genkit-ai/googleai": "^1.15.5",
     "@google-cloud/firestore": "^7.7.0",
     "@hookform/resolvers": "^3.3.4",
     "@radix-ui/react-accordion": "^1.1.2",
@@ -43,7 +46,8 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.0.2",
     "firebase": "^10.12.2",
-    "firebase-admin": "^12.0.0",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^4.4.1",
     "lucide-react": "^0.363.0",
     "next": "^14.2.4",
     "next-themes": "^0.3.0",
@@ -60,7 +64,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^20.19.9",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "cypress": "^13.8.1",
