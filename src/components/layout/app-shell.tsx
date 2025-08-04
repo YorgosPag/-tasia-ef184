@@ -5,52 +5,24 @@ import { AppSidebar } from "./sidebar";
 import { AppHeader } from "./Header";
 import { useCurrentDomain } from "@/hooks/useCurrentDomain";
 import { cn } from "@/lib/utils";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/layout/sidebar-provider";
 import { useSidebar } from "@/components/ui/sidebar/sidebar-context";
 
 function AppShellLayout({ children }: { children: React.ReactNode }) {
-  const { state } = useSidebar();
-  const isCollapsed = state === "collapsed";
+  const { isMobile, state } = useSidebar();
+  const isCollapsed = isMobile ? false : state === "collapsed";
 
   return (
     <>
-      {/* Fixed Sidebar */}
+      <AppSidebar />
       <div
         className={cn(
-          "fixed left-0 top-0 z-50 h-full transition-all duration-300 ease-in-out",
+          "flex min-h-screen flex-col bg-background transition-[margin-left] duration-300 ease-in-out",
+          !isMobile && (isCollapsed ? "ml-[52px]" : "ml-64"),
         )}
-        style={{
-          width: isCollapsed
-            ? "var(--sidebar-width-icon)"
-            : "var(--sidebar-width)",
-          backgroundColor: "var(--sidebar-background)",
-        }}
       >
-        <AppSidebar />
-      </div>
-
-      {/* Main Content Area */}
-      <div
-        className="min-h-screen transition-all duration-300 ease-in-out"
-        style={{
-          marginLeft: isCollapsed
-            ? "var(--sidebar-width-icon)"
-            : "var(--sidebar-width)",
-        }}
-      >
-        {/* Header */}
-        <header
-          className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-          style={{
-            height: "var(--header-height)",
-            backgroundColor: "var(--header-background)",
-          }}
-        >
-          <AppHeader />
-        </header>
-
-        {/* Main Content */}
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+        <AppHeader />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </>
   );

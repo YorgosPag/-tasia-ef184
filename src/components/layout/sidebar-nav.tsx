@@ -6,11 +6,79 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Settings } from "lucide-react";
+import {
+  Home,
+  Briefcase,
+  Users,
+  Building,
+  ClipboardList,
+  Calendar,
+  PenTool,
+  Award,
+  Wallet,
+  FileText,
+  MessageSquare,
+  Settings,
+  List,
+  LayoutGrid,
+  BarChart3,
+  FileBox,
+  GanttChartSquare,
+  BookUser,
+  Layers,
+  Building2,
+  FolderKanban,
+  FilePen,
+  Library,
+  BookLock,
+  Gavel,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { navGroups } from "./sidebar/sidebar-config";
-import { SidebarNavGroup } from "./sidebar/SidebarNavGroup";
+
+const tasiaProjectToolsNav = [
+  { href: "/contacts", label: "Επαφές", icon: Users },
+  { href: "/leads", label: "Leads", icon: Wallet },
+  { href: "/meetings", label: "Συσκέψεις", icon: MessageSquare },
+  { href: "/contracts", label: "Συμβόλαια", icon: FileText },
+  { href: "/work-stages", label: "Στάδια Εργασιών", icon: GanttChartSquare },
+  { href: "/calendar", label: "Ημερολόγιο", icon: Calendar },
+  { href: "/architect-desk", label: "Architect's Desk", icon: FilePen },
+  { href: "/assignments", label: "Οι Αναθέσεις μου", icon: ClipboardList },
+];
+
+const entitiesNav = [
+  { href: "/companies", label: "Εταιρείες", icon: Building2 },
+  { href: "/projects", label: "Έργα", icon: Briefcase },
+  { href: "/buildings", label: "Κτίρια", icon: Building },
+  { href: "/floors", label: "Όροφοι", icon: Layers },
+  { href: "/units", label: "Ακίνητα", icon: Home },
+  { href: "/attachments", label: "Παρακολουθήματα", icon: ClipboardList },
+];
+
+const nestorNav = [
+  { href: "/nestor/dashboard", label: "Πίνακας Ελέγχου", icon: LayoutGrid },
+  { href: "/nestor/projects", label: "Λίστα Έργων", icon: FileBox },
+  { href: "/nestor/reports", label: "Αναφορές", icon: BarChart3 },
+  { href: "/nestor/offers", label: "Προσφορές Προμηθευτών", icon: Award },
+  { href: "/nestor/interventions", label: "Παρεμβάσεις Έργων", icon: PenTool },
+  {
+    href: "/nestor/stages",
+    label: "Στάδια Παρεμβάσεων",
+    icon: GanttChartSquare,
+  },
+  { href: "/nestor/guides", label: "Οδηγίες", icon: List },
+];
+
+const managementNav = [
+  { href: "/project-management", label: "Διαχείριση Έργων", icon: FolderKanban },
+  { href: "/custom-lists", label: "Προσ. Λίστες", icon: List },
+  { href: "/privacy", label: "Πολιτική Απορρήτου", icon: BookLock },
+  { href: "/terms", label: "Όροι Χρήσης", icon: Gavel },
+];
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -19,50 +87,92 @@ export function SidebarNav() {
     if (href === "/dashboard") {
       return pathname === href;
     }
-    // Handle nested routes
     return pathname.startsWith(href);
   };
 
   const getButtonClass = (href: string) => {
     return cn(
-      "group relative w-full justify-start gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+      "text-lg font-medium text-left px-4 py-2 whitespace-nowrap",
       isActive(href)
-        ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-        : "text-sidebar-muted-foreground hover:text-sidebar-foreground",
+        ? "text-sidebar-active-foreground"
+        : "text-sidebar-muted-foreground",
     );
   };
 
   return (
-    <SidebarMenu className="space-y-1">
-      {navGroups.map((group) => (
-        <SidebarNavGroup
-          key={group.label}
-          group={group}
-          pathname={pathname}
-          isActive={isActive}
-          getButtonClass={getButtonClass}
-        />
-      ))}
+    <SidebarMenu>
+      <SidebarGroup>
+        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-accent-foreground uppercase px-4 whitespace-nowrap">
+          Ευρετήριο Ακινήτων
+        </SidebarGroupLabel>
+        {entitiesNav.map((item) => (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton
+              href={item.href}
+              className={getButtonClass(item.href)}
+              icon={item.icon}
+              tooltip={item.label}
+              isActive={isActive(item.href)}
+            >
+              <span className="ml-3">{item.label}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarGroup>
 
-      <div className="mt-auto pt-4">
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            href="/settings"
-            className={cn(
-              getButtonClass("/settings"),
-              "mt-4 border border-sidebar-border/50 bg-sidebar-accent/20 hover:bg-sidebar-accent hover:border-sidebar-accent"
-            )}
-            icon={Settings}
-            tooltip="Ρυθμίσεις συστήματος"
-            isActive={isActive("/settings")}
-          >
-            <div className="flex items-center gap-3">
-              <Settings className="h-4 w-4" />
-              <span>Ρυθμίσεις</span>
-            </div>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </div>
+      <SidebarSeparator />
+
+      <SidebarGroup>
+        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-accent-foreground uppercase px-4 whitespace-nowrap">
+          Εργαλεία
+        </SidebarGroupLabel>
+        {tasiaProjectToolsNav.map((item) => (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton
+              href={item.href}
+              className={getButtonClass(item.href)}
+              icon={item.icon}
+              tooltip={item.label}
+              isActive={isActive(item.href)}
+            >
+              <span className="ml-3">{item.label}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarGroup>
+
+      <SidebarSeparator />
+
+      <SidebarGroup>
+        <SidebarGroupLabel className="text-base font-semibold tracking-wider text-accent-foreground uppercase px-4 whitespace-nowrap">
+          Διαχείριση
+        </SidebarGroupLabel>
+        {managementNav.map((item) => (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton
+              href={item.href}
+              className={getButtonClass(item.href)}
+              icon={item.icon}
+              tooltip={item.label}
+              isActive={isActive(item.href)}
+            >
+              <span className="ml-3">{item.label}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </SidebarGroup>
+
+      <SidebarMenuItem className="mt-auto">
+        <SidebarMenuButton
+          href="/settings"
+          className={getButtonClass("/settings")}
+          icon={Settings}
+          tooltip="Ρυθμίσεις"
+          isActive={isActive("/settings")}
+        >
+          <span className="ml-3">Ρυθμίσεις</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
     </SidebarMenu>
   );
 }
