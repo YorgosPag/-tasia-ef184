@@ -67,8 +67,10 @@ export default function PropertyViewerPage() {
   }, [filteredProperties, selectedProperty, setSelectedProperty]);
 
   const toggleEditMode = () => {
-    if (!isEditor) return;
-    setIsEditMode(!isEditMode);
+    if (isEditor) {
+      console.log('Toggle Edit Mode - Current:', isEditMode, 'New:', !isEditMode);
+      setIsEditMode((prev) => !prev);
+    }
   };
 
   return (
