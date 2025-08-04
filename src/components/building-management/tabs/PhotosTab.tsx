@@ -11,6 +11,8 @@ import {
   Camera,
   Image as ImageIcon
 } from "lucide-react";
+import Image from 'next/image';
+
 
 export function PhotosTab() {
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -60,7 +62,7 @@ export function PhotosTab() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div className="relative group">
           <div className="aspect-square bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg overflow-hidden">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3E%3Cpath fill='%236B7280' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'/%3E%3C/svg%3E" alt="Building progress" className="w-full h-full object-cover" />
+            <Image src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3E%3Cpath fill='%236B7280' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'/%3E%3C/svg%3E" alt="Building progress" layout="fill" className="object-cover" />
           </div>
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg flex items-center justify-center"><div className="opacity-0 group-hover:opacity-100 flex gap-2"><Button size="sm" variant="secondary"><Eye className="w-4 h-4" /></Button><Button size="sm" variant="secondary"><Download className="w-4 h-4" /></Button></div></div>
           <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">Πρόοδος Φεβ 2025</div>

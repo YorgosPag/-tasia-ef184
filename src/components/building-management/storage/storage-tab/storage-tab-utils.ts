@@ -1,7 +1,7 @@
 'use client';
-
+import React from 'react';
 import { Package, Car } from 'lucide-react';
-import { StorageType, StorageStatus } from '@/lib/types/storage';
+import { StorageStatus, StorageType } from '@/lib/types/storage';
 
 export const getStatusColor = (status: StorageStatus) => {
   switch (status) {
