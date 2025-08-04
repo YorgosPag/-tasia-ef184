@@ -36,8 +36,6 @@ async function fetchContacts(): Promise<Contact[]> {
         reject(error);
       },
     );
-    // In a real app with more complex lifecycle, you might manage this unsubscribe
-    // function, but for React Query's queryFn, this setup works well.
   });
 }
 
@@ -50,7 +48,6 @@ export function useContacts() {
   } = useQuery<Contact[]>({
     queryKey: ["contacts"],
     queryFn: fetchContacts,
-    // Keep data fresh for 5 minutes, refetch in background
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: true,
   });

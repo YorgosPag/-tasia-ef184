@@ -18,12 +18,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div
         className={cn(
           "min-h-screen flex flex-col bg-background transition-all duration-300 ease-in-out",
+          "md:pl-[var(--sidebar-width)]",
+          "group-data-[state=collapsed]/sidebar-wrapper:md:pl-[var(--sidebar-width-icon)]"
         )}
-        style={{
-          paddingLeft: isMobile
-            ? "0px"
-            : `var(${isCollapsed ? "--sidebar-width-icon" : "--sidebar-width"})`,
-        }}
       >
         <AppHeader />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
