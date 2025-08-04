@@ -10,7 +10,7 @@ import {
   Eye,
   Paintbrush,
   LayoutTemplate,
-  MousePointerSquare
+  Mouse
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -63,19 +63,19 @@ export function DesignSystemPageContent() {
       <div className="flex-1 overflow-auto">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
           <TabsList className="mb-4">
-            <TabsTrigger value="colors" onClick={() => setActiveTab('colors')} className="flex items-center gap-2">
+            <TabsTrigger value="colors" className="flex items-center gap-2">
               <Palette className="w-4 h-4" />
               Χρώματα
             </TabsTrigger>
-            <TabsTrigger value="buttons" onClick={() => setActiveTab('buttons')} className="flex items-center gap-2">
-              <MousePointerSquare className="w-4 h-4" />
+            <TabsTrigger value="buttons" className="flex items-center gap-2">
+              <Mouse className="w-4 h-4" />
               Κουμπιά
             </TabsTrigger>
-            <TabsTrigger value="typography" onClick={() => setActiveTab('typography')} className="flex items-center gap-2">
+            <TabsTrigger value="typography" className="flex items-center gap-2">
               <Type className="w-4 h-4" />
               Τυπογραφία
             </TabsTrigger>
-            <TabsTrigger value="layout" onClick={() => setActiveTab('layout')} className="flex items-center gap-2">
+            <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutTemplate className="w-4 h-4" />
               Διάταξη & Αποστάσεις
             </TabsTrigger>

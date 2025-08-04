@@ -27,7 +27,7 @@ export function LayoutPreview({ settings }: LayoutPreviewProps) {
   margin: ${settings.margin}px;
   border-radius: ${settings.borderRadius}px;
   border: ${settings.borderWidth}px solid hsl(var(--border));
-  box-shadow: 0 10px 15px -3px rgba(0,0,0, ${settings.shadow / 100});
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, ${settings.shadow / 100});
 }
   `.trim();
 
@@ -43,7 +43,7 @@ export function LayoutPreview({ settings }: LayoutPreviewProps) {
         <CardContent>
           <div className="bg-muted/30 dark:bg-muted/10 rounded-lg p-8 flex items-center justify-center min-h-[400px]">
             <div
-              className="bg-card w-full max-w-md"
+              className="bg-card w-full max-w-md border"
               style={previewStyle}
             >
               <div className="flex items-start gap-4">
