@@ -32,7 +32,3 @@ export function LayoutCustomizer() {
       </div>
       <div className="xl:col-span-2">
         <LayoutPreview settings={settings} />
-      </div>
-    </div>
-  );
-}
