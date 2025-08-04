@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { StorageUnit } from '@/lib/types/storage';
+import { StorageUnit } from '@/lib/types/storage';
 import { StorageListHeader } from './storage/storage-list/storage-list-header';
 import { StorageListCardsView } from './storage/storage-list/storage-list-cards-view';
 import { StorageListTableView } from './storage/storage-list/storage-list-table-view';
