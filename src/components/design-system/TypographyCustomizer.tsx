@@ -16,6 +16,7 @@ import {
   Bold,
   Italic
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface FontConfig {
   name: string;
@@ -173,7 +174,21 @@ export function TypographyCustomizer() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label className="text-xs">Μέγεθος: {font.size}px</Label>
+             <div className="flex justify-between items-center mb-2">
+              <Label className="text-xs">Μέγεθος</Label>
+              <div className="relative w-20">
+                <Input
+                  type="number"
+                  value={font.size}
+                  onChange={(e) => updateFont(font.name, 'size', parseInt(e.target.value, 10) || 8)}
+                  min={8}
+                  max={72}
+                  step={1}
+                  className="h-7 text-xs pr-7"
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
+              </div>
+            </div>
             <Slider
               value={[font.size]}
               onValueChange={([value]) => updateFont(font.name, 'size', value)}
@@ -185,7 +200,20 @@ export function TypographyCustomizer() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs">Ύψος Γραμμής: {font.lineHeight}</Label>
+             <div className="flex justify-between items-center mb-2">
+              <Label className="text-xs">Ύψος Γραμμής</Label>
+              <div className="relative w-20">
+                <Input
+                  type="number"
+                  value={font.lineHeight}
+                  onChange={(e) => updateFont(font.name, 'lineHeight', parseFloat(e.target.value) || 0.8)}
+                  min={0.8}
+                  max={2.5}
+                  step={0.1}
+                  className="h-7 text-xs"
+                />
+              </div>
+            </div>
             <Slider
               value={[font.lineHeight]}
               onValueChange={([value]) => updateFont(font.name, 'lineHeight', value)}
@@ -197,7 +225,21 @@ export function TypographyCustomizer() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs">Απόσταση Γραμμάτων: {font.letterSpacing}em</Label>
+            <div className="flex justify-between items-center mb-2">
+              <Label className="text-xs">Απόσταση Γραμμάτων</Label>
+              <div className="relative w-20">
+                <Input
+                  type="number"
+                  value={font.letterSpacing}
+                  onChange={(e) => updateFont(font.name, 'letterSpacing', parseFloat(e.target.value) || -0.1)}
+                  min={-0.1}
+                  max={0.2}
+                  step={0.01}
+                  className="h-7 text-xs pr-7"
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">em</span>
+              </div>
+            </div>
             <Slider
               value={[font.letterSpacing]}
               onValueChange={([value]) => updateFont(font.name, 'letterSpacing', value)}
