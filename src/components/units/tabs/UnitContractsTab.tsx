@@ -1,23 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  doc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-} from "firebase/firestore";
-import { db, storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useToast } from "@/hooks/use-toast";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -31,318 +14,29 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import {
-  Calendar as CalendarIcon,
-  Loader2,
-  PlusCircle,
-  Trash2,
-  Upload,
-  Eye,
-} from "lucide-react";
-import { Unit } from "@/hooks/use-unit-details";
-import { Contact } from "@/hooks/use-contacts";
-
-const contractStageSchema = z.object({
-  contractNumber: z.string().optional(),
-  contractDate: z.date().optional().nullable(),
-  contractFileUrl: z.string().url().or(z.literal("")).optional(),
-  notary: z.string().optional(),
-  lawyer: z.string().optional(),
-});
-
-const unitContractSchema = z.object({
-  id: z.string().optional(),
-  clientName: z.string().min(1, "Το όνομα πελάτη είναι υποχρεωτικό."),
-  status: z.string().optional(),
-  preliminary: contractStageSchema.optional(),
-  final: contractStageSchema.optional(),
-  settlement: contractStageSchema.optional(),
-  registeredBy: z.string().optional(),
-});
-
-export type UnitContract = z.infer<typeof unitContractSchema>;
-
-const formSchema = z.object({
-  contracts: z.array(unitContractSchema),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { Loader2, PlusCircle, Trash2 } from "lucide-react";
+import type { Unit } from "@/hooks/use-unit-details";
+import { useContractsForm } from "@/hooks/units/useContractsForm";
+import { useContactsOptions } from "@/hooks/units/useContactsOptions";
+import { ContractStageForm } from "./contracts/ContractStageForm";
 
 interface UnitContractsTabProps {
   unit: Unit;
 }
 
-const ContractStageForm = ({
-  control,
-  name,
-  title,
-  contacts,
-  onFileUpload,
-}: {
-  control: any;
-  name: string;
-  title: string;
-  contacts: Contact[];
-  onFileUpload: (field: string, file: File) => void;
-}) => {
-  const [isUploading, setIsUploading] = useState(false);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      await onFileUpload(`${name}.contractFileUrl`, file);
-      setIsUploading(false);
-    }
-  };
-
-  const fileUrl = control.getValues(`${name}.contractFileUrl`);
-
-  return (
-    <div className="space-y-4 rounded-md border p-4">
-      <h4 className="font-semibold">{title}</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={control}
-          name={`${name}.contractNumber`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Αριθμός Συμβολαίου</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name={`${name}.contractDate`}
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Ημερ. Συμβολαίου</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground",
-                      )}
-                    >
-                      {field.value ? (
-                        format(new Date(field.value), "PPP")
-                      ) : (
-                        <span>Επιλογή ημερομηνίας</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value ?? undefined}
-                    onSelect={field.onChange}
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name={`${name}.notary`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Συμβολαιογράφος</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Επιλέξτε επαφή..." />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {contacts
-                    .filter((c) => c.job?.role === "Notary")
-                    .map((c) => (
-                      <SelectItem key={c.id} value={c.name || ""}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={control}
-          name={`${name}.lawyer`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Δικηγόρος</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Επιλέξτε επαφή..." />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {contacts
-                    .filter((c) => c.job?.role === "Lawyer")
-                    .map((c) => (
-                      <SelectItem key={c.id} value={c.name || ""}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormItem className="col-span-full">
-          <FormLabel>Αρχείο Συμβολαίου (PDF)</FormLabel>
-          <div className="flex items-center gap-2">
-            <Input
-              type="file"
-              accept=".pdf"
-              className="text-xs h-9"
-              onChange={handleFileChange}
-              disabled={isUploading}
-            />
-            {fileUrl && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => window.open(fileUrl, "_blank")}
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-            )}
-            {isUploading && <Loader2 className="h-4 w-4 animate-spin" />}
-          </div>
-        </FormItem>
-      </div>
-    </div>
-  );
-};
-
 export default function UnitContractsTab({ unit }: UnitContractsTabProps) {
-  const { toast } = useToast();
-  const [contacts, setContacts] = useState<Contact[]>([]);
-
-  useEffect(() => {
-    const fetchContacts = async () => {
-      // Querying for both types at once would require a composite index.
-      // It's better to make two separate queries.
-      const notaryQuery = query(
-        collection(db, "contacts"),
-        where("job.role", "==", "Notary"),
-        orderBy("name"),
-      );
-      const lawyerQuery = query(
-        collection(db, "contacts"),
-        where("job.role", "==", "Lawyer"),
-        orderBy("name"),
-      );
-
-      const [notarySnapshot, lawyerSnapshot] = await Promise.all([
-        getDocs(notaryQuery),
-        getDocs(lawyerQuery),
-      ]);
-
-      const notaries = notarySnapshot.docs.map(
-        (d) => ({ id: d.id, ...d.data() }) as Contact,
-      );
-      const lawyers = lawyerSnapshot.docs.map(
-        (d) => ({ id: d.id, ...d.data() }) as Contact,
-      );
-
-      setContacts([...notaries, ...lawyers]);
-    };
-    fetchContacts();
-  }, []);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      contracts: unit.contracts || [],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "contracts",
-    keyName: "fieldId",
-  });
-
-  const onSubmit = async (data: FormValues) => {
-    try {
-      const unitRef = doc(db, "units", unit.id);
-      await updateDoc(unitRef, { contracts: data.contracts });
-      toast({ title: "Επιτυχία", description: "Τα συμβόλαια αποθηκεύτηκαν." });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Σφάλμα",
-        description: `Η αποθήκευση απέτυχε: ${error.message}`,
-      });
-    }
-  };
-
-  const handleFileUpload = async (field: string, file: File) => {
-    const storageRef = ref(storage, `unit_contracts/${unit.id}/${file.name}`);
-    try {
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-      form.setValue(field as any, downloadURL, { shouldDirty: true });
-      toast({ title: "Επιτυχία", description: "Το αρχείο ανέβηκε." });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Σφάλμα",
-        description: `Το ανέβασμα απέτυχε: ${error.message}`,
-      });
-    }
-  };
+  const { contacts, isLoading: isLoadingContacts } = useContactsOptions();
+  const { form, fields, append, remove, onSubmit } = useContractsForm(unit);
 
   const addNewContract = () => {
     append({
-      id: doc(collection(db, "dummy")).id,
       clientName: "",
       status: "Προσύμφωνο",
+      preliminary: {},
+      final: {},
+      settlement: {},
     });
   };
 
@@ -367,12 +61,12 @@ export default function UnitContractsTab({ unit }: UnitContractsTabProps) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Accordion
                 type="multiple"
-                defaultValue={fields.map((f) => f.id || "")}
+                defaultValue={fields.map((f) => f.id)}
               >
                 {fields.map((field, index) => (
                   <AccordionItem
-                    key={field.fieldId}
-                    value={field.id || `contract-${index}`}
+                    key={field.id}
+                    value={field.id}
                   >
                     <div className="flex w-full items-center">
                       <AccordionTrigger className="flex-1">
@@ -395,54 +89,10 @@ export default function UnitContractsTab({ unit }: UnitContractsTabProps) {
                       </Button>
                     </div>
                     <AccordionContent className="space-y-4 p-2">
-                      <FormField
-                        control={form.control}
-                        name={`contracts.${index}.clientName`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Πελάτης</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
                       <ContractStageForm
-                        control={form.control}
-                        name={`contracts.${index}.preliminary`}
-                        title="Προσύμφωνο"
+                        nestIndex={index}
                         contacts={contacts}
-                        onFileUpload={handleFileUpload}
-                      />
-                      <ContractStageForm
                         control={form.control}
-                        name={`contracts.${index}.final`}
-                        title="Οριστικό Συμβόλαιο"
-                        contacts={contacts}
-                        onFileUpload={handleFileUpload}
-                      />
-                      <ContractStageForm
-                        control={form.control}
-                        name={`contracts.${index}.settlement`}
-                        title="Εξοφλητικό Συμβόλαιο"
-                        contacts={contacts}
-                        onFileUpload={handleFileUpload}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name={`contracts.${index}.registeredBy`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Καταχωρήθηκε από</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
                       />
                     </AccordionContent>
                   </AccordionItem>
@@ -450,7 +100,10 @@ export default function UnitContractsTab({ unit }: UnitContractsTabProps) {
               </Accordion>
 
               <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={form.formState.isSubmitting}>
+                <Button
+                  type="submit"
+                  disabled={form.formState.isSubmitting}
+                >
                   {form.formState.isSubmitting && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
