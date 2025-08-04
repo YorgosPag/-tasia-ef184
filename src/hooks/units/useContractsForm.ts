@@ -2,12 +2,19 @@
 
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { doc, updateDoc, collection } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { Unit } from "@/hooks/use-unit-details";
-import { unitContractSchema, FormValues } from "@/lib/validation/schemas/unitContractSchema";
+import {
+  unitContractSchema,
+  type FormValues,
+} from "@/lib/validation/schemas/unitContractSchema";
+import { z } from "zod";
 
+const formSchema = z.object({
+  contracts: z.array(unitContractSchema),
+});
 
 export function useContractsForm(unit: Unit) {
   const { toast } = useToast();
@@ -22,7 +29,7 @@ export function useContractsForm(unit: Unit) {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "contracts",
-    keyName: "fieldId", 
+    keyName: "fieldId",
   });
 
   const onSubmit = async (data: FormValues) => {
@@ -38,10 +45,6 @@ export function useContractsForm(unit: Unit) {
       });
     }
   };
-  
+
   return { form, fields, append, remove, onSubmit };
 }
-
-const formSchema = z.object({
-  contracts: z.array(unitContractSchema),
-});
