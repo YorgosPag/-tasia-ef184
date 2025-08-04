@@ -135,11 +135,11 @@ export function ButtonCustomizer() {
             <p className="text-xs text-muted-foreground mb-2 capitalize">{variant}</p>
             <Button
               style={{
-                backgroundColor: style.background,
-                color: style.foreground,
-                borderColor: style.border,
-                fontFamily: `'${style.fontFamily}', sans-serif`,
-                fontSize: `${style.fontSize}px`,
+                backgroundColor: currentStyle.background,
+                color: currentStyle.foreground,
+                borderColor: currentStyle.border,
+                fontFamily: `'${currentStyle.fontFamily}', sans-serif`,
+                fontSize: `${currentStyle.fontSize}px`,
                 height: `${dimensions.height}px`,
                 paddingLeft: `${dimensions.paddingX}px`,
                 paddingRight: `${dimensions.paddingX}px`,
