@@ -14,7 +14,7 @@ import { findOrCreateUserAction } from "@/lib/actions";
 // --- Developer Configuration ---
 // Set to true to bypass Firebase Auth and log in as a mock admin user.
 // Set to false for standard Firebase authentication.
-const BYPASS_AUTH = false;
+const BYPASS_AUTH = true;
 
 // --- Interfaces ---
 type UserRole = "admin" | "editor" | "viewer";
