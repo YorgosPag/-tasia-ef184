@@ -219,28 +219,6 @@ export function ColorCustomizer() {
                   <p className="text-xs">Μικρό Κείμενο</p>
                 </div>
               </div>
-
-              <div>
-                <h5 className="text-sm font-medium mb-2">Δείκτες Κατάστασης</h5>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="text-xs">Κατάσταση Επιτυχίας</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <span className="text-xs">Κατάσταση Προειδοποίησης</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span className="text-xs">Κατάσταση Σφάλματος</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <span className="text-xs">Κατάσταση Πληροφορίας</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
