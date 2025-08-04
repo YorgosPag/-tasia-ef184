@@ -90,7 +90,23 @@ export function ButtonCustomizer() {
                 </Select>
               </div>
                <div className="space-y-1">
-                <Label className="text-xs">Μέγεθος ({currentStyle.fontSize}px)</Label>
+                 <div className="flex justify-between items-center mb-2">
+                    <Label className="text-xs">Μέγεθος</Label>
+                    <div className="relative w-20">
+                        <Input
+                            type="number"
+                            value={currentStyle.fontSize}
+                            onChange={e => handleStyleChange(variant, 'fontSize', parseInt(e.target.value, 10) || 10)}
+                            min={10}
+                            max={24}
+                            step={1}
+                            className="h-7 text-xs pr-7"
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                            px
+                        </span>
+                    </div>
+                 </div>
                 <Slider 
                   value={[currentStyle.fontSize]} 
                   onValueChange={([val]) => handleStyleChange(variant, 'fontSize', val)}
