@@ -6,6 +6,4 @@ export default genkit({
     apiVersion: "v1beta"
   })],
   flows: [],
-  logLevel: 'debug',
-  enableTracingAndMetrics: true,
 });
