@@ -33,6 +33,8 @@ interface FloorPlanCanvasProps {
   isEditMode: boolean;
   onPolygonHover: (propertyId: string | null) => void;
   onPolygonSelect: (propertyId: string | null) => void;
+  isCreatingPolygon: boolean;
+  onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
 }
 
 const statusColors = {
@@ -276,10 +278,13 @@ export function FloorPlanCanvas({
   showLabels,
   isEditMode,
   onPolygonHover,
-  onPolygonSelect
+  onPolygonSelect,
+  isCreatingPolygon,
+  onPolygonCreated,
 }: FloorPlanCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [creatingVertices, setCreatingVertices] = useState<Array<{ x: number; y: number }>>([]);
 
   // Handle container resize
   useEffect(() => {
@@ -299,11 +304,25 @@ export function FloorPlanCanvas({
   }, []);
 
   const handleCanvasClick = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    // If clicking on empty space, deselect
-    if (event.target === event.currentTarget) {
+    if (isCreatingPolygon) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const newVertex = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      };
+      setCreatingVertices((prev) => [...prev, newVertex]);
+      console.log("Added vertex:", newVertex);
+    } else if (event.target === event.currentTarget) {
       onPolygonSelect(null);
     }
-  }, [onPolygonSelect]);
+  }, [isCreatingPolygon, onPolygonSelect]);
+  
+  const handleCanvasDoubleClick = useCallback(() => {
+    if (isCreatingPolygon && creatingVertices.length >= 3) {
+      onPolygonCreated(creatingVertices);
+      setCreatingVertices([]);
+    }
+  }, [isCreatingPolygon, creatingVertices, onPolygonCreated]);
 
   const handleCanvasMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
     // Clear hover if moving over empty space
@@ -333,6 +352,7 @@ export function FloorPlanCanvas({
         height={dimensions.height}
         className="absolute inset-0 cursor-default"
         onClick={handleCanvasClick}
+        onDoubleClick={handleCanvasDoubleClick}
         onMouseMove={handleCanvasMouseMove}
       >
         {/* Grid */}
@@ -357,8 +377,44 @@ export function FloorPlanCanvas({
           />
         ))}
 
+        {/* Creating polygon preview */}
+        {isCreatingPolygon && creatingVertices.length > 0 && (
+          <g className="creating-polygon">
+            {/* Draw vertices */}
+            {creatingVertices.map((vertex, index) => (
+              <circle
+                key={index}
+                cx={vertex.x}
+                cy={vertex.y}
+                r={4}
+                fill="#10b981"
+                stroke="white"
+                strokeWidth={2}
+              />
+            ))}
+            
+            {/* Draw connecting lines */}
+            {creatingVertices.length > 1 && (
+              <polyline
+                points={creatingVertices.map(v => `${v.x},${v.y}`).join(' ')}
+                fill="none"
+                stroke="#10b981"
+                strokeWidth={2}
+                strokeDasharray="5,5"
+              />
+            )}
+          </g>
+        )}
+
+        {/* Instructions */}
+        {isCreatingPolygon && (
+          <text x={20} y={40} fontSize="14" fill="#10b981" className="font-medium">
+            Κάντε κλικ για να προσθέσετε κόμβους • Double-click για ολοκλήρωση
+          </text>
+        )}
+
         {/* Edit mode indicators */}
-        {isEditMode && (
+        {isEditMode && !isCreatingPolygon && (
           <g className="edit-indicators">
             <text
               x={20}

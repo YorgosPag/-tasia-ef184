@@ -175,6 +175,29 @@ export function FloorPlanViewer({
     setSelectedPolygon(null);
   }, []);
 
+  const handlePolygonCreated = useCallback(
+    (vertices: Array<{ x: number; y: number }>) => {
+      console.log("New polygon created with vertices:", vertices);
+      setIsCreatingPolygon(false);
+
+      // Create new property object
+      const newProperty = {
+        id: `prop-${Date.now()}`,
+        name: `Νέο Ακίνητο ${Date.now()}`,
+        type: "Διαμέρισμα",
+        status: "for-sale" as const,
+        color: "#10b981",
+        vertices: vertices,
+        price: 100000,
+        area: 50,
+      };
+
+      // Add to floor data (you'll need to implement this)
+      console.log("Would add property:", newProperty);
+    },
+    [],
+  );
+
   const handleFileUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -226,7 +249,6 @@ export function FloorPlanViewer({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Create New Property Button - MOVED OUTSIDE of isEditMode condition */}
             <Button
               onClick={handleCreateNewProperty}
               variant="default"
@@ -350,6 +372,8 @@ export function FloorPlanViewer({
                 isEditMode={isEditMode}
                 onPolygonHover={handlePolygonHover}
                 onPolygonSelect={handlePolygonSelect}
+                isCreatingPolygon={isCreatingPolygon}
+                onPolygonCreated={handlePolygonCreated}
               />
 
               {isEditMode && (
