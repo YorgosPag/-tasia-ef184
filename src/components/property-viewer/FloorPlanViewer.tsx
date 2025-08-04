@@ -121,14 +121,6 @@ const mockFloors: FloorData[] = [
   }
 ];
 
-const statusColors = {
-  'for-sale': '#10b981',    // Green
-  'for-rent': '#3b82f6',    // Blue
-  'sold': '#ef4444',        // Red
-  'rented': '#f97316',      // Orange
-  'reserved': '#eab308',    // Yellow
-};
-
 export function FloorPlanViewer({
   selectedProperty,
   selectedFloor,
@@ -148,34 +140,28 @@ export function FloorPlanViewer({
   const currentFloor = mockFloors.find(f => f.id === selectedFloor) || mockFloors[0];
 
   const handleZoomIn = useCallback(() => {
-    setZoom(prev => {
-      const newZoom = Math.min(prev * 1.2, 5);
-      console.log('Zoom In:', newZoom);
-      return newZoom;
-    });
+    setZoom(prev => Math.min(prev * 1.2, 5));
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    setZoom(prev => {
-      const newZoom = Math.max(prev / 1.2, 0.2);
-      console.log('Zoom Out:', newZoom);
-      return newZoom;
-    });
+    setZoom(prev => Math.max(prev / 1.2, 0.2));
   }, []);
 
   const handleResetView = useCallback(() => {
-    console.log('Reset View');
     setZoom(1);
   }, []);
 
   const handlePolygonHover = useCallback((propertyId: string | null) => {
-    console.log('Polygon Hover:', propertyId);
     onHoverProperty(propertyId);
   }, [onHoverProperty]);
 
   const handlePolygonSelect = useCallback((propertyId: string | null) => {
-    console.log('Polygon Select:', propertyId);
     setSelectedPolygon(propertyId);
+  }, []);
+  
+  const handleCreateNewProperty = useCallback(() => {
+    setIsCreatingPolygon(true);
+    setSelectedPolygon(null);
   }, []);
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,12 +172,6 @@ export function FloorPlanViewer({
     }
   }, []);
 
-  const handleCreateNewProperty = useCallback(() => {
-    console.log('Create New Property');
-    setIsCreatingPolygon(true);
-    setSelectedPolygon(null);
-  }, []);
-
   const handleSave = useCallback(() => {
     console.log('Save changes');
     // Save logic here
@@ -199,7 +179,6 @@ export function FloorPlanViewer({
 
   // Handle floor selection
   const handleFloorChange = useCallback((floorId: string) => {
-    console.log('Floor changed to:', floorId);
     onSelectFloor(floorId);
     setSelectedPolygon(null);
   }, [onSelectFloor]);
@@ -232,7 +211,6 @@ export function FloorPlanViewer({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Create New Property Button */}
             {isEditMode && (
               <Button
                 onClick={handleCreateNewProperty}
@@ -285,10 +263,7 @@ export function FloorPlanViewer({
               <Button
                 variant={showGrid ? "default" : "ghost"}
                 size="sm"
-                onClick={() => {
-                  console.log('Toggle Grid:', !showGrid);
-                  setShowGrid(!showGrid);
-                }}
+                onClick={() => setShowGrid(!showGrid)}
                 className="h-8 w-8 p-0"
                 title="Toggle Grid"
               >
@@ -297,10 +272,7 @@ export function FloorPlanViewer({
               <Button
                 variant={showLabels ? "default" : "ghost"}
                 size="sm"
-                onClick={() => {
-                  console.log('Toggle Labels:', !showLabels);
-                  setShowLabels(!showLabels);
-                }}
+                onClick={() => setShowLabels(!showLabels)}
                 className="h-8 w-8 p-0"
                 title="Toggle Labels"
               >
@@ -321,7 +293,6 @@ export function FloorPlanViewer({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  console.log('Upload clicked');
                   document.getElementById('floor-plan-upload')?.click();
                 }}
               >
@@ -364,10 +335,8 @@ export function FloorPlanViewer({
                 showGrid={showGrid}
                 showLabels={showLabels}
                 isEditMode={isEditMode}
-                isCreatingPolygon={isCreatingPolygon}
                 onPolygonHover={handlePolygonHover}
                 onPolygonSelect={handlePolygonSelect}
-                zoom={zoom}
               />
               
               {isEditMode && (
