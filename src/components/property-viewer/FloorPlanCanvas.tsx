@@ -315,7 +315,7 @@ export function FloorPlanCanvas({
   return (
     <div 
       ref={containerRef} 
-      className="w-full h-full relative overflow-hidden bg-white"
+      className="w-full h-full relative overflow-hidden bg-card"
     >
       {/* Floor plan background */}
       {floorData.floorPlanUrl && (
