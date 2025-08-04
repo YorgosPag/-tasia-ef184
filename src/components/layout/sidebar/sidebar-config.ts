@@ -80,6 +80,12 @@ const tasiaProjectToolsNav: NavItemType[] = [
     description: "Property management tools",
   },
   {
+    href: "/property-viewer",
+    label: "Προβολή Ακινήτων",
+    icon: LayoutGrid,
+    description: "Διαδραστική προβολή κατόψεων",
+  },
+  {
     href: "/leads",
     label: "Leads",
     icon: Target,
