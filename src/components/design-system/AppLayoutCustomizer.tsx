@@ -16,9 +16,9 @@ const PRESET_COLORS = [
 export function AppLayoutCustomizer() {
   const [sidebarBg, setSidebarBg] = useLocalStorageState('--sidebar-background-hsl', '220 60% 98%');
   const [headerBg, setHeaderBg] = useLocalStorageState('--header-background-hsl', '220 60% 98%');
-  const [sidebarWidth, setSidebarWidth] = useLocalStorageState('--sidebar-width', 256);
-  const [sidebarCollapsedWidth, setSidebarCollapsedWidth] = useLocalStorageState('--sidebar-width-icon', 52);
-  const [headerHeight, setHeaderHeight] = useLocalStorageState('--header-height', 64);
+  const [sidebarWidth, setSidebarWidth] = useLocalStorageState('--sidebar-width', '256px');
+  const [sidebarCollapsedWidth, setSidebarCollapsedWidth] = useLocalStorageState('--sidebar-width-icon', '52px');
+  const [headerHeight, setHeaderHeight] = useLocalStorageState('--header-height', '64px');
   
   React.useEffect(() => {
     document.documentElement.style.setProperty('--sidebar-background-hsl', sidebarBg);
@@ -29,16 +29,41 @@ export function AppLayoutCustomizer() {
   }, [headerBg]);
 
   React.useEffect(() => {
-    document.documentElement.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
+    document.documentElement.style.setProperty('--sidebar-width', sidebarWidth);
   }, [sidebarWidth]);
 
   React.useEffect(() => {
-    document.documentElement.style.setProperty('--sidebar-width-icon', `${sidebarCollapsedWidth}px`);
+    document.documentElement.style.setProperty('--sidebar-width-icon', sidebarCollapsedWidth);
   }, [sidebarCollapsedWidth]);
 
   React.useEffect(() => {
-    document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
+    document.documentElement.style.setProperty('--header-height', headerHeight);
   }, [headerHeight]);
+
+  const DimensionControl = ({ label, value, onValueChange }: { label: string, value: string, onValueChange: (val: string) => void }) => {
+    const numericValue = parseInt(value, 10);
+    return (
+        <div className="space-y-2">
+            <div className="flex justify-between items-center mb-2">
+                <Label>{label}</Label>
+                <div className="relative w-24">
+                    <Input
+                        type="number"
+                        value={numericValue}
+                        onChange={(e) => onValueChange(`${e.target.value}px`)}
+                        className="h-8 text-sm pr-7"
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
+                </div>
+            </div>
+            <Slider
+                value={[numericValue]}
+                onValueChange={([val]) => onValueChange(`${val}px`)}
+                min={40} max={400} step={2}
+            />
+        </div>
+    );
+  };
 
   const ColorInputWithPresets = ({ label, id, value, onChange }: { label: string, id: string, value: string, onChange: (value: string) => void }) => (
     <div className="space-y-2">
@@ -82,40 +107,8 @@ export function AppLayoutCustomizer() {
         </CardHeader>
         <CardContent className="space-y-6">
           <ColorInputWithPresets label="Χρώμα Φόντου Sidebar" id="sidebar-bg" value={sidebarBg} onChange={setSidebarBg} />
-          <div className="space-y-2">
-            <div className="flex justify-between items-center mb-2">
-              <Label>Πλάτος Sidebar (Expanded)</Label>
-               <div className="relative w-24">
-                  <Input
-                      type="number"
-                      value={sidebarWidth}
-                      onChange={(e) => setSidebarWidth(parseInt(e.target.value, 10) || 0)}
-                      min={200}
-                      max={400}
-                      className="h-8 text-sm pr-7"
-                  />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
-              </div>
-            </div>
-            <Slider value={[sidebarWidth]} onValueChange={([val]) => setSidebarWidth(val)} min={200} max={400} step={4} />
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center mb-2">
-              <Label>Πλάτος Sidebar (Collapsed)</Label>
-               <div className="relative w-24">
-                  <Input
-                      type="number"
-                      value={sidebarCollapsedWidth}
-                      onChange={(e) => setSidebarCollapsedWidth(parseInt(e.target.value, 10) || 0)}
-                      min={40}
-                      max={80}
-                      className="h-8 text-sm pr-7"
-                  />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
-              </div>
-            </div>
-            <Slider value={[sidebarCollapsedWidth]} onValueChange={([val]) => setSidebarCollapsedWidth(val)} min={40} max={80} step={1} />
-          </div>
+          <DimensionControl label="Πλάτος Sidebar (Expanded)" value={sidebarWidth} onValueChange={setSidebarWidth} />
+          <DimensionControl label="Πλάτος Sidebar (Collapsed)" value={sidebarCollapsedWidth} onValueChange={setSidebarCollapsedWidth} />
         </CardContent>
       </Card>
       
@@ -129,23 +122,7 @@ export function AppLayoutCustomizer() {
         </CardHeader>
         <CardContent className="space-y-6">
           <ColorInputWithPresets label="Χρώμα Φόντου Header" id="header-bg" value={headerBg} onChange={setHeaderBg} />
-          <div className="space-y-2">
-            <div className="flex justify-between items-center mb-2">
-              <Label>Ύψος Header</Label>
-               <div className="relative w-24">
-                  <Input
-                      type="number"
-                      value={headerHeight}
-                      onChange={(e) => setHeaderHeight(parseInt(e.target.value, 10) || 0)}
-                      min={48}
-                      max={96}
-                      className="h-8 text-sm pr-7"
-                  />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
-              </div>
-            </div>
-            <Slider value={[headerHeight]} onValueChange={([val]) => setHeaderHeight(val)} min={48} max={96} step={2} />
-          </div>
+          <DimensionControl label="Ύψος Header" value={headerHeight} onValueChange={setHeaderHeight} />
         </CardContent>
       </Card>
     </div>
