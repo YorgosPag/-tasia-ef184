@@ -4,22 +4,28 @@ import { useState, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  ZoomIn, 
-  ZoomOut, 
-  RotateCcw, 
-  Download, 
-  Upload, 
-  Save, 
+import {
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Download,
+  Upload,
+  Save,
   Layers,
   Grid,
   Eye,
   EyeOff,
   Palette,
-  Plus
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FloorPlanCanvas } from "./FloorPlanCanvas";
@@ -48,7 +54,7 @@ interface PropertyPolygon {
   id: string;
   name: string;
   type: string;
-  status: 'for-sale' | 'for-rent' | 'sold' | 'rented' | 'reserved';
+  status: "for-sale" | "for-rent" | "sold" | "rented" | "reserved";
   vertices: Array<{ x: number; y: number }>;
   color: string;
   price?: number;
@@ -74,10 +80,10 @@ const mockFloors: FloorData[] = [
           { x: 150, y: 200 },
           { x: 250, y: 200 },
           { x: 250, y: 280 },
-          { x: 150, y: 280 }
+          { x: 150, y: 280 },
         ],
         price: 25000,
-        area: 15
+        area: 15,
       },
       {
         id: "prop-2",
@@ -89,12 +95,12 @@ const mockFloors: FloorData[] = [
           { x: 270, y: 200 },
           { x: 400, y: 200 },
           { x: 400, y: 300 },
-          { x: 270, y: 300 }
+          { x: 270, y: 300 },
         ],
         price: 85000,
-        area: 35
-      }
-    ]
+        area: 35,
+      },
+    ],
   },
   {
     id: "floor-2",
@@ -112,13 +118,13 @@ const mockFloors: FloorData[] = [
           { x: 100, y: 150 },
           { x: 300, y: 150 },
           { x: 300, y: 250 },
-          { x: 100, y: 250 }
+          { x: 100, y: 250 },
         ],
         price: 1200,
-        area: 45
-      }
-    ]
-  }
+        area: 45,
+      },
+    ],
+  },
 ];
 
 export function FloorPlanViewer({
@@ -127,7 +133,7 @@ export function FloorPlanViewer({
   onSelectFloor,
   onHoverProperty,
   hoveredProperty,
-  isEditMode
+  isEditMode,
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
@@ -137,51 +143,62 @@ export function FloorPlanViewer({
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Use first floor if no floor selected
-  const currentFloor = mockFloors.find(f => f.id === selectedFloor) || mockFloors[0];
+  const currentFloor =
+    mockFloors.find((f) => f.id === selectedFloor) || mockFloors[0];
 
   const handleZoomIn = useCallback(() => {
-    setZoom(prev => Math.min(prev * 1.2, 5));
+    setZoom((prev) => Math.min(prev * 1.2, 5));
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    setZoom(prev => Math.max(prev / 1.2, 0.2));
+    setZoom((prev) => Math.max(prev / 1.2, 0.2));
   }, []);
 
   const handleResetView = useCallback(() => {
     setZoom(1);
   }, []);
 
-  const handlePolygonHover = useCallback((propertyId: string | null) => {
-    onHoverProperty(propertyId);
-  }, [onHoverProperty]);
+  const handlePolygonHover = useCallback(
+    (propertyId: string | null) => {
+      onHoverProperty(propertyId);
+    },
+    [onHoverProperty],
+  );
 
   const handlePolygonSelect = useCallback((propertyId: string | null) => {
     setSelectedPolygon(propertyId);
   }, []);
-  
+
   const handleCreateNewProperty = useCallback(() => {
+    console.log("Create New Property");
     setIsCreatingPolygon(true);
     setSelectedPolygon(null);
   }, []);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      console.log("Uploading floor plan:", file.name);
-      // Handle file upload logic here
-    }
-  }, []);
+  const handleFileUpload = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        console.log("Uploading floor plan:", file.name);
+        // Handle file upload logic here
+      }
+    },
+    [],
+  );
 
   const handleSave = useCallback(() => {
-    console.log('Save changes');
+    console.log("Save changes");
     // Save logic here
   }, []);
 
   // Handle floor selection
-  const handleFloorChange = useCallback((floorId: string) => {
-    onSelectFloor(floorId);
-    setSelectedPolygon(null);
-  }, [onSelectFloor]);
+  const handleFloorChange = useCallback(
+    (floorId: string) => {
+      onSelectFloor(floorId);
+      setSelectedPolygon(null);
+    },
+    [onSelectFloor],
+  );
 
   return (
     <div className="h-full flex flex-col">
@@ -189,28 +206,27 @@ export function FloorPlanViewer({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Select 
-              value={currentFloor.id} 
-              onValueChange={handleFloorChange}
-            >
+            <Select value={currentFloor.id} onValueChange={handleFloorChange}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Επιλέξτε όροφο" />
               </SelectTrigger>
               <SelectContent>
                 {mockFloors.map((floor) => (
                   <SelectItem key={floor.id} value={floor.id}>
-                    {floor.name} ({floor.level >= 0 ? '+' : ''}{floor.level})
+                    {floor.name} ({floor.level >= 0 ? "+" : ""}
+                    {floor.level})
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            
+
             <Badge variant="outline" className="text-xs">
               {currentFloor.properties.length} ακίνητα
             </Badge>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Create New Property Button */}
             {isEditMode && (
               <Button
                 onClick={handleCreateNewProperty}
@@ -222,7 +238,6 @@ export function FloorPlanViewer({
                 Νέο Ακίνητο
               </Button>
             )}
-
             {/* View Controls */}
             <div className="flex items-center gap-1 border rounded-md p-1">
               <Button
@@ -276,7 +291,11 @@ export function FloorPlanViewer({
                 className="h-8 w-8 p-0"
                 title="Toggle Labels"
               >
-                {showLabels ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {showLabels ? (
+                  <Eye className="h-4 w-4" />
+                ) : (
+                  <EyeOff className="h-4 w-4" />
+                )}
               </Button>
             </div>
 
@@ -293,18 +312,14 @@ export function FloorPlanViewer({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  document.getElementById('floor-plan-upload')?.click();
+                  document.getElementById("floor-plan-upload")?.click();
                 }}
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Φόρτωση
               </Button>
               {isEditMode && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleSave}
-                >
+                <Button variant="outline" size="sm" onClick={handleSave}>
                   <Save className="h-4 w-4 mr-2" />
                   Αποθήκευση
                 </Button>
@@ -322,9 +337,9 @@ export function FloorPlanViewer({
             <div
               ref={canvasRef}
               className="w-full h-full relative transition-transform duration-200 ease-out"
-              style={{ 
-                transform: `scale(${zoom})`, 
-                transformOrigin: 'center center' 
+              style={{
+                transform: `scale(${zoom})`,
+                transformOrigin: "center center",
               }}
             >
               <FloorPlanCanvas
@@ -338,17 +353,17 @@ export function FloorPlanViewer({
                 onPolygonHover={handlePolygonHover}
                 onPolygonSelect={handlePolygonSelect}
               />
-              
+
               {isEditMode && (
                 <PolygonEditor
                   floorData={currentFloor}
                   selectedPolygon={selectedPolygon}
                   isCreatingPolygon={isCreatingPolygon}
                   onPolygonUpdate={(polygonId, vertices) => {
-                    console.log('Polygon updated:', polygonId, vertices);
+                    console.log("Polygon updated:", polygonId, vertices);
                   }}
                   onPolygonCreated={() => {
-                    console.log('Polygon created');
+                    console.log("Polygon created");
                     setIsCreatingPolygon(false);
                   }}
                 />
@@ -370,16 +385,22 @@ export function FloorPlanViewer({
                     Ιδιότητες
                   </TabsTrigger>
                 </TabsList>
-                
-                <TabsContent value="layers" className="mt-0 h-[calc(100%-3rem)]">
+
+                <TabsContent
+                  value="layers"
+                  className="mt-0 h-[calc(100%-3rem)]"
+                >
                   <LayerManager
                     floorData={currentFloor}
                     selectedPolygon={selectedPolygon}
                     onPolygonSelect={setSelectedPolygon}
                   />
                 </TabsContent>
-                
-                <TabsContent value="properties" className="mt-0 h-[calc(100%-3rem)] p-4">
+
+                <TabsContent
+                  value="properties"
+                  className="mt-0 h-[calc(100%-3rem)] p-4"
+                >
                   <div className="space-y-4">
                     <h4 className="font-medium">Ιδιότητες Polygon</h4>
                     {selectedPolygon ? (
