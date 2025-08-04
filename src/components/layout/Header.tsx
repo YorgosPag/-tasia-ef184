@@ -52,7 +52,7 @@ export function AppHeader() {
 
   return (
     <header 
-      className="sticky top-0 z-10 flex h-[var(--header-height)] items-center gap-4 border-b bg-header/80 px-4 backdrop-blur-sm"
+      className="flex h-[var(--header-height)] items-center gap-4 border-b bg-header/80 px-4 backdrop-blur-sm"
     >
       <Button
         variant="ghost"

@@ -9,7 +9,9 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { SIDEBAR_WIDTH_MOBILE } from "./sidebar-utils";
+import {
+  SIDEBAR_WIDTH_MOBILE,
+} from "./sidebar-utils";
 
 export const Sidebar = React.forwardRef<
   HTMLDivElement,
@@ -23,96 +25,56 @@ export const Sidebar = React.forwardRef<
     {
       side = "left",
       variant = "sidebar",
-      collapsible = "offcanvas",
+      collapsible = "icon", // Default to icon collapsible
       className,
       children,
       ...props
     },
     ref,
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } =
+      useSidebar();
 
-    if (collapsible === "none") {
-      return (
-        <div
-          className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar-background text-sidebar-foreground",
-            className,
-          )}
-          ref={ref}
-          {...props}
-        >
-          {children}
-        </div>
-      );
-    }
-
+    // Mobile view uses a Sheet
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        <Sheet open={openMobile} onOpenChange={setOpenMobile}>
           <SheetContent
-            data-sidebar="sidebar"
-            data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar-background p-0 text-sidebar-foreground [&>button]:hidden"
+            side={side}
+            className="w-[--sidebar-width] bg-sidebar-background p-0 text-sidebar-foreground"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
               } as React.CSSProperties
             }
-            side={side}
           >
-            <SheetTitle className="sr-only">Mobile Navigation</SheetTitle>
-            <SheetDescription className="sr-only">
-              Main navigation menu for the application.
-            </SheetDescription>
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <div className="flex h-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
       );
     }
 
+    // Desktop view
     return (
-      <div
+      <aside
         ref={ref}
-        className="group peer hidden md:block"
         data-state={state}
-        data-collapsible={state === "collapsed" ? collapsible : ""}
-        data-variant={variant}
-        data-side={side}
+        className={cn(
+          "fixed top-0 z-40 h-screen transition-all duration-300 ease-in-out",
+          side === "left" ? "left-0" : "right-0",
+          "w-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:w-[var(--sidebar-width-icon)]",
+          "hidden md:flex",
+          className,
+        )}
+        {...props}
       >
-        {/* This is what handles the sidebar gap on desktop */}
         <div
-          className={cn(
-            "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
-            "group-data-[collapsible=offcanvas]:w-0",
-            "group-data-[side=right]:rotate-180",
-            variant === "floating" || variant === "inset"
-              ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
-          )}
-        />
-        <div
-          className={cn(
-            "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
-            side === "left"
-              ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-              : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
-            // Adjust the padding for floating and inset variants.
-            variant === "floating" || variant === "inset"
-              ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-              : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
-            className,
-          )}
-          {...props}
+          data-sidebar="sidebar"
+          className="flex h-full w-full flex-col bg-sidebar text-sidebar-foreground border-r"
         >
-          <div
-            data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar-background text-sidebar-foreground group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
-          >
-            {children}
-          </div>
+          {children}
         </div>
-      </div>
+      </aside>
     );
   },
 );

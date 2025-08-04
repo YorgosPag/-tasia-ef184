@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 
 export function AppSidebar() {
   return (
-    <SidebarContainer>
+    <SidebarContainer variant="sidebar" collapsible="icon">
       <SidebarHeader className="p-2 flex items-center gap-2">
         <Logo className="w-8 h-8 text-primary" />
         <span className="text-xl font-bold whitespace-nowrap text-sidebar-foreground transition-opacity group-data-[state=collapsed]:opacity-0 ml-2">

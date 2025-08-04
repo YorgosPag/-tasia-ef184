@@ -43,6 +43,8 @@
     --sidebar-accent: hsl(35 45% 85%);
     --sidebar-accent-foreground: hsl(47 10% 20%);
     --header-height: 64px;
+    --sidebar-width: 280px;
+    --sidebar-width-icon: 64px;
   }
 
   .dark {
