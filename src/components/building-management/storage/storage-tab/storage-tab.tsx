@@ -8,7 +8,7 @@ import { StorageFilters } from '../StorageFilters';
 import { StorageTabContent } from './storage-tab-content';
 import { useStorageFilters, useStorageActions } from './storage-tab-hooks';
 import { useFilteredStorage } from '@/hooks/useFilteredStorage';
-import { StorageUnit } from '@/types/storage';
+import { StorageUnit } from '@/lib/types/storage';
 import { mockStorageUnits } from './storage-tab-data';
 
 interface StorageTabProps {

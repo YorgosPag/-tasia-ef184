@@ -9,7 +9,7 @@ import {
   Shield,
   Package
 } from 'lucide-react';
-import { StorageUnit } from '@/types/storage';
+import { StorageUnit } from '@/lib/types/storage';
 
 const getFeatureIcon = (feature: string) => {
   const lowerFeature = feature.toLowerCase();

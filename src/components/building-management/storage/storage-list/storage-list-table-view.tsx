@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Eye, Edit, Trash2, MoreVertical, Link as LinkIcon, Building } from 'lucide-react';
-import { StorageUnit, StorageStatus, StorageType } from '@/types/storage';
+import { StorageUnit, StorageStatus, StorageType } from '@/lib/types/storage';
 import { cn } from '@/lib/utils';
 import { formatPrice, formatArea, getStatusColor, getStatusLabel, getTypeIcon, getTypeLabel } from './storage-list-utils';
 

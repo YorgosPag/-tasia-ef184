@@ -1,5 +1,5 @@
 'use client';
-import { StorageStatus, StorageType } from '@/types/storage';
+import { StorageStatus, StorageType } from '@/lib/types/storage';
 
 export const formatPrice = (price: number) => {
   return new Intl.NumberFormat('el-GR', {

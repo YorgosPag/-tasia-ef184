@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { StorageUnit } from '@/types/storage';
+import { StorageUnit } from '@/lib/types/storage';
 import { cn } from '@/lib/utils';
 import { StorageCardHeader } from './storage-card-header';
 import { StorageCardContent } from './storage-card-content';

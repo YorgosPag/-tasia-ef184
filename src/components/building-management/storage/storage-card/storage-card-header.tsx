@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { StorageUnit, StorageType } from '@/types/storage';
+import { StorageUnit, StorageType } from '@/lib/types/storage';
 import { cn } from '@/lib/utils';
 import { getTypeColor, getStatusColor, getStatusLabel } from './storage-card-utils';
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { StorageUnit } from '@/types/storage';
+import { StorageUnit } from '@/lib/types/storage';
 import { formatPrice, formatArea } from './storage-list-utils';
 
 interface StorageListSummaryProps {

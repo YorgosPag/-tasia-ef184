@@ -6,7 +6,7 @@ import {
   Building, 
   Ruler
 } from 'lucide-react';
-import { StorageUnit } from '@/types/storage';
+import { StorageUnit } from '@/lib/types/storage';
 import { formatPrice, formatArea, getPricePerSqm, getTypeLabel } from './storage-card-utils';
 
 interface StorageCardContentProps {
