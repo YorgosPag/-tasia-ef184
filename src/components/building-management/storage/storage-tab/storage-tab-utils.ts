@@ -1,6 +1,5 @@
 'use client';
-import React from 'react';
-import { Package, Car } from 'lucide-react';
+
 import { StorageStatus, StorageType } from '@/lib/types/storage';
 
 export const getStatusColor = (status: StorageStatus) => {
@@ -21,10 +20,6 @@ export const getStatusLabel = (status: StorageStatus) => {
     maintenance: 'Συντήρηση',
   };
   return labels[status];
-};
-
-export const getTypeIcon = (type: StorageType) => {
-  return type === 'storage' ? <Package className="w-4 h-4" /> : <Car className="w-4 h-4" />;
 };
 
 export const getTypeLabel = (type: StorageType) => {
