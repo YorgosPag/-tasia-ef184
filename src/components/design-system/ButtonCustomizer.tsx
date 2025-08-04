@@ -46,6 +46,10 @@ const initialButtonStyles: ButtonStyles = {
   link: { background: 'transparent', foreground: '#3B82F6', border: 'transparent', fontFamily: 'Inter', fontSize: 14 },
 };
 
+const PRESET_COLORS = [
+    '#000000', '#FFFFFF', '#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#6366F1', '#8B5CF6'
+];
+
 export function ButtonCustomizer() {
   const [styles, setStyles] = useState<ButtonStyles>(initialButtonStyles);
   const [dimensions, setDimensions] = useState<ButtonDimensionStyle>({
@@ -70,6 +74,26 @@ export function ButtonCustomizer() {
 
   const StyleEditor = ({ variant, title }: { variant: keyof ButtonStyles, title: string }) => {
     const currentStyle = styles[variant];
+
+    const ColorInputWithPresets = ({ label, id, value, onChange }: { label: string, id: string, value: string, onChange: (value: string) => void }) => (
+      <div className="space-y-1">
+        <Label htmlFor={id} className="text-xs">{label}</Label>
+        <div className="flex items-center gap-2">
+          <Input type="color" id={id} value={value} onChange={e => onChange(e.target.value)} className="h-10 w-12 p-1"/>
+          <div className="flex flex-wrap gap-1">
+            {PRESET_COLORS.map(preset => (
+                <button
+                    key={`${id}-${preset}`}
+                    className="w-5 h-5 rounded-full border border-border/50 transition-transform hover:scale-110"
+                    style={{ backgroundColor: preset }}
+                    onClick={() => onChange(preset)}
+                />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+
     return (
     <Card className="p-4 overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -77,18 +101,9 @@ export function ButtonCustomizer() {
           <h4 className="font-medium mb-3">{title}</h4>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor={`${variant}-bg`} className="text-xs">Φόντο</Label>
-                <Input type="color" id={`${variant}-bg`} value={currentStyle.background} onChange={e => handleStyleChange(variant, 'background', e.target.value)} className="h-10 w-full p-1"/>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor={`${variant}-fg`} className="text-xs">Κείμενο</Label>
-                <Input type="color" id={`${variant}-fg`} value={currentStyle.foreground} onChange={e => handleStyleChange(variant, 'foreground', e.target.value)} className="h-10 w-full p-1"/>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor={`${variant}-border`} className="text-xs">Περίγραμμα</Label>
-                <Input type="color" id={`${variant}-border`} value={currentStyle.border} onChange={e => handleStyleChange(variant, 'border', e.target.value)} className="h-10 w-full p-1"/>
-              </div>
+              <ColorInputWithPresets label="Φόντο" id={`${variant}-bg`} value={currentStyle.background} onChange={(val) => handleStyleChange(variant, 'background', val)} />
+              <ColorInputWithPresets label="Κείμενο" id={`${variant}-fg`} value={currentStyle.foreground} onChange={(val) => handleStyleChange(variant, 'foreground', val)} />
+              <ColorInputWithPresets label="Περίγραμμα" id={`${variant}-border`} value={currentStyle.border} onChange={(val) => handleStyleChange(variant, 'border', val)} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">

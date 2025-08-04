@@ -7,6 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sidebar, Monitor } from 'lucide-react';
 
+const PRESET_COLORS = [
+    '#000000', '#FFFFFF', '#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#6366F1', '#8B5CF6'
+];
+
 export function AppLayoutCustomizer() {
   const [sidebarBg, setSidebarBg] = useState<string>('');
   const [headerBg, setHeaderBg] = useState<string>('');
@@ -41,6 +45,36 @@ export function AppLayoutCustomizer() {
     document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
   }, [headerHeight]);
 
+  const ColorInputWithPresets = ({ label, id, value, onChange }: { label: string, id: string, value: string, onChange: (value: string) => void }) => (
+    <div className="space-y-2">
+        <Label htmlFor={id}>{label}</Label>
+        <div className="flex items-center gap-2">
+            <Input
+                type="color"
+                id={id}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-12 h-10 p-1"
+            />
+            <Input 
+                value={value} 
+                onChange={(e) => onChange(e.target.value)} 
+                className="h-10"
+            />
+        </div>
+        <div className="flex flex-wrap gap-1 pt-1">
+            {PRESET_COLORS.map(preset => (
+                <button
+                    key={`${id}-${preset}`}
+                    className="w-5 h-5 rounded-full border border-border/50 transition-transform hover:scale-110"
+                    style={{ backgroundColor: preset }}
+                    onClick={() => onChange(preset)}
+                />
+            ))}
+        </div>
+    </div>
+  );
+
   return (
     <div className="grid grid-cols-1 gap-6">
       {/* Sidebar Settings */}
@@ -52,23 +86,7 @@ export function AppLayoutCustomizer() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="sidebar-bg">Χρώμα Φόντου Sidebar</Label>
-            <div className="flex items-center gap-2">
-                <Input
-                    type="color"
-                    id="sidebar-bg"
-                    value={sidebarBg}
-                    onChange={(e) => setSidebarBg(e.target.value)}
-                    className="w-12 h-10 p-1"
-                />
-                <Input 
-                    value={sidebarBg} 
-                    onChange={(e) => setSidebarBg(e.target.value)} 
-                    className="h-10"
-                />
-            </div>
-          </div>
+          <ColorInputWithPresets label="Χρώμα Φόντου Sidebar" id="sidebar-bg" value={sidebarBg} onChange={setSidebarBg} />
           <div className="space-y-2">
             <div className="flex justify-between items-center mb-2">
               <Label>Πλάτος Sidebar (Expanded)</Label>
@@ -115,23 +133,7 @@ export function AppLayoutCustomizer() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="header-bg">Χρώμα Φόντου Header</Label>
-            <div className="flex items-center gap-2">
-                <Input
-                    type="color"
-                    id="header-bg"
-                    value={headerBg}
-                    onChange={(e) => setHeaderBg(e.target.value)}
-                    className="w-12 h-10 p-1"
-                />
-                <Input 
-                    value={headerBg} 
-                    onChange={(e) => setHeaderBg(e.target.value)} 
-                    className="h-10"
-                />
-            </div>
-          </div>
+          <ColorInputWithPresets label="Χρώμα Φόντου Header" id="header-bg" value={headerBg} onChange={setHeaderBg} />
           <div className="space-y-2">
             <div className="flex justify-between items-center mb-2">
               <Label>Ύψος Header</Label>
