@@ -72,4 +72,7 @@ export function StorageList({ units, onEdit, onDelete }: StorageListProps) {
         />
       )}
 
-      <StorageList
+      <StorageListSummary units={units} />
+    </div>
+  );
+}
