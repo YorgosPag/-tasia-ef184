@@ -53,8 +53,8 @@ export function AppHeader() {
 
   return (
     <header 
-      className="sticky top-0 z-10 flex items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm"
-      style={{ height: 'var(--header-height, 4rem)' }}
+      className="sticky top-0 z-10 flex items-center gap-4 border-b bg-header/80 px-4 backdrop-blur-sm"
+      style={{ height: 'var(--header-height, 64px)' }}
     >
       {isMobile && <SidebarTrigger />}
       <div className="flex-1">

@@ -51,26 +51,23 @@
     /* Sidebar & Layout */
     --sidebar-background-hsl: 220 60% 98%;
     --header-background-hsl: 220 60% 98%;
+    
     --sidebar-background: hsl(var(--sidebar-background-hsl));
     --header-background: hsl(var(--header-background-hsl));
     
-    --sidebar-foreground: 221 40% 30%;
-    --sidebar-border: 215 30% 88%;
-    --sidebar-ring: 221 50% 60%;
-    --sidebar-active: 221 70% 93%;
-    --sidebar-active-foreground: 221 40% 20%;
-    --sidebar-muted-foreground: 221 30% 50%;
+    --sidebar-foreground: hsl(221 40% 30%);
+    --sidebar-border: hsl(215 30% 88%);
+    --sidebar-ring: hsl(221 50% 60%);
+    --sidebar-active: hsl(221 70% 93%);
+    --sidebar-active-foreground: hsl(221 40% 20%);
+    --sidebar-muted-foreground: hsl(221 30% 50%);
     --sidebar-accent: hsl(221 100% 94%);
-    --sidebar-accent-foreground: 220 40% 30%;
+    --sidebar-accent-foreground: hsl(220 40% 30%);
 
     /* Custom Layout Variables */
-    --sidebar-width-px: 256px;
-    --sidebar-width-icon-px: 52px;
-    --header-height-px: 64px;
-
-    --sidebar-width: var(--sidebar-width-px);
-    --sidebar-width-icon: var(--sidebar-width-icon-px);
-    --header-height: var(--header-height-px);
+    --sidebar-width: 256px;
+    --sidebar-width-icon: 52px;
+    --header-height: 64px;
   }
 
   .dark {
@@ -106,14 +103,14 @@
     --sidebar-background-hsl: 222 47% 10%;
     --header-background-hsl: 222 47% 10%;
     
-    --sidebar-foreground: 210 30% 96%;
-    --sidebar-border: 220 20% 25%;
-    --sidebar-ring: 217 100% 70%;
-    --sidebar-active: 217 60% 20%;
-    --sidebar-active-foreground: 210 30% 96%;
-    --sidebar-muted-foreground: 215 20% 60%;
+    --sidebar-foreground: hsl(210 30% 96%);
+    --sidebar-border: hsl(220 20% 25%);
+    --sidebar-ring: hsl(217 100% 70%);
+    --sidebar-active: hsl(217 60% 20%);
+    --sidebar-active-foreground: hsl(210 30% 96%);
+    --sidebar-muted-foreground: hsl(215 20% 60%);
     --sidebar-accent: hsl(217 50% 25%);
-    --sidebar-accent-foreground: 210 30% 96%;
+    --sidebar-accent-foreground: hsl(210 30% 96%);
   }
 }
 

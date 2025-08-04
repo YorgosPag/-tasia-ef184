@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sidebar, Monitor } from 'lucide-react';
 import { useLocalStorageState } from '@/hooks/use-local-storage-state';
+import { hexToHslString, hslStringToHex } from './utils';
 
 const PRESET_COLORS = [
     '#000000', '#FFFFFF', '#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#6366F1', '#8B5CF6'
@@ -15,82 +16,27 @@ const PRESET_COLORS = [
 export function AppLayoutCustomizer() {
   const [sidebarBg, setSidebarBg] = useLocalStorageState('--sidebar-background-hsl', '220 60% 98%');
   const [headerBg, setHeaderBg] = useLocalStorageState('--header-background-hsl', '220 60% 98%');
-  const [sidebarWidth, setSidebarWidth] = useLocalStorageState('--sidebar-width-px', 256);
-  const [sidebarCollapsedWidth, setSidebarCollapsedWidth] = useLocalStorageState('--sidebar-width-icon-px', 52);
-  const [headerHeight, setHeaderHeight] = useLocalStorageState('--header-height-px', 64);
+  const [sidebarWidth, setSidebarWidth] = useLocalStorageState('--sidebar-width', 256);
+  const [sidebarCollapsedWidth, setSidebarCollapsedWidth] = useLocalStorageState('--sidebar-width-icon', 52);
+  const [headerHeight, setHeaderHeight] = useLocalStorageState('--header-height', 64);
   
-  // Helper to convert hex to HSL string
-  const hexToHslString = (hex: string): string => {
-    let r = 0, g = 0, b = 0;
-    if (hex.length === 4) {
-      r = parseInt(hex[1] + hex[1], 16);
-      g = parseInt(hex[2] + hex[2], 16);
-      b = parseInt(hex[3] + hex[3], 16);
-    } else if (hex.length === 7) {
-      r = parseInt(hex.substring(1, 3), 16);
-      g = parseInt(hex.substring(3, 5), 16);
-      b = parseInt(hex.substring(5, 7), 16);
-    }
-    r /= 255; g /= 255; b /= 255;
-    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h = 0, s = 0, l = (max + min) / 2;
-    if (max !== min) {
-      const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
-      }
-      h /= 6;
-    }
-    h = Math.round(h * 360);
-    s = Math.round(s * 100);
-    l = Math.round(l * 100);
-    return `${h} ${s}% ${l}%`;
-  };
-
-  // Helper to convert HSL string to hex
-  const hslStringToHex = (hsl: string): string => {
-    const [h, s, l] = hsl.replace(/%/g, '').split(' ').map(Number);
-    const s_norm = s / 100;
-    const l_norm = l / 100;
-    const c = (1 - Math.abs(2 * l_norm - 1)) * s_norm;
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-    const m = l_norm - c / 2;
-    let r = 0, g = 0, b = 0;
-
-    if (h >= 0 && h < 60) { [r,g,b] = [c,x,0] }
-    else if (h >= 60 && h < 120) { [r,g,b] = [x,c,0] }
-    else if (h >= 120 && h < 180) { [r,g,b] = [0,c,x] }
-    else if (h >= 180 && h < 240) { [r,g,b] = [0,x,c] }
-    else if (h >= 240 && h < 300) { [r,g,b] = [x,0,c] }
-    else if (h >= 300 && h < 360) { [r,g,b] = [c,0,x] }
-    
-    r = Math.round((r + m) * 255);
-    g = Math.round((g + m) * 255);
-    b = Math.round((b + m) * 255);
-
-    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
-  };
-
-  useEffect(() => {
-    document.documentElement.style.setProperty('--sidebar-background', sidebarBg);
+  React.useEffect(() => {
+    document.documentElement.style.setProperty('--sidebar-background-hsl', sidebarBg);
   }, [sidebarBg]);
   
-  useEffect(() => {
-    document.documentElement.style.setProperty('--header-background', headerBg);
+  React.useEffect(() => {
+    document.documentElement.style.setProperty('--header-background-hsl', headerBg);
   }, [headerBg]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     document.documentElement.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
   }, [sidebarWidth]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     document.documentElement.style.setProperty('--sidebar-width-icon', `${sidebarCollapsedWidth}px`);
   }, [sidebarCollapsedWidth]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
   }, [headerHeight]);
 
