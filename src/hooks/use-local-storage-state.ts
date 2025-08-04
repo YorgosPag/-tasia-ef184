@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 /**
  * Helper to safely get the initial state from localStorage.
@@ -9,17 +9,18 @@ function getInitialState<T>(key: string, defaultValue: T): T {
     return defaultValue;
   }
 
-  const savedValue = localStorage.getItem(key);
-  if (savedValue !== null) {
-    try {
+  try {
+    const savedValue = localStorage.getItem(key);
+    if (savedValue !== null) {
       return JSON.parse(savedValue);
-    } catch (e) {
-      console.error(`Error parsing localStorage key "${key}":`, e);
-      return defaultValue;
     }
+  } catch (e) {
+    console.error(`Error parsing localStorage key "${key}":`, e);
+    // If parsing fails, fall back to the default value
   }
 
-  return defaultValue;
+  // Also handle the case where defaultValue is a function
+  return defaultValue instanceof Function ? defaultValue() : defaultValue;
 }
 
 /**
@@ -41,7 +42,11 @@ export function useLocalStorageState<T>(
   // Effect to update localStorage when the state changes
   useEffect(() => {
     try {
-      localStorage.setItem(key, JSON.stringify(state));
+      if (state !== undefined) {
+        localStorage.setItem(key, JSON.stringify(state));
+      } else {
+        localStorage.removeItem(key);
+      }
     } catch (e) {
       console.error(`Error setting localStorage key "${key}":`, e);
     }
@@ -50,9 +55,13 @@ export function useLocalStorageState<T>(
   // Listen for changes from other tabs/windows
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === key && e.newValue !== null) {
+      if (e.key === key) {
         try {
-          setState(JSON.parse(e.newValue));
+          if (e.newValue === null) {
+            setState(defaultValue instanceof Function ? defaultValue() : defaultValue);
+          } else {
+            setState(JSON.parse(e.newValue));
+          }
         } catch (error) {
           console.error(
             `Error parsing localStorage key "${key}" from storage event:`,
@@ -63,7 +72,7 @@ export function useLocalStorageState<T>(
     };
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
-  }, [key]);
+  }, [key, defaultValue]);
 
   return [state, setState];
 }
