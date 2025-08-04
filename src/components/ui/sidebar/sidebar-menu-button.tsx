@@ -55,7 +55,9 @@ export const SidebarMenuButton = React.forwardRef<
               )}
               {...props}
             >
-              {Icon && <Icon className="h-4 w-4 transition-transform duration-200" />}
+              {Icon && (
+                <Icon className="h-4 w-4 transition-transform duration-200" />
+              )}
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right" className="font-medium">
@@ -76,7 +78,7 @@ export const SidebarMenuButton = React.forwardRef<
           "relative h-auto min-h-[2.5rem] justify-start p-0 text-left transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg",
           hasSubmenu && "pr-8",
           "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:shadow-sm",
-          "data-[active=true]:border-l-2 data-[active=true]:border-l-sidebar-accent-foreground/30",
+          // "data-[active=true]:border-l-2 data-[active=true]:border-l-sidebar-accent-foreground/30",
           "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:rounded-r-full before:bg-sidebar-accent-foreground before:opacity-0 before:transition-opacity before:duration-200",
           "data-[active=true]:before:opacity-100",
           "hover:shadow-sm",
@@ -85,14 +87,11 @@ export const SidebarMenuButton = React.forwardRef<
         {...props}
       >
         <div className="flex items-center w-full px-3 py-2.5">
-          {Icon && (
-            <Icon className="h-4 w-4 shrink-0 transition-all duration-200 group-hover:scale-110" />
-          )}
-          <div className="ml-3 flex-1 min-w-0">
+          <div className="flex items-center w-full min-w-0">
             {children}
           </div>
         </div>
-        
+
         {/* Active indicator dot */}
         {isActive && !isCollapsed && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
