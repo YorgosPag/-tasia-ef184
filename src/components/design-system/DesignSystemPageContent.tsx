@@ -10,7 +10,8 @@ import {
   Eye,
   Paintbrush,
   LayoutTemplate,
-  Mouse
+  MousePointerSquare,
+  Sidebar
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -19,6 +20,7 @@ import { ColorCustomizer } from './ColorCustomizer';
 import { TypographyCustomizer } from './TypographyCustomizer';
 import { LayoutCustomizer } from './LayoutCustomizer';
 import { ButtonCustomizer } from './ButtonCustomizer';
+import { AppLayoutCustomizer } from './AppLayoutCustomizer';
 
 
 export function DesignSystemPageContent() {
@@ -68,7 +70,7 @@ export function DesignSystemPageContent() {
               Χρώματα
             </TabsTrigger>
             <TabsTrigger value="buttons" className="flex items-center gap-2">
-              <Mouse className="w-4 h-4" />
+              <MousePointerSquare className="w-4 h-4" />
               Κουμπιά
             </TabsTrigger>
             <TabsTrigger value="typography" className="flex items-center gap-2">
@@ -78,6 +80,10 @@ export function DesignSystemPageContent() {
             <TabsTrigger value="layout" className="flex items-center gap-2">
               <LayoutTemplate className="w-4 h-4" />
               Διάταξη & Αποστάσεις
+            </TabsTrigger>
+            <TabsTrigger value="app-layout" className="flex items-center gap-2">
+                <Sidebar className="w-4 h-4" />
+                Sidebar & Header
             </TabsTrigger>
           </TabsList>
 
@@ -95,6 +101,10 @@ export function DesignSystemPageContent() {
 
           <TabsContent value="layout" className="space-y-6">
             <LayoutCustomizer />
+          </TabsContent>
+
+          <TabsContent value="app-layout" className="space-y-6">
+            <AppLayoutCustomizer />
           </TabsContent>
         </Tabs>
       </div>
