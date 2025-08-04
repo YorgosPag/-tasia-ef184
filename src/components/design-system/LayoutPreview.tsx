@@ -12,9 +12,8 @@ interface LayoutPreviewProps {
 
 export function LayoutPreview({ settings }: LayoutPreviewProps) {
   const previewStyle: React.CSSProperties = {
-    margin: `${settings.margin}px`,
-    padding: `${settings.padding}px`,
-    borderRadius: `${settings.borderRadius}px`,
+    marginBottom: `${settings.margin}px`,
+    borderRadius: `8px`, // Assuming a default card radius for preview
     borderWidth: `${settings.borderWidth}px`,
     borderColor: 'hsl(var(--border))',
     boxShadow: `0 10px 15px -3px rgba(0, 0, 0, ${settings.shadow / 100}), 0 4px 6px -2px rgba(0, 0, 0, ${settings.shadow / 200})`,
@@ -23,10 +22,8 @@ export function LayoutPreview({ settings }: LayoutPreviewProps) {
 
   const codeSnippet = `
 .custom-container {
-  padding: ${settings.padding}px;
-  margin: ${settings.margin}px;
-  border-radius: ${settings.borderRadius}px;
-  border: ${settings.borderWidth}px solid hsl(var(--border));
+  margin-bottom: ${settings.margin}px;
+  border-width: ${settings.borderWidth}px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, ${settings.shadow / 100});
 }
   `.trim();
@@ -41,19 +38,35 @@ export function LayoutPreview({ settings }: LayoutPreviewProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-muted/30 dark:bg-muted/10 rounded-lg p-8 flex items-center justify-center min-h-[400px]">
+          <div className="bg-muted/30 dark:bg-muted/10 rounded-lg p-8 flex flex-col items-center justify-center min-h-[400px]">
             <div
               className="bg-card w-full max-w-md border"
               style={previewStyle}
             >
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-primary/10 text-primary rounded-lg">
+              <div className="p-6 flex items-start gap-4">
+                 <div className="p-3 bg-primary/10 text-primary rounded-lg">
                   <Building className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-card-foreground">Δείγμα Container</h3>
+                  <h3 className="font-semibold text-card-foreground">Δείγμα Κάρτας 1</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     Αυτό είναι ένα παράδειγμα του πώς θα εφαρμόζονται οι ρυθμίσεις διάταξης.
+                  </p>
+                </div>
+              </div>
+            </div>
+             <div
+              className="bg-card w-full max-w-md border"
+              style={previewStyle}
+            >
+              <div className="p-6 flex items-start gap-4">
+                 <div className="p-3 bg-primary/10 text-primary rounded-lg">
+                  <Building className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-card-foreground">Δείγμα Κάρτας 2</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Το κενό μεταξύ των καρτών ελέγχεται από το "Κενό μεταξύ ενοτήτων".
                   </p>
                 </div>
               </div>

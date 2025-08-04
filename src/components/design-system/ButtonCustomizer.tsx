@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Palette, Type } from 'lucide-react';
+import { Palette, Type, RectangleHorizontal, MoveCircle } from 'lucide-react';
 
 interface ButtonVariantStyle {
   background: string;
@@ -15,6 +15,12 @@ interface ButtonVariantStyle {
   border: string;
   fontFamily: string;
   fontSize: number;
+}
+
+interface ButtonDimensionStyle {
+    height: number;
+    paddingX: number;
+    borderRadius: number;
 }
 
 interface ButtonStyles {
@@ -42,6 +48,11 @@ const initialButtonStyles: ButtonStyles = {
 
 export function ButtonCustomizer() {
   const [styles, setStyles] = useState<ButtonStyles>(initialButtonStyles);
+  const [dimensions, setDimensions] = useState<ButtonDimensionStyle>({
+    height: 40,
+    paddingX: 16,
+    borderRadius: 8,
+  });
 
   const handleStyleChange = (variant: keyof ButtonStyles, property: keyof ButtonVariantStyle, value: string | number) => {
     setStyles(prev => ({
@@ -51,6 +62,10 @@ export function ButtonCustomizer() {
         [property]: value
       }
     }));
+  };
+  
+  const handleDimensionChange = (property: keyof ButtonDimensionStyle, value: number) => {
+    setDimensions(prev => ({ ...prev, [property]: value }));
   };
 
   const StyleEditor = ({ variant, title }: { variant: keyof ButtonStyles, title: string }) => {
@@ -120,11 +135,15 @@ export function ButtonCustomizer() {
             <p className="text-xs text-muted-foreground mb-2 capitalize">{variant}</p>
             <Button
               style={{
-                backgroundColor: currentStyle.background,
-                color: currentStyle.foreground,
-                borderColor: currentStyle.border,
-                fontFamily: `'${currentStyle.fontFamily}', sans-serif`,
-                fontSize: `${currentStyle.fontSize}px`
+                backgroundColor: style.background,
+                color: style.foreground,
+                borderColor: style.border,
+                fontFamily: `'${style.fontFamily}', sans-serif`,
+                fontSize: `${style.fontSize}px`,
+                height: `${dimensions.height}px`,
+                paddingLeft: `${dimensions.paddingX}px`,
+                paddingRight: `${dimensions.paddingX}px`,
+                borderRadius: `${dimensions.borderRadius}px`,
               }}
               className="border"
             >
@@ -136,6 +155,64 @@ export function ButtonCustomizer() {
     );
   };
 
+  const DimensionControls = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <RectangleHorizontal className="w-5 h-5" />
+          Διαστάσεις Κουμπιών
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-2">
+          <div className="flex justify-between items-center mb-2">
+            <Label className="text-xs">Ύψος</Label>
+            <div className="relative w-20">
+              <Input
+                type="number"
+                value={dimensions.height}
+                onChange={e => handleDimensionChange('height', parseInt(e.target.value, 10) || 0)}
+                className="h-7 text-xs pr-7"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
+            </div>
+          </div>
+          <Slider value={[dimensions.height]} onValueChange={([val]) => handleDimensionChange('height', val)} min={24} max={64} step={1} />
+        </div>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center mb-2">
+            <Label className="text-xs">Padding (Οριζόντιο)</Label>
+            <div className="relative w-20">
+              <Input
+                type="number"
+                value={dimensions.paddingX}
+                onChange={e => handleDimensionChange('paddingX', parseInt(e.target.value, 10) || 0)}
+                className="h-7 text-xs pr-7"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
+            </div>
+          </div>
+          <Slider value={[dimensions.paddingX]} onValueChange={([val]) => handleDimensionChange('paddingX', val)} min={8} max={48} step={1} />
+        </div>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center mb-2">
+            <Label className="text-xs">Ακτίνα Γωνιών</Label>
+            <div className="relative w-20">
+              <Input
+                type="number"
+                value={dimensions.borderRadius}
+                onChange={e => handleDimensionChange('borderRadius', parseInt(e.target.value, 10) || 0)}
+                className="h-7 text-xs pr-7"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
+            </div>
+          </div>
+          <Slider value={[dimensions.borderRadius]} onValueChange={([val]) => handleDimensionChange('borderRadius', val)} min={0} max={32} step={1} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
       <Card>
           <CardHeader>
@@ -145,6 +222,7 @@ export function ButtonCustomizer() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <DimensionControls />
             <StyleEditor variant="default" title="Προεπιλογή (Primary)" />
             <StyleEditor variant="destructive" title="Διαγραφή (Destructive)" />
             <StyleEditor variant="secondary" title="Δευτερεύον (Secondary)" />
