@@ -4,18 +4,11 @@ import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { Timestamp } from "firebase/firestore";
 import { Company } from "@/hooks/use-data-store";
-import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
-import React from "react";
 
 export const formatDate = (timestamp: Timestamp | Date | undefined) => {
   if (!timestamp) return "N/A";
-  const date = timestamp instanceof Timestamp ? timestamp.toDate() : timestamp;
+  const date = timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp);
+  if (isNaN(date.getTime())) return "Invalid Date";
   return format(date, "dd/MM/yyyy", { locale: el });
 };
 
@@ -45,7 +38,17 @@ export const getStatusLabel = (status: string) => {
   }
 };
 
-export const getCompanyName = (companyId: string, companies: Company[]) => {
-  if (!companyId) return "Άγνωστη εταιρεία";
+export const getCompanyName = (companyId: string, companies?: Company[]) => {
+  if (!companyId || !companies) return "Άγνωστη εταιρεία";
   return companies.find((c) => c.id === companyId)?.name || companyId;
+};
+
+export const formatCurrency = (amount: number | null | undefined) => {
+  if (amount === null || amount === undefined) return '-';
+  return new Intl.NumberFormat('el-GR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 };
