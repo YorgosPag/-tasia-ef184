@@ -226,18 +226,16 @@ export function FloorPlanViewer({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Create New Property Button */}
-            {isEditMode && (
-              <Button
-                onClick={handleCreateNewProperty}
-                variant="default"
-                size="sm"
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Νέο Ακίνητο
-              </Button>
-            )}
+            {/* Create New Property Button - MOVED OUTSIDE of isEditMode condition */}
+            <Button
+              onClick={handleCreateNewProperty}
+              variant="default"
+              size="sm"
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Νέο Ακίνητο
+            </Button>
             {/* View Controls */}
             <div className="flex items-center gap-1 border rounded-md p-1">
               <Button
