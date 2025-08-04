@@ -109,20 +109,20 @@ export function ColorCustomizer() {
                   id={color.name}
                   value={color.value}
                   onChange={(e) => updateColor(color.name, e.target.value)}
-                  className="w-12 h-10 p-1 border rounded cursor-pointer"
+                  className="w-12 h-9 p-1 border rounded cursor-pointer"
                 />
               </div>
               <Input
                 type="text"
                 value={color.value}
                 onChange={(e) => updateColor(color.name, e.target.value)}
-                className="flex-1 h-10 text-xs font-mono"
+                className="flex-1 h-9 text-xs font-mono"
                 placeholder="#000000"
               />
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 shrink-0"
+                className="h-9 w-9 shrink-0"
                 onClick={() => copyColor(color.value)}
               >
                 {copiedColor === color.value ? (
