@@ -27,6 +27,8 @@ interface PolygonEditorProps {
   floorData: FloorData;
   selectedPolygon: string | null;
   onPolygonUpdate: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
+  isCreatingPolygon: boolean;
+  onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
 }
 
 interface DragState {
@@ -312,7 +314,9 @@ function EditablePolygon({
 export function PolygonEditor({
   floorData,
   selectedPolygon,
-  onPolygonUpdate
+  isCreatingPolygon,
+  onPolygonUpdate,
+  onPolygonCreated,
 }: PolygonEditorProps) {
   const [editedVertices, setEditedVertices] = useState<Record<string, Array<{ x: number; y: number }>>>({});
 

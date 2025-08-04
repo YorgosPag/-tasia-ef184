@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -333,7 +333,7 @@ export function FloorPlanViewer({
       <CardContent className="flex-1 p-0 overflow-hidden">
         <div className="h-full flex">
           {/* Canvas Area */}
-          <div className="flex-1 relative overflow-hidden bg-card">
+          <div className="flex-1 relative overflow-hidden bg-muted/20">
             <div
               ref={canvasRef}
               className="w-full h-full relative transition-transform duration-200 ease-out"
