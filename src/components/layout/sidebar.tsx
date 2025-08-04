@@ -35,7 +35,14 @@ export function AppSidebar() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon" className="border-r-0">
+    <Sidebar 
+      variant="sidebar" 
+      collapsible="icon" 
+      className="border-r-0"
+      style={{
+        backgroundColor: 'var(--sidebar-background, hsl(var(--sidebar-background)))'
+      }}
+    >
       <SidebarHeader className="p-4 border-b border-sidebar-border/50">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
