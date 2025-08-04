@@ -249,15 +249,18 @@ export function FloorPlanViewer({
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              onClick={handleCreateNewProperty}
-              variant="default"
-              size="sm"
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Νέο Ακίνητο
-            </Button>
+            {/* Create New Property Button */}
+            {isEditMode && (
+              <Button
+                onClick={handleCreateNewProperty}
+                variant="default"
+                size="sm"
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Νέο Ακίνητο
+              </Button>
+            )}
             {/* View Controls */}
             <div className="flex items-center gap-1 border rounded-md p-1">
               <Button
@@ -353,7 +356,7 @@ export function FloorPlanViewer({
       <CardContent className="flex-1 p-0 overflow-hidden">
         <div className="h-full flex">
           {/* Canvas Area */}
-          <div className="flex-1 relative overflow-hidden bg-muted/20">
+          <div className="flex-1 relative overflow-hidden bg-card">
             <div
               ref={canvasRef}
               className="w-full h-full relative transition-transform duration-200 ease-out"
