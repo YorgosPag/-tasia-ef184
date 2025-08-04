@@ -56,7 +56,7 @@ const config = {
           foreground: "hsl(var(--card-foreground))",
         },
         sidebar: {
-          background: "hsl(var(--sidebar-background))",
+          background: "hsl(var(--sidebar-background-hsl))",
           foreground: "hsl(var(--sidebar-foreground))",
           border: "hsl(var(--sidebar-border))",
           active: "hsl(var(--sidebar-active))",
