@@ -5,7 +5,7 @@ import { AppSidebar } from "./sidebar";
 import { AppHeader } from "./Header";
 import { useCurrentDomain } from "@/hooks/useCurrentDomain";
 import { cn } from "@/lib/utils";
-import { SidebarProvider } from "@/components/layout/sidebar-provider";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { useSidebar } from "@/components/ui/sidebar/sidebar-context";
 
 function AppShellLayout({ children }: { children: React.ReactNode }) {
