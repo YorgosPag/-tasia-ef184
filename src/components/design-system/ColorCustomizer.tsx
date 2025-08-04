@@ -46,6 +46,10 @@ const defaultColors: ColorConfig[] = [
   { name: 'muted-foreground', displayName: 'Δευτερεύον Κείμενο', value: '#64748B', category: 'text' },
 ];
 
+const PRESET_COLORS = [
+    '#000000', '#FFFFFF', '#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#6366F1', '#8B5CF6'
+];
+
 export function ColorCustomizer() {
   const [colors, setColors] = useState<ColorConfig[]>(defaultColors);
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
@@ -109,20 +113,20 @@ export function ColorCustomizer() {
                   id={color.name}
                   value={color.value}
                   onChange={(e) => updateColor(color.name, e.target.value)}
-                  className="w-12 h-9 p-1 border rounded cursor-pointer"
+                  className="w-12 h-10 p-1 border rounded cursor-pointer"
                 />
               </div>
               <Input
                 type="text"
                 value={color.value}
                 onChange={(e) => updateColor(color.name, e.target.value)}
-                className="flex-1 h-9 text-xs font-mono"
+                className="flex-1 h-10 text-xs font-mono"
                 placeholder="#000000"
               />
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 shrink-0"
+                className="h-10 w-10 shrink-0"
                 onClick={() => copyColor(color.value)}
               >
                 {copiedColor === color.value ? (
@@ -131,6 +135,16 @@ export function ColorCustomizer() {
                   <Copy className="w-4 h-4" />
                 )}
               </Button>
+            </div>
+            <div className="flex flex-wrap gap-1 pt-1">
+                {PRESET_COLORS.map(preset => (
+                    <button
+                        key={`${color.name}-${preset}`}
+                        className="w-5 h-5 rounded-full border border-border/50 transition-transform hover:scale-110"
+                        style={{ backgroundColor: preset }}
+                        onClick={() => updateColor(color.name, preset)}
+                    />
+                ))}
             </div>
           </div>
         ))}
