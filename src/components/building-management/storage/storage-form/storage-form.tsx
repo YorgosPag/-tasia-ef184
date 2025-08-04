@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { StorageUnit } from '@/types/storage';
+import { StorageUnit } from '@/lib/types/storage';
 import { StorageFormHeader } from './storage-form-header';
 import { StorageFormBasicInfo } from './storage-form-basic-info';
 import { StorageFormLocationSpecs } from './storage-form-location-specs';

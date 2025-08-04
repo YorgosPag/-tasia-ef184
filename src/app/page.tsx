@@ -1,10 +1,11 @@
+
 "use client";
 
 import { Loader2 } from "lucide-react";
 
 /**
  * This is the root page.
- * It is configured to redirect to the /design-system page via next.config.js.
+ * It is configured to redirect to the /design-system page via middleware.
  * We render a loader as a fallback in case the redirect is processing.
  */
 export default function RootPage() {

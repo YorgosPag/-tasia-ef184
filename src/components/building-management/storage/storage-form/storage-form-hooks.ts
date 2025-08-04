@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { StorageUnit } from '@/types/storage';
+import { StorageUnit } from '@/lib/types/storage';
 
 export function useFormValidation() {
   const [errors, setErrors] = useState<{[key: string]: string}>({});
