@@ -19,11 +19,9 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
-    // Handle exact match for dashboard or other root-level links
-    if (href === "/dashboard") {
+    if (href === "/dashboard" || href === "/projects") {
       return pathname === href;
     }
-    // Handle nested routes
     return pathname.startsWith(href);
   };
 
@@ -39,16 +37,38 @@ export function SidebarNav() {
   };
 
   return (
-    <SidebarMenu className="flex-1">
-      {navGroups.map((group) => (
-        <SidebarNavGroup
-          key={group.label}
-          group={group}
-          pathname={pathname}
-          isActive={isActive}
-          getButtonClass={getButtonClass}
-        />
-      ))}
+    <SidebarMenu className="flex-1 flex flex-col">
+      <div className="flex-1 overflow-y-auto">
+        {navGroups.map((group) => (
+          <SidebarNavGroup
+            key={group.label}
+            group={group}
+            pathname={pathname}
+            isActive={isActive}
+            getButtonClass={getButtonClass}
+          />
+        ))}
+      </div>
+      <div className="mt-auto">
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            href="/settings"
+            className={getButtonClass("/settings")}
+            icon={Settings}
+            tooltip="Ρυθμίσεις"
+            isActive={isActive("/settings")}
+          >
+            <div className="flex items-center justify-between w-full min-w-0">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <Settings className="h-4 w-4 shrink-0 transition-colors" />
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="truncate leading-none">Ρυθμίσεις</span>
+                </div>
+              </div>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </div>
     </SidebarMenu>
   );
 }

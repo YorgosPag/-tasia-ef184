@@ -46,6 +46,7 @@ export function useContacts() {
     data: contacts = [],
     isLoading,
     isError,
+    isSuccess,
   } = useQuery<Contact[]>({
     queryKey: ["contacts"],
     queryFn: fetchContacts,
@@ -54,5 +55,5 @@ export function useContacts() {
     refetchOnWindowFocus: true,
   });
 
-  return { contacts, isLoading, isError };
+  return { contacts, isLoading: isLoading && !isSuccess, isError };
 }

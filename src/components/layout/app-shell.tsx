@@ -11,43 +11,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const domain = useCurrentDomain();
   const { isMobile, state } = useSidebar();
   const isCollapsed = isMobile ? false : state === "collapsed";
-  
-  // Debug values
-  console.log("Debug AppShell:", { isMobile, state, isCollapsed });
 
   return (
     <div className={cn("min-h-screen w-full relative", domain)}>
-      {/* Sidebar με absolute positioning */}
-      <div 
-        className="absolute top-0 left-0 z-50 h-full bg-gray-900 border-r border-gray-700"
-        style={{
-          width: isMobile ? "15rem" : (isCollapsed ? "3.25rem" : "16rem"),
-        }}
-      >
-        <AppSidebar />
-      </div>
-      
-      {/* Main content με fixed margin */}
+      <AppSidebar />
       <div
-        className="min-h-screen flex flex-col bg-background"
+        className={cn(
+          "min-h-screen flex flex-col bg-background transition-all duration-300 ease-in-out",
+        )}
         style={{
-          marginLeft: isMobile ? "0px" : (isCollapsed ? "3.25rem" : "16rem"),
-          transition: "margin-left 0.3s ease-in-out",
+          paddingLeft: isMobile
+            ? "0px"
+            : `var(${isCollapsed ? "--sidebar-width-icon" : "--sidebar-width"})`,
         }}
       >
         <AppHeader />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          <div className="max-w-full">
-            {children}
-          </div>
+          <div className="max-w-full">{children}</div>
         </main>
       </div>
-      
-      {/* Mobile overlay */}
       {isMobile && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-          onClick={() => {/* close sidebar */}}
+          onClick={() => {
+            /* close sidebar */
+          }}
         />
       )}
     </div>
